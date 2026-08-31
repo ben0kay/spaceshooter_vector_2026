@@ -1,3 +1,49 @@
-function sc_player_init(){
+/// @description Initializes a player instance from a registered ship key.
+function sc_player_init(_player, _ship_key)
+{
+    if (!instance_exists(_player) || !is_string(_ship_key))
+    {
+        show_debug_message("PLAYER INITIALIZATION ERROR - invalid player or ship key");
+        return false;
+    }
 
+    if (!variable_struct_exists(global.data.ships, _ship_key))
+    {
+        show_debug_message("PLAYER INITIALIZATION ERROR - unknown ship key: " + _ship_key);
+        return false;
+    }
+
+    var _definition = variable_struct_get(global.data.ships, _ship_key);
+
+    _player.ship =
+    {
+        key: _ship_key,
+        identity: variable_clone(_definition.identity),
+        collision: variable_clone(_definition.collision),
+        visual: variable_clone(_definition.visual),
+        hardpoints: variable_clone(_definition.hardpoints),
+        loadout: variable_clone(_definition.starting_loadout),
+        stats: undefined
+    };
+
+    if (!sc_player_stats_init(_player, _definition.stats_base))
+        return false;
+
+    var _final = _player.ship.stats.final;
+
+    _player.defence =
+    {
+        shield: { current: _final.shield_max, maximum: _final.shield_max, recharge_delay_remaining: 0 },
+        armour: { current: _final.armour_max, maximum: _final.armour_max },
+        hull: { current: _final.hull_max, maximum: _final.hull_max }
+    };
+
+    _player.movement = { velocity_x: 0, velocity_y: 0, direction: 0 };
+    _player.initialized = true;
+
+    global.player_id = _player;
+    global.PlayerState = PlayerState.ACTIVE;
+
+    show_debug_message("PLAYER INITIALIZED - " + _player.ship.identity.name);
+    return true;
 }
