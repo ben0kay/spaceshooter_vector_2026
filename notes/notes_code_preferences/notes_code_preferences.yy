@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"v1",
+  "%Name":"notes_code_preferences",
+  "name":"notes_code_preferences",
+  "parent":{
+    "name":"spaceshooter_vector_2026",
+    "path":"spaceshooter_vector_2026.yyp",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}

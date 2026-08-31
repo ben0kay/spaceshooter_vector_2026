@@ -1,0 +1,12 @@
+I prefer vertically compressed code
+I need you to give me code by pasting in chat. NEVER update the github yourself
+I dont like when u put like 1 little thing on its own line unless necessary I like ENUMS where appropriate. 
+I like you giving me full functions instead of inserting little snippets so i dont mess things up. 
+I highly prefer OPTIMIZATION/PERFORMANCE where appropriate. 
+I like using structs to group similar named variables together. 
+I like using culling techniques and things like MACROS for something like #macro VTD_TICK global.vtd.tick #macro IFRAMES_2 \ (((VTD_TICK + real(id)) mod 2) == 0) #macro GAMEPLAY_ACTIVE \ (global.GameState == GameState.PLAYING \ && global.LevelState == LevelState.PLAYING) #macro OUTSIDE_VIEW_64 \ (!scr_culling_check_instance(id, 64)) 
+I like designing cool looking sprites purely within gamemaker primitive drawing and then baking it as sprite 
+I like using separate global variables to declare states like global.GameState or global.PlayerState or global.LevelState 
+I like you providing easier / alternative ideas if possible 
+I like you inserting small commented placeholders for future things that could go there, like //insert audio function here.
+I prefer not to have things overengineered just for the sake of it
