@@ -1,0 +1,229 @@
+IMMEDIATE TODO - NEXT SESSION
+
+1. THRUSTER VISUAL FIX
+
+The current baked thrust components appear as tiny glowing lines rather than substantial engine flames.
+
+Redesign both the Simulant and Shard thrust primitives with:
+
+* A wider filled outer glow
+* A clearly visible filled energy flame
+* A narrow white-hot centre
+* More length and width variation as thrust power changes
+* Correct attachment beneath/behind the engine housing
+* Soft sprite particles trailing away from the ship
+* A visible ignition ring and initial energy burst
+* Additive glow where appropriate
+
+Inspect why the current particles are difficult or impossible to see. Check particle depth, size, alpha, emission position, direction and whether the shared particle system is drawing in the combat room.
+
+Keep the attached flame as a baked component. Use particles only for detached exhaust, ignition and drifting energy.
+
+A future white flame particle sprite may be added. The particle architecture must allow changing the sprite without changing thruster mounts or enemy/player movement code.
+
+2. GENERIC THRUSTER CALLBACK ROUTING
+
+The generic enemy code currently calls Simulant particle functions directly.
+
+Move faction-specific callbacks into registered thrust data:
+
+draw_script
+ignition_script
+particle_script
+
+The generic enemy system should call the registered callbacks without knowing whether the enemy is Simulant, Therm or another faction.
+
+Thrusters remain separate from weapon hardpoints.
+
+Each enemy may define zero, one or many thrusters. Large ships may have eight or more mounts. All matching mounts should share the same baked thrust sprite.
+
+3. ENEMY STAT PIPELINE
+
+Implement the planned reusable enemy stat pipeline before adding many more enemies.
+
+Follow the player stat architecture where appropriate:
+
+* Registered base stats
+* Runtime final stats
+* Recalculation function
+* Explicit modifiers
+* Difficulty or level scaling
+* Status-effect modifiers later
+* No consumer should silently recreate missing stat runtime
+
+Enemy definitions should provide base values for:
+
+* Shield maximum
+* Armour maximum
+* Hull maximum
+* Movement speed
+* Acceleration
+* Friction or deceleration
+* Turn speed
+* Detection range
+* Combat range
+* Forget range
+* Damage modifiers
+* Fire-rate modifiers
+* Resistance values later if required
+
+Runtime enemy defence should initialize from final calculated stats.
+
+Movement, perception, attacks and damage must consume final runtime stats rather than reading unrelated copied definition fields.
+
+Keep the system compact and performance-conscious. Recalculate only when modifiers actually change, not every Step.
+
+4. PLAYER DAMAGE PIPELINE
+
+Implement one proper player damage function with this routing order:
+
+Shield
+→ Armour
+→ Hull
+
+Shield:
+
+* Absorbs damage first
+* Regenerates over time
+* Regeneration waits for the registered recharge delay after damage
+* Shield visual alpha follows the current shield ratio
+* Shield flashes brightly when hit
+* Shield disappears at zero
+
+Armour:
+
+* Absorbs damage after shield
+* Does not regenerate automatically
+* Can eventually be repaired using mined resources
+* Armour visual selects the correct baked 100%, 75%, 50% or 25% state
+* Armour overlay disappears at zero
+
+Hull:
+
+* Takes damage after armour is depleted
+* Cannot be repaired normally in the field
+* Must eventually be repaired at the base
+* Hull visual selects the correct baked damage state
+* Zero hull begins the player destruction pipeline
+
+Damage must correctly carry excess damage from one defensive layer into the next.
+
+5. TEMPORARY PLAYER DAMAGE TEST CONTROLS
+
+Add clearly marked debug-only controls for testing the layered sprites and damage pipeline.
+
+Suggested controls:
+
+* Damage shield
+* Damage armour directly
+* Damage hull directly
+* Apply normal routed damage
+* Restore shield
+* Restore armour
+* Restore hull
+* Print current shield, armour and hull values
+
+Keep these controls isolated so they can be removed easily later.
+
+Use them to verify every visual threshold:
+
+* Above 75%
+* 75% or below
+* 50% or below
+* 25% or below
+* Armour or shield at zero
+
+6. SHARD VISUAL VERIFICATION
+
+Verify the new Shard cache contains:
+
+* Four hull damage sprites
+* Four armour condition overlays
+* One shield sprite
+* One thrust sprite
+
+Draw order:
+
+Thrust
+→ Hull state
+→ Armour state
+→ Dynamic components later
+→ Shield
+
+Confirm armour and hull sprites align perfectly at every rotation.
+
+Eventually update the ship-selection screen to draw the intact baked Shard rather than using the old generic preview. Until then, preserve the compatibility fields:
+
+scale
+colour_primary
+colour_secondary
+
+7. PLAYER THRUST
+
+Give player ships registered thruster mounts similar to enemy thrusters.
+
+The Shard should initially have compact rear aqua engines.
+
+Thrust power should respond to actual movement speed and acceleration. It should smoothly ignite, strengthen, flicker and fade rather than instantly appearing or disappearing.
+
+Keep the baked attached flame separate from detached particles.
+
+8. PLAYER DODGE
+
+Add dodge only after normal movement and damage routing are stable.
+
+Initial simple design:
+
+* Dedicated dodge input
+* Dodge direction based on movement input
+* Fall back to facing direction when no movement input exists
+* Strong temporary velocity impulse
+* Short cooldown
+* Clear visual burst
+* Optional brief invulnerability window, controlled by a simple boolean
+* No alarms
+* No dependence on room_speed
+
+Later chassis can have different dodge distance, cooldown or behaviour through registered stats.
+
+9. IMPLEMENTATION ORDER
+
+10. Fix compile/runtime errors.
+
+11. Fix visible thrust size and particle visibility.
+
+12. Make generic thrust callbacks faction-independent.
+
+13. Implement the enemy stat pipeline. base - level(like lvl 1,2,3, like RPG games - local(room buffs) - temp(effect by player or environment or ally - final
+
+14. Implement player damage routing.
+
+15. Add temporary player damage-testing controls.
+
+16. Verify all Shard damage layers.
+
+17. Add proper player thruster mounts.
+
+18. Add player dodge.
+
+19. Replace temporary controls and visuals only after the underlying systems are stable.
+
+WORKING RULES
+
+Inspect the newest pushed source before writing code.
+
+Give exact script/event locations and complete replacement functions when ambiguity exists.
+
+Keep GML compact and avoid unnecessarily vertical formatting.
+
+Preserve unrelated fields when replacing definitions.
+
+Use direct registered callbacks for faction-specific visuals and effects.
+
+Do not make generic enemy or player systems directly name Simulant or Therm functions.
+
+Do not make consumers silently recreate missing required runtime.
+
+Fix compile/runtime errors before expanding systems.
+
+Profile actual bottlenecks after each visual-system change.

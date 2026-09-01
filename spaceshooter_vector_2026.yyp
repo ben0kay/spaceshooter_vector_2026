@@ -33,6 +33,7 @@
   "resources":[
     {"id":{"name":"notes_code_preferences","path":"notes/notes_code_preferences/notes_code_preferences.yy",},},
     {"id":{"name":"notes_faction_visuals","path":"notes/notes_faction_visuals/notes_faction_visuals.yy",},},
+    {"id":{"name":"notes_immediate_todo","path":"notes/notes_immediate_todo/notes_immediate_todo.yy",},},
     {"id":{"name":"o_attack_area","path":"objects/o_attack_area/o_attack_area.yy",},},
     {"id":{"name":"o_background_space","path":"objects/o_background_space/o_background_space.yy",},},
     {"id":{"name":"o_boot","path":"objects/o_boot/o_boot.yy",},},
@@ -67,6 +68,7 @@
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},
     {"id":{"name":"sc_projectile","path":"scripts/sc_projectile/sc_projectile.yy",},},
+    {"id":{"name":"sc_register_ship","path":"scripts/sc_register_ship/sc_register_ship.yy",},},
     {"id":{"name":"sc_ship_select","path":"scripts/sc_ship_select/sc_ship_select.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_stats","path":"scripts/sc_stats/sc_stats.yy",},},

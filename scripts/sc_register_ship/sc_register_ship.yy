@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_register_ship",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_register_ship",
+  "parent":{
+    "name":"player",
+    "path":"folders/scripts/player.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
