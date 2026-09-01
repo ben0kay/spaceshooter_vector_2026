@@ -215,36 +215,37 @@ function sc_ship_shard_wing_armour_draw(_x, _y, _radius, _angle, _visual, _stage
     if (_stage == 2) sc_visual_line(_x, _y, _radius, _angle, -0.3, 0.36, -0.52, 0.49, 2, _p.void);
 }
 
-/// @description Draws a soft layered Shard shield glow.
+/// @description Draws the Shard's filled circular shield bubble.
 function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
-    var _left = _x - _radius * 1.7;
-    var _right = _x + _radius * 1.7;
-    var _top = _y - _radius * 1.02;
-    var _bottom = _y + _radius * 1.02;
+    var _shield_radius = _radius * 1.86;
+    var _field_centre = merge_colour(_p.void, _p.glow, 0.72);
+    var _field_edge = merge_colour(_p.glow, _p.energy, 0.28);
 
-    // Soft transparent field.
-    draw_set_alpha(0.05);
+    // Clearly visible filled shield field.
+    draw_set_alpha(0.62);
+    draw_circle_colour(_x, _y, _shield_radius, _field_centre, _field_edge, false);
+
+    // Subtle internal energy layer.
+    draw_set_alpha(0.18);
+    draw_circle_colour(_x, _y, _shield_radius * 0.93, _p.glow, _p.energy, false);
+
+    // Soft outer glow.
+    draw_set_alpha(0.16);
     draw_set_colour(_p.glow);
-    draw_ellipse(_left, _top, _right, _bottom, false);
+    draw_circle(_x, _y, _shield_radius + 4, true);
+    draw_circle(_x, _y, _shield_radius + 3, true);
+    draw_circle(_x, _y, _shield_radius + 2, true);
 
-    // Several faint outlines form the outer glow.
-    for (var _i = 0; _i < 6; _i++)
-    {
-        var _expand = _i * _radius * 0.018;
-        draw_set_alpha(0.14 - _i * 0.017);
-        draw_set_colour(_p.glow);
-        draw_ellipse(_left - _expand, _top - _expand, _right + _expand, _bottom + _expand, true);
-    }
-
-    draw_set_alpha(0.34);
+    // Defined bright shield boundary.
+    draw_set_alpha(0.88);
     draw_set_colour(_p.energy);
-    draw_ellipse(_left, _top, _right, _bottom, true);
+    draw_circle(_x, _y, _shield_radius, true);
 
-    // Brighter front shield concentration.
-    sc_visual_arc(_x, _y, _radius * 1.61, _radius * 0.92, -55, 55, 24, 2, _p.energy, 0.58);
-    sc_visual_arc(_x, _y, _radius * 1.55, _radius * 0.86, -48, 48, 20, 1, _p.core, 0.45);
+    draw_set_alpha(0.5);
+    draw_set_colour(_p.core);
+    draw_circle(_x, _y, _shield_radius - 2, true);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
