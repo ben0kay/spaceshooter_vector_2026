@@ -1,0 +1,1 @@
+sc_space_background_draw(space_field);

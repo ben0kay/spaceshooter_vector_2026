@@ -17,8 +17,8 @@
   ],
   "name":"r_menu_main",
   "parent":{
-    "name":"spaceshooter_vector_2026",
-    "path":"spaceshooter_vector_2026.yyp",
+    "name":"rooms",
+    "path":"folders/rooms.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

@@ -1,0 +1,1 @@
+sc_space_background_destroy(space_field);

@@ -52,34 +52,20 @@ function sc_enemy_register(_data)
 /// @description Registers the reusable Simulant pulse projectile.
 function sc_projectile_register_simulant_pulse()
 {
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
     return sc_projectile_register({
-        identity: {
-            key: "projectile_simulant_pulse",
-            name: "Simulant Pulse"
-        },
-
-        movement: {
-            speed: 17.5
-        },
-
-        damage: {
-            amount: 3,
-            type: DamageType.PLASMA
-        },
-
-        collision: {
-            radius: 6
-        },
-
-        life: {
-            maximum: 180
-        },
+        identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
+        movement: { speed: 17.5 },
+        damage: { amount: 3, type: DamageType.PLASMA },
+        collision: { radius: 6 },
+        life: { maximum: 180 },
 
         visual: {
             radius: 6,
             length: 24,
-            colour_primary: make_colour_rgb(180, 55, 255),
-            colour_secondary: make_colour_rgb(255, 155, 255)
+            colour_primary: _palette.energy,
+            colour_secondary: _palette.core
         }
     });
 }
@@ -137,19 +123,16 @@ function sc_enemy_register_twin_fighter()
 
         visual: {
             radius: 58,
-            colour_primary: make_colour_rgb(140, 45, 255),
-            colour_secondary: make_colour_rgb(255, 45, 190),
-            colour_core: make_colour_rgb(230, 185, 255),
+            palette: sc_faction_palette_get(Faction.SIMULANT),
+
+            draw: {
+                body: sc_enemy_twin_fighter_body_draw,
+                core: sc_enemy_twin_fighter_core_draw
+            },
 
             bake: {
-		    canvas_size: 256,
-		    body: sc_enemy_twin_fighter_body_draw,
-
-		    effects: [
-		        { key: "cannon", script: sc_enemy_twin_fighter_cannon_draw },
-		        { key: "core", script: sc_enemy_twin_fighter_core_draw }
-		    ]
-		}
+                canvas_size: 256
+            }
         },
 
         collision: {
@@ -158,25 +141,25 @@ function sc_enemy_register_twin_fighter()
         },
 
         hardpoints: [
-	    {
-	        key: "cannon_left",
-	        group: "cannons",
-	        forward: 0.73,
-	        side: -0.48,
-	        angle: 0,
-	        muzzle_forward: 0.48,
-	        effect_key: "cannon"
-	    },
-	    {
-	        key: "cannon_right",
-	        group: "cannons",
-	        forward: 0.73,
-	        side: 0.48,
-	        angle: 0,
-	        muzzle_forward: 0.48,
-	        effect_key: "cannon"
-	    }
-	],
+            {
+                key: "cannon_left",
+                group: "cannons",
+                forward: 0.73,
+                side: -0.48,
+                angle: 0,
+                muzzle_forward: 0.48,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            },
+            {
+                key: "cannon_right",
+                group: "cannons",
+                forward: 0.73,
+                side: 0.48,
+                angle: 0,
+                muzzle_forward: 0.48,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            }
+        ],
 
         attack_controller: {
             selection: AttackSelection.WEIGHTED,

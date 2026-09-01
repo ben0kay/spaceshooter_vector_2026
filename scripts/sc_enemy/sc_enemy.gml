@@ -49,19 +49,11 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     _runtime.visual.runtime = {
         core_angle: 0,
-        core_alpha: 1,
-        core_script: sc_enemy_visual_effect_get(_runtime.visual.bake.effects, "core")
+        core_alpha: 1
     };
 
     for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
-    {
-        var _hardpoint = _runtime.hardpoints[_i];
-
-        _hardpoint.runtime = {
-            recoil: 0,
-            draw_script: sc_enemy_visual_effect_get(_runtime.visual.bake.effects, _hardpoint.effect_key)
-        };
-    }
+        _runtime.hardpoints[_i].runtime = { recoil: 0 };
 
     for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
     {
@@ -91,18 +83,6 @@ function sc_enemy_init(_enemy, _enemy_key)
     global.level.enemies_alive++;
     show_debug_message("ENEMY INITIALIZED - " + _runtime.identity.name);
     return true;
-}
-
-/// @description Finds one registered visual effect callback.
-function sc_enemy_visual_effect_get(_effects, _key)
-{
-    for (var _i = 0; _i < array_length(_effects); _i++)
-    {
-        if (_effects[_i].key == _key)
-            return _effects[_i].script;
-    }
-
-    return undefined;
 }
 
 /// @description Updates detection, combat and forget transitions.
@@ -432,13 +412,10 @@ function sc_enemy_draw(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
-    var _body_script = _visual.bake.body;
 
-    _body_script(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
+    _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
 
-    var _core_script = _visual.runtime.core_script;
-
-    _core_script(
+    _visual.draw.core(
         _enemy.x,
         _enemy.y,
         _visual.radius,
@@ -455,17 +432,16 @@ function sc_enemy_draw(_enemy)
         var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
         var _recoil = _hardpoint.runtime.recoil;
 
-        var _hardpoint_x = _enemy.x +
-            lengthdir_x(_forward, _enemy.draw_angle) +
-            lengthdir_x(_side, _enemy.draw_angle + 90) -
-            lengthdir_x(_recoil, _hardpoint_angle);
+        var _hardpoint_x = _enemy.x
+            + lengthdir_x(_forward, _enemy.draw_angle)
+            + lengthdir_x(_side, _enemy.draw_angle + 90)
+            - lengthdir_x(_recoil, _hardpoint_angle);
 
-        var _hardpoint_y = _enemy.y +
-            lengthdir_y(_forward, _enemy.draw_angle) +
-            lengthdir_y(_side, _enemy.draw_angle + 90) -
-            lengthdir_y(_recoil, _hardpoint_angle);
+        var _hardpoint_y = _enemy.y
+            + lengthdir_y(_forward, _enemy.draw_angle)
+            + lengthdir_y(_side, _enemy.draw_angle + 90)
+            - lengthdir_y(_recoil, _hardpoint_angle);
 
-        var _draw_script = _hardpoint.runtime.draw_script;
-        _draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
+        _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
     }
 }

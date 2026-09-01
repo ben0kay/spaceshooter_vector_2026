@@ -1,0 +1,14 @@
+FACTION VISUAL LANGUAGE
+
+SIMULANT
+Main hulls use void, hull_dark and hull_mid.
+Never use pure black for the complete silhouette.
+Primary vector outlines use purple.
+Pink accent is reserved for small structural details.
+Energy is used for weapons, conduits and moving components.
+Core is the brightest colour and must be used sparingly.
+Glow is reserved for low-alpha halos and emissions.
+Most of the ship should remain dark, with neon identifying structure and active systems.
+
+The exact RGB values are registered in faction_register.gml.
+All Simulant primitive designs must use sc_faction_palette_get(Faction.SIMULANT).
