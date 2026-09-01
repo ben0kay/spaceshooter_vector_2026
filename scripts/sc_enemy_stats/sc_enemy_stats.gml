@@ -24,8 +24,7 @@ function sc_enemy_stats_recalculate(_enemy)
     var _data = _enemy.enemy;
     var _stats = _data.stats;
 
-    if (!_stats.dirty)
-        return false;
+    if (!_stats.dirty) return false;
 
     _stats.final = variable_clone(_stats.base);
 
@@ -55,13 +54,13 @@ function sc_enemy_stats_recalculate(_enemy)
 
     if (is_struct(_data.defence))
     {
-        _data.defence.shield_max = _final.shield_max;
-        _data.defence.armour_max = _final.armour_max;
-        _data.defence.hull_max = _final.hull_max;
+        _data.defence.shield.maximum = _final.shield_max;
+        _data.defence.armour.maximum = _final.armour_max;
+        _data.defence.hull.maximum = _final.hull_max;
 
-        _data.defence.shield = min(_data.defence.shield, _final.shield_max);
-        _data.defence.armour = min(_data.defence.armour, _final.armour_max);
-        _data.defence.hull = min(_data.defence.hull, _final.hull_max);
+        _data.defence.shield.current = min(_data.defence.shield.current, _final.shield_max);
+        _data.defence.armour.current = min(_data.defence.armour.current, _final.armour_max);
+        _data.defence.hull.current = min(_data.defence.hull.current, _final.hull_max);
     }
 
     _stats.dirty = false;

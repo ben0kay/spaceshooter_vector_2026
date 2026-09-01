@@ -1,5 +1,9 @@
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
+sc_player_defence_update(id);
+
+if (global.PlayerState == PlayerState.DESTROYED) exit;
+
 var _stats = ship.stats.final;
 var _radius = ship.collision.radius;
 

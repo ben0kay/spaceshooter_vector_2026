@@ -48,7 +48,6 @@ function sc_projectile_update(_projectile)
 
     _projectile.x += lengthdir_x(_data.movement.speed, _data.direction);
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
-
     _data.life.remaining--;
 
     if (_data.life.remaining <= 0)
@@ -59,15 +58,15 @@ function sc_projectile_update(_projectile)
 
     if (_data.source.faction == Faction.PLAYER || !instance_exists(global.player_id)) return;
 
-    var _hit_radius = _data.collision.radius + global.player_id.ship.collision.radius;
-    var _dx = global.player_id.x - _projectile.x;
-    var _dy = global.player_id.y - _projectile.y;
+    var _player = global.player_id;
+    var _hit_radius = _data.collision.radius + _player.ship.collision.radius;
+    var _dx = _player.x - _projectile.x;
+    var _dy = _player.y - _projectile.y;
 
     if (_dx * _dx + _dy * _dy > _hit_radius * _hit_radius) return;
 
-    sc_camera_shake(3, 8);
-
-    // Insert player damage function here using _data.damage.
+    if (sc_player_damage(_player, _data.damage))
+        sc_camera_shake(3, 8);
 
     instance_destroy(_projectile);
 }

@@ -114,3 +114,59 @@ function sc_player_visual_update(_player)
         _runtime.shield_hit_alpha - 0.06
     );
 }
+
+/// @description Applies one damage packet to the player's layered defence.
+function sc_player_damage(_player, _packet)
+{
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _defence = _player.defence;
+    var _result = sc_damage_resolve(
+        _packet,
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    _defence.shield.current = _result.shield;
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0) return false;
+
+    _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
+
+    if (_result.dealt.shield > 0)
+        _player.ship.visual.runtime.shield_hit_alpha = 1;
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        _player.movement.velocity_x = 0;
+        _player.movement.velocity_y = 0;
+        global.PlayerState = PlayerState.DESTROYED;
+
+        // Insert player destruction effect and audio here.
+    }
+
+    // _result.effect is ready for the upcoming timed-effect manager.
+    return true;
+}
+
+/// @description Updates player shield recharge after its damage delay expires.
+function sc_player_defence_update(_player)
+{
+    var _shield = _player.defence.shield;
+    if (_shield.current >= _shield.maximum) return;
+
+    if (_shield.recharge_delay_remaining > 0)
+    {
+        _shield.recharge_delay_remaining--;
+        return;
+    }
+
+    _shield.current = min(
+        _shield.maximum,
+        _shield.current + _player.ship.stats.final.shield_recharge_rate
+    );
+}
