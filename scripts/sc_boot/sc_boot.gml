@@ -14,33 +14,33 @@ function sc_boot()
         }
     };
 
-    _boot.refresh_profiles = function()
-    {
-        for (var _i = 0; _i < array_length(profile_slots); _i++)
-            profile_slots[_i] = sc_profile_read(_i);
-    };
+	_boot.refresh_profiles = method(_boot, function()
+	{
+	    for (var _i = 0; _i < array_length(profile_slots); _i++)
+	        profile_slots[_i] = sc_profile_read(_i);
+	});
 
-    _boot.open_name_entry = function(_slot)
-    {
-        name_entry.active = true;
-        name_entry.slot = _slot;
-        keyboard_string = "";
-    };
+    _boot.open_name_entry = method(_boot, function(_slot)
+	{
+	    name_entry.active = true;
+	    name_entry.slot = _slot;
+	    keyboard_string = "";
+	});
 
-    _boot.close_name_entry = function()
-    {
-        name_entry.active = false;
-        name_entry.slot = -1;
-        keyboard_string = "";
-    };
+	    _boot.close_name_entry = method(_boot, function()
+	{
+	    name_entry.active = false;
+	    name_entry.slot = -1;
+	    keyboard_string = "";
+	});
 
-    _boot.continue_to_menu = function()
-    {
-        global.GameState = GameState.MENU;
-        room_goto(r_menu_main);
-    };
+	    _boot.continue_to_menu = method(_boot, function()
+	{
+	    global.GameState = GameState.MENU;
+	    room_goto(r_menu_main);
+	});
 
-    _boot.update = function()
+    _boot.update = method(_boot, function()
     {
         if (name_entry.active)
         {
@@ -91,9 +91,9 @@ function sc_boot()
 
             return;
         }
-    };
+    });
 
-    _boot.draw = function()
+    _boot.draw = method(_boot, function()
     {
         var _gui_w = display_get_gui_width();
         var _gui_h = display_get_gui_height();
@@ -198,7 +198,7 @@ function sc_boot()
         draw_set_valign(fa_top);
         draw_set_alpha(1);
         draw_set_colour(c_white);
-    };
+    });
 
     _boot.refresh_profiles();
     return _boot;

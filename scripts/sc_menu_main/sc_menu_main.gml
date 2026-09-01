@@ -14,7 +14,7 @@ function sc_menu_main()
         ]
     };
 
-    _menu.action_execute = function(_action)
+    _menu.action_execute = method(_menu, function(_action)
     {
         switch (_action)
         {
@@ -36,9 +36,9 @@ function sc_menu_main()
 
             // Future Hangar and Options actions go here.
         }
-    };
+    });
 
-    _menu.update = function()
+    _menu.update = method(_menu, function()
     {
         if (!mouse_check_button_pressed(mb_left)) return;
 
@@ -60,9 +60,9 @@ function sc_menu_main()
             action_execute(_button.action);
             return;
         }
-    };
+    });
 
-    _menu.draw = function()
+    _menu.draw = method(_menu, function()
     {
         var _gui_w = display_get_gui_width();
         var _gui_h = display_get_gui_height();
@@ -109,8 +109,9 @@ function sc_menu_main()
 
         draw_set_halign(fa_left);
         draw_set_valign(fa_top);
+        draw_set_alpha(1);
         draw_set_colour(c_white);
-    };
+    });
 
     return _menu;
 }
