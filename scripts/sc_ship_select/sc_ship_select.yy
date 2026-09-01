@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_ship_select",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_ship_select",
+  "parent":{
+    "name":"spaceshooter_vector_2026",
+    "path":"spaceshooter_vector_2026.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

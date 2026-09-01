@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_boot",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_boot",
+  "parent":{
+    "name":"spaceshooter_vector_2026",
+    "path":"spaceshooter_vector_2026.yyp",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

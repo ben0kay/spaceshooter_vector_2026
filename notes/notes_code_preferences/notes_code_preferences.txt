@@ -10,3 +10,5 @@ I like using separate global variables to declare states like global.GameState o
 I like you providing easier / alternative ideas if possible 
 I like you inserting small commented placeholders for future things that could go there, like //insert audio function here.
 I prefer not to have things overengineered just for the sake of it
+never use built in variables as instance variables to change
+dont add endless safety instance / variable checks if its obvious it does exist
