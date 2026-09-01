@@ -19,12 +19,24 @@ global.player_id = noone;
 
 global.level = {
     controller: id,
+    camera: noone,
     player: noone,
     ship_selector: noone,
     selected_ship_key: undefined,
     enemies_alive: 0,
     initialized: false
 };
+
+var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", o_camera);
+
+if (!instance_exists(_camera))
+{
+    show_debug_message("LEVEL INITIALIZATION ERROR - camera creation failed");
+    global.LevelState = LevelState.FAILED;
+    exit;
+}
+
+global.level.camera = _camera;
 
 var _selector = instance_create_layer(0, 0, "Instances", o_ship_select, {
     spawn_x: room_width * 0.5,
