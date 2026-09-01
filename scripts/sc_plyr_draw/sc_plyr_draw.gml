@@ -31,7 +31,7 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _hinge_side = _wing.hinge_side * _radius;
     var _fold = _runtime.wing_fold;
 
-    // Wing hulls behind the central hull.
+    // Wing hulls behind the main body.
     for (var _side = -1; _side <= 1; _side += 2)
     {
         var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
@@ -39,10 +39,9 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
         draw_sprite_ext(_cache.wing_hull[_hull_stage], 0, _hinge_x, _hinge_y, 1, _side, _angle + _fold * _side, _colour, _alpha);
     }
 
-    // Main body above the wing hulls.
     draw_sprite_ext(_cache.hull[_hull_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
 
-    // Wing armour above the body so attachment bases remain visible.
+    // Wing armour and body armour above the hull.
     if (_armour_visible)
     {
         for (var _side = -1; _side <= 1; _side += 2)
@@ -58,10 +57,18 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
-        var _shield_pulse = 0.82 + sin(GAME_TICK * 0.08) * 0.12;
-        var _shield_alpha = clamp(_shield_ratio * 0.55 * _shield_pulse + _runtime.shield_hit_alpha, 0, 1);
+        var _hit = _runtime.shield_hit_alpha;
+        var _pulse = 0.82 + sin(GAME_TICK * 0.08) * 0.12;
+        var _shield_alpha = clamp(_shield_ratio * 0.48 * _pulse + _hit * 0.5, 0, 1);
+        var _shield_scale = 1 + sin(GAME_TICK * 0.06) * 0.008 + _hit * 0.07;
+
         gpu_set_blendmode(bm_add);
-        draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, 1, 1, _angle, _colour, _shield_alpha * _alpha);
+        draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, _shield_scale, _shield_scale, _angle, _colour, _shield_alpha * _alpha);
+
+        // Extra expanding flash only while shield damage is recent.
+        if (_hit > 0.01)
+            draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, _shield_scale + _hit * 0.07, _shield_scale + _hit * 0.07, _angle, _visual.palette.core, _hit * 0.24 * _alpha);
+
         gpu_set_blendmode(bm_normal);
     }
 

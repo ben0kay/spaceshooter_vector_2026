@@ -224,27 +224,27 @@ function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual)
     var _top = _y - _radius * 1.02;
     var _bottom = _y + _radius * 1.02;
 
-    // Soft field tint.
-    draw_set_alpha(0.055);
+    // Soft transparent field.
+    draw_set_alpha(0.05);
     draw_set_colour(_p.glow);
     draw_ellipse(_left, _top, _right, _bottom, false);
 
-    // Layered outer glow.
+    // Several faint outlines form the outer glow.
     for (var _i = 0; _i < 6; _i++)
     {
         var _expand = _i * _radius * 0.018;
-        draw_set_alpha(0.15 - _i * 0.018);
+        draw_set_alpha(0.14 - _i * 0.017);
         draw_set_colour(_p.glow);
         draw_ellipse(_left - _expand, _top - _expand, _right + _expand, _bottom + _expand, true);
     }
 
-    // Defined energy boundary and bright forward arc impression.
-    draw_set_alpha(0.38);
+    draw_set_alpha(0.34);
     draw_set_colour(_p.energy);
     draw_ellipse(_left, _top, _right, _bottom, true);
 
-    draw_set_alpha(0.58);
-    draw_arc(_x - _radius * 1.33, _y - _radius * 0.78, _x + _radius * 1.55, _y + _radius * 0.78, 305, 55, true);
+    // Brighter front shield concentration.
+    sc_visual_arc(_x, _y, _radius * 1.61, _radius * 0.92, -55, 55, 24, 2, _p.energy, 0.58);
+    sc_visual_arc(_x, _y, _radius * 1.55, _radius * 0.86, -48, 48, 20, 1, _p.core, 0.45);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
