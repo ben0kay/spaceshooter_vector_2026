@@ -1,24 +1,13 @@
 /// @description Initializes one enemy from registered data.
 function sc_enemy_init(_enemy, _enemy_key)
 {
-    if (!variable_struct_exists(
-        global.data.enemies,
-        _enemy_key
-    ))
+    if (!variable_struct_exists(global.data.enemies, _enemy_key))
     {
-        show_debug_message(
-            "ENEMY INITIALIZATION ERROR - unknown key: "
-            + _enemy_key
-        );
-
+        show_debug_message("ENEMY INITIALIZATION ERROR - unknown key: " + _enemy_key);
         return false;
     }
 
-    var _data = variable_struct_get(
-        global.data.enemies,
-        _enemy_key
-    );
-
+    var _data = variable_struct_get(global.data.enemies, _enemy_key);
     var _radius = _data.visual.radius;
 
     _enemy.enemy = {
@@ -41,68 +30,40 @@ function sc_enemy_init(_enemy, _enemy_key)
         movement: variable_clone(_data.movement),
 
         collision: {
-            radius: _radius
-                * _data.collision.radius_scale,
-
-            blocks_player:
-                _data.collision.blocks_player
+            radius: _radius * _data.collision.radius_scale,
+            blocks_player: _data.collision.blocks_player
         },
 
         visual: variable_clone(_data.visual),
         hardpoints: variable_clone(_data.hardpoints),
-
-        attack_controller:
-            variable_clone(_data.attack_controller)
+        thrusters: variable_clone(_data.thrusters),
+        attack_controller: variable_clone(_data.attack_controller)
     };
 
     var _runtime = _enemy.enemy;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
-    _runtime.range.detection_sq =
-        _runtime.range.detection
-        * _runtime.range.detection;
-
-    _runtime.range.combat_sq =
-        _runtime.range.combat
-        * _runtime.range.combat;
-
-    _runtime.range.forget_sq =
-        _runtime.range.forget
-        * _runtime.range.forget;
+    _runtime.range.detection_sq = sqr(_runtime.range.detection);
+    _runtime.range.combat_sq = sqr(_runtime.range.combat);
+    _runtime.range.forget_sq = sqr(_runtime.range.forget);
 
     _runtime.movement.velocity_x = 0;
     _runtime.movement.velocity_y = 0;
 
     _runtime.visual.runtime = {
-        body_sprite:
-            is_struct(_cache)
-            ? _cache.body
-            : -1,
-
-        core_sprite:
-            is_struct(_cache)
-            ? _cache.core
-            : -1,
-
+        body_sprite: is_struct(_cache) ? _cache.body : -1,
+        core_sprite: is_struct(_cache) ? _cache.core : -1,
+        thrust_sprite: is_struct(_cache) ? _cache.thrust : -1,
         core_angle: 0,
         core_alpha: 1
     };
 
-    for (
-        var _i = 0;
-        _i < array_length(_runtime.hardpoints);
-        _i++
-    )
+    for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
     {
         var _sprite = -1;
 
-        if (
-            is_struct(_cache)
-            && _i < array_length(_cache.hardpoints)
-        )
-        {
+        if (is_struct(_cache) && _i < array_length(_cache.hardpoints))
             _sprite = _cache.hardpoints[_i];
-        }
 
         _runtime.hardpoints[_i].runtime = {
             sprite: _sprite,
@@ -110,35 +71,24 @@ function sc_enemy_init(_enemy, _enemy_key)
         };
     }
 
-    for (
-        var _i = 0;
-        _i < array_length(
-            _runtime.attack_controller.attacks
-        );
-        _i++
-    )
+    for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
     {
-        var _attack =
-            _runtime.attack_controller.attacks[_i];
+        _runtime.thrusters[_i].runtime = {
+            active: false,
+            power: 0,
+            phase: irandom(359)
+        };
+    }
 
+    for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
+    {
+        var _attack = _runtime.attack_controller.attacks[_i];
         _attack.hardpoint_indices = [];
 
-        for (
-            var _h = 0;
-            _h < array_length(_runtime.hardpoints);
-            _h++
-        )
+        for (var _h = 0; _h < array_length(_runtime.hardpoints); _h++)
         {
-            if (
-                _runtime.hardpoints[_h].group
-                == _attack.hardpoint_group
-            )
-            {
-                array_push(
-                    _attack.hardpoint_indices,
-                    _h
-                );
-            }
+            if (_runtime.hardpoints[_h].group == _attack.hardpoint_group)
+                array_push(_attack.hardpoint_indices, _h);
         }
     }
 
@@ -156,12 +106,7 @@ function sc_enemy_init(_enemy, _enemy_key)
     _enemy.initialized = true;
 
     global.level.enemies_alive++;
-
-    show_debug_message(
-        "ENEMY INITIALIZED - "
-        + _runtime.identity.name
-    );
-
+    show_debug_message("ENEMY INITIALIZED - " + _runtime.identity.name);
     return true;
 }
 
@@ -220,13 +165,15 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates shared visual animation and recoil.
+/// @description Updates shared visual animation, recoil and thrusters.
 function sc_enemy_visual_update(_enemy)
 {
     var _data = _enemy.enemy;
+    var _visual = _data.visual;
+    var _movement = _data.movement;
 
-    _data.visual.runtime.core_angle = (_data.visual.runtime.core_angle + 1.5) mod 360;
-    _data.visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
+    _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
+    _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
 
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
@@ -235,6 +182,61 @@ function sc_enemy_visual_update(_enemy)
         if (_hardpoint.runtime.recoil > 0.01)
             _hardpoint.runtime.recoil = lerp(_hardpoint.runtime.recoil, 0, 0.22);
         else _hardpoint.runtime.recoil = 0;
+    }
+
+    var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
+    var _target_power = clamp(_speed / _movement.speed_max, 0, 1);
+
+    for (var _i = 0; _i < array_length(_data.thrusters); _i++)
+    {
+        var _thruster = _data.thrusters[_i];
+        var _runtime = _thruster.runtime;
+        var _active = _target_power > 0.05;
+
+        var _forward = _thruster.forward * _visual.radius;
+        var _side = _thruster.side * _visual.radius;
+
+        var _thruster_x = _enemy.x
+            + lengthdir_x(_forward, _enemy.draw_angle)
+            + lengthdir_x(_side, _enemy.draw_angle + 90);
+
+        var _thruster_y = _enemy.y
+            + lengthdir_y(_forward, _enemy.draw_angle)
+            + lengthdir_y(_side, _enemy.draw_angle + 90);
+
+        var _thruster_angle = _enemy.draw_angle + _thruster.angle;
+
+        if (_active && !_runtime.active)
+        {
+            sc_particles_simulant_ignition(
+                _thruster_x,
+                _thruster_y,
+                _thruster_angle,
+                _thruster.scale
+            );
+        }
+
+        _runtime.active = _active;
+
+        _runtime.power = lerp(
+            _runtime.power,
+            _target_power,
+            _target_power > _runtime.power ? 0.22 : 0.12
+        );
+
+        if (
+            _runtime.power > 0.15
+            && ((GAME_TICK + _runtime.phase) mod 3) == 0
+        )
+        {
+            sc_particles_simulant_thrust(
+                _thruster_x,
+                _thruster_y,
+                _thruster_angle,
+                _runtime.power,
+                _thruster.scale
+            );
+        }
     }
 }
 
@@ -494,6 +496,57 @@ function sc_enemy_draw(_enemy)
     var _visual = _data.visual;
     var _visual_runtime = _visual.runtime;
 
+    for (var _i = 0; _i < array_length(_data.thrusters); _i++)
+    {
+        var _thruster = _data.thrusters[_i];
+        var _power = _thruster.runtime.power;
+
+        if (_power <= 0.01)
+            continue;
+
+        var _forward = _thruster.forward * _visual.radius;
+        var _side = _thruster.side * _visual.radius;
+
+        var _thruster_x = _enemy.x
+            + lengthdir_x(_forward, _enemy.draw_angle)
+            + lengthdir_x(_side, _enemy.draw_angle + 90);
+
+        var _thruster_y = _enemy.y
+            + lengthdir_y(_forward, _enemy.draw_angle)
+            + lengthdir_y(_side, _enemy.draw_angle + 90);
+
+        var _thruster_angle = _enemy.draw_angle + _thruster.angle;
+        var _flicker = 0.94 + sin(GAME_TICK * 0.35 + _thruster.runtime.phase) * 0.06;
+        var _length_scale = _thruster.scale * (0.25 + _power * 0.75) * _flicker;
+        var _width_scale = _thruster.scale * (0.82 + _power * 0.18);
+
+        if (sprite_exists(_visual_runtime.thrust_sprite))
+        {
+            draw_sprite_ext(
+                _visual_runtime.thrust_sprite,
+                0,
+                _thruster_x,
+                _thruster_y,
+                _length_scale,
+                _width_scale,
+                _thruster_angle,
+                c_white,
+                _power
+            );
+        }
+        else
+        {
+            _visual.draw.thrust(
+                _thruster_x,
+                _thruster_y,
+                _visual.radius * _thruster.scale,
+                _thruster_angle,
+                _visual,
+                _power
+            );
+        }
+    }
+
     if (sprite_exists(_visual_runtime.body_sprite))
     {
         draw_sprite_ext(
@@ -510,18 +563,10 @@ function sc_enemy_draw(_enemy)
     }
     else
     {
-        _visual.draw.body(
-            _enemy.x,
-            _enemy.y,
-            _visual.radius,
-            _enemy.draw_angle,
-            _visual
-        );
+        _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
     }
 
-    var _core_angle =
-        _enemy.draw_angle
-        + _visual_runtime.core_angle;
+    var _core_angle = _enemy.draw_angle + _visual_runtime.core_angle;
 
     if (sprite_exists(_visual_runtime.core_sprite))
     {
@@ -549,56 +594,23 @@ function sc_enemy_draw(_enemy)
         );
     }
 
-    for (
-        var _i = 0;
-        _i < array_length(_data.hardpoints);
-        _i++
-    )
+    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
         var _hardpoint = _data.hardpoints[_i];
-
-        var _forward =
-            _hardpoint.forward
-            * _visual.radius;
-
-        var _side =
-            _hardpoint.side
-            * _visual.radius;
-
-        var _hardpoint_angle =
-            _enemy.draw_angle
-            + _hardpoint.angle;
-
-        var _recoil =
-            _hardpoint.runtime.recoil;
+        var _forward = _hardpoint.forward * _visual.radius;
+        var _side = _hardpoint.side * _visual.radius;
+        var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
+        var _recoil = _hardpoint.runtime.recoil;
 
         var _hardpoint_x = _enemy.x
-            + lengthdir_x(
-                _forward,
-                _enemy.draw_angle
-            )
-            + lengthdir_x(
-                _side,
-                _enemy.draw_angle + 90
-            )
-            - lengthdir_x(
-                _recoil,
-                _hardpoint_angle
-            );
+            + lengthdir_x(_forward, _enemy.draw_angle)
+            + lengthdir_x(_side, _enemy.draw_angle + 90)
+            - lengthdir_x(_recoil, _hardpoint_angle);
 
         var _hardpoint_y = _enemy.y
-            + lengthdir_y(
-                _forward,
-                _enemy.draw_angle
-            )
-            + lengthdir_y(
-                _side,
-                _enemy.draw_angle + 90
-            )
-            - lengthdir_y(
-                _recoil,
-                _hardpoint_angle
-            );
+            + lengthdir_y(_forward, _enemy.draw_angle)
+            + lengthdir_y(_side, _enemy.draw_angle + 90)
+            - lengthdir_y(_recoil, _hardpoint_angle);
 
         if (sprite_exists(_hardpoint.runtime.sprite))
         {

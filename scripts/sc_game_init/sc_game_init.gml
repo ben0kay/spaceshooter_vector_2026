@@ -17,6 +17,9 @@ function sc_game_init()
     if (!sc_data_init())
         return false;
 
+    if (!sc_particles_init())
+        return false;
+
     if (!sc_enemy_visual_cache_init())
         return false;
 

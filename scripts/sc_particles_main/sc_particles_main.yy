@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"enemy_register",
+  "%Name":"sc_particles_main",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"enemy_register",
+  "name":"sc_particles_main",
   "parent":{
-    "name":"enemy_register",
-    "path":"folders/scripts/enemy/enemy_register.yy",
+    "name":"particles",
+    "path":"folders/scripts/particles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

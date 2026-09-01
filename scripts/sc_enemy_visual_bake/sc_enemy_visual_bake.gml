@@ -16,50 +16,25 @@ function sc_enemy_visual_cache_init()
         var _hardpoint_count = array_length(_data.hardpoints);
 
         var _cache = {
-            body: sc_enemy_visual_component_bake(
-                _key,
-                _data,
-                "body",
-                -1,
-                _visual.bake.body_canvas_size
-            ),
-
-            core: sc_enemy_visual_component_bake(
-                _key,
-                _data,
-                "core",
-                -1,
-                _visual.bake.core_canvas_size
-            ),
-
-            hardpoints: array_create(
-                _hardpoint_count,
-                -1
-            )
+            body: sc_enemy_visual_component_bake(_key, _data, "body", -1, _visual.bake.body_canvas_size),
+            core: sc_enemy_visual_component_bake(_key, _data, "core", -1, _visual.bake.core_canvas_size),
+            thrust: sc_enemy_visual_component_bake(_key, _data, "thrust", -1, _visual.bake.thrust_canvas_size),
+            hardpoints: array_create(_hardpoint_count, -1)
         };
 
         for (var _h = 0; _h < _hardpoint_count; _h++)
         {
-            _cache.hardpoints[_h] =
-                sc_enemy_visual_component_bake(
-                    _key,
-                    _data,
-                    "hardpoint",
-                    _h,
-                    _visual.bake.hardpoint_canvas_size
-                );
+            _cache.hardpoints[_h] = sc_enemy_visual_component_bake(
+                _key,
+                _data,
+                "hardpoint",
+                _h,
+                _visual.bake.hardpoint_canvas_size
+            );
         }
 
-        variable_struct_set(
-            global.enemy_visual_cache,
-            _key,
-            _cache
-        );
-
-        show_debug_message(
-            "ENEMY VISUAL CACHE BAKED - "
-            + _key
-        );
+        variable_struct_set(global.enemy_visual_cache, _key, _cache);
+        show_debug_message("ENEMY VISUAL CACHE BAKED - " + _key);
     }
 
     show_debug_message(
@@ -71,14 +46,8 @@ function sc_enemy_visual_cache_init()
     return true;
 }
 
-/// @description Bakes one body, core or hardpoint primitive into a sprite.
-function sc_enemy_visual_component_bake(
-    _enemy_key,
-    _data,
-    _component,
-    _hardpoint_index,
-    _canvas_size
-)
+/// @description Bakes one enemy primitive component into a sprite.
+function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _hardpoint_index, _canvas_size)
 {
     if (_canvas_size <= 0)
     {
@@ -92,10 +61,7 @@ function sc_enemy_visual_component_bake(
         return -1;
     }
 
-    var _surface = surface_create(
-        _canvas_size,
-        _canvas_size
-    );
+    var _surface = surface_create(_canvas_size, _canvas_size);
 
     if (!surface_exists(_surface))
     {
@@ -120,38 +86,20 @@ function sc_enemy_visual_component_bake(
     switch (_component)
     {
         case "body":
-            _visual.draw.body(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual
-            );
+            _visual.draw.body(_centre, _centre, _visual.radius, 0, _visual);
         break;
 
         case "core":
-            _visual.draw.core(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                1
-            );
+            _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual, 1);
+        break;
+
+        case "thrust":
+            _visual.draw.thrust(_centre, _centre, _visual.radius, 0, _visual, 1);
         break;
 
         case "hardpoint":
-            var _hardpoint =
-                _data.hardpoints[_hardpoint_index];
-
-            _hardpoint.draw_script(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                1
-            );
+            var _hardpoint = _data.hardpoints[_hardpoint_index];
+            _hardpoint.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1);
         break;
     }
 
@@ -214,16 +162,11 @@ function sc_enemy_visual_cache_destroy()
     if (!variable_global_exists("enemy_visual_cache"))
         return;
 
-    var _keys = variable_struct_get_names(
-        global.enemy_visual_cache
-    );
+    var _keys = variable_struct_get_names(global.enemy_visual_cache);
 
     for (var _i = 0; _i < array_length(_keys); _i++)
     {
-        var _cache = variable_struct_get(
-            global.enemy_visual_cache,
-            _keys[_i]
-        );
+        var _cache = variable_struct_get(global.enemy_visual_cache, _keys[_i]);
 
         if (sprite_exists(_cache.body))
             sprite_delete(_cache.body);
@@ -231,11 +174,10 @@ function sc_enemy_visual_cache_destroy()
         if (sprite_exists(_cache.core))
             sprite_delete(_cache.core);
 
-        for (
-            var _h = 0;
-            _h < array_length(_cache.hardpoints);
-            _h++
-        )
+        if (sprite_exists(_cache.thrust))
+            sprite_delete(_cache.thrust);
+
+        for (var _h = 0; _h < array_length(_cache.hardpoints); _h++)
         {
             if (sprite_exists(_cache.hardpoints[_h]))
                 sprite_delete(_cache.hardpoints[_h]);
@@ -243,8 +185,5 @@ function sc_enemy_visual_cache_destroy()
     }
 
     global.enemy_visual_cache = {};
-
-    show_debug_message(
-        "ENEMY VISUAL CACHE DESTROYED"
-    );
+    show_debug_message("ENEMY VISUAL CACHE DESTROYED");
 }

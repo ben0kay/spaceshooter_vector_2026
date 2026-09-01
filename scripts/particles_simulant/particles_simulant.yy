@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_particles",
+  "%Name":"particles_simulant",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_particles",
+  "name":"particles_simulant",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"particles",
+    "path":"folders/scripts/particles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

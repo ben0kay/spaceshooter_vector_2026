@@ -246,3 +246,46 @@ function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alph
 
     draw_set_alpha(1);
 }
+
+/// @description Draws one reusable Simulant energy thrust component.
+function sc_enemy_simulant_thrust_draw(_x, _y, _radius, _angle, _visual, _alpha)
+{
+    var _palette = _visual.palette;
+    var _length = _radius * 0.58;
+    var _half_width = _radius * 0.15;
+
+    var _tip_x = _x + lengthdir_x(_length, _angle);
+    var _tip_y = _y + lengthdir_y(_length, _angle);
+
+    var _base_top_x = _x + lengthdir_x(-_half_width, _angle + 90);
+    var _base_top_y = _y + lengthdir_y(-_half_width, _angle + 90);
+    var _base_bottom_x = _x + lengthdir_x(_half_width, _angle + 90);
+    var _base_bottom_y = _y + lengthdir_y(_half_width, _angle + 90);
+
+    var _middle_x = _x + lengthdir_x(_length * 0.48, _angle);
+    var _middle_y = _y + lengthdir_y(_length * 0.48, _angle);
+    var _middle_width = _half_width * 0.52;
+
+    var _middle_top_x = _middle_x + lengthdir_x(-_middle_width, _angle + 90);
+    var _middle_top_y = _middle_y + lengthdir_y(-_middle_width, _angle + 90);
+    var _middle_bottom_x = _middle_x + lengthdir_x(_middle_width, _angle + 90);
+    var _middle_bottom_y = _middle_y + lengthdir_y(_middle_width, _angle + 90);
+
+    draw_set_alpha(_alpha * 0.2);
+    draw_set_colour(_palette.glow);
+    draw_triangle(_base_top_x, _base_top_y, _tip_x, _tip_y, _base_bottom_x, _base_bottom_y, false);
+
+    draw_set_alpha(_alpha * 0.72);
+    draw_set_colour(_palette.energy);
+    draw_triangle(_base_top_x, _base_top_y, _tip_x, _tip_y, _base_bottom_x, _base_bottom_y, true);
+
+    draw_set_alpha(_alpha * 0.9);
+    draw_set_colour(_palette.accent);
+    draw_triangle(_middle_top_x, _middle_top_y, _tip_x, _tip_y, _middle_bottom_x, _middle_bottom_y, false);
+
+    draw_set_alpha(_alpha);
+    draw_set_colour(_palette.core);
+    draw_line_width(_x, _y, _tip_x, _tip_y, 3);
+
+    draw_set_alpha(1);
+}

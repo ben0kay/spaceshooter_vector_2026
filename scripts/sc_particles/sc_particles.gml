@@ -1,3 +1,0 @@
-function sc_particles(){
-
-}
