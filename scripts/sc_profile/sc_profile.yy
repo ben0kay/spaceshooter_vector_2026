@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_profile",
   "parent":{
-    "name":"spaceshooter_vector_2026",
-    "path":"spaceshooter_vector_2026.yyp",
+    "name":"BOOT",
+    "path":"folders/scripts/BOOT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

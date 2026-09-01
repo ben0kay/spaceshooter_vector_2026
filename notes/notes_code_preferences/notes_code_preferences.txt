@@ -1,6 +1,7 @@
 I prefer vertically compressed code
 I need you to give me code by pasting in chat. NEVER update the github yourself
-I dont like when u put like 1 little thing on its own line unless necessary I like ENUMS where appropriate. 
+I dont like when u put like 1 little thing on its own line unless necessary.
+I like ENUMS where appropriate. - I like these on 1 line too
 I like you giving me full functions instead of inserting little snippets so i dont mess things up. 
 I highly prefer OPTIMIZATION/PERFORMANCE where appropriate. 
 I like using structs to group similar named variables together. 
@@ -10,5 +11,7 @@ I like using separate global variables to declare states like global.GameState o
 I like you providing easier / alternative ideas if possible 
 I like you inserting small commented placeholders for future things that could go there, like //insert audio function here.
 I prefer not to have things overengineered just for the sake of it
-never use built in variables as instance variables to change
+never use built in variables as instance variables to change (e.g we would use word_id instead of just id.)
 dont add endless safety instance / variable checks if its obvious it does exist
+I prefer using draw_angle instead of image_angle. Likewise scale_x instead of image_xscale
+I like my sprite primitives that we draw to be easily adjustable overall by using one variable like radius - which would configure its size and also collision radius. We'll use a sprite for collision like s_circle or s_eliptical

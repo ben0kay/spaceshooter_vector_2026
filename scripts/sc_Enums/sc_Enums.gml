@@ -1,28 +1,34 @@
-enum GameState {
+enum GameState
+{
     BOOT,
     MENU,
-    PLAYING
+    PLAYING,
+    PAUSED,
+    GAME_OVER
 }
 
-enum LevelState {
+enum LevelState
+{
     NONE,
     INITIALIZING,
     SHIP_SELECT,
     PLAYING,
-    PAUSED,
     COMPLETE,
-    FAILED
+    FAILED,
+    EXITING
 }
 
-enum PlayerState {
-    NONE,
-    SPAWNING,
+enum PlayerState
+{
+    INITIALIZING,
     ACTIVE,
+    STUNNED,
     DISABLED,
     DESTROYED
 }
 
-enum MainMenuAction {
+enum MainMenuAction
+{
     DEPLOY,
     HANGAR,
     OPTIONS,

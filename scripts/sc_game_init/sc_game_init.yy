@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_game_init",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"BOOT",
+    "path":"folders/scripts/BOOT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

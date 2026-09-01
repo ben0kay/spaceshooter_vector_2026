@@ -4,6 +4,8 @@ if (instance_number(o_controller_main) > 1)
     exit;
 }
 
+persistent = true;
+
 if (!sc_game_init())
 {
     show_debug_message("GAME INITIALIZATION FAILED");
