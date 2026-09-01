@@ -26,7 +26,7 @@ function sc_ship_register_shard()
         identity: {
             key: "ship_shard",
             name: "Shard",
-            description: "A fast silver-aqua interceptor built for precision movement."
+            description: "A fast silver-aqua interceptor with adaptive swept wings."
         },
 
         stats_base: {
@@ -35,67 +35,84 @@ function sc_ship_register_shard()
             shield_max: 40,
             shield_recharge_delay: 150,
             shield_recharge_rate: 0.35,
+
             speed_max: 8,
             acceleration: 0.55,
             deceleration: 0.7,
             turn_speed: 8,
+
             damage_multiplier: 1,
             fire_rate_multiplier: 1,
             cargo_capacity: 12,
-			boost_speed_multiplier: 1.3,
-			dash_speed: 18,
-			dash_duration: 8,
-			dash_cooldown: 75,
-			dash_double_tap_window: 15,
-			dash_exit_speed_multiplier: 0.45,
-			dash_invulnerable: 1,
-			weapons_while_boosting: 0,
-			weapons_while_dashing: 0
+
+            boost_speed_multiplier: 1.3,
+            dash_speed: 20,
+            dash_duration: 10,
+            dash_cooldown: 75,
+            dash_double_tap_window: 15,
+            dash_exit_speed_multiplier: 0.45,
+            dash_invulnerable: 1,
+            weapons_while_boosting: 0,
+            weapons_while_dashing: 0
         },
 
         collision: {
-            radius: 18
+            radius: 30
         },
 
         visual: {
-	    radius: 34,
+            radius: 46,
 
-	    // Compatibility fields used by the current ship-selection preview.
-	    scale: 0.75,
-	    colour_primary: make_colour_rgb(70, 245, 255),
-	    colour_secondary: make_colour_rgb(205, 222, 224),
+            // Compatibility fields used by ship-selection previews.
+            scale: 1,
+            colour_primary: make_colour_rgb(65, 235, 255),
+            colour_secondary: make_colour_rgb(210, 224, 230),
 
-	    palette: {
-	        void: make_colour_rgb(4, 10, 16),
-	        hull_dark: make_colour_rgb(25, 36, 43),
-	        hull_mid: make_colour_rgb(69, 86, 94),
-	        hull_light: make_colour_rgb(142, 165, 172),
-	        metal: make_colour_rgb(205, 222, 224),
-	        accent: make_colour_rgb(35, 210, 225),
-	        energy: make_colour_rgb(70, 245, 255),
-	        core: make_colour_rgb(220, 255, 255),
-	        glow: make_colour_rgb(25, 135, 160)
-	    },
+            palette: {
+                void: make_colour_rgb(4, 8, 13),
+                hull_dark: make_colour_rgb(18, 27, 34),
+                hull_mid: make_colour_rgb(57, 78, 91),
+                hull_light: make_colour_rgb(134, 156, 165),
+                metal: make_colour_rgb(210, 224, 230),
+                accent: make_colour_rgb(45, 135, 255),
+                energy: make_colour_rgb(65, 235, 255),
+                core: make_colour_rgb(230, 255, 255),
+                glow: make_colour_rgb(25, 130, 170)
+            },
 
-	    draw: {
-	        hull: sc_ship_shard_hull_draw,
-	        armour: sc_ship_shard_armour_draw,
-	        shield: sc_ship_shard_shield_draw,
-	        thrust: sc_ship_shard_thrust_draw
-	    },
+            wing: {
+                hinge_forward: -0.08,
+                hinge_side: 0.22,
+                fold_idle: 0,
+                fold_moving: 16,
+                fold_boost: 30,
+                fold_dash: 40,
+                fold_response: 0.14
+            },
 
-	    bake: {
-	        body_canvas_size: 128,
-	        shield_canvas_size: 128,
-	        thrust_canvas_size: 96,
-	        damage_stages: 4
-	    }
-	},
+            draw: {
+                hull: sc_ship_shard_hull_draw,
+                armour: sc_ship_shard_armour_draw,
+                wing_hull: sc_ship_shard_wing_hull_draw,
+                wing_armour: sc_ship_shard_wing_armour_draw,
+                shield: sc_ship_shard_shield_draw,
+                thrust: sc_ship_shard_thrust_draw
+            },
+
+            bake: {
+                body_canvas_size: 192,
+                wing_canvas_size: 160,
+                shield_canvas_size: 192,
+                thrust_canvas_size: 128,
+                damage_stages: 4
+            }
+        },
 
         hardpoints: {
             primary: [
                 {
-                    x: 28,
+                    key: "primary_centre",
+                    x: 63,
                     y: 0,
                     angle: 0
                 }

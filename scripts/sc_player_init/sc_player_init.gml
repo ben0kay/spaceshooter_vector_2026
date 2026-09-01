@@ -27,11 +27,12 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.ship.visual.runtime = {
-        cache: _cache,
-        thrust_power: 0,
-        thrust_phase: irandom(359),
-        shield_hit_alpha: 0
-    };
+	    cache: _cache,
+	    thrust_power: 0,
+	    thrust_phase: irandom(359),
+	    shield_hit_alpha: 0,
+	    wing_fold: _definition.visual.wing.fold_idle
+	};
 
     if (!sc_player_stats_init(_player, _definition.stats_base))
         return false;
@@ -78,10 +79,10 @@ function sc_player_init(_player, _ship_key)
 	    ghosts: array_create(8, undefined),
 		ghost_count: 0,
 		ghost_limit: 8,
-		ghost_interval: 1,
-		ghost_life: 24,
-		ghost_scale_min: 0.62,
-		ghost_alpha_max: 0.72
+		ghost_interval: 2,
+		ghost_life: 30,
+		ghost_scale_min: 0.55,
+		ghost_alpha_max: 0.78
 	}
     };
 
@@ -105,100 +106,4 @@ function sc_player_init(_player, _ship_key)
 
     show_debug_message("PLAYER INITIALIZED - " + _player.ship.identity.name);
     return true;
-}
-
-/// @description Returns one of four visual damage stages.
-function sc_player_damage_visual_stage(_current, _maximum)
-{
-    var _ratio = _maximum > 0 ? _current / _maximum : 0;
-
-    if (_ratio > 0.75) return 0;
-    if (_ratio > 0.5) return 1;
-    if (_ratio > 0.25) return 2;
-    return 3;
-}
-
-/// @description Updates player-only visual animation.
-function sc_player_visual_update(_player)
-{
-    var _runtime = _player.ship.visual.runtime;
-
-    if (!is_struct(_runtime.cache))
-        return;
-
-    var _speed_max = _player.ship.stats.final.speed_max;
-    var _target = _speed_max > 0 ? clamp(_player.movement.speed / _speed_max, 0, 1) : 0;
-
-    _runtime.thrust_power = lerp(
-        _runtime.thrust_power,
-        _target,
-        _target > _runtime.thrust_power ? 0.2 : 0.12
-    );
-
-    _runtime.shield_hit_alpha = max(
-        0,
-        _runtime.shield_hit_alpha - 0.06
-    );
-}
-
-/// @description Applies one damage packet to the player's layered defence.
-function sc_player_damage(_player, _packet)
-{
-    if (global.PlayerState == PlayerState.DESTROYED) return false;
-
-    var _dash = _player.movement.dash;
-
-    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable)
-        return false;
-
-    var _defence = _player.defence;
-    var _result = sc_damage_resolve(
-        _packet,
-        _defence.shield.current,
-        _defence.armour.current,
-        _defence.hull.current
-    );
-
-    _defence.shield.current = _result.shield;
-    _defence.armour.current = _result.armour;
-    _defence.hull.current = _result.hull;
-
-    if (_result.dealt.total <= 0) return false;
-
-    _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
-    sc_health_bar_damage_show(_player.health_bar);
-
-    if (_result.dealt.shield > 0)
-        _player.ship.visual.runtime.shield_hit_alpha = 1;
-
-    if (_defence.hull.current <= 0)
-    {
-        _defence.hull.current = 0;
-        _player.movement.velocity_x = 0;
-        _player.movement.velocity_y = 0;
-        global.PlayerState = PlayerState.DESTROYED;
-
-        // Insert player destruction effect and audio here.
-    }
-
-    // _result.effect is ready for the upcoming timed-effect manager.
-    return true;
-}
-
-/// @description Updates player shield recharge after its damage delay expires.
-function sc_player_defence_update(_player)
-{
-    var _shield = _player.defence.shield;
-    if (_shield.current >= _shield.maximum) return;
-
-    if (_shield.recharge_delay_remaining > 0)
-    {
-        _shield.recharge_delay_remaining--;
-        return;
-    }
-
-    _shield.current = min(
-        _shield.maximum,
-        _shield.current + _player.ship.stats.final.shield_recharge_rate
-    );
 }

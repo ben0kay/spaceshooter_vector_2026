@@ -30,8 +30,8 @@ function sc_player_input_update(_player)
 {
     var _movement = _player.movement;
 
-    _movement.input_x = keyboard_check(ord("D")) - keyboard_check(ord("A"));
-    _movement.input_y = keyboard_check(ord("S")) - keyboard_check(ord("W"));
+	_movement.input_x = keyboard_check(vk_right) - keyboard_check(vk_left);
+	_movement.input_y = keyboard_check(vk_down) - keyboard_check(vk_up);
     _movement.moving = _movement.input_x != 0 || _movement.input_y != 0;
 
     if (!_movement.moving) return;
@@ -364,6 +364,236 @@ function sc_player_dash_ghosts_draw(_player)
     }
 
     gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Returns one of four visual damage stages.
+function sc_player_damage_visual_stage(_current, _maximum)
+{
+    var _ratio = _maximum > 0 ? _current / _maximum : 0;
+
+    if (_ratio > 0.75) return 0;
+    if (_ratio > 0.5) return 1;
+    if (_ratio > 0.25) return 2;
+    return 3;
+}
+
+/// @description Updates player-only visual animation.
+function sc_player_visual_update(_player)
+{
+    var _visual = _player.ship.visual;
+    var _runtime = _visual.runtime;
+    if (!is_struct(_runtime.cache)) return;
+
+    var _movement = _player.movement;
+    var _speed_max = _player.ship.stats.final.speed_max;
+    var _thrust_target = _speed_max > 0 ? clamp(_movement.speed / _speed_max, 0, 1) : 0;
+
+    _runtime.thrust_power = lerp(
+        _runtime.thrust_power,
+        _thrust_target,
+        _thrust_target > _runtime.thrust_power ? 0.2 : 0.12
+    );
+
+    var _wing = _visual.wing;
+    var _wing_target = _wing.fold_idle;
+
+    if (global.PlayerState == PlayerState.DASHING)
+        _wing_target = _wing.fold_dash;
+    else if (_movement.boost.active)
+        _wing_target = _wing.fold_boost;
+    else if (_movement.moving)
+        _wing_target = _wing.fold_moving;
+
+    _runtime.wing_fold = lerp(_runtime.wing_fold, _wing_target, _wing.fold_response);
+    _runtime.shield_hit_alpha = max(0, _runtime.shield_hit_alpha - 0.06);
+}
+
+/// @description Applies one damage packet to the player's layered defence.
+function sc_player_damage(_player, _packet)
+{
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _dash = _player.movement.dash;
+
+    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable)
+        return false;
+
+    var _defence = _player.defence;
+    var _result = sc_damage_resolve(
+        _packet,
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    _defence.shield.current = _result.shield;
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0) return false;
+
+    _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
+    sc_health_bar_damage_show(_player.health_bar);
+
+    if (_result.dealt.shield > 0)
+        _player.ship.visual.runtime.shield_hit_alpha = 1;
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        _player.movement.velocity_x = 0;
+        _player.movement.velocity_y = 0;
+        global.PlayerState = PlayerState.DESTROYED;
+
+        // Insert player destruction effect and audio here.
+    }
+
+    // _result.effect is ready for the upcoming timed-effect manager.
+    return true;
+}
+
+/// @description Updates player shield recharge after its damage delay expires.
+function sc_player_defence_update(_player)
+{
+    var _shield = _player.defence.shield;
+    if (_shield.current >= _shield.maximum) return;
+
+    if (_shield.recharge_delay_remaining > 0)
+    {
+        _shield.recharge_delay_remaining--;
+        return;
+    }
+
+    _shield.current = min(
+        _shield.maximum,
+        _shield.current + _player.ship.stats.final.shield_recharge_rate
+    );
+}
+
+/// @description Draws the player's current primitive fallback or baked layered ship.
+function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shield)
+{
+    var _visual = _player.ship.visual;
+    var _runtime = _visual.runtime;
+    var _cache = _runtime.cache;
+
+    if (!is_struct(_cache))
+    {
+        sc_player_draw_fallback(_player, _colour, _alpha);
+        return;
+    }
+
+    var _angle = _player.draw_angle;
+    var _radius = _visual.radius;
+    var _thrust_power = _runtime.thrust_power;
+
+    if (_draw_thrust && _thrust_power > 0.01 && sprite_exists(_cache.thrust))
+    {
+        var _thrust_x = _player.x + lengthdir_x(-_radius * 0.92, _angle);
+        var _thrust_y = _player.y + lengthdir_y(-_radius * 0.92, _angle);
+        var _flicker = 0.94 + sin(GAME_TICK * 0.38 + _runtime.thrust_phase) * 0.06;
+
+        draw_sprite_ext(
+            _cache.thrust, 0, _thrust_x, _thrust_y,
+            (0.3 + _thrust_power * 0.9) * _flicker,
+            0.85 + _thrust_power * 0.2,
+            _angle + 180, _colour, _thrust_power * _alpha
+        );
+    }
+
+    var _hull_stage = sc_player_damage_visual_stage(_player.defence.hull.current, _player.defence.hull.maximum);
+    var _armour_visible = _player.defence.armour.current > 0;
+    var _armour_stage = sc_player_damage_visual_stage(_player.defence.armour.current, _player.defence.armour.maximum);
+
+    var _wing = _visual.wing;
+    var _hinge_forward = _wing.hinge_forward * _radius;
+    var _hinge_side = _wing.hinge_side * _radius;
+    var _fold = _runtime.wing_fold;
+
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        var _hinge_x = _player.x
+            + lengthdir_x(_hinge_forward, _angle)
+            + lengthdir_x(_hinge_side * _side, _angle + 90);
+
+        var _hinge_y = _player.y
+            + lengthdir_y(_hinge_forward, _angle)
+            + lengthdir_y(_hinge_side * _side, _angle + 90);
+
+        var _wing_angle = _angle + _fold * _side;
+        var _wing_yscale = _side;
+
+        draw_sprite_ext(
+            _cache.wing_hull[_hull_stage], 0,
+            _hinge_x, _hinge_y,
+            1, _wing_yscale,
+            _wing_angle, _colour, _alpha
+        );
+
+        if (_armour_visible)
+        {
+            draw_sprite_ext(
+                _cache.wing_armour[_armour_stage], 0,
+                _hinge_x, _hinge_y,
+                1, _wing_yscale,
+                _wing_angle, _colour, _alpha
+            );
+        }
+    }
+
+    draw_sprite_ext(_cache.hull[_hull_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
+
+    if (_armour_visible)
+        draw_sprite_ext(_cache.armour[_armour_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
+
+    if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
+    {
+        var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
+        var _shield_pulse = 0.82 + sin(GAME_TICK * 0.08) * 0.12;
+        var _shield_alpha = clamp(_shield_ratio * 0.55 * _shield_pulse + _runtime.shield_hit_alpha, 0, 1);
+
+        draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, 1, 1, _angle, _colour, _shield_alpha * _alpha);
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws the temporary primitive Fighter or Bastion fallback.
+function sc_player_draw_fallback(_player, _colour, _alpha)
+{
+    var _visual = _player.ship.visual;
+    var _scale = _visual.scale;
+    var _angle = _player.draw_angle;
+    var _primary = merge_colour(_visual.colour_primary, _colour, 0.35);
+    var _secondary = merge_colour(_visual.colour_secondary, _colour, 0.35);
+
+    var _nose_x = _player.x + lengthdir_x(34 * _scale, _angle);
+    var _nose_y = _player.y + lengthdir_y(34 * _scale, _angle);
+    var _back_top_x = _player.x + lengthdir_x(33 * _scale, _angle + 140);
+    var _back_top_y = _player.y + lengthdir_y(33 * _scale, _angle + 140);
+    var _back_mid_x = _player.x + lengthdir_x(13 * _scale, _angle + 180);
+    var _back_mid_y = _player.y + lengthdir_y(13 * _scale, _angle + 180);
+    var _back_bottom_x = _player.x + lengthdir_x(33 * _scale, _angle + 220);
+    var _back_bottom_y = _player.y + lengthdir_y(33 * _scale, _angle + 220);
+
+    draw_set_alpha(_alpha);
+
+    draw_set_colour(make_colour_rgb(5, 12, 24));
+    draw_circle(_player.x, _player.y, 30 * _scale, false);
+
+    draw_set_colour(_primary);
+    draw_triangle(_nose_x, _nose_y, _back_top_x, _back_top_y, _back_mid_x, _back_mid_y, false);
+    draw_triangle(_nose_x, _nose_y, _back_mid_x, _back_mid_y, _back_bottom_x, _back_bottom_y, false);
+
+    draw_set_colour(_secondary);
+    draw_line_width(_player.x, _player.y, _nose_x, _nose_y, 2);
+
+    draw_set_colour(_colour);
+    draw_circle(_player.x, _player.y, 7 * _scale, false);
+
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
