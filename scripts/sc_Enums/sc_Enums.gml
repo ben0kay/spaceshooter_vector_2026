@@ -1,37 +1,5 @@
-enum GameState
-{
-    BOOT,
-    MENU,
-    PLAYING,
-    PAUSED,
-    GAME_OVER
-}
-
-enum LevelState
-{
-    NONE,
-    INITIALIZING,
-    SHIP_SELECT,
-    PLAYING,
-    COMPLETE,
-    FAILED,
-    EXITING
-}
-
-enum PlayerState
-{
-    INITIALIZING,
-    ACTIVE,
-    STUNNED,
-    DISABLED,
-    DESTROYED
-}
-
-enum MainMenuAction
-{
-    DEPLOY,
-    HANGAR,
-    OPTIONS,
-    CHANGE_PROFILE,
-    EXIT
-}
+enum GameState {BOOT, MENU, PLAYING, PAUSED, GAME_OVER}
+enum LevelState {NONE, INITIALIZING, SHIP_SELECT, PLAYING, COMPLETE, FAILED, EXITING}
+enum PlayerState {INITIALIZING, ACTIVE, STUNNED, DISABLED, DESTROYED}
+enum MainMenuAction {DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT}
+enum EnemyState { IDLE, CHASING, ATTACKING, STUNNED, DEAD }

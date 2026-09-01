@@ -1,16 +1,20 @@
 /// @description Creates the expandable content registries.
 function sc_data_init()
 {
-    global.data = { ships: {} };
+    global.data = {
+        ships: {},
+        enemies: {}
+    };
 
     if (!sc_ship_register_shard()) return false;
     if (!sc_ship_register_fighter()) return false;
     if (!sc_ship_register_bastion()) return false;
 
+    if (!sc_enemy_register_test_fighter()) return false;
+
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
     return true;
 }
-
 /// @description Registers one validated ship definition.
 function sc_ship_register(_ship)
 {

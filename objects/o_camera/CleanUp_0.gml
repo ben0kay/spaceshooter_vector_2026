@@ -1,2 +1,2 @@
-if (camera_exists(camera_data.camera_id))
+if (instance_exists(o_camera))
     camera_destroy(camera_data.camera_id);
