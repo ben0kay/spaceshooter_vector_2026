@@ -1,14 +1,73 @@
 FACTION VISUAL LANGUAGE
 
 SIMULANT
-Main hulls use void, hull_dark and hull_mid.
-Never use pure black for the complete silhouette.
-Primary vector outlines use purple.
-Pink accent is reserved for small structural details.
-Energy is used for weapons, conduits and moving components.
-Core is the brightest colour and must be used sparingly.
-Glow is reserved for low-alpha halos and emissions.
-Most of the ship should remain dark, with neon identifying structure and active systems.
 
-The exact RGB values are registered in faction_register.gml.
+CORE IDENTITY
+Simulant ships are constructed from layered near-black armour, charcoal mechanical panels, cold gunmetal edges and restrained violet energy systems.
+Their silhouettes should appear sharp, deliberate, symmetrical and technologically precise.
+They should look manufactured by intelligent machines rather than assembled for human comfort.
+
+COLOUR DISTRIBUTION
+Most of every Simulant ship must remain dark.
+Purple should illuminate and decorate the ship; it should not form most of the hull.
+Neutral greys establish physical structure while violet identifies active technology.
+
+PALETTE USAGE
+void:
+Used for deep cavities, barrel openings, gaps between armour and recessed machinery.
+
+hull_dark:
+Used for the primary silhouette and largest armour surfaces.
+
+hull_mid:
+Used for secondary armour plates, cannon housings and raised structural sections.
+
+hull_light:
+Used for smaller raised panels, panel borders and readable mechanical separation.
+
+metal:
+Used sparingly for gun barrels, structural spines, sharp highlights and exposed machinery.
+
+outline:
+Used for neutral construction lines and subdued panel edges.
+Do not use bright purple as the default outline of the complete ship.
+
+accent:
+Used for thin recessed violet strips, identification marks and small structural details.
+
+energy:
+Used for active conduits, weapons, rotating mechanisms and powered components.
+
+core:
+The brightest palette value.
+Use only for reactor centres, muzzle apertures and extremely concentrated energy points.
+
+glow:
+Used at low alpha around active energy, engines, weapons and cores.
+Glow should support a shape rather than replace its structure.
+
+DESIGN RULES
+Use layered armour rather than one simple filled silhouette.
+Use at least three neutral hull values to establish depth.
+Keep energy details thin and intentionally positioned.
+Use symmetry for standard Simulant military ships.
+Break symmetry only when the ship's function clearly requires it.
+Cannons and mechanical attachments should have visible mounts, rails, segments or apertures.
+Large empty black areas should contain subtle panel boundaries or raised armour.
+Bright core colour must remain rare.
+Bosses may contain more energy systems, but their hull must still remain predominantly dark.
+
+REFERENCE CONSTRUCTION ORDER
+1. Establish the void and hull_dark silhouette.
+2. Add hull_mid armour panels.
+3. Add hull_light separation and raised plating.
+4. Add sparse metal machinery and structural edges.
+5. Insert thin accent trenches.
+6. Add active energy components.
+7. Add a very small number of core highlights.
+8. Add low-alpha glow only after the physical structure is readable.
+
+The exact RGB values are registered in sc_faction_register.gml.
 All Simulant primitive designs must use sc_faction_palette_get(Faction.SIMULANT).
+The Twin Fighter is the initial reference implementation for this visual language.
+

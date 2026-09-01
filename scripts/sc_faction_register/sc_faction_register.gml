@@ -24,14 +24,17 @@ function sc_faction_register_simulant()
         identity: { name: "Simulant" },
 
         palette: {
-            void: make_colour_rgb(7, 4, 12),
-            hull_dark: make_colour_rgb(17, 3, 28),
-            hull_mid: make_colour_rgb(35, 8, 55),
-            outline: make_colour_rgb(140, 45, 255),
-            accent: make_colour_rgb(255, 45, 190),
-            energy: make_colour_rgb(185, 70, 255),
-            core: make_colour_rgb(230, 185, 255),
-            glow: make_colour_rgb(105, 25, 190)
+            void: make_colour_rgb(6, 4, 10),
+            hull_dark: make_colour_rgb(16, 14, 23),
+            hull_mid: make_colour_rgb(34, 31, 45),
+            hull_light: make_colour_rgb(62, 59, 75),
+            metal: make_colour_rgb(105, 103, 118),
+
+            outline: make_colour_rgb(86, 82, 102),
+            accent: make_colour_rgb(108, 55, 240),
+            energy: make_colour_rgb(150, 80, 255),
+            core: make_colour_rgb(225, 205, 255),
+            glow: make_colour_rgb(85, 35, 200)
         }
     });
 }

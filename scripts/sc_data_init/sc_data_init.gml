@@ -2,15 +2,12 @@
 function sc_data_init()
 {
     global.data = {
-        factions: array_create(Faction.ALIEN + 1, undefined),
         ships: {},
         enemies: {},
         weapons: {},
         projectiles: {},
         attacks: {}
     };
-
-    if (!sc_faction_register_simulant()) return false;
 
     if (!sc_ship_register_shard()) return false;
     if (!sc_ship_register_fighter()) return false;
