@@ -18,7 +18,7 @@ function sc_particles_init()
         owned_types: []
     };
 
-    part_system_depth(_system, 100);
+    part_system_depth(_system, 10);
 
     if (!sc_particles_register_simulant())
     {

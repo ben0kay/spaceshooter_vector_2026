@@ -273,45 +273,53 @@ function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alph
     draw_set_alpha(1);
 }
 
-/// @description Draws one reusable Simulant energy thrust component.
+/// @description Draws one substantial baked Simulant energy flame.
 function sc_enemy_simulant_thrust_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _palette = _visual.palette;
-    var _length = _radius * 0.58;
-    var _half_width = _radius * 0.15;
 
-    var _tip_x = _x + lengthdir_x(_length, _angle);
-    var _tip_y = _y + lengthdir_y(_length, _angle);
+    var _outer_length = _radius * 0.82;
+    var _outer_width = _radius * 0.25;
+    var _outer_tip_x = _x + lengthdir_x(_outer_length, _angle);
+    var _outer_tip_y = _y + lengthdir_y(_outer_length, _angle);
+    var _outer_top_x = _x + lengthdir_x(-_outer_width, _angle + 90);
+    var _outer_top_y = _y + lengthdir_y(-_outer_width, _angle + 90);
+    var _outer_bottom_x = _x + lengthdir_x(_outer_width, _angle + 90);
+    var _outer_bottom_y = _y + lengthdir_y(_outer_width, _angle + 90);
 
-    var _base_top_x = _x + lengthdir_x(-_half_width, _angle + 90);
-    var _base_top_y = _y + lengthdir_y(-_half_width, _angle + 90);
-    var _base_bottom_x = _x + lengthdir_x(_half_width, _angle + 90);
-    var _base_bottom_y = _y + lengthdir_y(_half_width, _angle + 90);
+    var _energy_length = _radius * 0.66;
+    var _energy_width = _radius * 0.17;
+    var _energy_tip_x = _x + lengthdir_x(_energy_length, _angle);
+    var _energy_tip_y = _y + lengthdir_y(_energy_length, _angle);
+    var _energy_top_x = _x + lengthdir_x(-_energy_width, _angle + 90);
+    var _energy_top_y = _y + lengthdir_y(-_energy_width, _angle + 90);
+    var _energy_bottom_x = _x + lengthdir_x(_energy_width, _angle + 90);
+    var _energy_bottom_y = _y + lengthdir_y(_energy_width, _angle + 90);
 
-    var _middle_x = _x + lengthdir_x(_length * 0.48, _angle);
-    var _middle_y = _y + lengthdir_y(_length * 0.48, _angle);
-    var _middle_width = _half_width * 0.52;
+    var _core_length = _radius * 0.46;
+    var _core_width = _radius * 0.075;
+    var _core_tip_x = _x + lengthdir_x(_core_length, _angle);
+    var _core_tip_y = _y + lengthdir_y(_core_length, _angle);
+    var _core_top_x = _x + lengthdir_x(-_core_width, _angle + 90);
+    var _core_top_y = _y + lengthdir_y(-_core_width, _angle + 90);
+    var _core_bottom_x = _x + lengthdir_x(_core_width, _angle + 90);
+    var _core_bottom_y = _y + lengthdir_y(_core_width, _angle + 90);
 
-    var _middle_top_x = _middle_x + lengthdir_x(-_middle_width, _angle + 90);
-    var _middle_top_y = _middle_y + lengthdir_y(-_middle_width, _angle + 90);
-    var _middle_bottom_x = _middle_x + lengthdir_x(_middle_width, _angle + 90);
-    var _middle_bottom_y = _middle_y + lengthdir_y(_middle_width, _angle + 90);
-
-    draw_set_alpha(_alpha * 0.2);
+    draw_set_alpha(_alpha * 0.38);
     draw_set_colour(_palette.glow);
-    draw_triangle(_base_top_x, _base_top_y, _tip_x, _tip_y, _base_bottom_x, _base_bottom_y, false);
+    draw_triangle(_outer_top_x, _outer_top_y, _outer_tip_x, _outer_tip_y, _outer_bottom_x, _outer_bottom_y, false);
 
-    draw_set_alpha(_alpha * 0.72);
+    draw_set_alpha(_alpha * 0.78);
     draw_set_colour(_palette.energy);
-    draw_triangle(_base_top_x, _base_top_y, _tip_x, _tip_y, _base_bottom_x, _base_bottom_y, true);
-
-    draw_set_alpha(_alpha * 0.9);
-    draw_set_colour(_palette.accent);
-    draw_triangle(_middle_top_x, _middle_top_y, _tip_x, _tip_y, _middle_bottom_x, _middle_bottom_y, false);
+    draw_triangle(_energy_top_x, _energy_top_y, _energy_tip_x, _energy_tip_y, _energy_bottom_x, _energy_bottom_y, false);
 
     draw_set_alpha(_alpha);
     draw_set_colour(_palette.core);
-    draw_line_width(_x, _y, _tip_x, _tip_y, 3);
+    draw_triangle(_core_top_x, _core_top_y, _core_tip_x, _core_tip_y, _core_bottom_x, _core_bottom_y, false);
+
+    draw_set_alpha(_alpha);
+    draw_set_colour(_palette.accent);
+    draw_line_width(_x, _y, _outer_tip_x, _outer_tip_y, 2);
 
     draw_set_alpha(1);
 }

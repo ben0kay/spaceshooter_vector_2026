@@ -189,28 +189,52 @@ function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual)
     draw_set_alpha(1);
 }
 
-/// @description Draws one baked Shard thrust component.
+/// @description Draws one substantial baked Shard aqua flame.
 function sc_ship_shard_thrust_draw(_x, _y, _radius, _angle, _visual)
 {
     var _palette = _visual.palette;
-    var _tip_x = _x + lengthdir_x(_radius * 0.72, _angle);
-    var _tip_y = _y + lengthdir_y(_radius * 0.72, _angle);
-    var _top_x = _x + lengthdir_x(-_radius * 0.14, _angle + 90);
-    var _top_y = _y + lengthdir_y(-_radius * 0.14, _angle + 90);
-    var _bottom_x = _x + lengthdir_x(_radius * 0.14, _angle + 90);
-    var _bottom_y = _y + lengthdir_y(_radius * 0.14, _angle + 90);
 
-    draw_set_alpha(0.3);
+    var _outer_length = _radius * 0.96;
+    var _outer_width = _radius * 0.26;
+    var _outer_tip_x = _x + lengthdir_x(_outer_length, _angle);
+    var _outer_tip_y = _y + lengthdir_y(_outer_length, _angle);
+    var _outer_top_x = _x + lengthdir_x(-_outer_width, _angle + 90);
+    var _outer_top_y = _y + lengthdir_y(-_outer_width, _angle + 90);
+    var _outer_bottom_x = _x + lengthdir_x(_outer_width, _angle + 90);
+    var _outer_bottom_y = _y + lengthdir_y(_outer_width, _angle + 90);
+
+    var _energy_length = _radius * 0.76;
+    var _energy_width = _radius * 0.17;
+    var _energy_tip_x = _x + lengthdir_x(_energy_length, _angle);
+    var _energy_tip_y = _y + lengthdir_y(_energy_length, _angle);
+    var _energy_top_x = _x + lengthdir_x(-_energy_width, _angle + 90);
+    var _energy_top_y = _y + lengthdir_y(-_energy_width, _angle + 90);
+    var _energy_bottom_x = _x + lengthdir_x(_energy_width, _angle + 90);
+    var _energy_bottom_y = _y + lengthdir_y(_energy_width, _angle + 90);
+
+    var _core_length = _radius * 0.52;
+    var _core_width = _radius * 0.07;
+    var _core_tip_x = _x + lengthdir_x(_core_length, _angle);
+    var _core_tip_y = _y + lengthdir_y(_core_length, _angle);
+    var _core_top_x = _x + lengthdir_x(-_core_width, _angle + 90);
+    var _core_top_y = _y + lengthdir_y(-_core_width, _angle + 90);
+    var _core_bottom_x = _x + lengthdir_x(_core_width, _angle + 90);
+    var _core_bottom_y = _y + lengthdir_y(_core_width, _angle + 90);
+
+    draw_set_alpha(0.4);
     draw_set_colour(_palette.glow);
-    draw_triangle(_top_x, _top_y, _tip_x, _tip_y, _bottom_x, _bottom_y, false);
+    draw_triangle(_outer_top_x, _outer_top_y, _outer_tip_x, _outer_tip_y, _outer_bottom_x, _outer_bottom_y, false);
 
-    draw_set_alpha(0.85);
+    draw_set_alpha(0.82);
     draw_set_colour(_palette.energy);
-    draw_triangle(_top_x, _top_y, _tip_x, _tip_y, _bottom_x, _bottom_y, true);
+    draw_triangle(_energy_top_x, _energy_top_y, _energy_tip_x, _energy_tip_y, _energy_bottom_x, _energy_bottom_y, false);
 
     draw_set_alpha(1);
     draw_set_colour(_palette.core);
-    draw_line_width(_x, _y, _tip_x, _tip_y, 2);
+    draw_triangle(_core_top_x, _core_top_y, _core_tip_x, _core_tip_y, _core_bottom_x, _core_bottom_y, false);
+
+    draw_set_colour(_palette.metal);
+    draw_line_width(_x, _y, _outer_tip_x, _outer_tip_y, 2);
 
     draw_set_alpha(1);
 }

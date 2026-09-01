@@ -94,7 +94,7 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _hardpoin
         break;
 
         case "thrust":
-            _visual.draw.thrust(_centre, _centre, _visual.radius, 0, _visual, 1);
+            _visual.thrust.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1);
         break;
 
         case "hardpoint":

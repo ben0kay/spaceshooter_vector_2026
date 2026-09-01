@@ -165,7 +165,7 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates shared visual animation, recoil and thrusters.
+/// @description Updates shared visual animation, recoil and registered thrusters.
 function sc_enemy_visual_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -181,7 +181,8 @@ function sc_enemy_visual_update(_enemy)
 
         if (_hardpoint.runtime.recoil > 0.01)
             _hardpoint.runtime.recoil = lerp(_hardpoint.runtime.recoil, 0, 0.22);
-        else _hardpoint.runtime.recoil = 0;
+        else
+            _hardpoint.runtime.recoil = 0;
     }
 
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
@@ -192,7 +193,6 @@ function sc_enemy_visual_update(_enemy)
         var _thruster = _data.thrusters[_i];
         var _runtime = _thruster.runtime;
         var _active = _target_power > 0.05;
-
         var _forward = _thruster.forward * _visual.radius;
         var _side = _thruster.side * _visual.radius;
 
@@ -208,7 +208,7 @@ function sc_enemy_visual_update(_enemy)
 
         if (_active && !_runtime.active)
         {
-            sc_particles_simulant_ignition(
+            _visual.thrust.ignition_script(
                 _thruster_x,
                 _thruster_y,
                 _thruster_angle,
@@ -229,7 +229,7 @@ function sc_enemy_visual_update(_enemy)
             && ((GAME_TICK + _runtime.phase) mod 3) == 0
         )
         {
-            sc_particles_simulant_thrust(
+            _visual.thrust.particle_script(
                 _thruster_x,
                 _thruster_y,
                 _thruster_angle,
@@ -536,14 +536,14 @@ function sc_enemy_draw(_enemy)
         }
         else
         {
-            _visual.draw.thrust(
-                _thruster_x,
-                _thruster_y,
-                _visual.radius * _thruster.scale,
-                _thruster_angle,
-                _visual,
-                _power
-            );
+            _visual.thrust.draw_script(
+		    _thruster_x,
+		    _thruster_y,
+		    _visual.radius * _thruster.scale,
+		    _thruster_angle,
+		    _visual,
+		    _power
+		);
         }
     }
 
