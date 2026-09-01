@@ -15,24 +15,11 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _radius = _visual.radius;
     var _thrust_power = _runtime.thrust_power;
 
-    // Shield field is drawn behind the complete ship.
+    // Shared shield is drawn behind the complete ship.
     if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
-        var _hit = _runtime.shield_hit_alpha;
-        var _pulse = 0.88 + sin(GAME_TICK * 0.08) * 0.12;
-        var _shield_alpha = clamp(0.28 + _shield_ratio * 0.5 * _pulse, 0, 0.82);
-        var _shield_scale = 1 + sin(GAME_TICK * 0.06) * 0.008;
-
-        draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, _shield_scale, _shield_scale, _angle, _colour, _shield_alpha * _alpha);
-
-        // Shield damage produces a short expanding aqua pulse behind the ship.
-        if (_hit > 0.01)
-        {
-            gpu_set_blendmode(bm_add);
-            draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, _shield_scale + _hit * 0.11, _shield_scale + _hit * 0.11, _angle, _visual.palette.energy, _hit * 0.48 * _alpha);
-            gpu_set_blendmode(bm_normal);
-        }
+        sc_visual_shield_sprite_draw(_cache.shield, _player.x, _player.y, _angle, _visual.palette, _shield_ratio, _runtime.shield_hit_alpha, _alpha);
     }
 
     if (_draw_thrust && _thrust_power > 0.01 && sprite_exists(_cache.thrust))
@@ -51,7 +38,6 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _hinge_side = _wing.hinge_side * _radius;
     var _fold = _runtime.wing_fold;
 
-    // Moving wing hulls behind the central ship.
     for (var _side = -1; _side <= 1; _side += 2)
     {
         var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
@@ -61,7 +47,6 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
     draw_sprite_ext(_cache.hull[_hull_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
 
-    // Wing armour is above the hull so its mechanical bases remain visible.
     if (_armour_visible)
     {
         for (var _side = -1; _side <= 1; _side += 2)
