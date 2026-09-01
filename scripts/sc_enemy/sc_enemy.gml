@@ -1,0 +1,448 @@
+/// @description Initializes one enemy from registered data.
+function sc_enemy_init(_enemy, _enemy_key)
+{
+    if (!variable_struct_exists(global.data.enemies, _enemy_key))
+    {
+        show_debug_message("ENEMY INITIALIZATION ERROR - unknown key: " + _enemy_key);
+        return false;
+    }
+
+    var _data = variable_struct_get(global.data.enemies, _enemy_key);
+    var _radius = _data.visual.radius;
+
+    _enemy.enemy = {
+        key: _enemy_key,
+        identity: variable_clone(_data.identity),
+        state: EnemyState.IDLE,
+        target_id: noone,
+        target_distance_sq: 0,
+
+        defence: {
+            shield: _data.defence.shield_max,
+            shield_max: _data.defence.shield_max,
+            armour: _data.defence.armour_max,
+            armour_max: _data.defence.armour_max,
+            hull: _data.defence.hull_max,
+            hull_max: _data.defence.hull_max
+        },
+
+        range: variable_clone(_data.range),
+        movement: variable_clone(_data.movement),
+
+        collision: {
+            radius: _radius * _data.collision.radius_scale,
+            blocks_player: _data.collision.blocks_player
+        },
+
+        visual: variable_clone(_data.visual),
+        hardpoints: variable_clone(_data.hardpoints),
+        attack_controller: variable_clone(_data.attack_controller)
+    };
+
+    var _runtime = _enemy.enemy;
+    _runtime.range.detection_sq = _runtime.range.detection * _runtime.range.detection;
+    _runtime.range.combat_sq = _runtime.range.combat * _runtime.range.combat;
+    _runtime.range.forget_sq = _runtime.range.forget * _runtime.range.forget;
+
+    _runtime.movement.velocity_x = 0;
+    _runtime.movement.velocity_y = 0;
+
+    _runtime.visual.runtime = {
+        core_angle: 0,
+        core_alpha: 1,
+        core_script: sc_enemy_visual_effect_get(_runtime.visual.bake.effects, "core")
+    };
+
+    for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
+    {
+        var _hardpoint = _runtime.hardpoints[_i];
+
+        _hardpoint.runtime = {
+            recoil: 0,
+            draw_script: sc_enemy_visual_effect_get(_runtime.visual.bake.effects, _hardpoint.effect_key)
+        };
+    }
+
+    for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
+    {
+        var _attack = _runtime.attack_controller.attacks[_i];
+        _attack.hardpoint_indices = [];
+
+        for (var _h = 0; _h < array_length(_runtime.hardpoints); _h++)
+        {
+            if (_runtime.hardpoints[_h].group == _attack.hardpoint_group)
+                array_push(_attack.hardpoint_indices, _h);
+        }
+    }
+
+    _runtime.attack_controller.runtime = {
+        active: false,
+        current_attack: -1,
+        next_attack_index: 0,
+        hardpoint_cursor: 0,
+        volley_count: 0,
+        next_fire_tick: 0,
+        cooldown_until: 0
+    };
+
+    _enemy.draw_angle = 0;
+    _enemy.initialized = true;
+
+    global.level.enemies_alive++;
+    show_debug_message("ENEMY INITIALIZED - " + _runtime.identity.name);
+    return true;
+}
+
+/// @description Finds one registered visual effect callback.
+function sc_enemy_visual_effect_get(_effects, _key)
+{
+    for (var _i = 0; _i < array_length(_effects); _i++)
+    {
+        if (_effects[_i].key == _key)
+            return _effects[_i].script;
+    }
+
+    return undefined;
+}
+
+/// @description Updates detection, combat and forget transitions.
+function sc_enemy_perception_update(_enemy)
+{
+    var _data = _enemy.enemy;
+
+    if (!instance_exists(global.player_id))
+    {
+        _data.target_id = noone;
+        _data.state = EnemyState.IDLE;
+        return;
+    }
+
+    var _dx = global.player_id.x - _enemy.x;
+    var _dy = global.player_id.y - _enemy.y;
+    _data.target_distance_sq = _dx * _dx + _dy * _dy;
+
+    switch (_data.state)
+    {
+        case EnemyState.IDLE:
+            if (!UPDATE_4) return;
+
+            if (_data.target_distance_sq <= _data.range.detection_sq)
+            {
+                _data.target_id = global.player_id;
+                _data.state = EnemyState.CHASING;
+            }
+        break;
+
+        case EnemyState.CHASING:
+            if (_data.target_distance_sq > _data.range.forget_sq)
+            {
+                sc_enemy_attack_cancel(_enemy);
+                _data.target_id = noone;
+                _data.state = EnemyState.IDLE;
+            }
+            else if (_data.target_distance_sq <= _data.range.combat_sq)
+                _data.state = EnemyState.ATTACKING;
+        break;
+
+        case EnemyState.ATTACKING:
+            if (_data.target_distance_sq > _data.range.forget_sq)
+            {
+                sc_enemy_attack_cancel(_enemy);
+                _data.target_id = noone;
+                _data.state = EnemyState.IDLE;
+            }
+            else if (_data.target_distance_sq > _data.range.combat_sq)
+            {
+                sc_enemy_attack_cancel(_enemy);
+                _data.state = EnemyState.CHASING;
+            }
+        break;
+    }
+}
+
+/// @description Updates shared visual animation and recoil.
+function sc_enemy_visual_update(_enemy)
+{
+    var _data = _enemy.enemy;
+
+    _data.visual.runtime.core_angle = (_data.visual.runtime.core_angle + 1.5) mod 360;
+    _data.visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
+
+    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    {
+        var _hardpoint = _data.hardpoints[_i];
+
+        if (_hardpoint.runtime.recoil > 0.01)
+            _hardpoint.runtime.recoil = lerp(_hardpoint.runtime.recoil, 0, 0.22);
+        else _hardpoint.runtime.recoil = 0;
+    }
+}
+
+/// @description Applies passive idle movement decay.
+function sc_enemy_update_idle(_enemy)
+{
+    var _movement = _enemy.enemy.movement;
+    _movement.velocity_x *= _movement.friction;
+    _movement.velocity_y *= _movement.friction;
+
+    if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
+    if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
+
+    _enemy.x += _movement.velocity_x;
+    _enemy.y += _movement.velocity_y;
+}
+
+/// @description Moves the enemy toward its current target.
+function sc_enemy_update_chasing(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _target = _data.target_id;
+    var _movement = _data.movement;
+    var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+    var _target_vx = lengthdir_x(_movement.speed_max, _direction);
+    var _target_vy = lengthdir_y(_movement.speed_max, _direction);
+
+    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_movement.acceleration, _movement.acceleration);
+    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_movement.acceleration, _movement.acceleration);
+
+    _enemy.x += _movement.velocity_x;
+    _enemy.y += _movement.velocity_y;
+
+    var _turn = angle_difference(_direction, _enemy.draw_angle);
+    _enemy.draw_angle += clamp(_turn, -_movement.turn_speed, _movement.turn_speed);
+    _enemy.draw_angle = _enemy.draw_angle mod 360;
+}
+
+/// @description Holds combat range, faces the player and attacks.
+function sc_enemy_update_attacking(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _target = _data.target_id;
+    var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+
+    _movement.velocity_x *= _movement.friction;
+    _movement.velocity_y *= _movement.friction;
+
+    _enemy.x += _movement.velocity_x;
+    _enemy.y += _movement.velocity_y;
+
+    var _turn = angle_difference(_direction, _enemy.draw_angle);
+    _enemy.draw_angle += clamp(_turn, -_movement.turn_speed, _movement.turn_speed);
+    _enemy.draw_angle = _enemy.draw_angle mod 360;
+
+    sc_enemy_attack_update(_enemy);
+}
+
+/// @description Cancels the currently active attack volley.
+function sc_enemy_attack_cancel(_enemy)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+    _runtime.active = false;
+    _runtime.current_attack = -1;
+    _runtime.hardpoint_cursor = 0;
+    _runtime.volley_count = 0;
+}
+
+/// @description Chooses an attack using the configured selection method.
+function sc_enemy_attack_select(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+    var _count = array_length(_controller.attacks);
+
+    switch (_controller.selection)
+    {
+        case AttackSelection.SEQUENTIAL:
+            var _selected = _runtime.next_attack_index;
+            _runtime.next_attack_index = (_runtime.next_attack_index + 1) mod _count;
+            return _selected;
+
+        case AttackSelection.RANDOM:
+            return irandom(_count - 1);
+
+        case AttackSelection.WEIGHTED:
+            var _weight_total = 0;
+
+            for (var _i = 0; _i < _count; _i++)
+                _weight_total += _controller.attacks[_i].weight;
+
+            var _roll = random(_weight_total);
+
+            for (var _i = 0; _i < _count; _i++)
+            {
+                _roll -= _controller.attacks[_i].weight;
+                if (_roll <= 0) return _i;
+            }
+
+            return _count - 1;
+    }
+
+    return 0;
+}
+
+/// @description Updates attack timing and alternating hardpoints.
+function sc_enemy_attack_update(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+
+    if (!_runtime.active)
+    {
+        if (GAME_TICK < _runtime.cooldown_until) return;
+
+        _runtime.current_attack = sc_enemy_attack_select(_enemy);
+        _runtime.active = true;
+        _runtime.hardpoint_cursor = 0;
+        _runtime.volley_count = 0;
+        _runtime.next_fire_tick = GAME_TICK;
+    }
+
+    if (GAME_TICK < _runtime.next_fire_tick) return;
+
+    var _attack = _controller.attacks[_runtime.current_attack];
+    var _indices = _attack.hardpoint_indices;
+
+    switch (_attack.firing.order)
+    {
+        case HardpointFireOrder.ALL:
+            for (var _i = 0; _i < array_length(_indices); _i++)
+                sc_enemy_attack_fire_hardpoint(_enemy, _attack, _indices[_i]);
+        break;
+
+        case HardpointFireOrder.SEQUENTIAL:
+            var _index = _indices[_runtime.hardpoint_cursor];
+            sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
+            _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_indices);
+        break;
+
+        case HardpointFireOrder.RANDOM:
+            var _index = _indices[irandom(array_length(_indices) - 1)];
+            sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
+        break;
+    }
+
+    _runtime.volley_count++;
+
+    if (_runtime.volley_count >= _attack.firing.volley_max)
+    {
+        _runtime.active = false;
+        _runtime.current_attack = -1;
+        _runtime.cooldown_until = GAME_TICK + _attack.firing.cooldown;
+    }
+    else _runtime.next_fire_tick = GAME_TICK + _attack.firing.interval;
+}
+
+/// @description Resolves one hardpoint and fires its configured weapon.
+function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
+{
+    var _data = _enemy.enemy;
+    var _hardpoint = _data.hardpoints[_hardpoint_index];
+    var _radius = _data.visual.radius;
+    var _forward = _hardpoint.forward * _radius;
+    var _side = _hardpoint.side * _radius;
+    var _muzzle_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+    var _muzzle_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
+    var _mount_angle = _enemy.draw_angle + _hardpoint.angle;
+    var _direction = _mount_angle;
+
+    switch (_attack.aim.mode)
+    {
+        case AimMode.TARGET:
+            _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
+        break;
+
+        case AimMode.TARGET_LEAD:
+            // Target-leading solution goes here later.
+            _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
+        break;
+
+        case AimMode.WORLD:
+            _direction = _attack.aim.world_direction;
+        break;
+    }
+
+    _direction += _attack.aim.angle_offset + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
+
+    sc_weapon_fire(
+        _enemy,
+        _attack.weapon_key,
+        _attack.shot,
+        _muzzle_x,
+        _muzzle_y,
+        _direction
+    );
+
+    _hardpoint.runtime.recoil = _radius * 0.14;
+
+    // Insert muzzle flash and weapon audio here.
+}
+
+/// @description Fires one registered weapon using a shot pattern.
+function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction)
+{
+    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+
+    if (_weapon.delivery.type != AttackDelivery.PROJECTILE)
+        return false;
+
+    var _source = {
+        owner_id: _owner,
+        faction: _owner.enemy.identity.faction
+    };
+
+    switch (_shot.pattern)
+    {
+        case ShotPattern.SINGLE:
+            sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _direction, _owner.layer);
+        break;
+
+        case ShotPattern.SPREAD:
+            var _step = _shot.amount > 1 ? _shot.angle_total / (_shot.amount - 1) : 0;
+            var _start = _direction - _shot.angle_total * 0.5;
+
+            for (var _i = 0; _i < _shot.amount; _i++)
+                sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _start + _step * _i, _owner.layer);
+        break;
+
+        case ShotPattern.RANDOM_CONE:
+            for (var _i = 0; _i < _shot.amount; _i++)
+                sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _direction + random_range(-_shot.angle_total * 0.5, _shot.angle_total * 0.5), _owner.layer);
+        break;
+    }
+
+    return true;
+}
+
+/// @description Draws the complete temporary primitive enemy.
+function sc_enemy_draw(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _visual = _data.visual;
+    var _body_script = _visual.bake.body;
+
+    _body_script(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
+
+    var _core_script = _visual.runtime.core_script;
+    _core_script(
+        _enemy.x,
+        _enemy.y,
+        _visual.radius,
+        _enemy.draw_angle + _visual.runtime.core_angle,
+        _visual,
+        _visual.runtime.core_alpha
+    );
+
+    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    {
+        var _hardpoint = _data.hardpoints[_i];
+        var _forward = _hardpoint.forward * _visual.radius - _hardpoint.runtime.recoil;
+        var _side = _hardpoint.side * _visual.radius;
+        var _hardpoint_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+        var _hardpoint_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
+        var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
+        var _draw_script = _hardpoint.runtime.draw_script;
+
+        _draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
+    }
+}

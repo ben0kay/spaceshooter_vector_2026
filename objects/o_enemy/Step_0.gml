@@ -1,6 +1,7 @@
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_enemy_perception_update(id);
+sc_enemy_visual_update(id);
 
 switch (enemy.state)
 {
@@ -21,6 +22,6 @@ switch (enemy.state)
     break;
 
     case EnemyState.DEAD:
-        // Death pipeline controls destruction.
+        // Future death pipeline.
     break;
 }

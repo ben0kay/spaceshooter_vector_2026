@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_twin_figher",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_twin_figher",
+  "parent":{
+    "name":"enemy_visuals",
+    "path":"folders/scripts/enemy/enemy_visuals.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
