@@ -142,14 +142,14 @@ function sc_enemy_register_twin_fighter()
             colour_core: make_colour_rgb(230, 185, 255),
 
             bake: {
-                canvas_size: 256,
-                body: sc_enemy_twin_fighter_body_bake,
+		    canvas_size: 256,
+		    body: sc_enemy_twin_fighter_body_draw,
 
-                effects: [
-                    { key: "cannon", script: sc_enemy_twin_fighter_cannon_bake },
-                    { key: "core", script: sc_enemy_twin_fighter_core_bake }
-                ]
-            }
+		    effects: [
+		        { key: "cannon", script: sc_enemy_twin_fighter_cannon_draw },
+		        { key: "core", script: sc_enemy_twin_fighter_core_draw }
+		    ]
+		}
         },
 
         collision: {
@@ -158,23 +158,25 @@ function sc_enemy_register_twin_fighter()
         },
 
         hardpoints: [
-            {
-                key: "cannon_left",
-                group: "cannons",
-                forward: 0.73,
-                side: -0.48,
-                angle: 0,
-                effect_key: "cannon"
-            },
-            {
-                key: "cannon_right",
-                group: "cannons",
-                forward: 0.73,
-                side: 0.48,
-                angle: 0,
-                effect_key: "cannon"
-            }
-        ],
+	    {
+	        key: "cannon_left",
+	        group: "cannons",
+	        forward: 0.73,
+	        side: -0.48,
+	        angle: 0,
+	        muzzle_forward: 0.48,
+	        effect_key: "cannon"
+	    },
+	    {
+	        key: "cannon_right",
+	        group: "cannons",
+	        forward: 0.73,
+	        side: 0.48,
+	        angle: 0,
+	        muzzle_forward: 0.48,
+	        effect_key: "cannon"
+	    }
+	],
 
         attack_controller: {
             selection: AttackSelection.WEIGHTED,

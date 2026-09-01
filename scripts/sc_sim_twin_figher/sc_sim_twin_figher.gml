@@ -1,4 +1,5 @@
-function sc_enemy_twin_fighter_body_bake(_x, _y, _radius, _angle, _visual)
+/// @description Draws the Twin Fighter's static primitive body.
+function sc_enemy_twin_fighter_body_draw(_x, _y, _radius, _angle, _visual)
 {
     var _nose_x = _x + lengthdir_x(_radius * 1.15, _angle);
     var _nose_y = _y + lengthdir_y(_radius * 1.15, _angle);
@@ -43,7 +44,8 @@ function sc_enemy_twin_fighter_body_bake(_x, _y, _radius, _angle, _visual)
     }
 }
 
-function sc_enemy_twin_fighter_cannon_bake(_x, _y, _radius, _angle, _visual, _alpha)
+/// @description Draws one reusable primitive Twin Fighter cannon.
+function sc_enemy_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _length = _radius * 0.48;
     var _half_width = _radius * 0.1;
@@ -67,7 +69,8 @@ function sc_enemy_twin_fighter_cannon_bake(_x, _y, _radius, _angle, _visual, _al
     draw_set_alpha(1);
 }
 
-function sc_enemy_twin_fighter_core_bake(_x, _y, _radius, _angle, _visual, _alpha)
+/// @description Draws the Twin Fighter's rotating primitive core.
+function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _ring_radius = _radius * 0.32;
 
@@ -80,6 +83,7 @@ function sc_enemy_twin_fighter_core_bake(_x, _y, _radius, _angle, _visual, _alph
     for (var _i = 0; _i < 4; _i++)
     {
         var _direction = _angle + _i * 90;
+
         draw_line_width(
             _x + lengthdir_x(_ring_radius * 0.55, _direction),
             _y + lengthdir_y(_ring_radius * 0.55, _direction),

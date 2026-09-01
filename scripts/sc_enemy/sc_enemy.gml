@@ -333,17 +333,30 @@ function sc_enemy_attack_update(_enemy)
     else _runtime.next_fire_tick = GAME_TICK + _attack.firing.interval;
 }
 
-/// @description Resolves one hardpoint and fires its configured weapon.
+/// @description Resolves one hardpoint muzzle and fires its configured weapon.
 function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
 {
     var _data = _enemy.enemy;
     var _hardpoint = _data.hardpoints[_hardpoint_index];
     var _radius = _data.visual.radius;
+    var _mount_angle = _enemy.draw_angle + _hardpoint.angle;
     var _forward = _hardpoint.forward * _radius;
     var _side = _hardpoint.side * _radius;
-    var _muzzle_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
-    var _muzzle_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
-    var _mount_angle = _enemy.draw_angle + _hardpoint.angle;
+    var _recoil = _hardpoint.runtime.recoil;
+
+    var _mount_x = _enemy.x +
+        lengthdir_x(_forward, _enemy.draw_angle) +
+        lengthdir_x(_side, _enemy.draw_angle + 90) -
+        lengthdir_x(_recoil, _mount_angle);
+
+    var _mount_y = _enemy.y +
+        lengthdir_y(_forward, _enemy.draw_angle) +
+        lengthdir_y(_side, _enemy.draw_angle + 90) -
+        lengthdir_y(_recoil, _mount_angle);
+
+    var _muzzle_distance = _hardpoint.muzzle_forward * _radius;
+    var _muzzle_x = _mount_x + lengthdir_x(_muzzle_distance, _mount_angle);
+    var _muzzle_y = _mount_y + lengthdir_y(_muzzle_distance, _mount_angle);
     var _direction = _mount_angle;
 
     switch (_attack.aim.mode)
@@ -424,6 +437,7 @@ function sc_enemy_draw(_enemy)
     _body_script(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
 
     var _core_script = _visual.runtime.core_script;
+
     _core_script(
         _enemy.x,
         _enemy.y,
@@ -436,13 +450,22 @@ function sc_enemy_draw(_enemy)
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
         var _hardpoint = _data.hardpoints[_i];
-        var _forward = _hardpoint.forward * _visual.radius - _hardpoint.runtime.recoil;
+        var _forward = _hardpoint.forward * _visual.radius;
         var _side = _hardpoint.side * _visual.radius;
-        var _hardpoint_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
-        var _hardpoint_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
         var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
-        var _draw_script = _hardpoint.runtime.draw_script;
+        var _recoil = _hardpoint.runtime.recoil;
 
+        var _hardpoint_x = _enemy.x +
+            lengthdir_x(_forward, _enemy.draw_angle) +
+            lengthdir_x(_side, _enemy.draw_angle + 90) -
+            lengthdir_x(_recoil, _hardpoint_angle);
+
+        var _hardpoint_y = _enemy.y +
+            lengthdir_y(_forward, _enemy.draw_angle) +
+            lengthdir_y(_side, _enemy.draw_angle + 90) -
+            lengthdir_y(_recoil, _hardpoint_angle);
+
+        var _draw_script = _hardpoint.runtime.draw_script;
         _draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
     }
 }
