@@ -16,3 +16,4 @@ dont add endless safety instance / variable checks if its obvious it does exist
 I prefer using draw_angle instead of image_angle. Likewise scale_x instead of image_xscale
 I like my sprite primitives that we draw to be easily adjustable overall by using one variable like radius - which would configure its size and also collision radius. We'll use a sprite for collision like s_circle or s_eliptical
 I like to keep my script gml files organized when possible so i don't get lost and overwhelmed
+If we are designing and implementing lots of matchups like kinetic bonus vs shield / armour - i like being able to tweak all the stats from 1 single spot for ease-of-access. like a config file for big more global parameters to edit. not for indiviual enemy / tower things though.

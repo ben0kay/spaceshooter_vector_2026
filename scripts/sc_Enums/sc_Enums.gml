@@ -9,4 +9,4 @@ enum AttackDelivery { PROJECTILE, AREA }
 enum AimMode { MOUNT, TARGET, TARGET_LEAD, WORLD }
 enum ShotPattern { SINGLE, SPREAD, RANDOM_CONE }
 enum HardpointFireOrder { ALL, SEQUENTIAL, RANDOM }
-enum DamageType { KINETIC, PLASMA, LASER, EXPLOSIVE }
+enum DamageType { KINETIC, ENERGY, EXPLOSIVE, ELECTRIC, THERMAL, CORROSIVE }
