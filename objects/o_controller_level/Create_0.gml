@@ -54,3 +54,7 @@ global.level.ship_selector = _selector;
 global.LevelState = LevelState.SHIP_SELECT;
 
 show_debug_message("COMBAT TEST READY - AWAITING SHIP SELECTION");
+
+
+if (!instance_exists(_enemy))
+    show_debug_message("LEVEL INITIALIZATION ERROR - enemy creation failed");
