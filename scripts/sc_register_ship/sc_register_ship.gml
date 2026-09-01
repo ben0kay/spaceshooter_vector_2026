@@ -81,14 +81,15 @@ function sc_ship_register_shard()
             },
 
             wing: {
-                hinge_forward: -0.08,
-                hinge_side: 0.22,
-                fold_idle: 0,
-                fold_moving: 16,
-                fold_boost: 30,
-                fold_dash: 40,
-                fold_response: 0.14
-            },
+		    hinge_forward: -0.02,
+		    hinge_side: 0.18,
+
+		    fold_idle: 0,
+		    fold_moving: 12,
+		    fold_boost: 22,
+		    fold_dash: 31,
+		    fold_response: 0.14
+		},
 
             draw: {
                 hull: sc_ship_shard_hull_draw,
@@ -100,26 +101,26 @@ function sc_ship_register_shard()
             },
 
             bake: {
-                body_canvas_size: 192,
-                wing_canvas_size: 160,
-                shield_canvas_size: 192,
-                thrust_canvas_size: 128,
-                damage_stages: 4
-            }
+		    body_canvas_size: 224,
+		    wing_canvas_size: 160,
+		    shield_canvas_size: 224,
+		    thrust_canvas_size: 128,
+		    damage_stages: 4
+			}
         },
 
         hardpoints: {
-            primary: [
-                {
-                    key: "primary_centre",
-                    x: 63,
-                    y: 0,
-                    angle: 0
-                }
-            ],
+		    primary: [
+		        {
+		            key: "primary_centre",
+		            x: 78,
+		            y: 0,
+		            angle: 0
+		        }
+		    ],
 
-            utility: []
-        },
+		    utility: []
+		},
 
         starting_loadout: {
             primary: "weapon_pulse_basic",
