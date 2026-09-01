@@ -227,3 +227,8 @@ Do not make consumers silently recreate missing required runtime.
 Fix compile/runtime errors before expanding systems.
 
 Profile actual bottlenecks after each visual-system change.
+
+
+Omer damage types, kinetic, electric, explosive, plasma ?? 
+
+plasma does more to shield etc. how do we implement this in the pipeline for stats. Resistance?
