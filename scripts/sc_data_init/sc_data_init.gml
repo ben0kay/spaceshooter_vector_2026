@@ -16,6 +16,7 @@ function sc_data_init()
     if (!sc_ship_register_fighter()) return false;
     if (!sc_ship_register_bastion()) return false;
 
+//move this
     if (!sc_projectile_register_simulant_pulse()) return false;
     if (!sc_weapon_register_simulant_pulse()) return false;
     if (!sc_enemy_register_twin_fighter()) return false;

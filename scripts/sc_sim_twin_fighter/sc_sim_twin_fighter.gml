@@ -151,7 +151,7 @@ function sc_enemy_twin_fighter_body_draw(_x, _y, _radius, _angle, _visual)
 }
 
 /// @description Draws one layered mechanical Twin Fighter cannon.
-function sc_e_sim_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _alpha)
+function sc_enemy_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _palette = _visual.palette;
     var _length = _radius * 0.48;
@@ -230,7 +230,7 @@ function sc_e_sim_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _al
 }
 
 /// @description Draws the Twin Fighter's rotating mechanical energy core.
-function sc_e_sim_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
+function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _palette = _visual.palette;
     var _outer_radius = _radius * 0.34;
