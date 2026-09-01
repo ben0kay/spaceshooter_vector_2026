@@ -70,6 +70,7 @@
     {"id":{"name":"sc_particles_main","path":"scripts/sc_particles_main/sc_particles_main.yy",},},
     {"id":{"name":"sc_player_init","path":"scripts/sc_player_init/sc_player_init.yy",},},
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
+    {"id":{"name":"sc_plyr_draw","path":"scripts/sc_plyr_draw/sc_plyr_draw.yy",},},
     {"id":{"name":"sc_plyr_movement","path":"scripts/sc_plyr_movement/sc_plyr_movement.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},
     {"id":{"name":"sc_projectile","path":"scripts/sc_projectile/sc_projectile.yy",},},
