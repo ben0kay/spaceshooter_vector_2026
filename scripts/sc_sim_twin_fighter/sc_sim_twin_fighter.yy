@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_enemy_visual_bake",
+  "%Name":"sc_sim_twin_fighter",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_enemy_visual_bake",
+  "name":"sc_sim_twin_fighter",
   "parent":{
     "name":"visuals",
     "path":"folders/scripts/enemy/visuals.yy",

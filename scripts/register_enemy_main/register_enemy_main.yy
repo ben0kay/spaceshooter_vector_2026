@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"enemy_register",
+  "%Name":"register_enemy_main",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"enemy_register",
+  "name":"register_enemy_main",
   "parent":{
     "name":"enemy_register",
     "path":"folders/scripts/enemy/enemy_register.yy",

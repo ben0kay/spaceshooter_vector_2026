@@ -46,7 +46,7 @@ function sc_enemy_register_twin_fighter()
 {
     return sc_enemy_register({
         identity: {
-            key: "enemy_twin_fighter",
+            key: "e_sim_twin_fighter",
             name: "Twin Fighter",
             faction: Faction.SIMULANT
         },
@@ -75,8 +75,8 @@ function sc_enemy_register_twin_fighter()
             palette: sc_faction_palette_get(Faction.SIMULANT),
 
             draw: {
-                body: sc_enemy_twin_fighter_body_draw,
-                core: sc_enemy_twin_fighter_core_draw,
+                body: sc_e_sim_twin_fighter_body_draw,
+                core: sc_e_sim_twin_fighter_core_draw,
                 thrust: sc_enemy_simulant_thrust_draw
             },
 
@@ -101,7 +101,7 @@ function sc_enemy_register_twin_fighter()
                 side: -0.48,
                 angle: 0,
                 muzzle_forward: 0.48,
-                draw_script: sc_enemy_twin_fighter_cannon_draw
+                draw_script: sc_e_sim_twin_fighter_cannon_draw
             },
             {
                 key: "cannon_right",
@@ -110,7 +110,7 @@ function sc_enemy_register_twin_fighter()
                 side: 0.48,
                 angle: 0,
                 muzzle_forward: 0.48,
-                draw_script: sc_enemy_twin_fighter_cannon_draw
+                draw_script: sc_e_sim_twin_fighter_cannon_draw
             }
         ],
 
