@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_menu_main",
+  "%Name":"sc_player_stats",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_menu_main",
+  "name":"sc_player_stats",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"player",
+    "path":"folders/scripts/player.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

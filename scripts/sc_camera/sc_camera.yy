@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_camera",
   "parent":{
-    "name":"spaceshooter_vector_2026",
-    "path":"spaceshooter_vector_2026.yyp",
+    "name":"scripts",
+    "path":"folders/scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
