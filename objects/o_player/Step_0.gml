@@ -48,3 +48,5 @@ aim.direction = point_direction(x, y, aim.world_x, aim.world_y);
 var _turn = angle_difference(aim.direction, draw_angle);
 draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
 draw_angle = draw_angle mod 360;
+
+sc_player_visual_update(id);

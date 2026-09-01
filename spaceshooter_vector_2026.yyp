@@ -70,6 +70,8 @@
     {"id":{"name":"sc_ship_select","path":"scripts/sc_ship_select/sc_ship_select.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_stats","path":"scripts/sc_stats/sc_stats.yy",},},
+    {"id":{"name":"ship_shard_visual","path":"scripts/ship_shard_visual/ship_shard_visual.yy",},},
+    {"id":{"name":"ship_visual_bake","path":"scripts/ship_visual_bake/ship_visual_bake.yy",},},
     {"id":{"name":"s_blur","path":"sprites/s_blur/s_blur.yy",},},
     {"id":{"name":"s_bright_flame_core","path":"sprites/s_bright_flame_core/s_bright_flame_core.yy",},},
     {"id":{"name":"s_broad_flame_body","path":"sprites/s_broad_flame_body/s_broad_flame_body.yy",},},

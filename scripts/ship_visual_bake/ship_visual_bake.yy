@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ship_visual_bake",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ship_visual_bake",
+  "parent":{
+    "name":"player",
+    "path":"folders/scripts/player.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
