@@ -51,6 +51,7 @@
     {"id":{"name":"sc_boot","path":"scripts/sc_boot/sc_boot.yy",},},
     {"id":{"name":"sc_camera","path":"scripts/sc_camera/sc_camera.yy",},},
     {"id":{"name":"sc_data_init","path":"scripts/sc_data_init/sc_data_init.yy",},},
+    {"id":{"name":"sc_enemy_visual_bake","path":"scripts/sc_enemy_visual_bake/sc_enemy_visual_bake.yy",},},
     {"id":{"name":"sc_enemy","path":"scripts/sc_enemy/sc_enemy.yy",},},
     {"id":{"name":"sc_Enums","path":"scripts/sc_Enums/sc_Enums.yy",},},
     {"id":{"name":"sc_faction_register","path":"scripts/sc_faction_register/sc_faction_register.yy",},},

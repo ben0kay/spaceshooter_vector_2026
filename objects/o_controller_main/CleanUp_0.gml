@@ -1,0 +1,1 @@
+sc_enemy_visual_cache_destroy();

@@ -131,8 +131,10 @@ function sc_enemy_register_twin_fighter()
             },
 
             bake: {
-                canvas_size: 256
-            }
+		    body_canvas_size: 256,
+		    core_canvas_size: 128,
+		    hardpoint_canvas_size: 128
+		}
         },
 
         collision: {

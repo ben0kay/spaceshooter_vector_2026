@@ -1,13 +1,24 @@
 /// @description Initializes one enemy from registered data.
 function sc_enemy_init(_enemy, _enemy_key)
 {
-    if (!variable_struct_exists(global.data.enemies, _enemy_key))
+    if (!variable_struct_exists(
+        global.data.enemies,
+        _enemy_key
+    ))
     {
-        show_debug_message("ENEMY INITIALIZATION ERROR - unknown key: " + _enemy_key);
+        show_debug_message(
+            "ENEMY INITIALIZATION ERROR - unknown key: "
+            + _enemy_key
+        );
+
         return false;
     }
 
-    var _data = variable_struct_get(global.data.enemies, _enemy_key);
+    var _data = variable_struct_get(
+        global.data.enemies,
+        _enemy_key
+    );
+
     var _radius = _data.visual.radius;
 
     _enemy.enemy = {
@@ -30,40 +41,104 @@ function sc_enemy_init(_enemy, _enemy_key)
         movement: variable_clone(_data.movement),
 
         collision: {
-            radius: _radius * _data.collision.radius_scale,
-            blocks_player: _data.collision.blocks_player
+            radius: _radius
+                * _data.collision.radius_scale,
+
+            blocks_player:
+                _data.collision.blocks_player
         },
 
         visual: variable_clone(_data.visual),
         hardpoints: variable_clone(_data.hardpoints),
-        attack_controller: variable_clone(_data.attack_controller)
+
+        attack_controller:
+            variable_clone(_data.attack_controller)
     };
 
     var _runtime = _enemy.enemy;
-    _runtime.range.detection_sq = _runtime.range.detection * _runtime.range.detection;
-    _runtime.range.combat_sq = _runtime.range.combat * _runtime.range.combat;
-    _runtime.range.forget_sq = _runtime.range.forget * _runtime.range.forget;
+    var _cache = sc_enemy_visual_cache_get(_enemy_key);
+
+    _runtime.range.detection_sq =
+        _runtime.range.detection
+        * _runtime.range.detection;
+
+    _runtime.range.combat_sq =
+        _runtime.range.combat
+        * _runtime.range.combat;
+
+    _runtime.range.forget_sq =
+        _runtime.range.forget
+        * _runtime.range.forget;
 
     _runtime.movement.velocity_x = 0;
     _runtime.movement.velocity_y = 0;
 
     _runtime.visual.runtime = {
+        body_sprite:
+            is_struct(_cache)
+            ? _cache.body
+            : -1,
+
+        core_sprite:
+            is_struct(_cache)
+            ? _cache.core
+            : -1,
+
         core_angle: 0,
         core_alpha: 1
     };
 
-    for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
-        _runtime.hardpoints[_i].runtime = { recoil: 0 };
-
-    for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
+    for (
+        var _i = 0;
+        _i < array_length(_runtime.hardpoints);
+        _i++
+    )
     {
-        var _attack = _runtime.attack_controller.attacks[_i];
+        var _sprite = -1;
+
+        if (
+            is_struct(_cache)
+            && _i < array_length(_cache.hardpoints)
+        )
+        {
+            _sprite = _cache.hardpoints[_i];
+        }
+
+        _runtime.hardpoints[_i].runtime = {
+            sprite: _sprite,
+            recoil: 0
+        };
+    }
+
+    for (
+        var _i = 0;
+        _i < array_length(
+            _runtime.attack_controller.attacks
+        );
+        _i++
+    )
+    {
+        var _attack =
+            _runtime.attack_controller.attacks[_i];
+
         _attack.hardpoint_indices = [];
 
-        for (var _h = 0; _h < array_length(_runtime.hardpoints); _h++)
+        for (
+            var _h = 0;
+            _h < array_length(_runtime.hardpoints);
+            _h++
+        )
         {
-            if (_runtime.hardpoints[_h].group == _attack.hardpoint_group)
-                array_push(_attack.hardpoint_indices, _h);
+            if (
+                _runtime.hardpoints[_h].group
+                == _attack.hardpoint_group
+            )
+            {
+                array_push(
+                    _attack.hardpoint_indices,
+                    _h
+                );
+            }
         }
     }
 
@@ -81,7 +156,12 @@ function sc_enemy_init(_enemy, _enemy_key)
     _enemy.initialized = true;
 
     global.level.enemies_alive++;
-    show_debug_message("ENEMY INITIALIZED - " + _runtime.identity.name);
+
+    show_debug_message(
+        "ENEMY INITIALIZED - "
+        + _runtime.identity.name
+    );
+
     return true;
 }
 
@@ -407,41 +487,143 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction)
     return true;
 }
 
-/// @description Draws the complete temporary primitive enemy.
+/// @description Draws one enemy using shared baked components.
 function sc_enemy_draw(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
+    var _visual_runtime = _visual.runtime;
 
-    _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
+    if (sprite_exists(_visual_runtime.body_sprite))
+    {
+        draw_sprite_ext(
+            _visual_runtime.body_sprite,
+            0,
+            _enemy.x,
+            _enemy.y,
+            1,
+            1,
+            _enemy.draw_angle,
+            c_white,
+            1
+        );
+    }
+    else
+    {
+        _visual.draw.body(
+            _enemy.x,
+            _enemy.y,
+            _visual.radius,
+            _enemy.draw_angle,
+            _visual
+        );
+    }
 
-    _visual.draw.core(
-        _enemy.x,
-        _enemy.y,
-        _visual.radius,
-        _enemy.draw_angle + _visual.runtime.core_angle,
-        _visual,
-        _visual.runtime.core_alpha
-    );
+    var _core_angle =
+        _enemy.draw_angle
+        + _visual_runtime.core_angle;
 
-    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    if (sprite_exists(_visual_runtime.core_sprite))
+    {
+        draw_sprite_ext(
+            _visual_runtime.core_sprite,
+            0,
+            _enemy.x,
+            _enemy.y,
+            1,
+            1,
+            _core_angle,
+            c_white,
+            _visual_runtime.core_alpha
+        );
+    }
+    else
+    {
+        _visual.draw.core(
+            _enemy.x,
+            _enemy.y,
+            _visual.radius,
+            _core_angle,
+            _visual,
+            _visual_runtime.core_alpha
+        );
+    }
+
+    for (
+        var _i = 0;
+        _i < array_length(_data.hardpoints);
+        _i++
+    )
     {
         var _hardpoint = _data.hardpoints[_i];
-        var _forward = _hardpoint.forward * _visual.radius;
-        var _side = _hardpoint.side * _visual.radius;
-        var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
-        var _recoil = _hardpoint.runtime.recoil;
+
+        var _forward =
+            _hardpoint.forward
+            * _visual.radius;
+
+        var _side =
+            _hardpoint.side
+            * _visual.radius;
+
+        var _hardpoint_angle =
+            _enemy.draw_angle
+            + _hardpoint.angle;
+
+        var _recoil =
+            _hardpoint.runtime.recoil;
 
         var _hardpoint_x = _enemy.x
-            + lengthdir_x(_forward, _enemy.draw_angle)
-            + lengthdir_x(_side, _enemy.draw_angle + 90)
-            - lengthdir_x(_recoil, _hardpoint_angle);
+            + lengthdir_x(
+                _forward,
+                _enemy.draw_angle
+            )
+            + lengthdir_x(
+                _side,
+                _enemy.draw_angle + 90
+            )
+            - lengthdir_x(
+                _recoil,
+                _hardpoint_angle
+            );
 
         var _hardpoint_y = _enemy.y
-            + lengthdir_y(_forward, _enemy.draw_angle)
-            + lengthdir_y(_side, _enemy.draw_angle + 90)
-            - lengthdir_y(_recoil, _hardpoint_angle);
+            + lengthdir_y(
+                _forward,
+                _enemy.draw_angle
+            )
+            + lengthdir_y(
+                _side,
+                _enemy.draw_angle + 90
+            )
+            - lengthdir_y(
+                _recoil,
+                _hardpoint_angle
+            );
 
-        _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
+        if (sprite_exists(_hardpoint.runtime.sprite))
+        {
+            draw_sprite_ext(
+                _hardpoint.runtime.sprite,
+                0,
+                _hardpoint_x,
+                _hardpoint_y,
+                1,
+                1,
+                _hardpoint_angle,
+                c_white,
+                1
+            );
+        }
+        else
+        {
+            _hardpoint.draw_script(
+                _hardpoint_x,
+                _hardpoint_y,
+                _visual.radius,
+                _hardpoint_angle,
+                _visual,
+                1
+            );
+        }
     }
 }

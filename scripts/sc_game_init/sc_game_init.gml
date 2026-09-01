@@ -14,9 +14,17 @@ function sc_game_init()
     global.level = undefined;
     global.player_id = noone;
 
-    if (!sc_data_init()) return false;
+    if (!sc_data_init())
+        return false;
+
+    if (!sc_enemy_visual_cache_init())
+        return false;
 
     global.game.initialized = true;
-    show_debug_message("SPACE SHOOTER VECTOR 2026 - GAME INITIALIZED");
+
+    show_debug_message(
+        "SPACE SHOOTER VECTOR 2026 - GAME INITIALIZED"
+    );
+
     return true;
 }
