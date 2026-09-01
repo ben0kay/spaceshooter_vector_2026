@@ -31,6 +31,7 @@
     {"id":{"name":"o_camera","path":"objects/o_camera/o_camera.yy",},},
     {"id":{"name":"o_controller_level","path":"objects/o_controller_level/o_controller_level.yy",},},
     {"id":{"name":"o_controller_main","path":"objects/o_controller_main/o_controller_main.yy",},},
+    {"id":{"name":"o_main_menu","path":"objects/o_main_menu/o_main_menu.yy",},},
     {"id":{"name":"o_player","path":"objects/o_player/o_player.yy",},},
     {"id":{"name":"o_ship_select","path":"objects/o_ship_select/o_ship_select.yy",},},
     {"id":{"name":"r_boot","path":"rooms/r_boot/r_boot.yy",},},
