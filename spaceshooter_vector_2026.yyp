@@ -55,6 +55,8 @@
     {"id":{"name":"sc_background_space","path":"scripts/sc_background_space/sc_background_space.yy",},},
     {"id":{"name":"sc_boot","path":"scripts/sc_boot/sc_boot.yy",},},
     {"id":{"name":"sc_camera","path":"scripts/sc_camera/sc_camera.yy",},},
+    {"id":{"name":"sc_config","path":"scripts/sc_config/sc_config.yy",},},
+    {"id":{"name":"sc_damage","path":"scripts/sc_damage/sc_damage.yy",},},
     {"id":{"name":"sc_data_init","path":"scripts/sc_data_init/sc_data_init.yy",},},
     {"id":{"name":"sc_enemy_stats","path":"scripts/sc_enemy_stats/sc_enemy_stats.yy",},},
     {"id":{"name":"sc_enemy_visual_bake","path":"scripts/sc_enemy_visual_bake/sc_enemy_visual_bake.yy",},},

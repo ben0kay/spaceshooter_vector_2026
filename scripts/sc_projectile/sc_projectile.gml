@@ -26,9 +26,10 @@ function sc_projectile_init(_projectile, _create)
         source: _create.source,
         direction: _create.direction,
         movement: variable_clone(_data.movement),
-        damage: variable_clone(_data.damage),
+        damage: sc_damage_packet_create(_data.damage, _create.source),
         collision: variable_clone(_data.collision),
         visual: variable_clone(_data.visual),
+
         life: {
             remaining: _data.life.maximum,
             maximum: _data.life.maximum
