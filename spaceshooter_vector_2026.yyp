@@ -64,6 +64,7 @@
     {"id":{"name":"sc_Enums","path":"scripts/sc_Enums/sc_Enums.yy",},},
     {"id":{"name":"sc_faction_register","path":"scripts/sc_faction_register/sc_faction_register.yy",},},
     {"id":{"name":"sc_game_init","path":"scripts/sc_game_init/sc_game_init.yy",},},
+    {"id":{"name":"sc_health_bar","path":"scripts/sc_health_bar/sc_health_bar.yy",},},
     {"id":{"name":"sc_Macros","path":"scripts/sc_Macros/sc_Macros.yy",},},
     {"id":{"name":"sc_menu_main","path":"scripts/sc_menu_main/sc_menu_main.yy",},},
     {"id":{"name":"sc_particles_main","path":"scripts/sc_particles_main/sc_particles_main.yy",},},

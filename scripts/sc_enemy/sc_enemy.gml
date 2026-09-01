@@ -630,20 +630,22 @@ function sc_enemy_damage(_enemy, _packet)
     var _defence = _data.defence;
     var _result = sc_damage_resolve(
         _packet,
-        _defence.shield,
-        _defence.armour,
-        _defence.hull
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current
     );
 
-    _defence.shield = _result.shield;
-    _defence.armour = _result.armour;
-    _defence.hull = _result.hull;
+    _defence.shield.current = _result.shield;
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
 
     if (_result.dealt.total <= 0) return false;
 
-    if (_defence.hull <= 0)
+    sc_health_bar_damage_show(_enemy.health_bar);
+
+    if (_defence.hull.current <= 0)
     {
-        _defence.hull = 0;
+        _defence.hull.current = 0;
         _data.state = EnemyState.DEAD;
         sc_enemy_attack_cancel(_enemy);
 

@@ -135,6 +135,7 @@ function sc_player_damage(_player, _packet)
     if (_result.dealt.total <= 0) return false;
 
     _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
+    sc_health_bar_damage_show(_player.health_bar);
 
     if (_result.dealt.shield > 0)
         _player.ship.visual.runtime.shield_hit_alpha = 1;

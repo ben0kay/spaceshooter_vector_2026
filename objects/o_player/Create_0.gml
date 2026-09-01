@@ -8,4 +8,10 @@ if (!variable_instance_exists(id, "ship_key"))
 }
 
 if (!sc_player_init(id, ship_key))
+{
     instance_destroy();
+    exit;
+}
+
+health_bar = sc_health_bar_create(true);
+health_bar.width = max(72, ship.collision.radius * 2.2);
