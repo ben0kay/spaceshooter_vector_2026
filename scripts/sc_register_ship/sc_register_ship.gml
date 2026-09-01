@@ -23,42 +23,19 @@ function sc_ship_register(_ship)
 function sc_ship_register_shard()
 {
     return sc_ship_register({
-        identity: {
-            key: "ship_shard",
-            name: "Shard",
-            description: "A fast silver-aqua interceptor with adaptive swept wings."
-        },
+        identity: { key: "ship_shard", name: "Shard", description: "A fast silver-aqua interceptor with adaptive swept wings." },
 
         stats_base: {
-            hull_max: 75,
-            armour_max: 25,
-            shield_max: 40,
-            shield_recharge_delay: 150,
-            shield_recharge_rate: 0.35,
-
-            speed_max: 8,
-            acceleration: 0.55,
-            deceleration: 0.7,
-            turn_speed: 8,
-
-            damage_multiplier: 1,
-            fire_rate_multiplier: 1,
-            cargo_capacity: 12,
-
-            boost_speed_multiplier: 1.3,
-            dash_speed: 20,
-            dash_duration: 10,
-            dash_cooldown: 75,
-            dash_double_tap_window: 15,
-            dash_exit_speed_multiplier: 0.45,
-            dash_invulnerable: 1,
-            weapons_while_boosting: 0,
-            weapons_while_dashing: 0
+            hull_max: 75, armour_max: 25, shield_max: 40,
+            shield_recharge_delay: 150, shield_recharge_rate: 0.35,
+            speed_max: 8, acceleration: 0.55, deceleration: 0.7, turn_speed: 8,
+            damage_multiplier: 1, fire_rate_multiplier: 1, cargo_capacity: 12,
+            boost_speed_multiplier: 1.3, dash_speed: 20, dash_duration: 10, dash_cooldown: 75,
+            dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
+            weapons_while_boosting: 0, weapons_while_dashing: 0
         },
 
-        collision: {
-            radius: 30
-        },
+        collision: { radius: 30 },
 
         visual: {
             radius: 46,
@@ -81,15 +58,10 @@ function sc_ship_register_shard()
             },
 
             wing: {
-		    hinge_forward: -0.02,
-		    hinge_side: 0.18,
-
-		    fold_idle: 0,
-		    fold_moving: 12,
-		    fold_boost: 22,
-		    fold_dash: 31,
-		    fold_response: 0.14
-		},
+                hinge_forward: -0.02, hinge_side: 0.27,
+                fold_idle: -7, fold_moving: 8, fold_boost: 20, fold_dash: 30,
+                fold_response: 0.14
+            },
 
             draw: {
                 hull: sc_ship_shard_hull_draw,
@@ -101,37 +73,21 @@ function sc_ship_register_shard()
             },
 
             bake: {
-		    body_canvas_size: 224,
-		    wing_canvas_size: 160,
-		    shield_canvas_size: 224,
-		    thrust_canvas_size: 128,
-		    damage_stages: 4
-			}
+                body_canvas_size: 224, wing_canvas_size: 160,
+                shield_canvas_size: 224, thrust_canvas_size: 128,
+                damage_stages: 4
+            }
         },
 
         hardpoints: {
-		    primary: [
-		        {
-		            key: "primary_left",
-		            x: 53,
-		            y: -20,
-		            angle: 0
-		        },
-		        {
-		            key: "primary_right",
-		            x: 53,
-		            y: 20,
-		            angle: 0
-		        }
-		    ],
+            primary: [
+                { key: "primary_left", x: 45, y: -21, angle: 0 },
+                { key: "primary_right", x: 45, y: 21, angle: 0 }
+            ],
+            utility: []
+        },
 
-		    utility: []
-		},
-
-        starting_loadout: {
-            primary: "weapon_pulse_basic",
-            secondary: undefined
-        }
+        starting_loadout: { primary: "weapon_pulse_basic", secondary: undefined }
     });
 }
 

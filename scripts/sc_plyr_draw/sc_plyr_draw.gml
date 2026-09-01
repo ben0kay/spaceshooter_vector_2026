@@ -20,67 +20,49 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
         var _thrust_x = _player.x + lengthdir_x(-_radius * 0.92, _angle);
         var _thrust_y = _player.y + lengthdir_y(-_radius * 0.92, _angle);
         var _flicker = 0.94 + sin(GAME_TICK * 0.38 + _runtime.thrust_phase) * 0.06;
-
-        draw_sprite_ext(
-            _cache.thrust, 0, _thrust_x, _thrust_y,
-            (0.3 + _thrust_power * 0.9) * _flicker,
-            0.85 + _thrust_power * 0.2,
-            _angle + 180, _colour, _thrust_power * _alpha
-        );
+        draw_sprite_ext(_cache.thrust, 0, _thrust_x, _thrust_y, (0.3 + _thrust_power * 0.9) * _flicker, 0.85 + _thrust_power * 0.2, _angle + 180, _colour, _thrust_power * _alpha);
     }
 
     var _hull_stage = sc_player_damage_visual_stage(_player.defence.hull.current, _player.defence.hull.maximum);
     var _armour_visible = _player.defence.armour.current > 0;
     var _armour_stage = sc_player_damage_visual_stage(_player.defence.armour.current, _player.defence.armour.maximum);
-
     var _wing = _visual.wing;
     var _hinge_forward = _wing.hinge_forward * _radius;
     var _hinge_side = _wing.hinge_side * _radius;
     var _fold = _runtime.wing_fold;
 
+    // Wing hulls behind the central hull.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _hinge_x = _player.x
-            + lengthdir_x(_hinge_forward, _angle)
-            + lengthdir_x(_hinge_side * _side, _angle + 90);
-
-        var _hinge_y = _player.y
-            + lengthdir_y(_hinge_forward, _angle)
-            + lengthdir_y(_hinge_side * _side, _angle + 90);
-
-        var _wing_angle = _angle + _fold * _side;
-        var _wing_yscale = _side;
-
-        draw_sprite_ext(
-            _cache.wing_hull[_hull_stage], 0,
-            _hinge_x, _hinge_y,
-            1, _wing_yscale,
-            _wing_angle, _colour, _alpha
-        );
-
-        if (_armour_visible)
-        {
-            draw_sprite_ext(
-                _cache.wing_armour[_armour_stage], 0,
-                _hinge_x, _hinge_y,
-                1, _wing_yscale,
-                _wing_angle, _colour, _alpha
-            );
-        }
+        var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
+        var _hinge_y = _player.y + lengthdir_y(_hinge_forward, _angle) + lengthdir_y(_hinge_side * _side, _angle + 90);
+        draw_sprite_ext(_cache.wing_hull[_hull_stage], 0, _hinge_x, _hinge_y, 1, _side, _angle + _fold * _side, _colour, _alpha);
     }
 
+    // Main body above the wing hulls.
     draw_sprite_ext(_cache.hull[_hull_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
 
+    // Wing armour above the body so attachment bases remain visible.
     if (_armour_visible)
+    {
+        for (var _side = -1; _side <= 1; _side += 2)
+        {
+            var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
+            var _hinge_y = _player.y + lengthdir_y(_hinge_forward, _angle) + lengthdir_y(_hinge_side * _side, _angle + 90);
+            draw_sprite_ext(_cache.wing_armour[_armour_stage], 0, _hinge_x, _hinge_y, 1, _side, _angle + _fold * _side, _colour, _alpha);
+        }
+
         draw_sprite_ext(_cache.armour[_armour_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
+    }
 
     if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
         var _shield_pulse = 0.82 + sin(GAME_TICK * 0.08) * 0.12;
         var _shield_alpha = clamp(_shield_ratio * 0.55 * _shield_pulse + _runtime.shield_hit_alpha, 0, 1);
-
+        gpu_set_blendmode(bm_add);
         draw_sprite_ext(_cache.shield, 0, _player.x, _player.y, 1, 1, _angle, _colour, _shield_alpha * _alpha);
+        gpu_set_blendmode(bm_normal);
     }
 
     draw_set_alpha(1);
