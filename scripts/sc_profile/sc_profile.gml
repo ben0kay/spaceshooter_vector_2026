@@ -1,7 +1,7 @@
-/// @description Returns the save path for one profile slot.
+/// @description Returns the filename for one profile slot.
 function sc_profile_path(_slot)
 {
-    return save_directory + "ssv_profile_" + string(_slot) + ".json";
+    return "ssv_profile_" + string(_slot) + ".json";
 }
 
 /// @description Creates a new default profile struct.
