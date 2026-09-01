@@ -28,7 +28,7 @@ function sc_weapon_register(_data)
     return true;
 }
 
-/// @description Registers one enemy definition.
+/// @description Registers one validated enemy definition.
 function sc_enemy_register(_data)
 {
     var _key = _data.identity.key;
@@ -39,7 +39,9 @@ function sc_enemy_register(_data)
         return false;
     }
 
-    if (_data.range.combat > _data.range.detection || _data.range.detection > _data.range.forget)
+    var _stats = _data.stats_base;
+
+    if (_stats.combat_range > _stats.detection_range || _stats.detection_range > _stats.forget_range)
     {
         show_debug_message("ENEMY REGISTRATION ERROR - invalid range order: " + _key);
         return false;

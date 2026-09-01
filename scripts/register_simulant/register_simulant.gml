@@ -51,47 +51,46 @@ function sc_enemy_register_twin_fighter()
             faction: Faction.SIMULANT
         },
 
-        defence: {
+        stats_base: {
             shield_max: 10,
             armour_max: 200,
-            hull_max: 60
-        },
+            hull_max: 60,
 
-        movement: {
             speed_max: 5.5,
             acceleration: 0.3,
             friction: 0.985,
-            turn_speed: 4
-        },
+            turn_speed: 4,
 
-        range: {
-            detection: 1080,
-            combat: 840,
-            forget: 1280
+            detection_range: 1080,
+            combat_range: 840,
+            forget_range: 1280,
+
+            damage_multiplier: 1,
+            fire_rate_multiplier: 1
         },
 
         visual: {
-	    radius: 58,
-	    palette: sc_faction_palette_get(Faction.SIMULANT),
+            radius: 58,
+            palette: sc_faction_palette_get(Faction.SIMULANT),
 
-	    draw: {
-	        body: sc_enemy_twin_fighter_body_draw,
-	        core: sc_enemy_twin_fighter_core_draw
-	    },
+            draw: {
+                body: sc_enemy_twin_fighter_body_draw,
+                core: sc_enemy_twin_fighter_core_draw
+            },
 
-	    thrust: {
-	        draw_script: sc_enemy_simulant_thrust_draw,
-	        ignition_script: sc_particles_simulant_ignition,
-	        particle_script: sc_particles_simulant_thrust
-	    },
+            thrust: {
+                draw_script: sc_enemy_simulant_thrust_draw,
+                ignition_script: sc_particles_simulant_ignition,
+                particle_script: sc_particles_simulant_thrust
+            },
 
-	    bake: {
-	        body_canvas_size: 256,
-	        core_canvas_size: 128,
-	        hardpoint_canvas_size: 128,
-	        thrust_canvas_size: 128
-	    }
-	},
+            bake: {
+                body_canvas_size: 256,
+                core_canvas_size: 128,
+                hardpoint_canvas_size: 128,
+                thrust_canvas_size: 128
+            }
+        },
 
         collision: {
             radius_scale: 0.62,

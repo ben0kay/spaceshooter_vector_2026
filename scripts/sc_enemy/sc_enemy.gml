@@ -1,4 +1,4 @@
-/// @description Initializes one enemy from registered data.
+/// @description Initializes one enemy from registered data and final stats.
 function sc_enemy_init(_enemy, _enemy_key)
 {
     if (!variable_struct_exists(global.data.enemies, _enemy_key))
@@ -17,17 +17,9 @@ function sc_enemy_init(_enemy, _enemy_key)
         target_id: noone,
         target_distance_sq: 0,
 
-        defence: {
-            shield: _data.defence.shield_max,
-            shield_max: _data.defence.shield_max,
-            armour: _data.defence.armour_max,
-            armour_max: _data.defence.armour_max,
-            hull: _data.defence.hull_max,
-            hull_max: _data.defence.hull_max
-        },
-
-        range: variable_clone(_data.range),
-        movement: variable_clone(_data.movement),
+        stats: undefined,
+        defence: undefined,
+        movement: { velocity_x: 0, velocity_y: 0 },
 
         collision: {
             radius: _radius * _data.collision.radius_scale,
@@ -40,15 +32,21 @@ function sc_enemy_init(_enemy, _enemy_key)
         attack_controller: variable_clone(_data.attack_controller)
     };
 
+    if (!sc_enemy_stats_init(_enemy, _data.stats_base))
+        return false;
+
     var _runtime = _enemy.enemy;
+    var _final = _runtime.stats.final;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
-    _runtime.range.detection_sq = sqr(_runtime.range.detection);
-    _runtime.range.combat_sq = sqr(_runtime.range.combat);
-    _runtime.range.forget_sq = sqr(_runtime.range.forget);
-
-    _runtime.movement.velocity_x = 0;
-    _runtime.movement.velocity_y = 0;
+    _runtime.defence = {
+        shield: _final.shield_max,
+        shield_max: _final.shield_max,
+        armour: _final.armour_max,
+        armour_max: _final.armour_max,
+        hull: _final.hull_max,
+        hull_max: _final.hull_max
+    };
 
     _runtime.visual.runtime = {
         body_sprite: is_struct(_cache) ? _cache.body : -1,
@@ -60,25 +58,12 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
     {
-        var _sprite = -1;
-
-        if (is_struct(_cache) && _i < array_length(_cache.hardpoints))
-            _sprite = _cache.hardpoints[_i];
-
-        _runtime.hardpoints[_i].runtime = {
-            sprite: _sprite,
-            recoil: 0
-        };
+        var _sprite = is_struct(_cache) && _i < array_length(_cache.hardpoints) ? _cache.hardpoints[_i] : -1;
+        _runtime.hardpoints[_i].runtime = { sprite: _sprite, recoil: 0 };
     }
 
     for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
-    {
-        _runtime.thrusters[_i].runtime = {
-            active: false,
-            power: 0,
-            phase: irandom(359)
-        };
-    }
+        _runtime.thrusters[_i].runtime = { active: false, power: 0, phase: irandom(359) };
 
     for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
     {
@@ -110,10 +95,11 @@ function sc_enemy_init(_enemy, _enemy_key)
     return true;
 }
 
-/// @description Updates detection, combat and forget transitions.
+/// @description Updates detection, combat and forget transitions using final stats.
 function sc_enemy_perception_update(_enemy)
 {
     var _data = _enemy.enemy;
+    var _stats = _data.stats.final;
 
     if (!instance_exists(global.player_id))
     {
@@ -131,7 +117,7 @@ function sc_enemy_perception_update(_enemy)
         case EnemyState.IDLE:
             if (!UPDATE_4) return;
 
-            if (_data.target_distance_sq <= _data.range.detection_sq)
+            if (_data.target_distance_sq <= _stats.detection_range_sq)
             {
                 _data.target_id = global.player_id;
                 _data.state = EnemyState.CHASING;
@@ -139,24 +125,24 @@ function sc_enemy_perception_update(_enemy)
         break;
 
         case EnemyState.CHASING:
-            if (_data.target_distance_sq > _data.range.forget_sq)
+            if (_data.target_distance_sq > _stats.forget_range_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.target_id = noone;
                 _data.state = EnemyState.IDLE;
             }
-            else if (_data.target_distance_sq <= _data.range.combat_sq)
+            else if (_data.target_distance_sq <= _stats.combat_range_sq)
                 _data.state = EnemyState.ATTACKING;
         break;
 
         case EnemyState.ATTACKING:
-            if (_data.target_distance_sq > _data.range.forget_sq)
+            if (_data.target_distance_sq > _stats.forget_range_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.target_id = noone;
                 _data.state = EnemyState.IDLE;
             }
-            else if (_data.target_distance_sq > _data.range.combat_sq)
+            else if (_data.target_distance_sq > _stats.combat_range_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.state = EnemyState.CHASING;
@@ -171,6 +157,7 @@ function sc_enemy_visual_update(_enemy)
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _movement = _data.movement;
+    var _speed_max = _data.stats.final.speed_max;
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
@@ -186,7 +173,7 @@ function sc_enemy_visual_update(_enemy)
     }
 
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
-    var _target_power = clamp(_speed / _movement.speed_max, 0, 1);
+    var _target_power = _speed_max > 0 ? clamp(_speed / _speed_max, 0, 1) : 0;
 
     for (var _i = 0; _i < array_length(_data.thrusters); _i++)
     {
@@ -207,45 +194,25 @@ function sc_enemy_visual_update(_enemy)
         var _thruster_angle = _enemy.draw_angle + _thruster.angle;
 
         if (_active && !_runtime.active)
-        {
-            _visual.thrust.ignition_script(
-                _thruster_x,
-                _thruster_y,
-                _thruster_angle,
-                _thruster.scale
-            );
-        }
+            _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _thruster.scale);
 
         _runtime.active = _active;
+        _runtime.power = lerp(_runtime.power, _target_power, _target_power > _runtime.power ? 0.22 : 0.12);
 
-        _runtime.power = lerp(
-            _runtime.power,
-            _target_power,
-            _target_power > _runtime.power ? 0.22 : 0.12
-        );
-
-        if (
-            _runtime.power > 0.15
-            && ((GAME_TICK + _runtime.phase) mod 3) == 0
-        )
-        {
-            _visual.thrust.particle_script(
-                _thruster_x,
-                _thruster_y,
-                _thruster_angle,
-                _runtime.power,
-                _thruster.scale
-            );
-        }
+        if (_runtime.power > 0.15 && ((GAME_TICK + _runtime.phase) mod 3) == 0)
+            _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power, _thruster.scale);
     }
 }
 
 /// @description Applies passive idle movement decay.
 function sc_enemy_update_idle(_enemy)
 {
-    var _movement = _enemy.enemy.movement;
-    _movement.velocity_x *= _movement.friction;
-    _movement.velocity_y *= _movement.friction;
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _friction = _data.stats.final.friction;
+
+    _movement.velocity_x *= _friction;
+    _movement.velocity_y *= _friction;
 
     if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
     if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
@@ -254,24 +221,25 @@ function sc_enemy_update_idle(_enemy)
     _enemy.y += _movement.velocity_y;
 }
 
-/// @description Moves the enemy toward its current target.
+/// @description Moves the enemy toward its target using final stats.
 function sc_enemy_update_chasing(_enemy)
 {
     var _data = _enemy.enemy;
-    var _target = _data.target_id;
+    var _stats = _data.stats.final;
     var _movement = _data.movement;
+    var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
-    var _target_vx = lengthdir_x(_movement.speed_max, _direction);
-    var _target_vy = lengthdir_y(_movement.speed_max, _direction);
+    var _target_vx = lengthdir_x(_stats.speed_max, _direction);
+    var _target_vy = lengthdir_y(_stats.speed_max, _direction);
 
-    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_movement.acceleration, _movement.acceleration);
-    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_movement.acceleration, _movement.acceleration);
+    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_stats.acceleration, _stats.acceleration);
+    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_stats.acceleration, _stats.acceleration);
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
 
     var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_movement.turn_speed, _movement.turn_speed);
+    _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
     _enemy.draw_angle = _enemy.draw_angle mod 360;
 }
 
@@ -279,18 +247,19 @@ function sc_enemy_update_chasing(_enemy)
 function sc_enemy_update_attacking(_enemy)
 {
     var _data = _enemy.enemy;
+    var _stats = _data.stats.final;
     var _movement = _data.movement;
     var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
 
-    _movement.velocity_x *= _movement.friction;
-    _movement.velocity_y *= _movement.friction;
+    _movement.velocity_x *= _stats.friction;
+    _movement.velocity_y *= _stats.friction;
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
 
     var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_movement.turn_speed, _movement.turn_speed);
+    _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
     _enemy.draw_angle = _enemy.draw_angle mod 360;
 
     sc_enemy_attack_update(_enemy);
@@ -343,11 +312,13 @@ function sc_enemy_attack_select(_enemy)
     return 0;
 }
 
-/// @description Updates attack timing and alternating hardpoints.
+/// @description Updates attack timing using final enemy fire-rate stats.
 function sc_enemy_attack_update(_enemy)
 {
-    var _controller = _enemy.enemy.attack_controller;
+    var _data = _enemy.enemy;
+    var _controller = _data.attack_controller;
     var _runtime = _controller.runtime;
+    var _fire_rate = _data.stats.final.fire_rate_multiplier;
 
     if (!_runtime.active)
     {
@@ -390,9 +361,10 @@ function sc_enemy_attack_update(_enemy)
     {
         _runtime.active = false;
         _runtime.current_attack = -1;
-        _runtime.cooldown_until = GAME_TICK + _attack.firing.cooldown;
+        _runtime.cooldown_until = GAME_TICK + max(1, round(_attack.firing.cooldown / _fire_rate));
     }
-    else _runtime.next_fire_tick = GAME_TICK + _attack.firing.interval;
+    else
+        _runtime.next_fire_tick = GAME_TICK + max(1, round(_attack.firing.interval / _fire_rate));
 }
 
 /// @description Resolves one hardpoint muzzle and fires its configured weapon.
@@ -462,9 +434,10 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction)
         return false;
 
     var _source = {
-        owner_id: _owner,
-        faction: _owner.enemy.identity.faction
-    };
+	    owner_id: _owner,
+	    faction: _owner.enemy.identity.faction,
+	    damage_multiplier: _owner.enemy.stats.final.damage_multiplier
+	};
 
     switch (_shot.pattern)
     {
