@@ -69,18 +69,20 @@ function sc_player_init(_player, _ship_key)
         },
 
         dash: {
-            direction: 0,
-            remaining: 0,
-            cooldown_remaining: 0,
-            double_tap_remaining: 0,
-            invulnerable: false,
+	    direction: 0,
+	    remaining: 0,
+	    cooldown_remaining: 0,
+	    double_tap_remaining: 0,
+	    invulnerable: false,
 
-            ghosts: array_create(6, undefined),
-            ghost_count: 0,
-            ghost_limit: 6,
-            ghost_interval: 2,
-            ghost_life: 12
-        }
+	    ghosts: array_create(8, undefined),
+		ghost_count: 0,
+		ghost_limit: 8,
+		ghost_interval: 1,
+		ghost_life: 24,
+		ghost_scale_min: 0.62,
+		ghost_alpha_max: 0.72
+	}
     };
 
     _player.combat = {

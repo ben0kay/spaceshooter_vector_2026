@@ -284,7 +284,7 @@ function sc_player_update_destroyed(_player)
     sc_player_visual_update(_player);
 }
 
-/// @description Draws fading baked Shard afterimages behind the player.
+/// @description Draws shrinking bright-aqua baked ship afterimages.
 function sc_player_dash_ghosts_draw(_player)
 {
     var _dash = _player.movement.dash;
@@ -304,20 +304,24 @@ function sc_player_dash_ghosts_draw(_player)
         _player.defence.armour.maximum
     );
 
+    var _aqua = merge_colour(c_white, _visual.palette.energy, 0.7);
+
     for (var _i = _dash.ghost_count - 1; _i >= 0; _i--)
     {
         var _ghost = _dash.ghosts[_i];
-        var _alpha = (_ghost.life / _dash.ghost_life) * 0.32;
+        var _life_ratio = clamp(_ghost.life / _dash.ghost_life, 0, 1);
+        var _scale = lerp(_dash.ghost_scale_min, 1, _life_ratio);
+        var _alpha = power(_life_ratio, 1.25) * _dash.ghost_alpha_max;
 
         draw_sprite_ext(
             _cache.hull[_hull_stage],
             0,
             _ghost.x,
             _ghost.y,
-            1,
-            1,
+            _scale,
+            _scale,
             _ghost.angle,
-            _visual.palette.energy,
+            _aqua,
             _alpha
         );
 
@@ -328,15 +332,38 @@ function sc_player_dash_ghosts_draw(_player)
                 0,
                 _ghost.x,
                 _ghost.y,
-                1,
-                1,
+                _scale,
+                _scale,
                 _ghost.angle,
-                _visual.palette.core,
-                _alpha * 0.55
+                _aqua,
+                _alpha * 0.75
             );
         }
     }
 
+    gpu_set_blendmode(bm_add);
+
+    for (var _i = _dash.ghost_count - 1; _i >= 0; _i--)
+    {
+        var _ghost = _dash.ghosts[_i];
+        var _life_ratio = clamp(_ghost.life / _dash.ghost_life, 0, 1);
+        var _scale = lerp(_dash.ghost_scale_min * 1.06, 1.06, _life_ratio);
+        var _alpha = power(_life_ratio, 1.5) * 0.22;
+
+        draw_sprite_ext(
+            _cache.hull[_hull_stage],
+            0,
+            _ghost.x,
+            _ghost.y,
+            _scale,
+            _scale,
+            _ghost.angle,
+            _visual.palette.energy,
+            _alpha
+        );
+    }
+
+    gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
