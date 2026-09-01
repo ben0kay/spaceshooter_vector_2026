@@ -1,4 +1,8 @@
-I prefer vertically compressed code
+
+notes_code_preferences. Read and REMEMBER before doing work.
+
+If multiple adjacent functions in the same .gml file need replacing, give me one complete code block containing the entire file—or one continuous replacement section—in the correct order.
+I prefer vertically compressed code (check some functions in the project for examples)
 I need you to give me code by pasting in chat. NEVER update the github yourself
 I dont like when u put like 1 little thing on its own line unless necessary.
 I like ENUMS where appropriate. - I like these on 1 line too
@@ -17,3 +21,4 @@ I prefer using draw_angle instead of image_angle. Likewise scale_x instead of im
 I like my sprite primitives that we draw to be easily adjustable overall by using one variable like radius - which would configure its size and also collision radius. We'll use a sprite for collision like s_circle or s_eliptical
 I like to keep my script gml files organized when possible so i don't get lost and overwhelmed
 If we are designing and implementing lots of matchups like kinetic bonus vs shield / armour - i like being able to tweak all the stats from 1 single spot for ease-of-access. like a config file for big more global parameters to edit. not for indiviual enemy / tower things though.
+Sometimes when appropriate, instead of booleans allowing/disallowing, we can use numbers instead - helps with implementing upgrades or allowing things to happen later, like combat_allow_weapons

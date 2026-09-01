@@ -112,9 +112,15 @@ function sc_ship_register_shard()
         hardpoints: {
 		    primary: [
 		        {
-		            key: "primary_centre",
-		            x: 78,
-		            y: 0,
+		            key: "primary_left",
+		            x: 53,
+		            y: -20,
+		            angle: 0
+		        },
+		        {
+		            key: "primary_right",
+		            x: 53,
+		            y: 20,
 		            angle: 0
 		        }
 		    ],
