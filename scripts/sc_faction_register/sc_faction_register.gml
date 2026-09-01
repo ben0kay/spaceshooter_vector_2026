@@ -1,20 +1,52 @@
 /// @description Registers one faction definition.
 function sc_faction_register(_faction, _data)
 {
-    if (!is_undefined(global.data.factions[_faction]))
+    var _factions = global.data.factions;
+
+    if (!is_undefined(_factions[_faction]))
     {
-        show_debug_message("FACTION REGISTRATION ERROR - duplicate faction: " + string(_faction));
+        show_debug_message(
+            "FACTION REGISTRATION ERROR - duplicate faction: "
+            + string(_faction)
+        );
+
         return false;
     }
 
-    global.data.factions[_faction] = _data;
+    _factions[_faction] = _data;
+    global.data.factions = _factions;
+
     return true;
 }
 
 /// @description Returns one registered faction palette.
 function sc_faction_palette_get(_faction)
 {
-    return global.data.factions[_faction].palette;
+    var _factions = global.data.factions;
+
+    if (_faction < 0 || _faction >= array_length(_factions))
+    {
+        show_debug_message(
+            "FACTION PALETTE ERROR - invalid faction: "
+            + string(_faction)
+        );
+
+        return undefined;
+    }
+
+    var _data = _factions[_faction];
+
+    if (!is_struct(_data))
+    {
+        show_debug_message(
+            "FACTION PALETTE ERROR - faction not registered: "
+            + string(_faction)
+        );
+
+        return undefined;
+    }
+
+    return _data.palette;
 }
 
 /// @description Registers the Simulant faction and visual language.
