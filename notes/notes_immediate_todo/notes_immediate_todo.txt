@@ -1,234 +1,531 @@
 IMMEDIATE TODO - NEXT SESSION
 
-1. THRUSTER VISUAL FIX
+CURRENT FOUNDATION
 
-The current baked thrust components appear as tiny glowing lines rather than substantial engine flames.
+The following systems are already implemented and working:
 
-Redesign both the Simulant and Shard thrust primitives with:
+* Enemy base → level → local → temporary → final stat pipeline
+* Normalized enemy shield, armour and hull defence
+* Player shield → armour → hull damage routing
+* Central damage-type matchup configuration
+* Damage packets and placeholder damage effects
+* Baked player and enemy visual components
+* Shard hull and armour damage stages
+* Shared configurable shield visuals
+* Registered enemy and player thruster mounts
+* Faction-independent thrust callbacks
+* Simulant and Shard attached thrust plus exhaust particles
+* Player normal, boost and dodge movement states
+* Aqua shrinking dodge afterimages
+* Combat permission values that can later be upgraded
+* Shard articulated wings for idle, movement, boost and dodge
 
-* A wider filled outer glow
-* A clearly visible filled energy flame
-* A narrow white-hot centre
-* More length and width variation as thrust power changes
-* Correct attachment beneath/behind the engine housing
-* Soft sprite particles trailing away from the ship
-* A visible ignition ring and initial energy burst
-* Additive glow where appropriate
+Do not rebuild these systems unless a current source inspection reveals a specific problem.
 
-Inspect why the current particles are difficult or impossible to see. Check particle depth, size, alpha, emission position, direction and whether the shared particle system is drawing in the combat room.
 
-Keep the attached flame as a baked component. Use particles only for detached exhaust, ignition and drifting energy.
+1. GENERIC ENTITY COLLISION FOUNDATION
 
-A future white flame particle sprite may be added. The particle architecture must allow changing the sprite without changing thruster mounts or enemy/player movement code.
+Create an empty marker parent object:
 
-2. GENERIC THRUSTER CALLBACK ROUTING
+o_entity
 
-The generic enemy code currently calls Simulant particle functions directly.
+Make these children of o_entity:
 
-Move faction-specific callbacks into registered thrust data:
+* o_player
+* o_enemy
 
-draw_script
-ignition_script
-particle_script
+The parent should not contain gameplay behaviour. It exists so projectiles and future area attacks can target all damageable entities through one collision category.
 
-The generic enemy system should call the registered callbacks without knowing whether the enemy is Simulant, Therm or another faction.
+Give player and enemy a shared entity contract such as:
 
-Thrusters remain separate from weapon hardpoints.
+entity: {
+    faction: Faction.PLAYER,
+    damage_script: sc_player_damage
+}
 
-Each enemy may define zero, one or many thrusters. Large ships may have eight or more mounts. All matching mounts should share the same baked thrust sprite.
+Enemies should use their registered faction and:
 
-3. ENEMY STAT PIPELINE
+damage_script: sc_enemy_damage
 
-Implement the planned reusable enemy stat pipeline before adding many more enemies.
+Do not make consumers inspect whether the target is specifically a player or enemy. They should call the registered damage callback.
 
-Follow the player stat architecture where appropriate:
+Use s_collision_circle as the initial shared collision mask.
 
-* Registered base stats
-* Runtime final stats
-* Recalculation function
-* Explicit modifiers
-* Difficulty or level scaling
-* Status-effect modifiers later
-* No consumer should silently recreate missing stat runtime
+Set mask scaling from each entity's collision radius. This is an acceptable internal use of image_xscale/image_yscale because it controls the invisible collision mask; visible drawing must continue using draw_angle, scale_x and scale_y.
 
-Enemy definitions should provide base values for:
+Keep visual scale separate from collision-mask scale.
 
-* Shield maximum
-* Armour maximum
-* Hull maximum
-* Movement speed
-* Acceleration
-* Friction or deceleration
-* Turn speed
-* Detection range
-* Combat range
-* Forget range
-* Damage modifiers
-* Fire-rate modifiers
-* Resistance values later if required
 
-Runtime enemy defence should initialize from final calculated stats.
+2. GENERIC PROJECTILE COLLISION
 
-Movement, perception, attacks and damage must consume final runtime stats rather than reading unrelated copied definition fields.
+Move projectile impact detection out of the manual projectile Step distance check.
 
-Keep the system compact and performance-conscious. Recalculate only when modifiers actually change, not every Step.
+Add an o_projectile collision event with o_entity.
 
-4. PLAYER DAMAGE PIPELINE
+The collision handler should:
 
-Implement one proper player damage function with this routing order:
+* Ignore the projectile owner
+* Ignore the owner's faction
+* Ignore friendly targets unless friendly fire is explicitly enabled
+* Build or use the projectile's registered damage packet
+* Call the target's registered damage_script
+* Destroy or penetrate according to projectile behaviour
+* Trigger impact visuals later
+* Prevent one projectile damaging the same target repeatedly unless designed to do so
 
-Shield
-→ Armour
-→ Hull
+The generic collision code must not directly name:
 
-Shield:
+* o_player
+* o_enemy
+* Simulant
+* Shard
+* Any specific weapon
 
-* Absorbs damage first
-* Regenerates over time
-* Regeneration waits for the registered recharge delay after damage
-* Shield visual alpha follows the current shield ratio
-* Shield flashes brightly when hit
-* Shield disappears at zero
+Remove the old player-only manual projectile collision from sc_projectile_update after the collision event works.
 
-Armour:
+Use GameMaker's collision broadphase through simple collision masks. Do not scan every entity from every projectile.
 
-* Absorbs damage after shield
-* Does not regenerate automatically
-* Can eventually be repaired using mined resources
-* Armour visual selects the correct baked 100%, 75%, 50% or 25% state
-* Armour overlay disappears at zero
+Fast projectiles may eventually require swept collision from previous position to current position to prevent tunnelling.
 
-Hull:
 
-* Takes damage after armour is depleted
-* Cannot be repaired normally in the field
-* Must eventually be repaired at the base
-* Hull visual selects the correct baked damage state
-* Zero hull begins the player destruction pipeline
+3. ATTACK DELIVERY AND AREA SHAPES
 
-Damage must correctly carry excess damage from one defensive layer into the next.
+Keep damage delivery separate from damage calculation.
 
-5. TEMPORARY PLAYER DAMAGE TEST CONTROLS
+Add compact enums when the first non-projectile attack is implemented:
 
-Add clearly marked debug-only controls for testing the layered sprites and damage pipeline.
+enum AttackDelivery { PROJECTILE, AREA, BEAM }
+enum AttackAreaShape { CIRCLE, CAPSULE, CONE }
 
-Suggested controls:
+All delivery methods must eventually produce the same damage packet.
 
-* Damage shield
-* Damage armour directly
-* Damage hull directly
-* Apply normal routed damage
-* Restore shield
-* Restore armour
-* Restore hull
-* Print current shield, armour and hull values
+PROJECTILE:
 
-Keep these controls isolated so they can be removed easily later.
+* Moving instance
+* Uses o_projectile → o_entity collision
+* May later have health, penetration, ricochet or interception
 
-Use them to verify every visual threshold:
+AREA:
 
-* Above 75%
-* 75% or below
-* 50% or below
-* 25% or below
-* Armour or shield at zero
+* One-time or repeating spatial query
+* Circle for explosions and fields
+* Capsule for beams and linear attacks
+* Cone for directional attacks later
 
-6. SHARD VISUAL VERIFICATION
+BEAM:
 
-Verify the new Shard cache contains:
+* Begins at a weapon hardpoint muzzle
+* Extends toward an end point
+* Uses a capsule-shaped damage area
+* Visually updates every frame
+* Damage may tick less frequently than drawing
+* Must not apply damage every frame unless intentionally configured
 
-* Four hull damage sprites
-* Four armour condition overlays
-* One shield sprite
-* One thrust sprite
+A sustained beam should have:
 
-Draw order:
+* damage_interval
+* next_damage_tick
+* range
+* width
+* delivery
+* area_shape
+* damage_packet
 
-Thrust
-→ Hull state
-→ Armour state
-→ Dynamic components later
-→ Shield
+Use a broad candidate query first, then an exact segment-to-circle distance test for capsule beams.
 
-Confirm armour and hull sprites align perfectly at every rotation.
 
-Eventually update the ship-selection screen to draw the intact baked Shard rather than using the old generic preview. Until then, preserve the compatibility fields:
+4. INDEPENDENT PLAYER HARDPOINT SPRITES
 
-scale
-colour_primary
-colour_secondary
+Remove the Shard cannons from the permanent hull bake.
 
-7. PLAYER THRUST
+Bake reusable components separately:
 
-Give player ships registered thruster mounts similar to enemy thrusters.
+* Primary cannon
+* Primary cannon muzzle flash
+* Future special weapon component if required
 
-The Shard should initially have compact rear aqua engines.
+The Shard currently has two side-mounted weapon positions. Convert them into physical cannon mounts rather than treating their positions as muzzle endpoints.
 
-Thrust power should respond to actual movement speed and acceleration. It should smoothly ignite, strengthen, flicker and fade rather than instantly appearing or disappearing.
+Each hardpoint should define approximately:
 
-Keep the baked attached flame separate from detached particles.
+* key
+* group
+* x or forward
+* y or side
+* angle
+* muzzle_forward
+* draw_script or baked component reference
+* scale
+* runtime
 
-8. PLAYER DODGE
+Runtime state should include:
 
-Add dodge only after normal movement and damage routing are stable.
+runtime: {
+    recoil: 0,
+    muzzle_flash: 0
+}
 
-Initial simple design:
+Hardpoint sprites must:
 
-* Dedicated dodge input
-* Dodge direction based on movement input
-* Fall back to facing direction when no movement input exists
-* Strong temporary velocity impulse
-* Short cooldown
-* Clear visual burst
-* Optional brief invulnerability window, controlled by a simple boolean
-* No alarms
-* No dependence on room_speed
+* Rotate with the ship
+* Follow the current player visual position
+* Draw over the hull and armour
+* Recoil independently
+* Remain visible through armour damage stages
+* Only disappear or become badly damaged at critically low hull if later designed that way
 
-Later chassis can have different dodge distance, cooldown or behaviour through registered stats.
+Avoid rebaking a complete ship sprite for every possible recoil position.
 
-9. IMPLEMENTATION ORDER
 
-10. Fix compile/runtime errors.
+5. PLAYER WEAPON AND PROJECTILE REGISTRATION
 
-11. Fix visible thrust size and particle visibility.
+Register the first Shard primary weapon and projectile.
 
-12. Make generic thrust callbacks faction-independent.
+Initial weapon behaviour:
 
-13. Implement the enemy stat pipeline. base - level(like lvl 1,2,3, like RPG games - local(room buffs) - temp(effect by player or environment or ally - final
+* LMB held to fire
+* Alternate left and right cannons
+* Use the hardpoint muzzle transform
+* Apply cannon recoil
+* Display a short muzzle flash
+* Respect the registered fire interval
+* Respect combat_allow_weapons
+* Cannot fire during boost or dodge unless an upgrade raises the permission value later
 
-14. Implement player damage routing.
+Use GAME_TICK with an absolute next_fire_tick:
 
-15. Add temporary player damage-testing controls.
+if (GAME_TICK >= next_fire_tick)
 
-16. Verify all Shard damage layers.
+After firing:
 
-17. Add proper player thruster mounts.
+next_fire_tick = GAME_TICK + fire_interval
 
-18. Add player dodge.
+Do not use alarms for weapon cooldowns.
 
-19. Replace temporary controls and visuals only after the underlying systems are stable.
+The player primary controller can remain compact:
+
+primary: {
+    hardpoint_cursor: 0,
+    next_fire_tick: 0
+}
+
+Do not duplicate cooldown state across the player, weapon and projectile.
+
+
+6. GENERALIZE sc_weapon_fire
+
+The current weapon function assumes the owner has _owner.enemy.
+
+Replace that dependency with a generic firing source or shared entity data.
+
+It must support both player and enemy callers while preserving:
+
+* Registered weapon lookup
+* Registered projectile lookup
+* Owner reference
+* Owner faction
+* Damage packet
+* Muzzle position
+* Firing angle
+* Inaccuracy
+* Projectile speed
+* Future stat modifiers
+
+The generic weapon function must not contain branches such as:
+
+if player...
+else if enemy...
+
+Player and enemy code should prepare the required firing source and call the same function.
+
+
+7. PROJECTILE VISUAL BAKING
+
+After projectile collision works, bake reusable projectile visuals during startup.
+
+The projectile cache should support:
+
+* Body sprite
+* Optional glow sprite
+* Optional animated effect later
+* Different registered projectile types
+* Player aqua/silver visual language
+* Simulant gunmetal/violet visual language
+* Alien corrosive visual language later
+
+Do not bake one sprite per projectile instance.
+
+Bake each registered projectile visual once and let all matching projectile instances share it.
+
+Projectile draw should remain cheap:
+
+* Retrieve cached sprite
+* Draw at position and angle
+* Draw optional glow/additive component
+* Avoid primitive reconstruction during gameplay
+
+
+8. PLAYER MUZZLE FLASH AND RECOIL
+
+Muzzle flash should be an independent cached component.
+
+When a hardpoint fires:
+
+* Set recoil immediately
+* Set muzzle_flash to its short duration
+* Spawn projectile at the true muzzle position
+* Optionally trigger a small particle burst
+* Future audio callback placeholder may run here
+
+Update recoil using a short lerp back to zero.
+
+Muzzle flash should:
+
+* Be drawn in front of the weapon
+* Follow the moving and rotating hardpoint
+* Use additive blending if visually appropriate
+* Fade quickly
+* Not require an animated GameMaker sprite unless later desired
+
+// Future: insert weapon audio callback here.
+// Future: insert shell/ejected material effect here.
+// Future: insert camera impulse here.
+
+
+9. PLAYER INPUT STRUCTURE
+
+Preserve the readable player Step switch structure.
+
+Current planned inputs:
+
+* LMB: primary weapon
+* MMB: special weapon
+* RMB: focused frontal shield
+* Hold Shift: boost
+* Double-tap Shift: dodge
+
+Only run primary firing while its permission value allows it.
+
+Use numeric permission values where upgrades may change behaviour later.
+
+Examples:
+
+combat_allow_weapons
+combat_allow_special
+combat_allow_focused_shield
+
+A later module may allow primary weapons during boost without rewriting the movement-state system.
+
+
+10. FOCUSED FRONTAL SHIELD - LATER
+
+RMB will eventually focus shielding across the front 180 degrees.
+
+Planned behaviour:
+
+* Front shield absorbs approximately 75% of incoming damage
+* Rear 180 degrees becomes unshielded
+* Rear hits bypass shield and damage armour
+* Requires attack direction relative to player draw_angle
+* Uses a separately baked or dynamically drawn front-shield visual
+* Must use the same shared damage packet
+* Absorption value belongs in global.config
+
+Do not implement this until ordinary player firing and collision are stable.
+
+
+11. PROJECTILE HEALTH - LATER
+
+Some future projectiles may be damageable or interceptable.
+
+Do not make all projectiles full entities yet unless required.
+
+When implemented, optionally give selected projectile definitions:
+
+health: {
+    enabled: true,
+    maximum: value
+}
+
+Possible examples:
+
+* Missiles
+* Slow corrosive globules
+* Mines
+* Large plasma charges
+* Enemy torpedoes
+
+Simple bullets and small energy pulses should remain lightweight and non-damageable.
+
+
+12. DAMAGE TYPES AND MATCHUPS
+
+Current damage types should remain:
+
+enum DamageType { KINETIC, ENERGY, EXPLOSIVE, ELECTRIC, THERMAL, CORROSIVE }
+
+The central configuration should remain the single place for changing layer matchups.
+
+Intended identities:
+
+KINETIC
+Strong against armour.
+Weaker against shields.
+Physical impact may later cause recoil or stagger.
+
+ENERGY
+Includes compact plasma pulses, energy bolts and laser-type energy damage.
+Strong against shields.
+Neutral or weaker against armour depending on configuration.
+
+EXPLOSIVE
+Good against hull and clustered targets.
+May use circular area delivery.
+Potentially less effective against intact shields.
+
+ELECTRIC
+Moderate direct damage.
+Higher chance to apply equipment or module disruption.
+May modify cooldowns, movement or power systems temporarily.
+
+THERMAL
+Weak against shields.
+Set shield multiplier near 0.40 in central configuration.
+Stronger once it reaches armour or hull.
+May apply a heat or burning placeholder effect later.
+
+CORROSIVE
+Likely Alien faction identity.
+Weak or moderate against shields.
+Strong against armour and exposed hull.
+May apply temporary armour-resistance reduction or damage over time later.
+
+Do not store resistance matchups independently inside every enemy unless that enemy has a deliberate special resistance.
+
+Global damage-type matchups belong in the central config.
+
+Per-entity resistance modifiers, if later required, should be applied after the global matchup.
+
+
+13. DAMAGE EFFECT PLACEHOLDERS
+
+Keep damage amount/type separate from optional effects.
+
+Possible effects:
+
+* NONE
+* STAGGER
+* DISRUPT
+* BURN
+* CORRODE
+* SLOW
+
+A damage packet may eventually contain:
+
+{
+    amount: value,
+    type: DamageType.ENERGY,
+    effect: DamageEffect.NONE,
+    effect_chance: 0,
+    effect_power: 0,
+    effect_duration: 0,
+    source: owner,
+    source_faction: faction
+}
+
+Do not implement full status-effect behaviour yet.
+
+The packet may carry placeholders now so the combat API does not require redesign later.
+
+
+14. HEALTH BARS - AFTER PLAYER FIRING
+
+Implement shared shield, armour and hull bars after player and enemy projectiles can damage each other.
+
+Do not require a behavioural o_entity parent implementation beyond the shared entity contract.
+
+The shared draw function should accept entity defence data and position.
+
+Possible behaviour:
+
+* Only draw enemy bars after damage or targeting
+* Player bars remain in the HUD later
+* World-space enemy bars use view culling
+* Shield, armour and hull use distinct colours
+* Hide depleted layers cleanly
+* Avoid creating separate bar objects for every entity
+
+Projectiles with health can use a smaller single health bar only when necessary.
+
+
+15. COMBAT TEST ORDER
+
+1. Inspect the newest pushed source and notes_code_preferences.
+2. Add the empty o_entity marker parent.
+3. Make o_player and o_enemy children of o_entity.
+4. Add the shared entity faction and damage callback contract.
+5. Assign and scale s_collision_circle masks.
+6. Add generic projectile → entity collision.
+7. Remove the old manual player-only projectile collision.
+8. Confirm existing enemy projectiles still damage the player.
+9. Separate the Shard cannons from the hull bake.
+10. Bake reusable cannon and muzzle-flash components.
+11. Register the Shard primary weapon and projectile.
+12. Generalize sc_weapon_fire for player and enemy ownership.
+13. Add alternating held-LMB player fire.
+14. Test recoil, muzzle position, cooldown and damage routing.
+15. Bake projectile visuals.
+16. Profile projectile Step, Collision and Draw performance.
+17. Add shared health-bar drawing.
+18. Only then begin focused shields, beams or advanced projectile health.
+
 
 WORKING RULES
 
-Inspect the newest pushed source before writing code.
+Inspect the newest pushed source before writing any code.
 
-Give exact script/event locations and complete replacement functions when ambiguity exists.
+Read notes_code_preferences before proposing replacements.
 
-Keep GML compact and avoid unnecessarily vertical formatting.
+Never update or push GitHub. Provide code in chat for manual application.
+
+Give exact script and event locations.
+
+Give complete replacement functions rather than small ambiguous snippets.
+
+If several adjacent functions in one GML file need replacing, provide one continuous replacement block or the complete file in the correct order.
+
+Keep GML vertically compressed.
 
 Preserve unrelated fields when replacing definitions.
 
-Use direct registered callbacks for faction-specific visuals and effects.
+Use structs to group related values.
 
-Do not make generic enemy or player systems directly name Simulant or Therm functions.
+Use enums where they make states or categories clearer.
+
+Keep global balancing values in global.config.
+
+Keep individual ship, weapon and enemy values in their registered definitions.
+
+Generic systems must not directly name factions, ships or weapon-specific callbacks.
+
+Use registered callbacks and shared data contracts.
 
 Do not make consumers silently recreate missing required runtime.
 
-Fix compile/runtime errors before expanding systems.
+Use GAME_TICK for absolute cooldown deadlines. Do not use alarms or room_speed-dependent timing.
 
-Profile actual bottlenecks after each visual-system change.
+Keep visible drawing based on draw_angle, scale_x and scale_y.
 
+Invisible collision-mask scaling may use image_xscale/image_yscale internally if GameMaker requires it.
 
-Omer damage types, kinetic, electric, explosive, plasma ?? 
+Use baked components for reusable attached visuals.
 
-plasma does more to shield etc. how do we implement this in the pipeline for stats. Resistance?
+Use particles for detached effects, exhaust, impact debris and temporary bursts.
+
+Do not bake per instance. Bake each registered reusable visual once during startup.
+
+Fix compile/runtime errors before adding new systems.
+
+Profile actual bottlenecks after each combat or visual-system change.
+
+Keep the implementation open to upgrades without building unused systems prematurely.

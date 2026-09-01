@@ -30,7 +30,7 @@ function sc_ship_register_shard()
             shield_recharge_delay: 150, shield_recharge_rate: 0.35,
             speed_max: 8, acceleration: 0.55, deceleration: 0.7, turn_speed: 8,
             damage_multiplier: 1, fire_rate_multiplier: 1, cargo_capacity: 12,
-            boost_speed_multiplier: 1.3, dash_speed: 20, dash_duration: 10, dash_cooldown: 75,
+            boost_speed_multiplier: 1.3, dash_speed: 22, dash_duration: 12, dash_cooldown: 75,
             dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
             weapons_while_boosting: 0, weapons_while_dashing: 0
         },
