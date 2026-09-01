@@ -62,7 +62,31 @@ function sc_player_init(_player, _ship_key)
         velocity_x: 0,
         velocity_y: 0,
         speed: 0,
-        moving: false
+        moving: false,
+
+        boost: {
+            active: false
+        },
+
+        dash: {
+            direction: 0,
+            remaining: 0,
+            cooldown_remaining: 0,
+            double_tap_remaining: 0,
+            invulnerable: false,
+
+            ghosts: array_create(6, undefined),
+            ghost_count: 0,
+            ghost_limit: 6,
+            ghost_interval: 2,
+            ghost_life: 12
+        }
+    };
+
+    _player.combat = {
+        weapons_allowed: true
+
+        // LMB primary, MMB special and RMB frontal shield runtime go here later.
     };
 
     _player.aim = {
@@ -119,6 +143,11 @@ function sc_player_visual_update(_player)
 function sc_player_damage(_player, _packet)
 {
     if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _dash = _player.movement.dash;
+
+    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable)
+        return false;
 
     var _defence = _player.defence;
     var _result = sc_damage_resolve(
