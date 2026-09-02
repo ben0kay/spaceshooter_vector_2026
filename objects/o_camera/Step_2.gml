@@ -1,3 +1,4 @@
+/// @description Updates camera zoom, targeting and shake.
 var _camera = camera_data;
 var _camera_id = _camera.camera_id;
 
@@ -9,23 +10,25 @@ _camera.zoom.target = clamp(_camera.zoom.target, _camera.zoom.minimum, _camera.z
 if (abs(_camera.zoom.current - _camera.zoom.target) > 0.0001)
 {
     _camera.zoom.current = lerp(_camera.zoom.current, _camera.zoom.target, _camera.zoom.smoothing);
-
-    var _new_w = _camera.base.width * _camera.zoom.current;
-    var _new_h = _camera.base.height * _camera.zoom.current;
-
-    camera_set_view_size(_camera_id, _new_w, _new_h);
+    camera_set_view_size(_camera_id, _camera.base.width * _camera.zoom.current, _camera.base.height * _camera.zoom.current);
 }
 
 var _view_w = camera_get_view_width(_camera_id);
 var _view_h = camera_get_view_height(_camera_id);
-var _target_x = room_width * 0.5;
-var _target_y = room_height * 0.5;
+
+// Without a target, preserve the camera's current world position.
+var _target_x = camera_get_view_x(_camera_id) + _view_w * 0.5;
+var _target_y = camera_get_view_y(_camera_id) + _view_h * 0.5;
 
 if (instance_exists(global.player_id))
 {
     _camera.target_id = global.player_id;
     _target_x = global.player_id.x;
     _target_y = global.player_id.y;
+}
+else
+{
+    _camera.target_id = noone;
 }
 
 var _camera_x = _target_x - _view_w * 0.5;
