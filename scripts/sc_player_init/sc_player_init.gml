@@ -27,12 +27,14 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.ship.visual.runtime = {
-        cache: _cache,
-        thrust_power: 0,
-        thrust_phase: irandom(359),
-        shield_hit_alpha: 0,
-        wing_fold: _definition.visual.wing.fold_idle
-    };
+    cache: _cache,
+    thrust_power: 0,
+    thrust_phase: irandom(359),
+    shield_hit_alpha: 0,
+    wing_fold: _definition.visual.wing.fold_idle,
+    core_angle: 0,
+    core_speed: _definition.visual.core.idle_speed
+	};
 
     var _primary_hardpoints = _player.ship.hardpoints.primary;
 
