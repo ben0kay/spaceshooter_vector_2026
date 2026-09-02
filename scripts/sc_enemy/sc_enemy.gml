@@ -595,12 +595,7 @@ function sc_enemy_damage(_enemy, _packet)
     if (_data.state == EnemyState.DEAD) return false;
 
     var _defence = _data.defence;
-    var _result = sc_damage_resolve(
-        _packet,
-        _defence.shield.current,
-        _defence.armour.current,
-        _defence.hull.current
-    );
+    var _result = sc_damage_resolve(_packet, _defence.shield.current, _defence.armour.current, _defence.hull.current);
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
@@ -618,9 +613,8 @@ function sc_enemy_damage(_enemy, _packet)
     }
 
     // _result.effect is ready for the upcoming timed-effect manager.
-    return true;
+    return _result;
 }
-
 /// @description Processes one enemy death and its final killing source.
 function sc_enemy_die(_enemy, _packet)
 {

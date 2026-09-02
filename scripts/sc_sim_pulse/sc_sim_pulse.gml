@@ -5,6 +5,7 @@ function sc_projectile_register_simulant_pulse()
 
     return sc_projectile_register({
         identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
+		projectile_class: ProjectileClass.REGULAR,
         movement: { speed: 17.5 },
         damage: { amount: 3, type: DamageType.ENERGY, effect: DamageEffect.NONE },
         collision: { radius: 6 },

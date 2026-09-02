@@ -5,6 +5,7 @@ function sc_projectile_register_shard_pulse()
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_pulse", name: "Shard Pulse" },
+		projectile_class: ProjectileClass.REGULAR,
         movement: { speed: 19 },
         damage: { amount: 8, type: DamageType.ENERGY, effect: DamageEffect.NONE },
         collision: { radius: 5 },

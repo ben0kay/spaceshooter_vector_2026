@@ -423,7 +423,6 @@ function sc_player_damage(_player, _packet)
 
     _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
     sc_health_bar_damage_show(_player.health_bar);
-    sc_camera_shake(3, 8);
 
     if (_result.dealt.shield > 0)
         _player.ship.visual.runtime.shield_hit_alpha = 1;
@@ -436,7 +435,7 @@ function sc_player_damage(_player, _packet)
     }
 
     // _result.effect is ready for the upcoming timed-effect manager.
-    return true;
+    return _result;
 }
 
 /// @description Processes one player death immediately and disables the gameplay instance.

@@ -65,36 +65,33 @@ function sc_damage_resolve(_packet, _shield, _armour, _hull)
 {
     var _remaining = sc_damage_packet_amount_get(_packet);
     var _names = ["shield", "armour", "hull"];
+    var _layers = [DefenceLayer.SHIELD, DefenceLayer.ARMOUR, DefenceLayer.HULL];
     var _current = [max(0, _shield), max(0, _armour), max(0, _hull)];
     var _dealt = [0, 0, 0];
+    var _impact_layer = DefenceLayer.NONE;
 
     for (var _i = 0; _i < 3 && _remaining > 0; _i++)
     {
         if (_current[_i] <= 0) continue;
 
         var _multiplier = sc_damage_layer_multiplier_get(_packet.type, _names[_i]);
-
-        if (_multiplier <= 0)
-        {
-            _remaining = 0;
-            break;
-        }
+        if (_multiplier <= 0) { _remaining = 0; break; }
 
         var _damage = min(_current[_i], _remaining * _multiplier);
         _current[_i] -= _damage;
         _dealt[_i] = _damage;
         _remaining = max(0, _remaining - _damage / _multiplier);
+
+        if (_damage > 0 && _impact_layer == DefenceLayer.NONE)
+            _impact_layer = _layers[_i];
     }
 
     return {
-        shield: _current[0],
-        armour: _current[1],
-        hull: _current[2],
+        shield: _current[0], armour: _current[1], hull: _current[2],
+        impact_layer: _impact_layer,
 
         dealt: {
-            shield: _dealt[0],
-            armour: _dealt[1],
-            hull: _dealt[2],
+            shield: _dealt[0], armour: _dealt[1], hull: _dealt[2],
             total: _dealt[0] + _dealt[1] + _dealt[2]
         },
 
