@@ -24,17 +24,13 @@ function sc_weapon_register_shard_laser()
                 effect: DamageEffect.NONE
             },
 
-            area: {
-                shape: AttackAreaShape.CAPSULE,
+            beam: {
                 geometry: { length: 1100, radius: 8 },
 
                 behaviour: {
-                    sustained: true,
-                    duration: 1,
-                    release_duration: 7,
                     growth_speed: 145,
+                    release_duration: 7,
                     tick_interval: 6,
-                    hit_once: false,
                     max_targets: 0
                 },
 
@@ -56,7 +52,6 @@ function sc_weapon_register_shard_laser()
         firing: {
             mount_mode: WeaponMountMode.CENTRE,
             centre_forward: 1.62,
-            continuous: 1,
             interval: 12,
             recoil: 0,
             muzzle_flash_duration: 0

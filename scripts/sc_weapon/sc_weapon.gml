@@ -12,9 +12,14 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
             );
 
         case AttackDelivery.AREA:
-        case AttackDelivery.BEAM:
             return sc_attack_area_create(
                 _delivery.area, _source, _delivery.damage,
+                _x, _y, _direction, _owner.layer, _delivery.scale
+            );
+
+        case AttackDelivery.BEAM:
+            return sc_beam_create(
+                _delivery.beam, _source, _delivery.damage,
                 _x, _y, _direction, _owner.layer, _delivery.scale
             );
     }

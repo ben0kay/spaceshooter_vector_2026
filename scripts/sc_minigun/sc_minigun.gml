@@ -72,7 +72,6 @@ function sc_weapon_register_shard_minigun()
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
             interval: 2,
-			continuous: 0,
             recoil: 2.5,
             muzzle_flash_duration: 3
         },

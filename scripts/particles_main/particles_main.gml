@@ -72,17 +72,28 @@ function sc_particles_register_weapon_content()
     {
         var _weapon = variable_struct_get(global.data.weapons, _keys[_i]);
         var _delivery = _weapon.delivery;
+        var _visual;
 
-        if (_delivery.type == AttackDelivery.PROJECTILE) continue;
+        switch (_delivery.type)
+        {
+            case AttackDelivery.AREA:
+                _visual = _delivery.area.visual;
+            break;
 
-        var _visual = _delivery.area.visual;
+            case AttackDelivery.BEAM:
+                _visual = _delivery.beam.visual;
+            break;
+
+            default:
+                continue;
+        }
+
         if (!variable_struct_exists(_visual, "particles_register_script")) continue;
         if (!_visual.particles_register_script()) return false;
     }
 
     return true;
 }
-
 /// @description Creates and tracks one owned particle type.
 function sc_particles_type_create()
 {

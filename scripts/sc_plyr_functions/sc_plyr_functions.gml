@@ -212,7 +212,7 @@ function sc_player_dash_ghost_record(_player)
     _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
-/// @description Releases the player's currently sustained weapon delivery.
+/// @description Releases the player's currently active beam.
 function sc_player_continuous_weapon_release(_player)
 {
     var _runtime = _player.combat.primary;
@@ -224,7 +224,7 @@ function sc_player_continuous_weapon_release(_player)
         return false;
     }
 
-    sc_attack_area_release(_active);
+    sc_beam_release(_active);
     _runtime.active_delivery_id = noone;
     return true;
 }
@@ -263,7 +263,7 @@ function sc_player_weapon_selection_update(_player)
     return true;
 }
 
-/// @description Fires or sustains the player's held-LMB primary weapon.
+/// @description Fires or maintains the player's held-LMB primary weapon.
 function sc_player_primary_weapon_update(_player)
 {
     var _runtime = _player.combat.primary;
@@ -309,22 +309,22 @@ function sc_player_primary_weapon_update(_player)
         break;
     }
 
-    if (_weapon.firing.continuous)
+    if (_weapon.delivery.type == AttackDelivery.BEAM)
     {
         if (instance_exists(_runtime.active_delivery_id))
-            return sc_attack_area_sustain(_runtime.active_delivery_id, _muzzle_x, _muzzle_y, _angle);
+            return sc_beam_sustain(_runtime.active_delivery_id, _muzzle_x, _muzzle_y, _angle);
 
         if (GAME_TICK < _runtime.next_fire_tick) return false;
 
-        var _delivery = sc_weapon_fire(
+        var _beam = sc_weapon_fire(
             _player, _weapon_key, _weapon.shot,
             _muzzle_x, _muzzle_y, _angle,
             _player.ship.stats.final.damage_multiplier
         );
 
-        if (!instance_exists(_delivery)) return false;
+        if (!instance_exists(_beam)) return false;
 
-        _runtime.active_delivery_id = _delivery;
+        _runtime.active_delivery_id = _beam;
         _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval));
         return true;
     }
@@ -535,6 +535,8 @@ function sc_player_die(_player, _packet)
     var _movement = _player.movement;
     var _dash = _movement.dash;
     var _hardpoints = _player.ship.hardpoints.primary;
+
+    sc_player_continuous_weapon_release(_player);
 
     _player.combat.weapons_allowed = false;
     _movement.boost.active = false;

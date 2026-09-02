@@ -6,11 +6,12 @@ function sc_point_distance_sq(_x1, _y1, _x2, _y2)
     return _dx * _dx + _dy * _dy;
 }
 
-/// @description Creates one reusable scaled attack area.
+/// @description Creates one short-lived attack area.
 function sc_attack_area_create(_definition, _source, _damage, _x, _y, _direction, _layer, _scale = 1)
 {
     var _area = instance_create_layer(_x, _y, _layer, o_attack_area, {
         attack_area_create: {
+            delivery_type: AttackDelivery.AREA,
             definition: _definition,
             source: _source,
             damage: _damage,
@@ -23,16 +24,47 @@ function sc_attack_area_create(_definition, _source, _damage, _x, _y, _direction
     return _area;
 }
 
-/// @description Initializes one standard or sustained attack area.
+/// @description Creates one continuously maintained beam area.
+function sc_beam_create(_definition, _source, _damage, _x, _y, _direction, _layer, _scale = 1)
+{
+    var _beam = instance_create_layer(_x, _y, _layer, o_attack_area, {
+        attack_area_create: {
+            delivery_type: AttackDelivery.BEAM,
+            definition: _definition,
+            source: _source,
+            damage: _damage,
+            direction: _direction,
+            scale: _scale
+        }
+    });
+
+    _beam.depth = -20;
+    return _beam;
+}
+
+/// @description Initializes one attack-area instance using its delivery lifecycle.
 function sc_attack_area_init(_area, _create)
+{
+    switch (_create.delivery_type)
+    {
+        case AttackDelivery.AREA:
+            return sc_attack_area_standard_init(_area, _create);
+
+        case AttackDelivery.BEAM:
+            return sc_beam_init(_area, _create);
+    }
+
+    show_debug_message("ATTACK AREA ERROR - unsupported delivery type");
+    return false;
+}
+
+/// @description Initializes one ordinary timed circle, capsule or cone.
+function sc_attack_area_standard_init(_area, _create)
 {
     var _definition = variable_clone(_create.definition);
     var _geometry = variable_clone(_definition.geometry);
-    var _scale = max(0.01, _create.scale);
     var _behaviour = _definition.behaviour;
-    var _sustained = variable_struct_exists(_behaviour, "sustained") ? _behaviour.sustained : false;
-    var _release_duration = _sustained ? max(1, round(_behaviour.release_duration)) : 1;
-    var _growth_speed = _sustained ? max(0, _behaviour.growth_speed * _scale) : 0;
+    var _scale = max(0.01, _create.scale);
     var _interval = max(0, round(_behaviour.tick_interval));
 
     switch (_definition.shape)
@@ -51,12 +83,8 @@ function sc_attack_area_init(_area, _create)
         break;
     }
 
-    var _maximum_length = _definition.shape == AttackAreaShape.CAPSULE ? _geometry.length : 0;
-
-    if (_sustained && _definition.shape == AttackAreaShape.CAPSULE)
-        _geometry.length = 0;
-
     _area.attack_area = {
+        delivery_type: AttackDelivery.AREA,
         source: _create.source,
         direction: _create.direction,
         shape: _definition.shape,
@@ -64,10 +92,7 @@ function sc_attack_area_init(_area, _create)
         damage: sc_damage_packet_create(_create.damage, _create.source),
 
         behaviour: {
-            sustained: _sustained,
             duration: max(1, round(_behaviour.duration)),
-            release_duration: _release_duration,
-            growth_speed: _growth_speed,
             tick_interval: _interval,
             hit_once: _behaviour.hit_once,
             max_targets: _behaviour.max_targets
@@ -77,6 +102,50 @@ function sc_attack_area_init(_area, _create)
 
         runtime: {
             life: max(1, round(_behaviour.duration)),
+            next_damage_tick: GAME_TICK + _interval,
+            hit_ids: []
+        }
+    };
+
+    _area.draw_angle = _create.direction;
+    _area.initialized = true;
+    sc_attack_area_damage_apply(_area);
+    return true;
+}
+
+/// @description Initializes one held capsule beam with its own lifecycle.
+function sc_beam_init(_area, _create)
+{
+    var _definition = variable_clone(_create.definition);
+    var _behaviour = _definition.behaviour;
+    var _scale = max(0.01, _create.scale);
+    var _maximum_length = _definition.geometry.length * _scale;
+    var _interval = max(1, round(_behaviour.tick_interval));
+
+    _area.attack_area = {
+        delivery_type: AttackDelivery.BEAM,
+        source: _create.source,
+        direction: _create.direction,
+        shape: AttackAreaShape.CAPSULE,
+
+        geometry: {
+            length: 0,
+            radius: _definition.geometry.radius * _scale
+        },
+
+        damage: sc_damage_packet_create(_create.damage, _create.source),
+
+        behaviour: {
+            growth_speed: max(0, _behaviour.growth_speed * _scale),
+            release_duration: max(1, round(_behaviour.release_duration)),
+            tick_interval: _interval,
+            hit_once: false,
+            max_targets: _behaviour.max_targets
+        },
+
+        visual: variable_clone(_definition.visual),
+
+        runtime: {
             maximum_length: _maximum_length,
             next_damage_tick: GAME_TICK + _interval,
             refreshed_tick: GAME_TICK,
@@ -88,24 +157,19 @@ function sc_attack_area_init(_area, _create)
 
     _area.draw_angle = _create.direction;
     _area.initialized = true;
-
-    if (!_sustained)
-        sc_attack_area_damage_apply(_area);
-
     return true;
 }
 
-/// @description Keeps one sustained area attached to its current firing mount.
-function sc_attack_area_sustain(_area, _x, _y, _direction)
+/// @description Keeps one beam attached to its firing mount.
+function sc_beam_sustain(_beam, _x, _y, _direction)
 {
-    if (!instance_exists(_area)) return false;
+    if (!instance_exists(_beam)) return false;
 
-    var _data = _area.attack_area;
-    if (!_data.behaviour.sustained) return false;
+    var _data = _beam.attack_area;
 
-    _area.x = _x;
-    _area.y = _y;
-    _area.draw_angle = _direction;
+    _beam.x = _x;
+    _beam.y = _y;
+    _beam.draw_angle = _direction;
 
     _data.direction = _direction;
     _data.runtime.refreshed_tick = GAME_TICK;
@@ -114,15 +178,14 @@ function sc_attack_area_sustain(_area, _x, _y, _direction)
     return true;
 }
 
-/// @description Stops sustained damage and begins its short visual fade.
-function sc_attack_area_release(_area)
+/// @description Ends beam damage and begins its visual fade.
+function sc_beam_release(_beam)
 {
-    if (!instance_exists(_area)) return false;
+    if (!instance_exists(_beam)) return false;
 
-    _area.attack_area.runtime.releasing = true;
+    _beam.attack_area.runtime.releasing = true;
     return true;
 }
-
 /// @description Returns a conservative circular radius for one elliptical entity.
 function sc_attack_area_target_radius_get(_target)
 {
@@ -273,45 +336,28 @@ function sc_attack_area_damage_apply(_area)
     return _targets_hit;
 }
 
-/// @description Updates standard and sustained attack areas.
+/// @description Updates one ordinary area or maintained beam.
 function sc_attack_area_update(_area)
 {
     var _data = _area.attack_area;
+
+    switch (_data.delivery_type)
+    {
+        case AttackDelivery.AREA:
+            sc_attack_area_standard_update(_area, _data);
+        break;
+
+        case AttackDelivery.BEAM:
+            sc_beam_update(_area, _data);
+        break;
+    }
+}
+
+/// @description Updates one ordinary short-lived attack area.
+function sc_attack_area_standard_update(_area, _data)
+{
     var _behaviour = _data.behaviour;
     var _runtime = _data.runtime;
-
-    if (_behaviour.sustained)
-    {
-        if (GAME_TICK - _runtime.refreshed_tick > 1)
-            _runtime.releasing = true;
-
-        if (_runtime.releasing)
-        {
-            _runtime.release_alpha -= 1 / _behaviour.release_duration;
-
-            if (_runtime.release_alpha <= 0)
-                instance_destroy(_area);
-
-            return;
-        }
-
-        if (_data.shape == AttackAreaShape.CAPSULE)
-            _data.geometry.length = min(
-                _runtime.maximum_length,
-                _data.geometry.length + _behaviour.growth_speed
-            );
-
-        if (_behaviour.tick_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
-        {
-            sc_attack_area_damage_apply(_area);
-            _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
-        }
-
-        if (variable_struct_exists(_data.visual, "particle_script"))
-            _data.visual.particle_script(_area, _data);
-
-        return;
-    }
 
     if (_behaviour.tick_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
     {
@@ -323,6 +369,40 @@ function sc_attack_area_update(_area)
 
     if (_runtime.life <= 0)
         instance_destroy(_area);
+}
+
+/// @description Extends, damages and releases one held beam.
+function sc_beam_update(_area, _data)
+{
+    var _behaviour = _data.behaviour;
+    var _runtime = _data.runtime;
+
+    if (GAME_TICK - _runtime.refreshed_tick > 1)
+        _runtime.releasing = true;
+
+    if (_runtime.releasing)
+    {
+        _runtime.release_alpha -= 1 / _behaviour.release_duration;
+
+        if (_runtime.release_alpha <= 0)
+            instance_destroy(_area);
+
+        return;
+    }
+
+    _data.geometry.length = min(
+        _runtime.maximum_length,
+        _data.geometry.length + _behaviour.growth_speed
+    );
+
+    if (GAME_TICK >= _runtime.next_damage_tick)
+    {
+        sc_attack_area_damage_apply(_area);
+        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
+    }
+
+    if (variable_struct_exists(_data.visual, "particle_script"))
+        _data.visual.particle_script(_area, _data);
 }
 
 /// @description Draws one registered short-lived attack-area visual.
