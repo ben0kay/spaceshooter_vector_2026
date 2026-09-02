@@ -217,7 +217,7 @@ function sc_projectile_active_update(_projectile, _data)
     instance_destroy(_projectile);
 }
 
-/// @description Moves, spins, shrinks and fades one harmless shield ricochet.
+/// @description Moves, shrinks and fades one harmless shield ricochet.
 function sc_projectile_ricochet_update(_projectile, _data)
 {
     var _ricochet = _data.runtime.ricochet;
@@ -226,8 +226,7 @@ function sc_projectile_ricochet_update(_projectile, _data)
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
 
     _data.movement.speed *= 0.96;
-    _projectile.draw_angle += _ricochet.spin;
-    _ricochet.spin *= 0.97;
+    _projectile.draw_angle = _data.direction;
     _ricochet.scale *= _ricochet.shrink;
     _ricochet.remaining--;
     _ricochet.alpha = sqr(max(0, _ricochet.remaining / _ricochet.maximum));
@@ -293,14 +292,13 @@ function sc_projectile_shield_impact_get(_projectile, _target)
 function sc_projectile_ricochet_begin(_projectile, _impact, _class_config)
 {
     var _data = _projectile.projectile;
-    var _normal_x = lengthdir_x(1, _impact.normal);
-    var _normal_y = lengthdir_y(1, _impact.normal);
-    var _incoming_x = lengthdir_x(1, _data.direction);
-    var _incoming_y = lengthdir_y(1, _data.direction);
-    var _dot = _incoming_x * _normal_x + _incoming_y * _normal_y;
-    var _reflected_x = _incoming_x - 2 * _dot * _normal_x;
-    var _reflected_y = _incoming_y - 2 * _dot * _normal_y;
-    var _direction = point_direction(0, 0, _reflected_x, _reflected_y) + random_range(-14, 14);
+    var _direction = (
+        2 * _impact.normal
+        - _data.direction
+        + 180
+        + random_range(-_class_config.deflect_spread, _class_config.deflect_spread)
+    ) mod 360;
+
     var _life = max(1, round(_class_config.deflect_life));
 
     _projectile.x = _impact.x + lengthdir_x(4, _impact.normal);
@@ -315,7 +313,6 @@ function sc_projectile_ricochet_begin(_projectile, _impact, _class_config)
 
     _data.runtime.target_id = noone;
     _data.runtime.ricochet = {
-        spin: choose(-1, 1) * random_range(_class_config.deflect_spin_min, _class_config.deflect_spin_max),
         scale: _data.scale * _class_config.deflect_scale,
         shrink: _class_config.deflect_shrink,
         alpha: 1,

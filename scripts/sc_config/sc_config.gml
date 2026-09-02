@@ -21,26 +21,26 @@ function sc_config_init()
                 {
                     name: "Light",
                     camera_shake: 0.65, shake_time: 3,
-                    shield_deflect: 1, deflect_chance: 0.85,
+                    shield_deflect: 1, deflect_chance: 0.5,
                     deflect_speed: 4.5, deflect_life: 24,
-                    deflect_spin_min: 8, deflect_spin_max: 15,
-                    deflect_shrink: 0.97, deflect_scale: 0.9
+                    deflect_shrink: 0.97, deflect_scale: 0.9,
+                    deflect_spread: 7
                 },
                 {
                     name: "Regular",
                     camera_shake: 1.25, shake_time: 5,
                     shield_deflect: 0, deflect_chance: 0,
                     deflect_speed: 3, deflect_life: 18,
-                    deflect_spin_min: 6, deflect_spin_max: 11,
-                    deflect_shrink: 0.965, deflect_scale: 1
+                    deflect_shrink: 0.965, deflect_scale: 1,
+                    deflect_spread: 5
                 },
                 {
                     name: "Heavy",
                     camera_shake: 2.5, shake_time: 9,
                     shield_deflect: 0, deflect_chance: 0,
                     deflect_speed: 2, deflect_life: 14,
-                    deflect_spin_min: 3, deflect_spin_max: 7,
-                    deflect_shrink: 0.96, deflect_scale: 1.15
+                    deflect_shrink: 0.96, deflect_scale: 1.15,
+                    deflect_spread: 3
                 }
             ]
         },
