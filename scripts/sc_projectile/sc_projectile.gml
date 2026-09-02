@@ -212,19 +212,30 @@ function sc_projectile_sprite_get(_projectile)
     return _cache.sprites[_frame];
 }
 
-/// @description Creates a visual-only baked projectile deflection.
+/// @description Creates a visual-only projectile ricochet reflected from a shield.
 function sc_projectile_fragment_create(_projectile, _target, _class_config)
 {
     var _data = _projectile.projectile;
-    var _outward = point_direction(_target.x, _target.y, _projectile.x, _projectile.y);
-    var _direction = _outward + random_range(-22, 22);
+
+    // Outward shield normal from target centre toward impact.
+    var _normal_direction = point_direction(_target.x, _target.y, _projectile.x, _projectile.y);
+    var _normal_x = lengthdir_x(1, _normal_direction);
+    var _normal_y = lengthdir_y(1, _normal_direction);
+
+    // Reflect the incoming projectile vector across the shield normal.
+    var _incoming_x = lengthdir_x(1, _data.direction);
+    var _incoming_y = lengthdir_y(1, _data.direction);
+    var _dot = _incoming_x * _normal_x + _incoming_y * _normal_y;
+    var _reflected_x = _incoming_x - 2 * _dot * _normal_x;
+    var _reflected_y = _incoming_y - 2 * _dot * _normal_y;
+    var _direction = point_direction(0, 0, _reflected_x, _reflected_y) + random_range(-14, 14);
     var _spin = choose(-1, 1) * random_range(_class_config.deflect_spin_min, _class_config.deflect_spin_max);
 
     return instance_create_layer(_projectile.x, _projectile.y, _projectile.layer, o_projectile_fragment, {
         fragment_create: {
             sprite: sc_projectile_sprite_get(_projectile),
             direction: _direction,
-            speed: _class_config.deflect_speed * random_range(0.85, 1.15),
+            speed: _class_config.deflect_speed * random_range(0.9, 1.1),
             spin: _spin,
             scale: _data.scale * _class_config.deflect_scale,
             shrink: _class_config.deflect_shrink,
