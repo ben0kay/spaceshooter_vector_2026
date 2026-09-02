@@ -32,7 +32,7 @@ function sc_config_init()
                     shield_deflect: 0, deflect_chance: 0,
                     deflect_speed: 3, deflect_life: 18,
                     deflect_shrink: 0.965, deflect_scale: 1,
-                    deflect_spread: 5
+                    deflect_spread: 5, deflect_strength: 0.3
                 },
                 {
                     name: "Heavy",
@@ -40,7 +40,7 @@ function sc_config_init()
                     shield_deflect: 0, deflect_chance: 0,
                     deflect_speed: 2, deflect_life: 14,
                     deflect_shrink: 0.96, deflect_scale: 1.15,
-                    deflect_spread: 3
+                    deflect_spread: 3, deflect_strength: 0.3
                 }
             ]
         },
@@ -55,11 +55,12 @@ function sc_config_init()
                 { name: "Corrosive", shield_multiplier: 0.55, armour_multiplier: 1.3, hull_multiplier: 1.2, default_effect: DamageEffect.CORROSION }
             ],
 
-            effects: [
+                        effects: [
                 { name: "None", chance: 0, duration: 0, strength: 0, tick_interval: 0 },
                 { name: "Disruption", chance: 0.25, duration: 180, strength: 0.25, tick_interval: 0 },
                 { name: "Burn", chance: 0.2, duration: 180, strength: 0.15, tick_interval: 30 },
-                { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 }
+                { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 },
+                { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
             ]
         }
     };

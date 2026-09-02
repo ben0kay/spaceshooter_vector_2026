@@ -12,7 +12,7 @@ enum AimMode { MOUNT, TARGET, TARGET_LEAD, WORLD }
 enum ShotPattern { SINGLE, SPREAD, RANDOM_CONE }
 enum HardpointFireOrder { ALL, SEQUENTIAL, RANDOM }
 enum DamageType { KINETIC, ENERGY, EXPLOSIVE, ELECTRIC, THERMAL, CORROSIVE }
-enum DamageEffect { NONE, DISRUPTION, BURN, CORROSION }
+enum DamageEffect { NONE, DISRUPTION, BURN, CORROSION, STAGGER }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
 enum ProjectileState { ACTIVE, RICOCHET }
 enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }

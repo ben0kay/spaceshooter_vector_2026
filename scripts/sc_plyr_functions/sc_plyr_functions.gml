@@ -405,10 +405,36 @@ function sc_player_update_dashing(_player)
     global.PlayerState = PlayerState.ACTIVE;
 }
 
-/// @description Updates player drift while temporarily stunned.
+/// @description Begins or extends a brief player movement and weapon disruption.
+function sc_player_stagger_begin(_player, _effect)
+{
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _stagger = _player.entity.status.stagger;
+
+    if (_stagger.remaining <= 0)
+        _stagger.return_state = global.PlayerState;
+
+    _stagger.remaining = max(_stagger.remaining, max(1, round(_effect.duration)));
+
+    var _velocity_retained = 1 - clamp(_effect.strength, 0, 1);
+    _player.movement.velocity_x *= _velocity_retained;
+    _player.movement.velocity_y *= _velocity_retained;
+    _player.movement.boost.active = false;
+
+    sc_player_continuous_weapon_release(_player);
+    global.PlayerState = PlayerState.STUNNED;
+    sc_player_combat_permission_update(_player);
+
+    // Insert brief stagger flash, particles or audio here later.
+    return true;
+}
+
+/// @description Updates brief player stagger drift and restores the previous state.
 function sc_player_update_stunned(_player)
 {
     var _movement = _player.movement;
+    var _stagger = _player.entity.status.stagger;
 
     _movement.boost.active = false;
     _movement.velocity_x = lerp(_movement.velocity_x, 0, 0.12);
@@ -417,6 +443,16 @@ function sc_player_update_stunned(_player)
     sc_player_solid_move(_player);
     sc_player_combat_permission_update(_player);
     sc_player_visual_update(_player);
+
+    _stagger.remaining--;
+
+    if (_stagger.remaining <= 0)
+    {
+        _stagger.remaining = 0;
+        global.PlayerState = _stagger.return_state == PlayerState.DASHING
+            ? PlayerState.ACTIVE
+            : _stagger.return_state;
+    }
 }
 
 /// @description Updates player drift while systems are disabled.
@@ -524,8 +560,9 @@ function sc_player_damage(_player, _packet)
         global.PlayerState = PlayerState.DESTROYED;
         sc_player_die(_player, _packet);
     }
+    else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        sc_player_stagger_begin(_player, _result.effect);
 
-    // _result.effect is ready for the upcoming timed-effect manager.
     return _result;
 }
 

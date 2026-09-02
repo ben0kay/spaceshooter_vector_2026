@@ -207,6 +207,52 @@ function sc_enemy_visual_update(_enemy)
     }
 }
 
+/// @description Begins or extends a brief enemy movement and attack disruption.
+function sc_enemy_stagger_begin(_enemy, _effect)
+{
+    var _data = _enemy.enemy;
+    if (_data.state == EnemyState.DEAD) return false;
+
+    var _stagger = _enemy.entity.status.stagger;
+
+    if (_stagger.remaining <= 0)
+        _stagger.return_state = _data.state;
+
+    _stagger.remaining = max(_stagger.remaining, max(1, round(_effect.duration)));
+
+    var _velocity_retained = 1 - clamp(_effect.strength, 0, 1);
+    _data.movement.velocity_x *= _velocity_retained;
+    _data.movement.velocity_y *= _velocity_retained;
+
+    sc_enemy_attack_cancel(_enemy);
+    _data.state = EnemyState.STUNNED;
+
+    // Insert brief stagger flash, particles or audio here later.
+    return true;
+}
+
+/// @description Updates brief enemy stagger drift and restores its previous state.
+function sc_enemy_update_stunned(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _stagger = _enemy.entity.status.stagger;
+
+    _movement.velocity_x *= _data.stats.final.friction;
+    _movement.velocity_y *= _data.stats.final.friction;
+
+    _enemy.x += _movement.velocity_x;
+    _enemy.y += _movement.velocity_y;
+
+    _stagger.remaining--;
+
+    if (_stagger.remaining <= 0)
+    {
+        _stagger.remaining = 0;
+        _data.state = _stagger.return_state;
+    }
+}
+
 /// @description Applies passive idle movement decay.
 function sc_enemy_update_idle(_enemy)
 {
@@ -538,8 +584,9 @@ function sc_enemy_damage(_enemy, _packet)
         _data.state = EnemyState.DEAD;
         sc_enemy_die(_enemy, _packet);
     }
+    else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        sc_enemy_stagger_begin(_enemy, _result.effect);
 
-    // _result.effect is ready for the upcoming timed-effect manager.
     return _result;
 }
 

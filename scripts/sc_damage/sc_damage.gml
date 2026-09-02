@@ -99,3 +99,10 @@ function sc_damage_resolve(_packet, _shield, _armour, _hull)
         source: _packet.source
     };
 }
+
+/// @description Rolls whether one registered damage effect activates.
+function sc_damage_effect_triggered(_effect)
+{
+    if (_effect.type == DamageEffect.NONE) return false;
+    return random(1) < _effect.chance;
+}

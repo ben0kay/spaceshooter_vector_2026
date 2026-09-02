@@ -87,16 +87,12 @@ function sc_weapon_register_shard_rocket()
                 damage: {
                     amount: 18,
                     type: DamageType.EXPLOSIVE,
-                    effect: DamageEffect.NONE
+                    effect: DamageEffect.STAGGER
                 }
             }
         },
 
-        shot: {
-            pattern: ShotPattern.SINGLE,
-            amount: 1,
-            angle_total: 0
-        },
+        shot: { pattern: ShotPattern.SINGLE, amount: 1, angle_total: 0 },
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
@@ -105,11 +101,7 @@ function sc_weapon_register_shard_rocket()
             muzzle_flash_duration: 8
         },
 
-        audio: {
-            sound: noone,
-            volume: 0.55,
-            pitch_range: 0.05
-        }
+        audio: { sound: noone, volume: 0.55, pitch_range: 0.05 }
     });
 }
 

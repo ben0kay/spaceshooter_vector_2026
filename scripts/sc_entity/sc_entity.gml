@@ -8,6 +8,13 @@ function sc_entity_init(_entity, _faction, _damage_script, _collision)
         collision: {
             radius_forward: _collision.radius_forward,
             radius_side: _collision.radius_side
+        },
+
+        status: {
+            stagger: {
+                remaining: 0,
+                return_state: 0
+            }
         }
     };
 
