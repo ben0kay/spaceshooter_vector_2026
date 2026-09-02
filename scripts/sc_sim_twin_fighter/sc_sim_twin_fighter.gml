@@ -1,3 +1,130 @@
+/// @description Registers the first complete Twin Fighter.
+function sc_enemy_register_twin_fighter()
+{
+    return sc_enemy_register({
+        identity: {
+            key: "enemy_twin_fighter",
+            name: "Twin Fighter",
+            faction: Faction.SIMULANT
+        },
+
+        stats_base: {
+            shield_max: 10,
+            armour_max: 200,
+            hull_max: 60,
+
+            speed_max: 5.5,
+            acceleration: 0.3,
+            friction: 0.985,
+            turn_speed: 4,
+
+            detection_range: 1080,
+            combat_range: 840,
+            forget_range: 1280,
+
+            damage_multiplier: 1,
+            fire_rate_multiplier: 1
+        },
+
+        visual: {
+            radius: 58,
+            palette: sc_faction_palette_get(Faction.SIMULANT),
+
+            draw: {
+                body: sc_enemy_twin_fighter_body_draw,
+                core: sc_enemy_twin_fighter_core_draw
+            },
+
+            thrust: {
+                draw_script: sc_enemy_simulant_thrust_draw,
+                ignition_script: sc_particles_simulant_ignition,
+                particle_script: sc_particles_simulant_thrust
+            },
+
+            bake: {
+                body_canvas_size: 256,
+                core_canvas_size: 128,
+                hardpoint_canvas_size: 128,
+                thrust_canvas_size: 128
+            }
+        },
+
+        collision: {
+            radius_scale: 0.62,
+            blocks_player: true
+        },
+
+        hardpoints: [
+            {
+                key: "cannon_left",
+                group: "cannons",
+                forward: 0.83,
+                side: -0.48,
+                angle: 0,
+                muzzle_forward: 0.48,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            },
+            {
+                key: "cannon_right",
+                group: "cannons",
+                forward: 0.83,
+                side: 0.48,
+                angle: 0,
+                muzzle_forward: 0.48,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            }
+        ],
+
+        thrusters: [
+            {
+                key: "thruster_left",
+                forward: -0.86,
+                side: -0.32,
+                angle: 180,
+                scale: 0.9
+            },
+            {
+                key: "thruster_right",
+                forward: -0.86,
+                side: 0.32,
+                angle: 180,
+                scale: 0.9
+            }
+        ],
+
+        attack_controller: {
+            selection: AttackSelection.WEIGHTED,
+
+            attacks: [
+                {
+                    key: "alternating_cannons",
+                    weight: 100,
+                    hardpoint_group: "cannons",
+                    weapon_key: "weapon_simulant_pulse",
+
+                    aim: {
+                        mode: AimMode.TARGET,
+                        angle_offset: 0,
+                        inaccuracy: 2
+                    },
+
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
+                    },
+
+                    firing: {
+                        order: HardpointFireOrder.SEQUENTIAL,
+                        interval: 10,
+                        volley_max: 16,
+                        cooldown: 120
+                    }
+                }
+            ]
+        }
+    });
+}
+
 /// @description Draws the longer Twin Fighter layered gunmetal body.
 function sc_enemy_twin_fighter_body_draw(_x, _y, _radius, _angle, _visual)
 {

@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_sim_projectiles",
+  "%Name":"sc_simulant_weapons",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_sim_projectiles",
+  "name":"sc_simulant_weapons",
   "parent":{
     "name":"simulant",
-    "path":"folders/scripts/enemy/visuals/simulant.yy",
+    "path":"folders/scripts/enemy/enemy_register/simulant.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

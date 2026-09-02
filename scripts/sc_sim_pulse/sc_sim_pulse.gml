@@ -1,3 +1,30 @@
+/// @description Registers the reusable animated Simulant energy pulse projectile.
+function sc_projectile_register_simulant_pulse()
+{
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
+    return sc_projectile_register({
+        identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
+        movement: { speed: 17.5 },
+        damage: { amount: 3, type: DamageType.ENERGY, effect: DamageEffect.NONE },
+        collision: { radius: 6 },
+        life: { maximum: 180 },
+
+        visual: {
+            radius: 6,
+            length: 24,
+            palette: _palette,
+            draw_script: sc_projectile_simulant_pulse_draw,
+
+            bake: {
+                canvas_size: 96,
+                frames: 8,
+                frame_speed: 2
+            }
+        }
+    });
+}
+
 /// @description Draws one animated Simulant violet pulse frame for startup baking.
 function sc_projectile_simulant_pulse_draw(_x, _y, _angle, _visual, _frame, _frame_count)
 {

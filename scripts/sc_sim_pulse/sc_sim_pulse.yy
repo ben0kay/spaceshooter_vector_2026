@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_sim_twin_fighter",
+  "%Name":"sc_sim_pulse",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_sim_twin_fighter",
+  "name":"sc_sim_pulse",
   "parent":{
     "name":"simulant",
     "path":"folders/scripts/enemy/enemy_register/simulant.yy",
