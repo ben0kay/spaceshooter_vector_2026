@@ -27,14 +27,14 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.ship.visual.runtime = {
-    cache: _cache,
-    thrust_power: 0,
-    thrust_phase: irandom(359),
-    shield_hit_alpha: 0,
-    wing_fold: _definition.visual.wing.fold_idle,
-    core_angle: 0,
-    core_speed: _definition.visual.core.idle_speed
-	};
+        cache: _cache,
+        thrust_power: 0,
+        thrust_phase: irandom(359),
+        shield_hit_alpha: 0,
+        wing_fold: _definition.visual.wing.fold_idle,
+        core_angle: 0,
+        core_speed: _definition.visual.core.idle_speed
+    };
 
     var _primary_hardpoints = _player.ship.hardpoints.primary;
 
@@ -50,11 +50,11 @@ function sc_player_init(_player, _ship_key)
     if (!sc_player_stats_init(_player, _definition.stats_base)) return false;
 
     var _final = _player.ship.stats.final;
-	_player.draw_angle = 0;
+    _player.draw_angle = 0;
 
-   if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision))
-    return false;
-	
+    if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision))
+        return false;
+
     _player.defence = {
         shield: {
             current: _final.shield_max,
@@ -107,7 +107,8 @@ function sc_player_init(_player, _ship_key)
 
         primary: {
             hardpoint_cursor: 0,
-            next_fire_tick: 0
+            next_fire_tick: 0,
+            active_delivery_id: noone
         }
 
         // MMB special and RMB frontal shield runtime go here later.
@@ -119,7 +120,6 @@ function sc_player_init(_player, _ship_key)
         direction: 0
     };
 
-    
     _player.initialized = true;
 
     global.player_id = _player;

@@ -34,6 +34,7 @@ function sc_weapon_register_shard_pulse()
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
             interval: 8,
+			continuous: 0,
             recoil: 6,
             muzzle_flash_duration: 8
         },

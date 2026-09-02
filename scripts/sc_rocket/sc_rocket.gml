@@ -64,7 +64,7 @@ function sc_weapon_register_shard_rocket()
 
             projectile: {
                 scale: 1,
-                speed: 12,
+                speed: 14,
                 life: 180
             },
 
@@ -101,6 +101,7 @@ function sc_weapon_register_shard_rocket()
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
             interval: 42,
+			continuous: 0,
             recoil: 8,
             muzzle_flash_duration: 8
         },

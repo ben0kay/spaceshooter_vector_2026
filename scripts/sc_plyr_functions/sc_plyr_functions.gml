@@ -212,6 +212,23 @@ function sc_player_dash_ghost_record(_player)
     _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
+/// @description Releases the player's currently sustained weapon delivery.
+function sc_player_continuous_weapon_release(_player)
+{
+    var _runtime = _player.combat.primary;
+    var _active = _runtime.active_delivery_id;
+
+    if (!instance_exists(_active))
+    {
+        _runtime.active_delivery_id = noone;
+        return false;
+    }
+
+    sc_attack_area_release(_active);
+    _runtime.active_delivery_id = noone;
+    return true;
+}
+
 /// @description Selects one temporary primary weapon using number keys 1-4.
 function sc_player_weapon_selection_update(_player)
 {
@@ -235,6 +252,8 @@ function sc_player_weapon_selection_update(_player)
 
     if (_slot == _loadout.primary_slot) return false;
 
+    sc_player_continuous_weapon_release(_player);
+
     _loadout.primary_slot = _slot;
     _loadout.primary = _weapon_key;
     _player.combat.primary.hardpoint_cursor = 0;
@@ -244,13 +263,16 @@ function sc_player_weapon_selection_update(_player)
     return true;
 }
 
-/// @description Fires the player's held-LMB primary weapon from its registered mount mode.
+/// @description Fires or sustains the player's held-LMB primary weapon.
 function sc_player_primary_weapon_update(_player)
 {
-    if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left)) return false;
-
     var _runtime = _player.combat.primary;
-    if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+    if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left))
+    {
+        sc_player_continuous_weapon_release(_player);
+        return false;
+    }
 
     var _weapon_key = _player.ship.loadout.primary;
     var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
@@ -281,20 +303,41 @@ function sc_player_primary_weapon_update(_player)
         break;
 
         case WeaponMountMode.CENTRE:
-            _muzzle_x += lengthdir_x(_player.ship.visual.radius * 0.25, _angle);
-            _muzzle_y += lengthdir_y(_player.ship.visual.radius * 0.25, _angle);
+            var _centre_forward = _weapon.firing.centre_forward * _player.ship.visual.radius;
+            _muzzle_x += lengthdir_x(_centre_forward, _angle);
+            _muzzle_y += lengthdir_y(_centre_forward, _angle);
         break;
     }
 
-    if (!sc_weapon_fire(
-        _player,
-        _weapon_key,
-        _weapon.shot,
-        _muzzle_x,
-        _muzzle_y,
-        _angle,
+    if (_weapon.firing.continuous)
+    {
+        if (instance_exists(_runtime.active_delivery_id))
+            return sc_attack_area_sustain(_runtime.active_delivery_id, _muzzle_x, _muzzle_y, _angle);
+
+        if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+        var _delivery = sc_weapon_fire(
+            _player, _weapon_key, _weapon.shot,
+            _muzzle_x, _muzzle_y, _angle,
+            _player.ship.stats.final.damage_multiplier
+        );
+
+        if (!instance_exists(_delivery)) return false;
+
+        _runtime.active_delivery_id = _delivery;
+        _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval));
+        return true;
+    }
+
+    if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+    var _delivery = sc_weapon_fire(
+        _player, _weapon_key, _weapon.shot,
+        _muzzle_x, _muzzle_y, _angle,
         _player.ship.stats.final.damage_multiplier
-    )) return false;
+    );
+
+    if (!_delivery) return false;
 
     if (_weapon.firing.mount_mode == WeaponMountMode.HARDPOINT)
     {

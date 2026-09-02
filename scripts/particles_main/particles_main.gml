@@ -35,6 +35,12 @@ function sc_particles_init()
         return false;
     }
 
+    if (!sc_particles_register_weapon_content())
+    {
+        sc_particles_destroy();
+        return false;
+    }
+
     // Register additional particle families here later.
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
@@ -50,11 +56,28 @@ function sc_particles_register_projectile_content()
         var _data = variable_struct_get(global.data.projectiles, _keys[_i]);
         var _visual = _data.visual;
 
-        if (!variable_struct_exists(_visual, "particles_register_script"))
-            continue;
+        if (!variable_struct_exists(_visual, "particles_register_script")) continue;
+        if (!_visual.particles_register_script()) return false;
+    }
 
-        if (!_visual.particles_register_script())
-            return false;
+    return true;
+}
+
+/// @description Registers particle callbacks supplied by area and beam weapons.
+function sc_particles_register_weapon_content()
+{
+    var _keys = variable_struct_get_names(global.data.weapons);
+
+    for (var _i = 0; _i < array_length(_keys); _i++)
+    {
+        var _weapon = variable_struct_get(global.data.weapons, _keys[_i]);
+        var _delivery = _weapon.delivery;
+
+        if (_delivery.type == AttackDelivery.PROJECTILE) continue;
+
+        var _visual = _delivery.area.visual;
+        if (!variable_struct_exists(_visual, "particles_register_script")) continue;
+        if (!_visual.particles_register_script()) return false;
     }
 
     return true;
@@ -78,51 +101,26 @@ function sc_particles_type_create()
 /// @description Registers one named particle family.
 function sc_particles_group_register(_key, _data)
 {
-    if (variable_struct_exists(
-        global.particles.groups,
-        _key
-    ))
+    if (variable_struct_exists(global.particles.groups, _key))
     {
-        show_debug_message(
-            "PARTICLE GROUP ERROR - duplicate key: "
-            + _key
-        );
-
+        show_debug_message("PARTICLE GROUP ERROR - duplicate key: " + _key);
         return false;
     }
 
-    variable_struct_set(
-        global.particles.groups,
-        _key,
-        _data
-    );
-
+    variable_struct_set(global.particles.groups, _key, _data);
     return true;
 }
 
 /// @description Returns one registered particle family.
 function sc_particles_group_get(_key)
 {
-    if (
-        !variable_global_exists("particles")
-        || !is_struct(global.particles)
-    )
-    {
+    if (!variable_global_exists("particles") || !is_struct(global.particles))
         return undefined;
-    }
 
-    if (!variable_struct_exists(
-        global.particles.groups,
-        _key
-    ))
-    {
+    if (!variable_struct_exists(global.particles.groups, _key))
         return undefined;
-    }
 
-    return variable_struct_get(
-        global.particles.groups,
-        _key
-    );
+    return variable_struct_get(global.particles.groups, _key);
 }
 
 /// @description Destroys every owned particle type and particle system.

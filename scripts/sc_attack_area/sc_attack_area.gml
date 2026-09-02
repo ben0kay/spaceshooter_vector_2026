@@ -23,13 +23,15 @@ function sc_attack_area_create(_definition, _source, _damage, _x, _y, _direction
     return _area;
 }
 
-/// @description Initializes one scaled circle, capsule or cone attack area.
+/// @description Initializes one standard or sustained attack area.
 function sc_attack_area_init(_area, _create)
 {
     var _definition = variable_clone(_create.definition);
     var _geometry = variable_clone(_definition.geometry);
     var _scale = max(0.01, _create.scale);
-    var _interval = max(0, round(_definition.behaviour.tick_interval));
+    var _behaviour = _definition.behaviour;
+    var _sustained = _behaviour.sustained;
+    var _interval = max(0, round(_behaviour.tick_interval));
 
     switch (_definition.shape)
     {
@@ -47,6 +49,9 @@ function sc_attack_area_init(_area, _create)
         break;
     }
 
+    var _maximum_length = _definition.shape == AttackAreaShape.CAPSULE ? _geometry.length : 0;
+    if (_sustained && _definition.shape == AttackAreaShape.CAPSULE) _geometry.length = 0;
+
     _area.attack_area = {
         source: _create.source,
         direction: _create.direction,
@@ -55,17 +60,24 @@ function sc_attack_area_init(_area, _create)
         damage: sc_damage_packet_create(_create.damage, _create.source),
 
         behaviour: {
-            duration: max(1, round(_definition.behaviour.duration)),
+            sustained: _sustained,
+            duration: max(1, round(_behaviour.duration)),
+            release_duration: max(1, round(_behaviour.release_duration)),
+            growth_speed: max(0, _behaviour.growth_speed * _scale),
             tick_interval: _interval,
-            hit_once: _definition.behaviour.hit_once,
-            max_targets: _definition.behaviour.max_targets
+            hit_once: _behaviour.hit_once,
+            max_targets: _behaviour.max_targets
         },
 
         visual: variable_clone(_definition.visual),
 
         runtime: {
-            life: max(1, round(_definition.behaviour.duration)),
+            life: max(1, round(_behaviour.duration)),
+            maximum_length: _maximum_length,
             next_damage_tick: GAME_TICK + _interval,
+            refreshed_tick: GAME_TICK,
+            releasing: false,
+            release_alpha: 1,
             hit_ids: []
         }
     };
@@ -73,7 +85,37 @@ function sc_attack_area_init(_area, _create)
     _area.draw_angle = _create.direction;
     _area.initialized = true;
 
-    sc_attack_area_damage_apply(_area);
+    if (!_sustained)
+        sc_attack_area_damage_apply(_area);
+
+    return true;
+}
+
+/// @description Keeps one sustained area attached to its current firing mount.
+function sc_attack_area_sustain(_area, _x, _y, _direction)
+{
+    if (!instance_exists(_area)) return false;
+
+    var _data = _area.attack_area;
+    if (!_data.behaviour.sustained) return false;
+
+    _area.x = _x;
+    _area.y = _y;
+    _area.draw_angle = _direction;
+
+    _data.direction = _direction;
+    _data.runtime.refreshed_tick = GAME_TICK;
+    _data.runtime.releasing = false;
+    _data.runtime.release_alpha = 1;
+    return true;
+}
+
+/// @description Stops sustained damage and begins its short visual fade.
+function sc_attack_area_release(_area)
+{
+    if (!instance_exists(_area)) return false;
+
+    _area.attack_area.runtime.releasing = true;
     return true;
 }
 
@@ -227,17 +269,50 @@ function sc_attack_area_damage_apply(_area)
     return _targets_hit;
 }
 
-/// @description Updates attack-area duration and optional repeated damage ticks.
+/// @description Updates standard and sustained attack areas.
 function sc_attack_area_update(_area)
 {
     var _data = _area.attack_area;
+    var _behaviour = _data.behaviour;
     var _runtime = _data.runtime;
-    var _interval = _data.behaviour.tick_interval;
 
-    if (_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
+    if (_behaviour.sustained)
+    {
+        if (GAME_TICK - _runtime.refreshed_tick > 1)
+            _runtime.releasing = true;
+
+        if (_runtime.releasing)
+        {
+            _runtime.release_alpha -= 1 / _behaviour.release_duration;
+
+            if (_runtime.release_alpha <= 0)
+                instance_destroy(_area);
+
+            return;
+        }
+
+        if (_data.shape == AttackAreaShape.CAPSULE)
+            _data.geometry.length = min(
+                _runtime.maximum_length,
+                _data.geometry.length + _behaviour.growth_speed
+            );
+
+        if (_behaviour.tick_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
+        {
+            sc_attack_area_damage_apply(_area);
+            _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
+        }
+
+        if (variable_struct_exists(_data.visual, "particle_script"))
+            _data.visual.particle_script(_area, _data);
+
+        return;
+    }
+
+    if (_behaviour.tick_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
     {
         sc_attack_area_damage_apply(_area);
-        _runtime.next_damage_tick = GAME_TICK + _interval;
+        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
     }
 
     _runtime.life--;
