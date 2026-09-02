@@ -73,6 +73,35 @@ function sc_player_init(_player, _ship_key)
         }
     };
 
+    _player.resources = {
+        energy: {
+            current: _final.energy_max,
+            maximum: _final.energy_max,
+            recharge_delay_remaining: 0
+        },
+
+        fuel: {
+            current: _final.fuel_max,
+            maximum: _final.fuel_max
+        },
+
+        bullets: {
+            current: _final.bullets_max,
+            maximum: _final.bullets_max
+        },
+
+        explosives: {
+            current: _final.explosives_max,
+            maximum: _final.explosives_max
+        },
+
+        cargo: {
+            amount: 0,
+            weight: 0,
+            capacity: _final.cargo_capacity
+        }
+    };
+
     _player.movement = {
         input_x: 0,
         input_y: 0,

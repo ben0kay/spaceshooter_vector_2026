@@ -13,6 +13,8 @@ function sc_weapon_register_shard_laser()
 
     return sc_weapon_register({
         identity: { key: "weapon_shard_laser", name: "Shard Laser" },
+		
+		resource: { type: ResourceType.ENERGY, cost: 0.25 },
 
         delivery: {
             type: AttackDelivery.BEAM,

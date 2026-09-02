@@ -41,6 +41,8 @@ function sc_weapon_register_shard_minigun()
 {
     return sc_weapon_register({
         identity: { key: "weapon_shard_minigun", name: "Shard Minigun" },
+		
+		resource: { type: ResourceType.BULLETS, cost: 1 },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,

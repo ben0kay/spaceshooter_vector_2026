@@ -13,6 +13,7 @@ function sc_projectile_register_shard_rocket()
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_rocket", name: "Shard Rocket" },
+		resource: { type: ResourceType.EXPLOSIVES, cost: 1 },
         projectile_class: ProjectileClass.HEAVY,
         collision: { radius: 7 },
 

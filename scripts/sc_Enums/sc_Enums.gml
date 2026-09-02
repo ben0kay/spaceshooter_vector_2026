@@ -16,3 +16,4 @@ enum DamageEffect { NONE, DISRUPTION, BURN, CORROSION, STAGGER }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
 enum ProjectileState { ACTIVE, RICOCHET }
 enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }
+enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }

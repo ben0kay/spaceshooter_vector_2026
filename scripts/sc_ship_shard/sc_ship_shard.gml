@@ -6,18 +6,28 @@ function sc_ship_register_shard()
 
         stats_base: {
             hull_max: 75, armour_max: 25, shield_max: 40,
-            shield_recharge_delay: 150, shield_recharge_rate: 0.35,
+            shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
+
+            energy_max: 100, energy_regeneration: 0.2, energy_recharge_delay: 45,
+            fuel_max: 100, fuel_regeneration: 0,
+            fuel_movement_cost: 0.015, fuel_boost_cost: 0.06, fuel_dash_cost: 8,
+
+            bullets_max: 600, explosives_max: 24,
+            cargo_capacity: 12,
+
             speed_max: 10, acceleration: 0.6, deceleration: 0.7, turn_speed: 10,
-            damage_multiplier: 1, fire_rate_multiplier: 1, cargo_capacity: 12,
+            damage_multiplier: 1, fire_rate_multiplier: 1,
+
             boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
             dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
             weapons_while_boosting: 0, weapons_while_dashing: 0
         },
 
         collision: {
-		    radius_forward: 76,
-		    radius_side: 36
-		},
+            radius_forward: 76,
+            radius_side: 36
+        },
+
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
@@ -30,21 +40,20 @@ function sc_ship_register_shard()
         },
 
         starting_loadout: {
-		    primary: "weapon_shard_pulse",
-		    primary_slot: 0,
+            primary: "weapon_shard_pulse",
+            primary_slot: 0,
 
-		    primary_slots: [
-		        "weapon_shard_pulse",
-		        "weapon_shard_minigun",
-		        "weapon_shard_laser",
-		        "weapon_shard_rocket"
-		    ],
+            primary_slots: [
+                "weapon_shard_pulse",
+                "weapon_shard_minigun",
+                "weapon_shard_laser",
+                "weapon_shard_rocket"
+            ],
 
-		    secondary: undefined
-		}
+            secondary: undefined
+        }
     });
 }
-
 /// @description Returns the complete visual definition for the Shard chassis.
 function sc_ship_shard_visual_data()
 {

@@ -3,6 +3,8 @@ function sc_weapon_register_shard_pulse()
 {
     return sc_weapon_register({
         identity: { key: "weapon_shard_pulse", name: "Shard Pulse" },
+		
+		resource: { type: ResourceType.ENERGY, cost: 2 },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,

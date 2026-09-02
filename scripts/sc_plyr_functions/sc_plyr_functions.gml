@@ -119,12 +119,58 @@ function sc_player_combat_permission_update(_player)
     }
 }
 
+/// @description Attempts to spend one player resource.
+function sc_player_resource_spend(_player, _type, _amount)
+{
+    if (_type == ResourceType.NONE || _amount <= 0) return true;
+
+    var _resource;
+
+    switch (_type)
+    {
+        case ResourceType.ENERGY: _resource = _player.resources.energy; break;
+        case ResourceType.FUEL: _resource = _player.resources.fuel; break;
+        case ResourceType.BULLETS: _resource = _player.resources.bullets; break;
+        case ResourceType.EXPLOSIVES: _resource = _player.resources.explosives; break;
+        default: return false;
+    }
+
+    if (_resource.current < _amount) return false;
+
+    _resource.current = max(0, _resource.current - _amount);
+
+    if (_type == ResourceType.ENERGY)
+        _resource.recharge_delay_remaining = max(0, round(_player.ship.stats.final.energy_recharge_delay));
+
+    return true;
+}
+
+/// @description Regenerates player energy and optional passive fuel.
+function sc_player_resources_update(_player)
+{
+    var _resources = _player.resources;
+    var _stats = _player.ship.stats.final;
+    var _energy = _resources.energy;
+    var _fuel = _resources.fuel;
+
+    if (_energy.recharge_delay_remaining > 0)
+        _energy.recharge_delay_remaining--;
+    else if (_energy.current < _energy.maximum)
+        _energy.current = min(_energy.maximum, _energy.current + _stats.energy_regeneration);
+
+    if (_stats.fuel_regeneration > 0 && _fuel.current < _fuel.maximum)
+        _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
+}
+
 /// @description Starts a dash after a valid second Shift press.
 function sc_player_dash_begin(_player)
 {
     var _movement = _player.movement;
     var _dash = _movement.dash;
     var _stats = _player.ship.stats.final;
+
+    if (!sc_player_resource_spend(_player, ResourceType.FUEL, _stats.fuel_dash_cost))
+        return false;
 
     if (_movement.speed > 0.05)
         _dash.direction = point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
@@ -176,11 +222,22 @@ function sc_player_normal_movement_update(_player)
 
     _movement.boost.active = keyboard_check(vk_shift) && _movement.moving;
 
+    if (_movement.moving)
+    {
+        var _fuel_cost = _movement.boost.active ? _stats.fuel_boost_cost : _stats.fuel_movement_cost;
+
+        if (!sc_player_resource_spend(_player, ResourceType.FUEL, _fuel_cost))
+        {
+            _movement.moving = false;
+            _movement.boost.active = false;
+        }
+    }
+
     var _speed_max = _stats.speed_max;
     if (_movement.boost.active) _speed_max *= _stats.boost_speed_multiplier;
 
-    var _target_vx = _movement.input_x * _speed_max;
-    var _target_vy = _movement.input_y * _speed_max;
+    var _target_vx = _movement.moving ? _movement.input_x * _speed_max : 0;
+    var _target_vy = _movement.moving ? _movement.input_y * _speed_max : 0;
     var _change = _movement.moving ? _stats.acceleration : _stats.deceleration;
 
     _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_change, _change);
@@ -312,9 +369,20 @@ function sc_player_primary_weapon_update(_player)
     if (_weapon.delivery.type == AttackDelivery.BEAM)
     {
         if (instance_exists(_runtime.active_delivery_id))
+        {
+            if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+            {
+                sc_player_continuous_weapon_release(_player);
+                return false;
+            }
+
             return sc_beam_sustain(_runtime.active_delivery_id, _muzzle_x, _muzzle_y, _angle);
+        }
 
         if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+        if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+            return false;
 
         var _beam = sc_weapon_fire(
             _player, _weapon_key, _weapon.shot,
@@ -330,6 +398,9 @@ function sc_player_primary_weapon_update(_player)
     }
 
     if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+    if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+        return false;
 
     var _delivery = sc_weapon_fire(
         _player, _weapon_key, _weapon.shot,
@@ -605,7 +676,7 @@ function sc_player_die(_player, _packet)
     return true;
 }
 
-/// @description Updates player shield recharge after its damage delay expires.
+/// @description Recharges player shields by consuming available energy.
 function sc_player_defence_update(_player)
 {
     var _shield = _player.defence.shield;
@@ -617,9 +688,24 @@ function sc_player_defence_update(_player)
         return;
     }
 
-    _shield.current = min(
-        _shield.maximum,
-        _shield.current + _player.ship.stats.final.shield_recharge_rate
-    );
+    var _stats = _player.ship.stats.final;
+    var _restore = min(_stats.shield_recharge_rate, _shield.maximum - _shield.current);
+    var _energy_cost = _restore * _stats.shield_energy_cost;
+
+    if (!sc_player_resource_spend(_player, ResourceType.ENERGY, _energy_cost))
+    {
+        var _energy = _player.resources.energy;
+
+        if (_stats.shield_energy_cost <= 0 || _energy.current <= 0)
+            return;
+
+        _restore = min(_restore, _energy.current / _stats.shield_energy_cost);
+        _energy_cost = _restore * _stats.shield_energy_cost;
+
+        if (_restore <= 0 || !sc_player_resource_spend(_player, ResourceType.ENERGY, _energy_cost))
+            return;
+    }
+
+    _shield.current = min(_shield.maximum, _shield.current + _restore);
 }
 

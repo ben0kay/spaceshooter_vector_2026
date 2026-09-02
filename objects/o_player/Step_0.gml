@@ -4,7 +4,10 @@ if (!initialized || !GAMEPLAY_ACTIVE) exit;
 sc_player_movement_runtime_update(id);
 
 if (global.PlayerState != PlayerState.DESTROYED)
+{
+    sc_player_resources_update(id);
     sc_player_defence_update(id);
+}
 
 switch (global.PlayerState)
 {
