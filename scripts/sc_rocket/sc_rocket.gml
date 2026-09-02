@@ -25,7 +25,9 @@ function sc_projectile_register_shard_rocket()
                     duration: 18,
                     tick_interval: 0,
                     hit_once: true,
-                    max_targets: 0
+                    max_targets: 0,
+                    falloff_minimum: 0.25,
+                    falloff_exponent: 1
                 },
 
                 visual: {

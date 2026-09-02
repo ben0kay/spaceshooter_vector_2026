@@ -66,20 +66,24 @@ function sc_attack_area_standard_init(_area, _create)
     var _behaviour = _definition.behaviour;
     var _scale = max(0.01, _create.scale);
     var _interval = max(0, round(_behaviour.tick_interval));
+    var _falloff_distance = 1;
 
     switch (_definition.shape)
     {
         case AttackAreaShape.CIRCLE:
             _geometry.radius *= _scale;
+            _falloff_distance = _geometry.radius;
         break;
 
         case AttackAreaShape.CAPSULE:
             _geometry.length *= _scale;
             _geometry.radius *= _scale;
+            _falloff_distance = _geometry.length;
         break;
 
         case AttackAreaShape.CONE:
             _geometry.range *= _scale;
+            _falloff_distance = _geometry.range;
         break;
     }
 
@@ -95,7 +99,10 @@ function sc_attack_area_standard_init(_area, _create)
             duration: max(1, round(_behaviour.duration)),
             tick_interval: _interval,
             hit_once: _behaviour.hit_once,
-            max_targets: _behaviour.max_targets
+            max_targets: _behaviour.max_targets,
+            falloff_minimum: clamp(_behaviour.falloff_minimum, 0, 1),
+            falloff_exponent: max(0.01, _behaviour.falloff_exponent),
+            falloff_distance: max(1, _falloff_distance)
         },
 
         visual: variable_clone(_definition.visual),
@@ -305,6 +312,31 @@ function sc_attack_area_target_inside(_area, _target)
     return false;
 }
 
+/// @description Returns an area damage packet scaled by distance from its origin.
+function sc_attack_area_damage_packet_get(_area, _target)
+{
+    var _data = _area.attack_area;
+    if (_data.delivery_type == AttackDelivery.BEAM) return _data.damage;
+
+    var _behaviour = _data.behaviour;
+    if (_behaviour.falloff_minimum >= 1) return _data.damage;
+
+    var _distance = point_distance(_area.x, _area.y, _target.x, _target.y);
+    var _distance_ratio = clamp(_distance / _behaviour.falloff_distance, 0, 1);
+    var _falloff = lerp(
+        1,
+        _behaviour.falloff_minimum,
+        power(_distance_ratio, _behaviour.falloff_exponent)
+    );
+
+    return {
+        amount: _data.damage.amount * _falloff,
+        type: _data.damage.type,
+        effect: _data.damage.effect,
+        source: _data.damage.source
+    };
+}
+
 /// @description Applies one damage tick to valid opposing entities inside the area.
 function sc_attack_area_damage_apply(_area)
 {
@@ -324,7 +356,8 @@ function sc_attack_area_damage_apply(_area)
         if (_behaviour.hit_once && sc_attack_area_target_was_hit(_data, _target)) continue;
         if (!sc_attack_area_target_inside(_area, _target)) continue;
 
-        var _result = _target.entity.damage_script(_target, _data.damage);
+        var _packet = sc_attack_area_damage_packet_get(_area, _target);
+        var _result = _target.entity.damage_script(_target, _packet);
         if (!is_struct(_result)) continue;
 
         if (_behaviour.hit_once)
