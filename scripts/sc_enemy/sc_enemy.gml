@@ -614,14 +614,41 @@ function sc_enemy_damage(_enemy, _packet)
     {
         _defence.hull.current = 0;
         _data.state = EnemyState.DEAD;
-        sc_enemy_attack_cancel(_enemy);
-
-        _data.visual.death_script(_enemy.x, _enemy.y, _data.visual.radius);
-
-        // Insert drops and enemy destruction audio here later.
-        instance_destroy(_enemy);
+        sc_enemy_die(_enemy, _packet);
     }
 
     // _result.effect is ready for the upcoming timed-effect manager.
+    return true;
+}
+
+/// @description Processes one enemy death and its final killing source.
+function sc_enemy_die(_enemy, _packet)
+{
+    var _data = _enemy.enemy;
+    var _source = _packet.source;
+
+    sc_enemy_attack_cancel(_enemy);
+    _data.target_id = noone;
+    _data.movement.velocity_x = 0;
+    _data.movement.velocity_y = 0;
+
+    _data.visual.death_script(_enemy.x, _enemy.y, _data.visual.radius);
+
+    if (_source.faction == Faction.PLAYER)
+    {
+        // Increment player kill count and combat statistics here later.
+        // Award player-specific experience or bounty credit here later.
+    }
+    else
+    {
+        // Handle allied, environmental or faction kill credit here later.
+    }
+
+    // Roll registered enemy drops here later.
+    // Create floating kill or reward feedback here later.
+    // Process registered on-death abilities here later.
+    // Insert registered enemy death audio here later.
+
+    instance_destroy(_enemy);
     return true;
 }
