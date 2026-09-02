@@ -15,6 +15,8 @@ function sc_projectile_register_simulant_pulse()
             length: 24,
             palette: _palette,
             draw_script: sc_projectile_simulant_pulse_draw,
+            impact_script: sc_projectile_simulant_pulse_impact,
+            particles_register_script: sc_projectile_simulant_pulse_particles_register,
 
             bake: {
                 canvas_size: 96,
@@ -23,6 +25,28 @@ function sc_projectile_register_simulant_pulse()
             }
         }
     });
+}
+
+/// @description Registers the Simulant pulse's violet impact particles.
+function sc_projectile_simulant_pulse_particles_register()
+{
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
+    return sc_particles_projectile_impact_register("impact_simulant_pulse", _palette, {
+        scale: 1.2,
+        spark_amount: 9,
+        fragment_amount: 4,
+        spark_spread: 85,
+        speed_min: 2,
+        speed_max: 4.4
+    });
+}
+
+/// @description Emits one Simulant violet pulse impact.
+function sc_projectile_simulant_pulse_impact(_x, _y, _direction, _target)
+{
+    // Target defence layer can alter impact colour here later.
+    return sc_particles_projectile_impact_emit("impact_simulant_pulse", _x, _y, _direction);
 }
 
 /// @description Draws one animated Simulant violet pulse frame for startup baking.

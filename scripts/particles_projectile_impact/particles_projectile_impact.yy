@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_particles_main",
+  "%Name":"particles_projectile_impact",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_particles_main",
+  "name":"particles_projectile_impact",
   "parent":{
     "name":"particles",
     "path":"folders/scripts/particles.yy",

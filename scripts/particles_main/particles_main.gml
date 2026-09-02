@@ -1,24 +1,27 @@
-/// @description Creates the shared particle system and registries.
+/// @description Creates the shared background and foreground particle systems.
 function sc_particles_init()
 {
     var _system = part_system_create();
+    var _impact_system = part_system_create();
 
-    if (!part_system_exists(_system))
+    if (!part_system_exists(_system) || !part_system_exists(_impact_system))
     {
-        show_debug_message(
-            "PARTICLE SYSTEM ERROR - creation failed"
-        );
+        if (part_system_exists(_system)) part_system_destroy(_system);
+        if (part_system_exists(_impact_system)) part_system_destroy(_impact_system);
 
+        show_debug_message("PARTICLE SYSTEM ERROR - creation failed");
         return false;
     }
 
     global.particles = {
         system: _system,
+        impact_system: _impact_system,
         groups: {},
         owned_types: []
     };
 
     part_system_depth(_system, 10);
+    part_system_depth(_impact_system, -10);
 
     if (!sc_particles_register_simulant())
     {
@@ -26,10 +29,34 @@ function sc_particles_init()
         return false;
     }
 
-    // Register additional particle families here later.
-    // if (!sc_particles_register_therm()) return false;
+    if (!sc_particles_register_projectile_content())
+    {
+        sc_particles_destroy();
+        return false;
+    }
 
-    show_debug_message("PARTICLE SYSTEM INITIALIZED");
+    // Register additional particle families here later.
+    show_debug_message("PARTICLE SYSTEMS INITIALIZED");
+    return true;
+}
+
+/// @description Registers particle callbacks supplied by projectile definitions.
+function sc_particles_register_projectile_content()
+{
+    var _keys = variable_struct_get_names(global.data.projectiles);
+
+    for (var _i = 0; _i < array_length(_keys); _i++)
+    {
+        var _data = variable_struct_get(global.data.projectiles, _keys[_i]);
+        var _visual = _data.visual;
+
+        if (!variable_struct_exists(_visual, "particles_register_script"))
+            continue;
+
+        if (!_visual.particles_register_script())
+            return false;
+    }
+
     return true;
 }
 
@@ -98,25 +125,15 @@ function sc_particles_group_get(_key)
     );
 }
 
-/// @description Destroys every owned particle type and system.
+/// @description Destroys every owned particle type and particle system.
 function sc_particles_destroy()
 {
-    if (
-        !variable_global_exists("particles")
-        || !is_struct(global.particles)
-    )
-    {
+    if (!variable_global_exists("particles") || !is_struct(global.particles))
         return;
-    }
 
-    var _owned_types =
-        global.particles.owned_types;
+    var _owned_types = global.particles.owned_types;
 
-    for (
-        var _i = 0;
-        _i < array_length(_owned_types);
-        _i++
-    )
+    for (var _i = 0; _i < array_length(_owned_types); _i++)
     {
         var _type = _owned_types[_i];
 
@@ -125,13 +142,11 @@ function sc_particles_destroy()
     }
 
     var _system = global.particles.system;
+    var _impact_system = global.particles.impact_system;
 
-    if (part_system_exists(_system))
-        part_system_destroy(_system);
+    if (part_system_exists(_system)) part_system_destroy(_system);
+    if (part_system_exists(_impact_system)) part_system_destroy(_impact_system);
 
     global.particles = undefined;
-
-    show_debug_message(
-        "PARTICLE SYSTEM DESTROYED"
-    );
+    show_debug_message("PARTICLE SYSTEMS DESTROYED");
 }

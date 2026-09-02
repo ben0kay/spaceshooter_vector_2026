@@ -15,6 +15,8 @@ function sc_projectile_register_shard_pulse()
             length: 21,
             palette: _palette,
             draw_script: sc_projectile_shard_pulse_draw,
+            impact_script: sc_projectile_shard_pulse_impact,
+            particles_register_script: sc_projectile_shard_pulse_particles_register,
 
             bake: {
                 canvas_size: 96,
@@ -23,6 +25,28 @@ function sc_projectile_register_shard_pulse()
             }
         }
     });
+}
+
+/// @description Registers the Shard pulse's aqua impact particles.
+function sc_projectile_shard_pulse_particles_register()
+{
+    var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
+
+    return sc_particles_projectile_impact_register("impact_shard_pulse", _palette, {
+        scale: 1.1,
+        spark_amount: 7,
+        fragment_amount: 3,
+        spark_spread: 55,
+        speed_min: 2.5,
+        speed_max: 5
+    });
+}
+
+/// @description Emits one Shard aqua pulse impact.
+function sc_projectile_shard_pulse_impact(_x, _y, _direction, _target)
+{
+    // Target defence layer can alter impact colour here later.
+    return sc_particles_projectile_impact_emit("impact_shard_pulse", _x, _y, _direction);
 }
 
 /// @description Draws one animated Shard aqua pulse frame for startup baking.

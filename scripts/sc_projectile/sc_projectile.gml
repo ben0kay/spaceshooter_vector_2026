@@ -79,7 +79,9 @@ function sc_projectile_entity_collision(_projectile, _target)
     var _damage_script = _target.entity.damage_script;
     _damage_script(_target, _data.damage);
 
-    // Insert impact particle and audio callbacks here.
+    _data.visual.impact_script(_projectile.x, _projectile.y, _data.direction, _target);
+
+    // Insert registered impact audio callback here later.
     instance_destroy(_projectile);
     return true;
 }
