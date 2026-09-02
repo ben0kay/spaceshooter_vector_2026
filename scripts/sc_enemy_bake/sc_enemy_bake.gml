@@ -18,10 +18,7 @@ function sc_enemy_visual_cache_init()
             body: sc_enemy_visual_component_bake(_key, _data, "body", -1, _visual.bake.body_canvas_size),
             core: sc_enemy_visual_component_bake(_key, _data, "core", -1, _visual.bake.core_canvas_size),
             thrust: sc_enemy_visual_component_bake(_key, _data, "thrust", -1, _visual.bake.thrust_canvas_size),
-            shield: _data.stats_base.shield_max > 0
-                ? sc_enemy_visual_component_bake(_key, _data, "shield", -1, _visual.bake.body_canvas_size)
-                : -1,
-
+            shield: sc_enemy_visual_component_bake(_key, _data, "shield", -1,  _visual.bake.body_canvas_size),
             hardpoints: array_create(_hardpoint_count, -1),
             fragments: array_create(_fragment_count, -1)
         };

@@ -12,14 +12,14 @@ function sc_projectile_register_shard_minigun()
         identity: { key: "projectile_shard_minigun", name: "Shard Minigun Round" },
         projectile_class: ProjectileClass.LIGHT,
 
-        movement: { speed: 22.5 },
+        movement: { speed: 30 },
         damage: { amount: 2, type: DamageType.KINETIC, effect: DamageEffect.NONE },
         collision: { radius: 3 },
         life: { maximum: 120 },
 
         visual: {
-            radius: 3,
-            length: 13,
+            radius: 2,
+            length: 11,
 
             palette: {
                 core: make_colour_rgb(255, 250, 205),
