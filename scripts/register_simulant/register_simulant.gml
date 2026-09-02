@@ -1,37 +1,26 @@
-/// @description Registers the reusable Simulant energy pulse projectile.
+/// @description Registers the reusable animated Simulant energy pulse projectile.
 function sc_projectile_register_simulant_pulse()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
 
     return sc_projectile_register({
-        identity: {
-            key: "projectile_simulant_pulse",
-            name: "Simulant Pulse"
-        },
-
-        movement: {
-            speed: 17.5
-        },
-
-        damage: {
-            amount: 3,
-            type: DamageType.ENERGY,
-            effect: DamageEffect.NONE
-        },
-
-        collision: {
-            radius: 6
-        },
-
-        life: {
-            maximum: 180
-        },
+        identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
+        movement: { speed: 17.5 },
+        damage: { amount: 3, type: DamageType.ENERGY, effect: DamageEffect.NONE },
+        collision: { radius: 6 },
+        life: { maximum: 180 },
 
         visual: {
             radius: 6,
             length: 24,
-            colour_primary: _palette.energy,
-            colour_secondary: _palette.core
+            palette: _palette,
+            draw_script: sc_projectile_simulant_pulse_draw,
+
+            bake: {
+                canvas_size: 96,
+                frames: 8,
+                frame_speed: 2
+            }
         }
     });
 }

@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_player_register_combat",
+  "%Name":"sc_plyr_ship_bake",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_player_register_combat",
+  "name":"sc_plyr_ship_bake",
   "parent":{
-    "name":"player",
-    "path":"folders/scripts/player.yy",
+    "name":"baking",
+    "path":"folders/scripts/baking.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

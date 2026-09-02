@@ -19,6 +19,7 @@ function sc_game_init()
     if (!sc_particles_init()) return false;
     if (!sc_ship_visual_cache_init()) return false;
     if (!sc_enemy_visual_cache_init()) return false;
+    if (!sc_projectile_visual_cache_init()) return false;
 
     global.game.initialized = true;
     show_debug_message("SPACE SHOOTER VECTOR 2026 - GAME INITIALIZED");

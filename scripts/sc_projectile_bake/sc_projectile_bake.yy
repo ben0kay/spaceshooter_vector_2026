@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"ship_visual_bake",
+  "%Name":"sc_projectile_bake",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"ship_visual_bake",
+  "name":"sc_projectile_bake",
   "parent":{
-    "name":"player",
-    "path":"folders/scripts/player.yy",
+    "name":"baking",
+    "path":"folders/scripts/baking.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

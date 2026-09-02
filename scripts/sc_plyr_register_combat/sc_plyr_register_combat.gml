@@ -1,7 +1,7 @@
-/// @description Registers the Shard's reusable aqua pulse projectile.
+/// @description Registers the Shard's reusable animated aqua pulse projectile.
 function sc_projectile_register_shard_pulse()
 {
-    var _visual = variable_struct_get(global.data.ships, "ship_shard").visual;
+    var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_pulse", name: "Shard Pulse" },
@@ -13,12 +13,17 @@ function sc_projectile_register_shard_pulse()
         visual: {
             radius: 5,
             length: 21,
-            colour_primary: _visual.palette.energy,
-            colour_secondary: _visual.palette.core
+            palette: _palette,
+            draw_script: sc_projectile_shard_pulse_draw,
+
+            bake: {
+                canvas_size: 96,
+                frames: 6,
+                frame_speed: 2
+            }
         }
     });
 }
-
 /// @description Registers the Shard's alternating primary pulse cannons.
 function sc_weapon_register_shard_pulse()
 {

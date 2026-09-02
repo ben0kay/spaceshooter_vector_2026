@@ -10,7 +10,7 @@ function sc_projectile_create(_projectile_key, _source, _x, _y, _direction, _lay
     });
 }
 
-/// @description Initializes one projectile from registered data.
+/// @description Initializes one projectile from registered data and shared baked visuals.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -20,6 +20,14 @@ function sc_projectile_init(_projectile, _create)
     }
 
     var _data = variable_struct_get(global.data.projectiles, _create.key);
+    var _visual = variable_clone(_data.visual);
+    var _cache = sc_projectile_visual_cache_get(_create.key);
+    var _frame_count = array_length(_cache.sprites);
+
+    _visual.runtime = {
+        cache: _cache,
+        phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0
+    };
 
     _projectile.projectile = {
         key: _create.key,
@@ -28,7 +36,7 @@ function sc_projectile_init(_projectile, _create)
         movement: variable_clone(_data.movement),
         damage: sc_damage_packet_create(_data.damage, _create.source),
         collision: variable_clone(_data.collision),
-        visual: variable_clone(_data.visual),
+        visual: _visual,
 
         life: {
             remaining: _data.life.maximum,
@@ -76,17 +84,16 @@ function sc_projectile_entity_collision(_projectile, _target)
     return true;
 }
 
-/// @description Draws one basic pulse projectile.
+/// @description Draws one projectile using its shared baked animation frames.
 function sc_projectile_draw(_projectile)
 {
-    var _visual = _projectile.projectile.visual;
-    var _angle = _projectile.draw_angle;
-    var _tail_x = _projectile.x - lengthdir_x(_visual.length, _angle);
-    var _tail_y = _projectile.y - lengthdir_y(_visual.length, _angle);
+    var _data = _projectile.projectile;
+    var _runtime = _data.visual.runtime;
+    var _cache = _runtime.cache;
+    var _frame_count = array_length(_cache.sprites);
+    var _frame = _frame_count > 1
+        ? ((GAME_TICK div _cache.frame_speed) + _runtime.phase) mod _frame_count
+        : 0;
 
-    draw_set_colour(_visual.colour_primary);
-    draw_line_width(_tail_x, _tail_y, _projectile.x, _projectile.y, _visual.radius);
-
-    draw_set_colour(_visual.colour_secondary);
-    draw_circle(_projectile.x, _projectile.y, _visual.radius, false);
+    draw_sprite_ext(_cache.sprites[_frame], 0, _projectile.x, _projectile.y, 1, 1, _projectile.draw_angle, c_white, 1);
 }

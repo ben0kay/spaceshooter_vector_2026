@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_enemy_visual_bake",
+  "%Name":"sc_enemy_bake",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_enemy_visual_bake",
+  "name":"sc_enemy_bake",
   "parent":{
-    "name":"visuals",
-    "path":"folders/scripts/enemy/visuals.yy",
+    "name":"baking",
+    "path":"folders/scripts/baking.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
