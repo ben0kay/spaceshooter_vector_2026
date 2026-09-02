@@ -16,11 +16,17 @@ function sc_weapon_register_shard_laser()
 
         delivery: {
             type: AttackDelivery.BEAM,
+            scale: 1,
+
+            damage: {
+                amount: 24,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.NONE
+            },
 
             area: {
                 shape: AttackAreaShape.CAPSULE,
                 geometry: { length: 1100, radius: 8 },
-                damage: { amount: 24, type: DamageType.ENERGY, effect: DamageEffect.NONE },
 
                 behaviour: {
                     duration: 10,

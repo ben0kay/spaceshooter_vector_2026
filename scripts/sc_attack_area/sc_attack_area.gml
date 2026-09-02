@@ -6,14 +6,16 @@ function sc_point_distance_sq(_x1, _y1, _x2, _y2)
     return _dx * _dx + _dy * _dy;
 }
 
-/// @description Creates one reusable attack area and resolves its first damage tick immediately.
-function sc_attack_area_create(_definition, _source, _x, _y, _direction, _layer)
+/// @description Creates one reusable scaled attack area.
+function sc_attack_area_create(_definition, _source, _damage, _x, _y, _direction, _layer, _scale = 1)
 {
     var _area = instance_create_layer(_x, _y, _layer, o_attack_area, {
         attack_area_create: {
             definition: _definition,
             source: _source,
-            direction: _direction
+            damage: _damage,
+            direction: _direction,
+            scale: _scale
         }
     });
 
@@ -21,21 +23,40 @@ function sc_attack_area_create(_definition, _source, _x, _y, _direction, _layer)
     return _area;
 }
 
-/// @description Initializes one circle, capsule or cone attack area.
+/// @description Initializes one scaled circle, capsule or cone attack area.
 function sc_attack_area_init(_area, _create)
 {
     var _definition = variable_clone(_create.definition);
+    var _geometry = variable_clone(_definition.geometry);
+    var _scale = max(0.01, _create.scale);
+    var _interval = max(0, round(_definition.behaviour.tick_interval));
+
+    switch (_definition.shape)
+    {
+        case AttackAreaShape.CIRCLE:
+            _geometry.radius *= _scale;
+        break;
+
+        case AttackAreaShape.CAPSULE:
+            _geometry.length *= _scale;
+            _geometry.radius *= _scale;
+        break;
+
+        case AttackAreaShape.CONE:
+            _geometry.range *= _scale;
+        break;
+    }
 
     _area.attack_area = {
         source: _create.source,
         direction: _create.direction,
         shape: _definition.shape,
-        geometry: variable_clone(_definition.geometry),
-        damage: sc_damage_packet_create(_definition.damage, _create.source),
+        geometry: _geometry,
+        damage: sc_damage_packet_create(_create.damage, _create.source),
 
         behaviour: {
             duration: max(1, round(_definition.behaviour.duration)),
-            tick_interval: max(0, round(_definition.behaviour.tick_interval)),
+            tick_interval: _interval,
             hit_once: _definition.behaviour.hit_once,
             max_targets: _definition.behaviour.max_targets
         },
@@ -44,7 +65,7 @@ function sc_attack_area_init(_area, _create)
 
         runtime: {
             life: max(1, round(_definition.behaviour.duration)),
-            next_damage_tick: GAME_TICK,
+            next_damage_tick: GAME_TICK + _interval,
             hit_ids: []
         }
     };

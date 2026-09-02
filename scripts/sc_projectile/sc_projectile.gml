@@ -4,15 +4,20 @@ function sc_projectile_class_config_get(_class)
     return global.config.projectile.classes[_class];
 }
 
-/// @description Creates one generic projectile.
-function sc_projectile_create(_projectile_key, _source, _x, _y, _direction, _layer)
+/// @description Creates one projectile using its weapon's launch parameters.
+function sc_projectile_create(_projectile_key, _source, _delivery, _x, _y, _direction, _layer)
 {
     return instance_create_layer(_x, _y, _layer, o_projectile, {
-        projectile_create: { key: _projectile_key, source: _source, direction: _direction }
+        projectile_create: {
+            key: _projectile_key,
+            source: _source,
+            delivery: _delivery,
+            direction: _direction
+        }
     });
 }
 
-/// @description Finds the nearest opposing entity for an optional homing projectile.
+/// @description Finds the nearest opposing entity for a homing launch.
 function sc_projectile_target_find(_projectile, _range)
 {
     var _data = _projectile.projectile;
@@ -50,7 +55,7 @@ function sc_projectile_target_find(_projectile, _range)
     return _target;
 }
 
-/// @description Initializes one projectile from registered data and shared baked visuals.
+/// @description Initializes a projectile template using weapon-owned launch data.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -60,29 +65,47 @@ function sc_projectile_init(_projectile, _create)
     }
 
     var _data = variable_struct_get(global.data.projectiles, _create.key);
+    var _delivery = _create.delivery;
+    var _launch = _delivery.projectile;
+    var _scale = max(0.01, _launch.scale);
+    var _movement = variable_clone(_data.movement);
+    var _collision = variable_clone(_data.collision);
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
+
+    _movement.speed *= _launch.speed_multiplier;
+    _collision.radius *= _scale;
 
     _visual.runtime = {
         cache: _cache,
         phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0
     };
 
+    var _detonation = undefined;
+
+    if (variable_struct_exists(_data, "detonation"))
+    {
+        _detonation = {
+            area: variable_clone(_data.detonation.area),
+            scale: _delivery.detonation.scale,
+            damage: variable_clone(_delivery.detonation.damage)
+        };
+    }
+
     _projectile.projectile = {
         key: _create.key,
         projectile_class: _data.projectile_class,
         source: _create.source,
         direction: _create.direction,
-        movement: variable_clone(_data.movement),
-        damage: sc_damage_packet_create(_data.damage, _create.source),
-        collision: variable_clone(_data.collision),
+        scale: _scale,
+        movement: _movement,
+        guidance: variable_clone(_delivery.guidance),
+        damage: sc_damage_packet_create(_delivery.damage, _create.source),
+        collision: _collision,
         visual: _visual,
+        detonation: _detonation,
         life: { remaining: _data.life.maximum, maximum: _data.life.maximum },
-
-        detonation: variable_struct_exists(_data, "detonation")
-            ? variable_clone(_data.detonation)
-            : undefined,
 
         runtime: {
             target_id: noone,
@@ -93,7 +116,7 @@ function sc_projectile_init(_projectile, _create)
 
     _projectile.mask_index = s_collision_circle;
 
-    var _mask_scale = _projectile.projectile.collision.radius / 16;
+    var _mask_scale = _collision.radius / 16;
     _projectile.image_xscale = _mask_scale;
     _projectile.image_yscale = _mask_scale;
     _projectile.draw_angle = _create.direction;
@@ -101,56 +124,58 @@ function sc_projectile_init(_projectile, _create)
     return true;
 }
 
-/// @description Updates optional homing without affecting ordinary projectiles.
+/// @description Updates weapon-supplied projectile guidance.
 function sc_projectile_homing_update(_projectile)
 {
     var _data = _projectile.projectile;
-    var _movement = _data.movement;
+    var _guidance = _data.guidance;
 
-    if (!variable_struct_exists(_movement, "homing")) return;
+    if (!_guidance.homing) return;
 
-    var _homing = _movement.homing;
     var _runtime = _data.runtime;
     var _target = _runtime.target_id;
 
     if (!instance_exists(_target) || GAME_TICK >= _runtime.next_target_tick)
     {
-        _target = sc_projectile_target_find(_projectile, _homing.acquire_range);
+        _target = sc_projectile_target_find(_projectile, _guidance.acquire_range);
         _runtime.target_id = _target;
-        _runtime.next_target_tick = GAME_TICK + max(1, _homing.reacquire_interval);
+        _runtime.next_target_tick = GAME_TICK + max(1, round(_guidance.reacquire_interval));
     }
 
     if (!instance_exists(_target)) return;
 
     var _target_direction = point_direction(_projectile.x, _projectile.y, _target.x, _target.y);
     var _turn = angle_difference(_target_direction, _data.direction);
-    _data.direction += clamp(_turn, -_homing.turn_speed, _homing.turn_speed);
+    _data.direction += clamp(_turn, -_guidance.turn_speed, _guidance.turn_speed);
     _data.direction = _data.direction mod 360;
 }
 
-/// @description Creates a registered detonation attack area once.
+/// @description Creates the projectile template's explosion using weapon-owned power.
 function sc_projectile_detonate(_projectile)
 {
     var _data = _projectile.projectile;
+    var _detonation = _data.detonation;
 
-    if (_data.runtime.detonated || !is_struct(_data.detonation))
+    if (_data.runtime.detonated || !is_struct(_detonation))
         return false;
 
     _data.runtime.detonated = true;
 
     sc_attack_area_create(
-        _data.detonation.area,
+        _detonation.area,
         _data.source,
+        _detonation.damage,
         _projectile.x,
         _projectile.y,
         _data.direction,
-        _projectile.layer
+        _projectile.layer,
+        _detonation.scale
     );
 
     return true;
 }
 
-/// @description Updates one travelling projectile with optional homing.
+/// @description Updates one travelling projectile with optional weapon guidance.
 function sc_projectile_update(_projectile)
 {
     var _data = _projectile.projectile;
@@ -168,7 +193,7 @@ function sc_projectile_update(_projectile)
     instance_destroy(_projectile);
 }
 
-/// @description Returns the currently displayed baked frame of one projectile.
+/// @description Returns the currently displayed baked projectile frame.
 function sc_projectile_sprite_get(_projectile)
 {
     var _runtime = _projectile.projectile.visual.runtime;
@@ -181,9 +206,10 @@ function sc_projectile_sprite_get(_projectile)
     return _cache.sprites[_frame];
 }
 
-/// @description Creates a visual-only baked projectile deflection away from a shield.
+/// @description Creates a visual-only baked projectile deflection.
 function sc_projectile_fragment_create(_projectile, _target, _class_config)
 {
+    var _data = _projectile.projectile;
     var _outward = point_direction(_target.x, _target.y, _projectile.x, _projectile.y);
     var _direction = _outward + random_range(-22, 22);
     var _spin = choose(-1, 1) * random_range(_class_config.deflect_spin_min, _class_config.deflect_spin_max);
@@ -194,7 +220,7 @@ function sc_projectile_fragment_create(_projectile, _target, _class_config)
             direction: _direction,
             speed: _class_config.deflect_speed * random_range(0.85, 1.15),
             spin: _spin,
-            scale: _class_config.deflect_scale,
+            scale: _data.scale * _class_config.deflect_scale,
             shrink: _class_config.deflect_shrink,
             life: _class_config.deflect_life
         }
@@ -232,13 +258,16 @@ function sc_projectile_entity_collision(_projectile, _target)
     return true;
 }
 
-/// @description Draws one projectile using its shared baked animation frames.
+/// @description Draws one baked projectile using weapon-owned scale.
 function sc_projectile_draw(_projectile)
 {
+    var _data = _projectile.projectile;
+
     draw_sprite_ext(
         sc_projectile_sprite_get(_projectile), 0,
         _projectile.x, _projectile.y,
-        1, 1, _projectile.draw_angle,
+        _data.scale, _data.scale,
+        _projectile.draw_angle,
         c_white, 1
     );
 }

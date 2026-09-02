@@ -6,7 +6,22 @@ function sc_weapon_register_shard_pulse()
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
-            projectile_key: "projectile_shard_pulse"
+            projectile_key: "projectile_shard_pulse",
+
+            projectile: {
+                scale: 1,
+                speed_multiplier: 1
+            },
+
+            damage: {
+                amount: 8,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: {
+                homing: 0
+            }
         },
 
         shot: {
@@ -30,16 +45,15 @@ function sc_weapon_register_shard_pulse()
     });
 }
 
-/// @description Registers the Shard's reusable animated aqua pulse projectile.
+/// @description Registers the reusable animated aqua pulse projectile template.
 function sc_projectile_register_shard_pulse()
 {
     var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_pulse", name: "Shard Pulse" },
-		projectile_class: ProjectileClass.REGULAR,
+        projectile_class: ProjectileClass.REGULAR,
         movement: { speed: 19 },
-        damage: { amount: 8, type: DamageType.ENERGY, effect: DamageEffect.NONE },
         collision: { radius: 5 },
         life: { maximum: 150 },
 

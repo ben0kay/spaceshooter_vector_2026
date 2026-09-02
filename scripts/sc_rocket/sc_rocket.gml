@@ -6,7 +6,7 @@ The rocket body is baked once during startup.
 Its circular attack area and explosion visual are created only when it detonates.
 */
 
-/// @description Registers the Shard's baked homing rocket projectile.
+/// @description Registers the reusable baked Shard rocket template.
 function sc_projectile_register_shard_rocket()
 {
     var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
@@ -14,23 +14,7 @@ function sc_projectile_register_shard_rocket()
     return sc_projectile_register({
         identity: { key: "projectile_shard_rocket", name: "Shard Rocket" },
         projectile_class: ProjectileClass.HEAVY,
-
-        movement: {
-            speed: 12,
-
-            homing: {
-                acquire_range: 720,
-                turn_speed: 4,
-                reacquire_interval: 12
-            }
-        },
-
-        damage: {
-            amount: 4,
-            type: DamageType.EXPLOSIVE,
-            effect: DamageEffect.NONE
-        },
-
+        movement: { speed: 12 },
         collision: { radius: 7 },
         life: { maximum: 180 },
 
@@ -38,12 +22,6 @@ function sc_projectile_register_shard_rocket()
             area: {
                 shape: AttackAreaShape.CIRCLE,
                 geometry: { radius: 82 },
-
-                damage: {
-                    amount: 18,
-                    type: DamageType.EXPLOSIVE,
-                    effect: DamageEffect.NONE
-                },
 
                 behaviour: {
                     duration: 18,
@@ -76,7 +54,7 @@ function sc_projectile_register_shard_rocket()
     });
 }
 
-/// @description Registers the Shard rocket launcher.
+/// @description Registers the Shard's homing rocket launcher.
 function sc_weapon_register_shard_rocket()
 {
     return sc_weapon_register({
@@ -84,7 +62,35 @@ function sc_weapon_register_shard_rocket()
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
-            projectile_key: "projectile_shard_rocket"
+            projectile_key: "projectile_shard_rocket",
+
+            projectile: {
+                scale: 1,
+                speed_multiplier: 1
+            },
+
+            damage: {
+                amount: 4,
+                type: DamageType.EXPLOSIVE,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: {
+                homing: 1,
+                acquire_range: 720,
+                turn_speed: 4,
+                reacquire_interval: 12
+            },
+
+            detonation: {
+                scale: 1,
+
+                damage: {
+                    amount: 18,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.NONE
+                }
+            }
         },
 
         shot: {

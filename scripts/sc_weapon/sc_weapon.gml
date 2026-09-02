@@ -1,12 +1,15 @@
-/// @description Emits one registered delivery at one position and direction.
+/// @description Emits one registered weapon delivery.
 function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
 {
-    switch (_weapon.delivery.type)
+    var _delivery = _weapon.delivery;
+
+    switch (_delivery.type)
     {
         case AttackDelivery.PROJECTILE:
             sc_projectile_create(
-                _weapon.delivery.projectile_key,
+                _delivery.projectile_key,
                 _source,
+                _delivery,
                 _x, _y,
                 _direction,
                 _owner.layer
@@ -16,11 +19,13 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
         case AttackDelivery.AREA:
         case AttackDelivery.BEAM:
             sc_attack_area_create(
-                _weapon.delivery.area,
+                _delivery.area,
                 _source,
+                _delivery.damage,
                 _x, _y,
                 _direction,
-                _owner.layer
+                _owner.layer,
+                _delivery.scale
             );
         break;
 
