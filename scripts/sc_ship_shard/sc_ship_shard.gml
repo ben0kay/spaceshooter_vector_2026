@@ -15,7 +15,6 @@ function sc_ship_register_shard()
         },
 
         collision: { radius: 30 },
-
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
@@ -27,7 +26,18 @@ function sc_ship_register_shard()
             utility: []
         },
 
-        starting_loadout: { primary: "weapon_shard_pulse", secondary: undefined }
+        starting_loadout: {
+            primary: "weapon_shard_pulse",
+            primary_slot: 0,
+            primary_slots: [
+                "weapon_shard_pulse",
+                "weapon_shard_minigun",
+                undefined,
+                undefined
+            ],
+
+            secondary: undefined
+        }
     });
 }
 

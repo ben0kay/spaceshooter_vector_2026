@@ -211,7 +211,39 @@ function sc_player_dash_ghost_record(_player)
     _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
-/// @description Fires the player's held-LMB primary weapon from alternating physical hardpoints.
+/// @description Selects one temporary primary weapon using number keys 1-4.
+function sc_player_weapon_selection_update(_player)
+{
+    var _slot = -1;
+
+    if (keyboard_check_pressed(ord("1"))) _slot = 0;
+    else if (keyboard_check_pressed(ord("2"))) _slot = 1;
+    else if (keyboard_check_pressed(ord("3"))) _slot = 2;
+    else if (keyboard_check_pressed(ord("4"))) _slot = 3;
+
+    if (_slot < 0) return false;
+
+    var _loadout = _player.ship.loadout;
+    var _weapon_key = _loadout.primary_slots[_slot];
+
+    if (is_undefined(_weapon_key))
+    {
+        show_debug_message("PLAYER WEAPON SLOT " + string(_slot + 1) + " IS EMPTY");
+        return false;
+    }
+
+    if (_slot == _loadout.primary_slot) return false;
+
+    _loadout.primary_slot = _slot;
+    _loadout.primary = _weapon_key;
+    _player.combat.primary.hardpoint_cursor = 0;
+    _player.combat.primary.next_fire_tick = GAME_TICK;
+
+    show_debug_message("PLAYER WEAPON SELECTED - " + variable_struct_get(global.data.weapons, _weapon_key).identity.name);
+    return true;
+}
+
+/// @description Fires the player's held-LMB primary weapon from its registered mount mode.
 function sc_player_primary_weapon_update(_player)
 {
     if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left)) return false;
@@ -224,20 +256,34 @@ function sc_player_primary_weapon_update(_player)
     var _hardpoints = _player.ship.hardpoints.primary;
     var _hardpoint = _hardpoints[_runtime.hardpoint_cursor];
     var _hardpoint_runtime = _hardpoint.runtime;
-    var _angle = _player.draw_angle + _hardpoint.angle;
+    var _angle = _player.draw_angle;
+    var _muzzle_x = _player.x;
+    var _muzzle_y = _player.y;
 
-    var _mount_x = _player.x
-        + lengthdir_x(_hardpoint.x, _player.draw_angle)
-        + lengthdir_x(_hardpoint.y, _player.draw_angle + 90)
-        - lengthdir_x(_hardpoint_runtime.recoil, _angle);
+    switch (_weapon.firing.mount_mode)
+    {
+        case WeaponMountMode.HARDPOINT:
+            _angle += _hardpoint.angle;
 
-    var _mount_y = _player.y
-        + lengthdir_y(_hardpoint.x, _player.draw_angle)
-        + lengthdir_y(_hardpoint.y, _player.draw_angle + 90)
-        - lengthdir_y(_hardpoint_runtime.recoil, _angle);
+            var _mount_x = _player.x
+                + lengthdir_x(_hardpoint.x, _player.draw_angle)
+                + lengthdir_x(_hardpoint.y, _player.draw_angle + 90)
+                - lengthdir_x(_hardpoint_runtime.recoil, _angle);
 
-    var _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
-    var _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
+            var _mount_y = _player.y
+                + lengthdir_y(_hardpoint.x, _player.draw_angle)
+                + lengthdir_y(_hardpoint.y, _player.draw_angle + 90)
+                - lengthdir_y(_hardpoint_runtime.recoil, _angle);
+
+            _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
+            _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
+        break;
+
+        case WeaponMountMode.CENTRE:
+            _muzzle_x += lengthdir_x(_player.ship.visual.radius * 0.25, _angle);
+            _muzzle_y += lengthdir_y(_player.ship.visual.radius * 0.25, _angle);
+        break;
+    }
 
     if (!sc_weapon_fire(
         _player,
@@ -247,28 +293,29 @@ function sc_player_primary_weapon_update(_player)
         _muzzle_y,
         _angle,
         _player.ship.stats.final.damage_multiplier
-    ))
-    {
-        return false;
-    }
+    )) return false;
 
-    _hardpoint_runtime.recoil = _weapon.firing.recoil;
-    _hardpoint_runtime.muzzle_flash = _weapon.firing.muzzle_flash_duration;
-    _hardpoint_runtime.muzzle_flash_max = _weapon.firing.muzzle_flash_duration;
+    if (_weapon.firing.mount_mode == WeaponMountMode.HARDPOINT)
+    {
+        _hardpoint_runtime.recoil = _weapon.firing.recoil;
+        _hardpoint_runtime.muzzle_flash = _weapon.firing.muzzle_flash_duration;
+        _hardpoint_runtime.muzzle_flash_max = max(1, _weapon.firing.muzzle_flash_duration);
+        _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
+    }
 
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
     _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval / _fire_rate));
-    _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
 
     // Insert weapon audio and detached muzzle particles here.
     return true;
 }
 
-/// @description Updates normal player movement, boost and dash activation.
+/// @description Updates normal player movement, weapon selection, boost and dash activation.
 function sc_player_update_active(_player)
 {
     sc_player_input_update(_player);
     sc_player_aim_update(_player);
+    sc_player_weapon_selection_update(_player);
 
     if (sc_player_dash_input_update(_player))
     {

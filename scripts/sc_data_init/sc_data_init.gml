@@ -19,6 +19,9 @@ function sc_data_init()
     if (!sc_projectile_register_shard_pulse()) return false;
     if (!sc_weapon_register_shard_pulse()) return false;
 
+    if (!sc_projectile_register_shard_minigun()) return false;
+    if (!sc_weapon_register_shard_minigun()) return false;
+
     if (!sc_projectile_register_simulant_pulse()) return false;
     if (!sc_weapon_register_simulant_pulse()) return false;
     if (!sc_enemy_register_twin_fighter()) return false;
@@ -26,7 +29,6 @@ function sc_data_init()
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
     return true;
 }
-
 /// @description Registers one projectile definition.
 function sc_projectile_register(_data)
 {

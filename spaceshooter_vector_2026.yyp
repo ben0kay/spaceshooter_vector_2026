@@ -88,6 +88,7 @@
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
     {"id":{"name":"sc_plyr_draw","path":"scripts/sc_plyr_draw/sc_plyr_draw.yy",},},
     {"id":{"name":"sc_plyr_functions","path":"scripts/sc_plyr_functions/sc_plyr_functions.yy",},},
+    {"id":{"name":"sc_plyr_minigun","path":"scripts/sc_plyr_minigun/sc_plyr_minigun.yy",},},
     {"id":{"name":"sc_plyr_pulse_weapon","path":"scripts/sc_plyr_pulse_weapon/sc_plyr_pulse_weapon.yy",},},
     {"id":{"name":"sc_plyr_ship_bake","path":"scripts/sc_plyr_ship_bake/sc_plyr_ship_bake.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},
