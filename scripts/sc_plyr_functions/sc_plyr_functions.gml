@@ -374,13 +374,10 @@ function sc_player_visual_update(_player)
 
     var _movement = _player.movement;
     var _speed_max = _player.ship.stats.final.speed_max;
-    var _thrust_target = _speed_max > 0 ? clamp(_movement.speed / _speed_max, 0, 1) : 0;
+    var _speed_ratio = _speed_max > 0 ? clamp(_movement.speed / _speed_max, 0, 1) : 0;
+    var _thrust_target = _speed_ratio;
 
-    _runtime.thrust_power = lerp(
-        _runtime.thrust_power,
-        _thrust_target,
-        _thrust_target > _runtime.thrust_power ? 0.2 : 0.12
-    );
+    _runtime.thrust_power = lerp(_runtime.thrust_power, _thrust_target, _thrust_target > _runtime.thrust_power ? 0.2 : 0.12);
 
     var _wing = _visual.wing;
     var _wing_target = _wing.fold_idle;
@@ -393,6 +390,17 @@ function sc_player_visual_update(_player)
         _wing_target = _wing.fold_moving;
 
     _runtime.wing_fold = lerp(_runtime.wing_fold, _wing_target, _wing.fold_response);
+
+    var _core = _visual.core;
+    var _core_target_speed = _core.idle_speed + _core.movement_speed * _speed_ratio;
+
+    if (global.PlayerState == PlayerState.DASHING)
+        _core_target_speed *= _core.dash_multiplier;
+    else if (_movement.boost.active)
+        _core_target_speed *= _core.boost_multiplier;
+
+    _runtime.core_speed = lerp(_runtime.core_speed, _core_target_speed, _core.response);
+    _runtime.core_angle = (_runtime.core_angle + _runtime.core_speed) mod 360;
     _runtime.shield_hit_alpha = max(0, _runtime.shield_hit_alpha - 0.06);
 }
 

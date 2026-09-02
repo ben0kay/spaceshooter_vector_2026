@@ -325,6 +325,50 @@ function sc_ship_shard_thrust_draw(_x, _y, _radius, _angle, _visual)
     draw_set_alpha(1);
 }
 
+/// @description Draws the independently rotating baked Shard drive core.
+function sc_ship_shard_core_draw(_x, _y, _radius, _angle, _visual)
+{
+    var _p = _visual.palette;
+    var _outer = _radius * 0.29;
+    var _middle = _radius * 0.205;
+    var _inner = _radius * 0.105;
+
+    draw_set_alpha(0.32);
+    draw_set_colour(_p.glow);
+    draw_circle(_x, _y, _outer * 1.35, false);
+
+    draw_set_alpha(1);
+    draw_set_colour(_p.void);
+    draw_circle(_x, _y, _outer, false);
+
+    draw_set_colour(_p.metal);
+    draw_circle(_x, _y, _outer, true);
+
+    draw_set_colour(_p.energy);
+    draw_circle(_x, _y, _middle, true);
+
+    for (var _i = 0; _i < 6; _i++)
+    {
+        var _direction = _angle + _i * 60;
+        var _inner_x = _x + lengthdir_x(_inner, _direction);
+        var _inner_y = _y + lengthdir_y(_inner, _direction);
+        var _outer_x = _x + lengthdir_x(_outer * 0.92, _direction + 18);
+        var _outer_y = _y + lengthdir_y(_outer * 0.92, _direction + 18);
+
+        draw_set_colour((_i mod 2) == 0 ? _p.core : _p.accent);
+        draw_line_width(_inner_x, _inner_y, _outer_x, _outer_y, 3);
+    }
+
+    draw_set_colour(_p.energy);
+    draw_circle(_x, _y, _inner, false);
+
+    draw_set_colour(_p.core);
+    draw_circle(_x, _y, _inner * 0.45, false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
 /// @description Creates the Shard's baked destruction fragments.
 function sc_ship_shard_death(_player)
 {
@@ -358,6 +402,16 @@ function sc_ship_shard_death(_player)
             _angle + _fold * _side, 7 * _side, 1, _side
         ));
     }
+
+    var _core = _visual.core;
+    var _core_x = _player.x + lengthdir_x(_core.forward * _radius, _angle) + lengthdir_x(_core.side * _radius, _angle + 90);
+    var _core_y = _player.y + lengthdir_y(_core.forward * _radius, _angle) + lengthdir_y(_core.side * _radius, _angle + 90);
+
+    array_push(_fragments, sc_death_fragment_data(
+        _cache.core, _core_x, _core_y,
+        irandom(359), random_range(1.8, 2.8),
+        _angle + _visual.runtime.core_angle, choose(-13, 13), 1, 1
+    ));
 
     var _hardpoints = _ship.hardpoints.primary;
 

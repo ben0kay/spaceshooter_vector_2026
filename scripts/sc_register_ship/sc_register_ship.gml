@@ -63,11 +63,19 @@ function sc_ship_register_shard()
                 fold_response: 0.14
             },
 
+            core: {
+                forward: -0.18, side: 0,
+                idle_speed: 0.45, movement_speed: 4.5,
+                boost_multiplier: 1.35, dash_multiplier: 1.75,
+                response: 0.12
+            },
+
             draw: {
                 hull: sc_ship_shard_hull_draw,
                 armour: sc_ship_shard_armour_draw,
                 wing_hull: sc_ship_shard_wing_hull_draw,
                 wing_armour: sc_ship_shard_wing_armour_draw,
+                core: sc_ship_shard_core_draw,
                 hardpoint: sc_ship_shard_cannon_draw,
                 muzzle_flash: sc_ship_shard_muzzle_flash_draw,
                 shield: sc_ship_shard_shield_draw,
@@ -78,7 +86,8 @@ function sc_ship_register_shard()
 
             bake: {
                 body_canvas_size: 224, wing_canvas_size: 160,
-                hardpoint_canvas_size: 96, muzzle_canvas_size: 96, muzzle_frames: 4,
+                core_canvas_size: 96, hardpoint_canvas_size: 96,
+                muzzle_canvas_size: 96, muzzle_frames: 4,
                 shield_canvas_size: 224, thrust_canvas_size: 128,
                 damage_stages: 4
             }

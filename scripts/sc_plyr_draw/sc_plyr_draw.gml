@@ -58,6 +58,14 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
         draw_sprite_ext(_cache.armour[_armour_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
     }
 
+    if (sprite_exists(_cache.core))
+    {
+        var _core = _visual.core;
+        var _core_x = _player.x + lengthdir_x(_core.forward * _radius, _angle) + lengthdir_x(_core.side * _radius, _angle + 90);
+        var _core_y = _player.y + lengthdir_y(_core.forward * _radius, _angle) + lengthdir_y(_core.side * _radius, _angle + 90);
+        draw_sprite_ext(_cache.core, 0, _core_x, _core_y, 1, 1, _angle + _runtime.core_angle, _colour, _alpha);
+    }
+
     sc_player_hardpoints_draw(_player, _colour, _alpha);
 
     draw_set_alpha(1);
