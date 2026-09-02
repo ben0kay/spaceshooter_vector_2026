@@ -14,4 +14,5 @@ enum HardpointFireOrder { ALL, SEQUENTIAL, RANDOM }
 enum DamageType { KINETIC, ENERGY, EXPLOSIVE, ELECTRIC, THERMAL, CORROSIVE }
 enum DamageEffect { NONE, DISRUPTION, BURN, CORROSION }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
+enum ProjectileState { ACTIVE, RICOCHET }
 enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }

@@ -56,7 +56,6 @@
     {"id":{"name":"o_entity","path":"objects/o_entity/o_entity.yy",},},
     {"id":{"name":"o_main_menu","path":"objects/o_main_menu/o_main_menu.yy",},},
     {"id":{"name":"o_player","path":"objects/o_player/o_player.yy",},},
-    {"id":{"name":"o_projectile_fragment","path":"objects/o_projectile_fragment/o_projectile_fragment.yy",},},
     {"id":{"name":"o_projectile","path":"objects/o_projectile/o_projectile.yy",},},
     {"id":{"name":"o_ship_select","path":"objects/o_ship_select/o_ship_select.yy",},},
     {"id":{"name":"o_solid","path":"objects/o_solid/o_solid.yy",},},
