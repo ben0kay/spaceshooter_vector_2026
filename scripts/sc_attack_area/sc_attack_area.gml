@@ -30,7 +30,9 @@ function sc_attack_area_init(_area, _create)
     var _geometry = variable_clone(_definition.geometry);
     var _scale = max(0.01, _create.scale);
     var _behaviour = _definition.behaviour;
-    var _sustained = _behaviour.sustained;
+    var _sustained = variable_struct_exists(_behaviour, "sustained") ? _behaviour.sustained : false;
+    var _release_duration = _sustained ? max(1, round(_behaviour.release_duration)) : 1;
+    var _growth_speed = _sustained ? max(0, _behaviour.growth_speed * _scale) : 0;
     var _interval = max(0, round(_behaviour.tick_interval));
 
     switch (_definition.shape)
@@ -50,7 +52,9 @@ function sc_attack_area_init(_area, _create)
     }
 
     var _maximum_length = _definition.shape == AttackAreaShape.CAPSULE ? _geometry.length : 0;
-    if (_sustained && _definition.shape == AttackAreaShape.CAPSULE) _geometry.length = 0;
+
+    if (_sustained && _definition.shape == AttackAreaShape.CAPSULE)
+        _geometry.length = 0;
 
     _area.attack_area = {
         source: _create.source,
@@ -62,8 +66,8 @@ function sc_attack_area_init(_area, _create)
         behaviour: {
             sustained: _sustained,
             duration: max(1, round(_behaviour.duration)),
-            release_duration: max(1, round(_behaviour.release_duration)),
-            growth_speed: max(0, _behaviour.growth_speed * _scale),
+            release_duration: _release_duration,
+            growth_speed: _growth_speed,
             tick_interval: _interval,
             hit_once: _behaviour.hit_once,
             max_targets: _behaviour.max_targets
