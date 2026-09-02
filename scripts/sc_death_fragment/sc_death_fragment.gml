@@ -1,4 +1,4 @@
-/// @description Creates one generic visual death-fragment effect with a subtle outward explosion impulse.
+/// @description Creates one generic visual death-fragment effect with a subtle outward impulse.
 function sc_death_fragment_create(_x, _y, _fragments, _flash_colour, _glow_colour, _radius, _life = 38)
 {
     for (var _i = 0; _i < array_length(_fragments); _i++)
@@ -21,8 +21,8 @@ function sc_death_fragment_create(_x, _y, _fragments, _flash_colour, _glow_colou
     });
 }
 
-/// @description Creates one fragment runtime struct.
-function sc_death_fragment_data(_sprite, _x, _y, _direction, _speed, _angle, _spin, _scale = 1)
+/// @description Creates one generic fragment runtime struct.
+function sc_death_fragment_data(_sprite, _x, _y, _direction, _speed, _angle, _spin, _scale_x = 1, _scale_y = 1)
 {
     return {
         sprite: _sprite,
@@ -32,7 +32,8 @@ function sc_death_fragment_data(_sprite, _x, _y, _direction, _speed, _angle, _sp
         velocity_y: lengthdir_y(_speed, _direction),
         angle: _angle,
         spin: _spin,
-        scale: _scale,
+        scale_x: _scale_x,
+        scale_y: _scale_y,
         alpha: 1
     };
 }

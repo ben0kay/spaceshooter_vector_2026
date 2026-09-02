@@ -28,9 +28,9 @@ function sc_ship_register_shard()
         stats_base: {
             hull_max: 75, armour_max: 25, shield_max: 40,
             shield_recharge_delay: 150, shield_recharge_rate: 0.35,
-            speed_max: 8, acceleration: 0.55, deceleration: 0.7, turn_speed: 8,
+            speed_max: 10, acceleration: 0.6, deceleration: 0.7, turn_speed: 10,
             damage_multiplier: 1, fire_rate_multiplier: 1, cargo_capacity: 12,
-            boost_speed_multiplier: 1.3, dash_speed: 22, dash_duration: 12, dash_cooldown: 75,
+            boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
             dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
             weapons_while_boosting: 0, weapons_while_dashing: 0
         },
@@ -73,6 +73,8 @@ function sc_ship_register_shard()
                 shield: sc_ship_shard_shield_draw,
                 thrust: sc_ship_shard_thrust_draw
             },
+
+            death_script: sc_ship_shard_death,
 
             bake: {
                 body_canvas_size: 224, wing_canvas_size: 160,

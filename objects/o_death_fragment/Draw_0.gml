@@ -1,5 +1,4 @@
 /// @description Draws the explosion flash and all baked sprite fragments.
-var _progress = effect_age / effect_life;
 var _flash_progress = clamp(effect_age / 12, 0, 1);
 
 gpu_set_blendmode(bm_add);
@@ -24,7 +23,7 @@ draw_set_colour(c_white);
 for (var _i = 0; _i < array_length(fragments); _i++)
 {
     var _fragment = fragments[_i];
-    draw_sprite_ext(_fragment.sprite, 0, _fragment.x, _fragment.y, _fragment.scale, _fragment.scale, _fragment.angle, c_white, _fragment.alpha);
+    draw_sprite_ext(_fragment.sprite, 0, _fragment.x, _fragment.y, _fragment.scale_x, _fragment.scale_y, _fragment.angle, c_white, _fragment.alpha);
 }
 
 draw_set_alpha(1);

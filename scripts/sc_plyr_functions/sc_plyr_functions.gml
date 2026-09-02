@@ -402,17 +402,10 @@ function sc_player_damage(_player, _packet)
     if (global.PlayerState == PlayerState.DESTROYED) return false;
 
     var _dash = _player.movement.dash;
-
-    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable)
-        return false;
+    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable) return false;
 
     var _defence = _player.defence;
-    var _result = sc_damage_resolve(
-        _packet,
-        _defence.shield.current,
-        _defence.armour.current,
-        _defence.hull.current
-    );
+    var _result = sc_damage_resolve(_packet, _defence.shield.current, _defence.armour.current, _defence.hull.current);
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
@@ -430,14 +423,48 @@ function sc_player_damage(_player, _packet)
     if (_defence.hull.current <= 0)
     {
         _defence.hull.current = 0;
-        _player.movement.velocity_x = 0;
-        _player.movement.velocity_y = 0;
         global.PlayerState = PlayerState.DESTROYED;
-
-        // Insert player destruction effect and audio here.
+        sc_player_die(_player, _packet);
     }
 
     // _result.effect is ready for the upcoming timed-effect manager.
+    return true;
+}
+
+/// @description Processes one player death immediately and disables the gameplay instance.
+function sc_player_die(_player, _packet)
+{
+    var _movement = _player.movement;
+    var _dash = _movement.dash;
+    var _hardpoints = _player.ship.hardpoints.primary;
+
+    _player.combat.weapons_allowed = false;
+    _movement.boost.active = false;
+    _movement.moving = false;
+    _movement.input_x = 0;
+    _movement.input_y = 0;
+    _dash.remaining = 0;
+    _dash.double_tap_remaining = 0;
+    _dash.invulnerable = false;
+    _dash.ghost_count = 0;
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        _hardpoints[_i].runtime.recoil = 0;
+        _hardpoints[_i].runtime.muzzle_flash = 0;
+    }
+
+    _player.ship.visual.death_script(_player);
+
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    _movement.speed = 0;
+
+    _player.mask_index = -1;
+    _player.visible = false;
+    global.player_id = noone;
+
+    // Start the future defeat, respawn or spectator controller here.
     return true;
 }
 

@@ -1,3 +1,14 @@
+/*
+SHARD VISUAL SCRIPT
+Contains all primitive drawing and visual-effect functions unique to the Shard chassis.
+Primitive components are baked into reusable sprites during game initialization.
+Hull, armour, wings, guns, muzzle flash, shield and thrust are drawn separately.
+Dynamic components can then move, recoil, animate or change damage stage during gameplay.
+sc_ship_shard_death() assembles cached components into the generic death-fragment effect.
+Gameplay stats, damage processing and player state changes do not belong in this file.
+*/
+
+
 /// @description Draws one baked wide spear-shaped Shard hull state.
 function sc_ship_shard_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
@@ -312,4 +323,68 @@ function sc_ship_shard_thrust_draw(_x, _y, _radius, _angle, _visual)
     draw_set_colour(_p.core);
     draw_triangle(_x + lengthdir_x(-_radius * 0.07, _angle + 90), _y + lengthdir_y(-_radius * 0.07, _angle + 90), _core_tip_x, _core_tip_y, _x + lengthdir_x(_radius * 0.07, _angle + 90), _y + lengthdir_y(_radius * 0.07, _angle + 90), false);
     draw_set_alpha(1);
+}
+
+/// @description Creates the Shard's baked destruction fragments.
+function sc_ship_shard_death(_player)
+{
+    var _ship = _player.ship;
+    var _visual = _ship.visual;
+    var _palette = _visual.palette;
+    var _cache = _visual.runtime.cache;
+    var _movement = _player.movement;
+    var _angle = _player.draw_angle;
+    var _radius = _visual.radius;
+    var _wing = _visual.wing;
+    var _fold = _visual.runtime.wing_fold;
+    var _hull_stage = array_length(_cache.hull) - 1;
+    var _fragments = [];
+
+    array_push(_fragments, sc_death_fragment_data(
+        _cache.hull[_hull_stage], _player.x, _player.y,
+        _angle + random_range(-20, 20), random_range(0.8, 1.4),
+        _angle, choose(-5, 5), 1, 1
+    ));
+
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        var _hinge_x = _player.x + lengthdir_x(_wing.hinge_forward * _radius, _angle) + lengthdir_x(_wing.hinge_side * _radius * _side, _angle + 90);
+        var _hinge_y = _player.y + lengthdir_y(_wing.hinge_forward * _radius, _angle) + lengthdir_y(_wing.hinge_side * _radius * _side, _angle + 90);
+        var _direction = _angle + 90 * _side + random_range(-16, 16);
+
+        array_push(_fragments, sc_death_fragment_data(
+            _cache.wing_hull[_hull_stage], _hinge_x, _hinge_y,
+            _direction, random_range(2, 3.2),
+            _angle + _fold * _side, 7 * _side, 1, _side
+        ));
+    }
+
+    var _hardpoints = _ship.hardpoints.primary;
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        var _hardpoint = _hardpoints[_i];
+        var _mount_x = _player.x + lengthdir_x(_hardpoint.x, _angle) + lengthdir_x(_hardpoint.y, _angle + 90);
+        var _mount_y = _player.y + lengthdir_y(_hardpoint.x, _angle) + lengthdir_y(_hardpoint.y, _angle + 90);
+        var _side = _hardpoint.y < 0 ? -1 : 1;
+        var _direction = _angle + 55 * _side + random_range(-14, 14);
+
+        array_push(_fragments, sc_death_fragment_data(
+            _cache.hardpoint, _mount_x, _mount_y,
+            _direction, random_range(2.5, 3.8),
+            _angle + _hardpoint.angle, 10 * _side,
+            _hardpoint.scale, _hardpoint.scale
+        ));
+    }
+
+    for (var _i = 0; _i < array_length(_fragments); _i++)
+    {
+        _fragments[_i].velocity_x += _movement.velocity_x * 0.35;
+        _fragments[_i].velocity_y += _movement.velocity_y * 0.35;
+    }
+
+    sc_death_fragment_create(_player.x, _player.y, _fragments, _palette.core, _palette.glow, _radius, 44);
+
+    // Insert Shard destruction particles and audio here later.
+    return true;
 }
