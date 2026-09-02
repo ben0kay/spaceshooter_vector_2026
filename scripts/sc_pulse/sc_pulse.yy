@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_plyr_pulse_weapon",
+  "%Name":"sc_pulse",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_plyr_pulse_weapon",
+  "name":"sc_pulse",
   "parent":{
     "name":"weapons",
     "path":"folders/scripts/player/weapons.yy",

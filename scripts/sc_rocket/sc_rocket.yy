@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_rocket",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"weapons",
+    "path":"folders/scripts/player/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

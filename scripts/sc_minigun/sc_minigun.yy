@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_plyr_minigun",
+  "%Name":"sc_minigun",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_plyr_minigun",
+  "name":"sc_minigun",
   "parent":{
     "name":"weapons",
     "path":"folders/scripts/player/weapons.yy",
