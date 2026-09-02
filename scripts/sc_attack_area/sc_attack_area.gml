@@ -139,6 +139,8 @@ function sc_beam_init(_area, _create)
             growth_speed: max(0, _behaviour.growth_speed * _scale),
             release_duration: max(1, round(_behaviour.release_duration)),
             tick_interval: _interval,
+            piercing: _behaviour.piercing,
+            blocks_on_solids: _behaviour.blocks_on_solids,
             hit_once: false,
             max_targets: _behaviour.max_targets
         },
@@ -147,6 +149,8 @@ function sc_beam_init(_area, _create)
 
         runtime: {
             maximum_length: _maximum_length,
+            growth_length: 0,
+            hit_length: 0,
             next_damage_tick: GAME_TICK + _interval,
             refreshed_tick: GAME_TICK,
             releasing: false,
@@ -371,7 +375,95 @@ function sc_attack_area_standard_update(_area, _data)
         instance_destroy(_area);
 }
 
-/// @description Extends, damages and releases one held beam.
+/// @description Returns the beam distance where the nearest opposing entity begins.
+function sc_beam_entity_hit_length_get(_area, _data, _maximum_length)
+{
+    if (_data.behaviour.piercing) return _maximum_length;
+
+    var _source = _data.source;
+    var _candidates = sc_attack_area_candidates_get(_area);
+    var _count = ds_list_size(_candidates);
+    var _direction_x = lengthdir_x(1, _data.direction);
+    var _direction_y = lengthdir_y(1, _data.direction);
+    var _closest = _maximum_length;
+
+    for (var _i = 0; _i < _count; _i++)
+    {
+        var _target = _candidates[| _i];
+
+        if (_target == _source.owner_id) continue;
+        if (_target.entity.faction == _source.faction) continue;
+
+        var _relative_x = _target.x - _area.x;
+        var _relative_y = _target.y - _area.y;
+        var _forward = _relative_x * _direction_x + _relative_y * _direction_y;
+        if (_forward < 0 || _forward > _closest) continue;
+
+        var _side = abs(_relative_x * -_direction_y + _relative_y * _direction_x);
+        var _combined_radius = _data.geometry.radius + sc_attack_area_target_radius_get(_target);
+        if (_side > _combined_radius) continue;
+
+        var _entry = _forward - sqrt(max(0, _combined_radius * _combined_radius - _side * _side));
+        _closest = max(0, _entry + 0.01);
+    }
+
+    ds_list_destroy(_candidates);
+    return _closest;
+}
+
+/// @description Returns the approximate beam distance to the nearest solid mask.
+function sc_beam_solid_hit_length_get(_area, _data, _maximum_length)
+{
+    if (!_data.behaviour.blocks_on_solids) return _maximum_length;
+
+    var _end_x = _area.x + lengthdir_x(_maximum_length, _data.direction);
+    var _end_y = _area.y + lengthdir_y(_maximum_length, _data.direction);
+    var _solids = ds_list_create();
+
+    collision_line_list(
+        _area.x, _area.y, _end_x, _end_y,
+        o_solid, false, true, _solids, false
+    );
+
+    var _count = ds_list_size(_solids);
+    var _direction_x = lengthdir_x(1, _data.direction);
+    var _direction_y = lengthdir_y(1, _data.direction);
+    var _closest = _maximum_length;
+
+    for (var _i = 0; _i < _count; _i++)
+    {
+        var _solid = _solids[| _i];
+        var _centre_x = (_solid.bbox_left + _solid.bbox_right) * 0.5;
+        var _centre_y = (_solid.bbox_top + _solid.bbox_bottom) * 0.5;
+        var _half_width = (_solid.bbox_right - _solid.bbox_left) * 0.5;
+        var _half_height = (_solid.bbox_bottom - _solid.bbox_top) * 0.5;
+        var _extent = point_distance(0, 0, _half_width, _half_height) + _data.geometry.radius;
+        var _forward = (_centre_x - _area.x) * _direction_x + (_centre_y - _area.y) * _direction_y;
+        var _entry = max(0, _forward - _extent);
+
+        if (_entry < _closest)
+            _closest = _entry;
+    }
+
+    ds_list_destroy(_solids);
+    return _closest;
+}
+
+/// @description Resolves the visible and damaging length of one beam.
+function sc_beam_hit_length_update(_area, _data)
+{
+    var _runtime = _data.runtime;
+    var _length = _runtime.growth_length;
+
+    _data.geometry.length = _length;
+    _length = sc_beam_entity_hit_length_get(_area, _data, _length);
+    _length = sc_beam_solid_hit_length_get(_area, _data, _length);
+
+    _runtime.hit_length = _length;
+    _data.geometry.length = _length;
+}
+
+/// @description Extends, clips, damages and releases one held beam.
 function sc_beam_update(_area, _data)
 {
     var _behaviour = _data.behaviour;
@@ -390,10 +482,12 @@ function sc_beam_update(_area, _data)
         return;
     }
 
-    _data.geometry.length = min(
+    _runtime.growth_length = min(
         _runtime.maximum_length,
-        _data.geometry.length + _behaviour.growth_speed
+        _runtime.growth_length + _behaviour.growth_speed
     );
+
+    sc_beam_hit_length_update(_area, _data);
 
     if (GAME_TICK >= _runtime.next_damage_tick)
     {

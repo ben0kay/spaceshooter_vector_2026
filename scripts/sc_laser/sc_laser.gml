@@ -31,7 +31,9 @@ function sc_weapon_register_shard_laser()
                     growth_speed: 145,
                     release_duration: 7,
                     tick_interval: 6,
-                    max_targets: 0
+                    piercing: false,
+                    blocks_on_solids: true,
+                    max_targets: 1
                 },
 
                 visual: {
@@ -43,11 +45,7 @@ function sc_weapon_register_shard_laser()
             }
         },
 
-        shot: {
-            pattern: ShotPattern.SINGLE,
-            amount: 1,
-            angle_total: 0
-        },
+        shot: { pattern: ShotPattern.SINGLE, amount: 1, angle_total: 0 },
 
         firing: {
             mount_mode: WeaponMountMode.CENTRE,
@@ -57,11 +55,7 @@ function sc_weapon_register_shard_laser()
             muzzle_flash_duration: 0
         },
 
-        audio: {
-            sound: noone,
-            volume: 0.5,
-            pitch_range: 0.03
-        }
+        audio: { sound: noone, volume: 0.5, pitch_range: 0.03 }
     });
 }
 
