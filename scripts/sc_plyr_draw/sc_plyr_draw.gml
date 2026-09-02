@@ -15,7 +15,6 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _radius = _visual.radius;
     var _thrust_power = _runtime.thrust_power;
 
-    // Shared shield is drawn behind the complete ship.
     if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
@@ -59,8 +58,67 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
         draw_sprite_ext(_cache.armour[_armour_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
     }
 
+    sc_player_hardpoints_draw(_player, _colour, _alpha);
+
     draw_set_alpha(1);
     draw_set_colour(c_white);
+}
+
+/// @description Draws the player's independent baked hardpoints, recoil and muzzle flashes.
+function sc_player_hardpoints_draw(_player, _colour, _alpha)
+{
+    var _cache = _player.ship.visual.runtime.cache;
+    var _hardpoints = _player.ship.hardpoints.primary;
+    var _player_angle = _player.draw_angle;
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        var _hardpoint = _hardpoints[_i];
+        var _angle = _player_angle + _hardpoint.angle;
+        var _recoil = _hardpoint.runtime.recoil;
+
+        var _mount_x = _player.x
+            + lengthdir_x(_hardpoint.x, _player_angle)
+            + lengthdir_x(_hardpoint.y, _player_angle + 90)
+            - lengthdir_x(_recoil, _angle);
+
+        var _mount_y = _player.y
+            + lengthdir_y(_hardpoint.x, _player_angle)
+            + lengthdir_y(_hardpoint.y, _player_angle + 90)
+            - lengthdir_y(_recoil, _angle);
+
+        draw_sprite_ext(_cache.hardpoint, 0, _mount_x, _mount_y, _hardpoint.scale, _hardpoint.scale, _angle, _colour, _alpha);
+    }
+
+    gpu_set_blendmode(bm_add);
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        var _hardpoint = _hardpoints[_i];
+        var _runtime = _hardpoint.runtime;
+        if (_runtime.muzzle_flash <= 0) continue;
+
+        var _angle = _player_angle + _hardpoint.angle;
+        var _mount_x = _player.x
+            + lengthdir_x(_hardpoint.x, _player_angle)
+            + lengthdir_x(_hardpoint.y, _player_angle + 90)
+            - lengthdir_x(_runtime.recoil, _angle);
+
+        var _mount_y = _player.y
+            + lengthdir_y(_hardpoint.x, _player_angle)
+            + lengthdir_y(_hardpoint.y, _player_angle + 90)
+            - lengthdir_y(_runtime.recoil, _angle);
+
+        var _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
+        var _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
+        var _frame_count = array_length(_cache.muzzle_flash);
+        var _progress = 1 - _runtime.muzzle_flash / _runtime.muzzle_flash_max;
+        var _frame = clamp(floor(_progress * _frame_count), 0, _frame_count - 1);
+
+        draw_sprite_ext(_cache.muzzle_flash[_frame], 0, _muzzle_x, _muzzle_y, _hardpoint.scale, _hardpoint.scale, _angle, c_white, _alpha);
+    }
+
+    gpu_set_blendmode(bm_normal);
 }
 
 /// @description Draws the temporary primitive Fighter or Bastion fallback.

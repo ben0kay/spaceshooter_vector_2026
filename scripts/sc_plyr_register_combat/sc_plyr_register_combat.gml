@@ -1,4 +1,3 @@
-
 /// @description Registers the Shard's alternating primary pulse cannons.
 function sc_weapon_register_shard_pulse()
 {
@@ -17,7 +16,9 @@ function sc_weapon_register_shard_pulse()
         },
 
         firing: {
-            interval: 8
+            interval: 8,
+            recoil: 6,
+            muzzle_flash_duration: 4
         },
 
         audio: {

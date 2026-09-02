@@ -61,25 +61,6 @@ function sc_ship_shard_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
     sc_visual_line(_x, _y, _radius, _angle, -0.51, -0.47, -0.73, -0.3, 1, _p.hull_light);
     sc_visual_line(_x, _y, _radius, _angle, -0.51, 0.47, -0.73, 0.3, 1, _p.hull_light);
 
-    // Shorter twin cannons remain until critical hull damage.
-    if (_stage <= 2)
-    {
-        for (var _side = -1; _side <= 1; _side += 2)
-        {
-            sc_visual_quad(_x, _y, _radius, _angle, 0.28, 0.39 * _side, 0.15, 0.51 * _side, -0.17, 0.5 * _side, -0.29, 0.38 * _side, _p.hull_dark);
-            sc_visual_line(_x, _y, _radius, _angle, 0.24, 0.45 * _side, 0.98, 0.45 * _side, 9, _p.void);
-            sc_visual_line(_x, _y, _radius, _angle, 0.24, 0.41 * _side, 0.98, 0.41 * _side, 2, _p.metal);
-            sc_visual_line(_x, _y, _radius, _angle, 0.24, 0.49 * _side, 0.98, 0.49 * _side, 2, _p.metal);
-            sc_visual_line(_x, _y, _radius, _angle, 0.28, 0.45 * _side, 0.96, 0.45 * _side, 3, _p.hull_light);
-            sc_visual_line(_x, _y, _radius, _angle, 0.51, 0.39 * _side, 0.51, 0.51 * _side, 2, _p.accent);
-            sc_visual_line(_x, _y, _radius, _angle, 0.7, 0.39 * _side, 0.7, 0.51 * _side, 2, _p.metal);
-            sc_visual_line(_x, _y, _radius, _angle, 0.87, 0.39 * _side, 0.87, 0.51 * _side, 2, _p.metal);
-            sc_visual_circle(_x, _y, _radius, _angle, 0.98, 0.45 * _side, 0.07, _p.void, false);
-            sc_visual_circle(_x, _y, _radius, _angle, 0.98, 0.45 * _side, 0.07, _p.metal, true);
-            sc_visual_circle(_x, _y, _radius, _angle, 0.98, 0.45 * _side, 0.024, _p.energy, false);
-        }
-    }
-
     // Hull damage.
     if (_stage >= 1)
     {
@@ -98,6 +79,63 @@ function sc_ship_shard_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
         sc_visual_circle(_x, _y, _radius, _angle, -0.92, -0.2, 0.21, _p.void, false);
         sc_visual_line(_x, _y, _radius, _angle, -0.92, -0.2, -1.18, -0.37, 2, _p.energy);
     }
+}
+
+/// @description Draws one reusable Shard pulse cannon for startup baking.
+function sc_ship_shard_cannon_draw(_x, _y, _radius, _angle, _visual, _stage)
+{
+    var _p = _visual.palette;
+
+    sc_visual_quad(_x, _y, _radius, _angle, -0.24, -0.13, 0.16, -0.14, 0.16, 0.14, -0.24, 0.13, _p.hull_dark);
+    sc_visual_line(_x, _y, _radius, _angle, -0.18, -0.1, 0.68, -0.1, 3, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, -0.18, 0.1, 0.68, 0.1, 3, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, -0.12, 0, 0.7, 0, 8, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, -0.08, 0, 0.69, 0, 3, _p.hull_light);
+
+    sc_visual_line(_x, _y, _radius, _angle, 0.18, -0.14, 0.18, 0.14, 2, _p.accent);
+    sc_visual_line(_x, _y, _radius, _angle, 0.42, -0.13, 0.42, 0.13, 2, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.59, -0.12, 0.59, 0.12, 2, _p.metal);
+
+    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.17, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.17, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.07, _p.energy, false);
+
+    sc_visual_circle(_x, _y, _radius, _angle, 0.7, 0, 0.085, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.7, 0, 0.085, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.7, 0, 0.032, _p.core, false);
+}
+
+/// @description Draws one Shard muzzle-flash animation frame for startup baking.
+function sc_ship_shard_muzzle_flash_draw(_x, _y, _radius, _angle, _visual, _frame, _frame_count)
+{
+    var _p = _visual.palette;
+    var _progress = _frame_count > 1 ? _frame / (_frame_count - 1) : 0;
+    var _power = 1 - _progress;
+    var _length = _radius * lerp(0.48, 0.18, _progress);
+    var _width = _radius * lerp(0.24, 0.08, _progress);
+    var _tip_x = _x + lengthdir_x(_length, _angle);
+    var _tip_y = _y + lengthdir_y(_length, _angle);
+
+    draw_set_alpha(0.28 * _power);
+    draw_set_colour(_p.glow);
+    draw_circle(_x, _y, _width * 1.65, false);
+
+    draw_set_alpha(0.75 * _power);
+    draw_set_colour(_p.energy);
+    draw_triangle(
+        _x + lengthdir_x(-_width, _angle + 90), _y + lengthdir_y(-_width, _angle + 90),
+        _tip_x, _tip_y,
+        _x + lengthdir_x(_width, _angle + 90), _y + lengthdir_y(_width, _angle + 90),
+        false
+    );
+
+    draw_set_alpha(_power);
+    draw_set_colour(_p.core);
+    draw_line_width(_x, _y, _tip_x, _tip_y, max(2, _width * 0.42));
+    draw_circle(_x, _y, max(1, _width * 0.45), false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws Shard armour and fixed inner stabilizer blades.

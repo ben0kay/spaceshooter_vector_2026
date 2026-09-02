@@ -68,12 +68,15 @@ function sc_ship_register_shard()
                 armour: sc_ship_shard_armour_draw,
                 wing_hull: sc_ship_shard_wing_hull_draw,
                 wing_armour: sc_ship_shard_wing_armour_draw,
+                hardpoint: sc_ship_shard_cannon_draw,
+                muzzle_flash: sc_ship_shard_muzzle_flash_draw,
                 shield: sc_ship_shard_shield_draw,
                 thrust: sc_ship_shard_thrust_draw
             },
 
             bake: {
                 body_canvas_size: 224, wing_canvas_size: 160,
+                hardpoint_canvas_size: 96, muzzle_canvas_size: 96, muzzle_frames: 4,
                 shield_canvas_size: 224, thrust_canvas_size: 128,
                 damage_stages: 4
             }
@@ -81,9 +84,10 @@ function sc_ship_register_shard()
 
         hardpoints: {
             primary: [
-                { key: "primary_left", x: 45, y: -21, angle: 0 },
-                { key: "primary_right", x: 45, y: 21, angle: 0 }
+                { key: "primary_left", x: 13, y: -21, angle: 0, muzzle_forward: 32, scale: 1 },
+                { key: "primary_right", x: 13, y: 21, angle: 0, muzzle_forward: 32, scale: 1 }
             ],
+
             utility: []
         },
 

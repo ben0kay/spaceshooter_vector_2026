@@ -14,11 +14,14 @@ function sc_ship_visual_cache_init()
             continue;
 
         var _stage_count = _visual.bake.damage_stages;
+        var _muzzle_frames = _visual.bake.muzzle_frames;
         var _cache = {
             hull: array_create(_stage_count, -1),
             armour: array_create(_stage_count, -1),
             wing_hull: array_create(_stage_count, -1),
             wing_armour: array_create(_stage_count, -1),
+            hardpoint: -1,
+            muzzle_flash: array_create(_muzzle_frames, -1),
             shield: -1,
             thrust: -1
         };
@@ -30,6 +33,11 @@ function sc_ship_visual_cache_init()
             _cache.wing_hull[_stage] = sc_ship_visual_component_bake(_data, "wing_hull", _stage, _visual.bake.wing_canvas_size);
             _cache.wing_armour[_stage] = sc_ship_visual_component_bake(_data, "wing_armour", _stage, _visual.bake.wing_canvas_size);
         }
+
+        _cache.hardpoint = sc_ship_visual_component_bake(_data, "hardpoint", 0, _visual.bake.hardpoint_canvas_size);
+
+        for (var _frame = 0; _frame < _muzzle_frames; _frame++)
+            _cache.muzzle_flash[_frame] = sc_ship_visual_component_bake(_data, "muzzle_flash", _frame, _visual.bake.muzzle_canvas_size);
 
         _cache.shield = sc_ship_visual_component_bake(_data, "shield", 0, _visual.bake.shield_canvas_size);
         _cache.thrust = sc_ship_visual_component_bake(_data, "thrust", 0, _visual.bake.thrust_canvas_size);
@@ -61,6 +69,8 @@ function sc_ship_visual_component_bake(_data, _component, _stage, _canvas_size)
         case "armour": _visual.draw.armour(_centre, _centre, _visual.radius, 0, _visual, _stage); break;
         case "wing_hull": _visual.draw.wing_hull(_centre, _centre, _visual.radius, 0, _visual, _stage); break;
         case "wing_armour": _visual.draw.wing_armour(_centre, _centre, _visual.radius, 0, _visual, _stage); break;
+        case "hardpoint": _visual.draw.hardpoint(_centre, _centre, _visual.radius, 0, _visual, _stage); break;
+        case "muzzle_flash": _visual.draw.muzzle_flash(_centre, _centre, _visual.radius, 0, _visual, _stage, _visual.bake.muzzle_frames); break;
         case "shield": _visual.draw.shield(_centre, _centre, _visual.radius, 0, _visual); break;
         case "thrust": _visual.draw.thrust(_centre, _centre, _visual.radius, 0, _visual); break;
     }
@@ -93,6 +103,13 @@ function sc_ship_visual_cache_destroy()
             if (sprite_exists(_cache.wing_armour[_stage])) sprite_delete(_cache.wing_armour[_stage]);
         }
 
+        for (var _frame = 0; _frame < array_length(_cache.muzzle_flash); _frame++)
+        {
+            if (sprite_exists(_cache.muzzle_flash[_frame]))
+                sprite_delete(_cache.muzzle_flash[_frame]);
+        }
+
+        if (sprite_exists(_cache.hardpoint)) sprite_delete(_cache.hardpoint);
         if (sprite_exists(_cache.shield)) sprite_delete(_cache.shield);
         if (sprite_exists(_cache.thrust)) sprite_delete(_cache.thrust);
     }
@@ -104,13 +121,8 @@ function sc_ship_visual_cache_destroy()
 /// @description Returns one ship's layered visual cache.
 function sc_ship_visual_cache_get(_ship_key)
 {
-    if (
-        !variable_global_exists("ship_visual_cache")
-        || !variable_struct_exists(global.ship_visual_cache, _ship_key)
-    )
-    {
+    if (!variable_global_exists("ship_visual_cache") || !variable_struct_exists(global.ship_visual_cache, _ship_key))
         return undefined;
-    }
 
     return variable_struct_get(global.ship_visual_cache, _ship_key);
 }

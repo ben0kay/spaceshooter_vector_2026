@@ -34,6 +34,17 @@ function sc_player_init(_player, _ship_key)
         wing_fold: _definition.visual.wing.fold_idle
     };
 
+    var _primary_hardpoints = _player.ship.hardpoints.primary;
+
+    for (var _i = 0; _i < array_length(_primary_hardpoints); _i++)
+    {
+        _primary_hardpoints[_i].runtime = {
+            recoil: 0,
+            muzzle_flash: 0,
+            muzzle_flash_max: 1
+        };
+    }
+
     if (!sc_player_stats_init(_player, _definition.stats_base)) return false;
 
     var _final = _player.ship.stats.final;

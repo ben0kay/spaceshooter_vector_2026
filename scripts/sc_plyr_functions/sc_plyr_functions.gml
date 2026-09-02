@@ -1,6 +1,21 @@
-/// @description Updates player movement timers and dash ghost lifetimes.
+/// @description Updates player movement, hardpoint and dash-ghost runtime.
 function sc_player_movement_runtime_update(_player)
 {
+    var _hardpoints = _player.ship.hardpoints.primary;
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        var _runtime = _hardpoints[_i].runtime;
+
+        if (_runtime.recoil > 0.01)
+            _runtime.recoil = lerp(_runtime.recoil, 0, 0.28);
+        else
+            _runtime.recoil = 0;
+
+        if (_runtime.muzzle_flash > 0)
+            _runtime.muzzle_flash--;
+    }
+
     var _dash = _player.movement.dash;
 
     if (_dash.cooldown_remaining > 0) _dash.cooldown_remaining--;
@@ -196,7 +211,7 @@ function sc_player_dash_ghost_record(_player)
     _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
-/// @description Fires the player's held-LMB primary weapon from alternating hardpoints.
+/// @description Fires the player's held-LMB primary weapon from alternating physical hardpoints.
 function sc_player_primary_weapon_update(_player)
 {
     if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left)) return false;
@@ -208,15 +223,21 @@ function sc_player_primary_weapon_update(_player)
     var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
     var _hardpoints = _player.ship.hardpoints.primary;
     var _hardpoint = _hardpoints[_runtime.hardpoint_cursor];
+    var _hardpoint_runtime = _hardpoint.runtime;
     var _angle = _player.draw_angle + _hardpoint.angle;
 
-    var _muzzle_x = _player.x
+    var _mount_x = _player.x
         + lengthdir_x(_hardpoint.x, _player.draw_angle)
-        + lengthdir_x(_hardpoint.y, _player.draw_angle + 90);
+        + lengthdir_x(_hardpoint.y, _player.draw_angle + 90)
+        - lengthdir_x(_hardpoint_runtime.recoil, _angle);
 
-    var _muzzle_y = _player.y
+    var _mount_y = _player.y
         + lengthdir_y(_hardpoint.x, _player.draw_angle)
-        + lengthdir_y(_hardpoint.y, _player.draw_angle + 90);
+        + lengthdir_y(_hardpoint.y, _player.draw_angle + 90)
+        - lengthdir_y(_hardpoint_runtime.recoil, _angle);
+
+    var _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
+    var _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
 
     if (!sc_weapon_fire(
         _player,
@@ -231,11 +252,15 @@ function sc_player_primary_weapon_update(_player)
         return false;
     }
 
+    _hardpoint_runtime.recoil = _weapon.firing.recoil;
+    _hardpoint_runtime.muzzle_flash = _weapon.firing.muzzle_flash_duration;
+    _hardpoint_runtime.muzzle_flash_max = _weapon.firing.muzzle_flash_duration;
+
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
     _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval / _fire_rate));
     _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
 
-    // Cannon recoil, muzzle flash, particles and audio are added next.
+    // Insert weapon audio and detached muzzle particles here.
     return true;
 }
 
@@ -415,6 +440,7 @@ function sc_player_damage(_player, _packet)
     // _result.effect is ready for the upcoming timed-effect manager.
     return true;
 }
+
 /// @description Updates player shield recharge after its damage delay expires.
 function sc_player_defence_update(_player)
 {
