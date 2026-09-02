@@ -9,7 +9,7 @@ function sc_enemy_register_twin_fighter()
         },
 
         stats_base: {
-            shield_max: 10,
+            shield_max: 50,
             armour_max: 200,
             hull_max: 60,
 

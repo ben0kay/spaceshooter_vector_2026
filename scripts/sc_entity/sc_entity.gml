@@ -3,7 +3,8 @@ function sc_entity_init(_entity, _faction, _damage_script, _collision_radius)
 {
     _entity.entity = {
         faction: _faction,
-        damage_script: _damage_script
+        damage_script: _damage_script,
+		collision_radius: _collision_radius
     };
 
     _entity.mask_index = s_collision_circle;
