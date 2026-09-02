@@ -55,7 +55,7 @@ function sc_projectile_target_find(_projectile, _range)
     return _target;
 }
 
-/// @description Initializes a projectile template using weapon-owned launch data.
+/// @description Initializes a reusable projectile template using weapon-owned launch data.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -68,13 +68,11 @@ function sc_projectile_init(_projectile, _create)
     var _delivery = _create.delivery;
     var _launch = _delivery.projectile;
     var _scale = max(0.01, _launch.scale);
-    var _movement = variable_clone(_data.movement);
     var _collision = variable_clone(_data.collision);
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
 
-    _movement.speed *= _launch.speed_multiplier;
     _collision.radius *= _scale;
 
     _visual.runtime = {
@@ -99,13 +97,21 @@ function sc_projectile_init(_projectile, _create)
         source: _create.source,
         direction: _create.direction,
         scale: _scale,
-        movement: _movement,
+
+        movement: {
+            speed: max(0, _launch.speed)
+        },
+
+        life: {
+            remaining: max(1, round(_launch.life)),
+            maximum: max(1, round(_launch.life))
+        },
+
         guidance: variable_clone(_delivery.guidance),
         damage: sc_damage_packet_create(_delivery.damage, _create.source),
         collision: _collision,
         visual: _visual,
         detonation: _detonation,
-        life: { remaining: _data.life.maximum, maximum: _data.life.maximum },
 
         runtime: {
             target_id: noone,
@@ -238,7 +244,13 @@ function sc_projectile_entity_collision(_projectile, _target)
     var _result = _target.entity.damage_script(_target, _data.damage);
     var _class_config = sc_projectile_class_config_get(_data.projectile_class);
 
-    _data.visual.impact_script(_projectile.x, _projectile.y, _data.direction, _target);
+    _data.visual.impact_script(
+        _projectile.x,
+        _projectile.y,
+        _data.direction,
+        _target,
+        _data.scale
+    );
 
     if (is_struct(_result))
     {

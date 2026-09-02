@@ -45,15 +45,16 @@ function sc_particles_projectile_impact_register(_key, _palette, _config)
     });
 }
 
-/// @description Emits one registered projectile-impact burst above gameplay entities.
-function sc_particles_projectile_impact_emit(_key, _x, _y, _direction)
+/// @description Emits one projectile-impact burst scaled by its launched projectile.
+function sc_particles_projectile_impact_emit(_key, _x, _y, _direction, _projectile_scale = 1)
 {
     var _types = sc_particles_group_get(_key);
     if (!is_struct(_types)) return false;
 
     var _config = _types.config;
     var _system = global.particles.impact_system;
-    var _scale = _config.scale;
+    var _scale = _config.scale * max(0.1, _projectile_scale);
+    var _speed_scale = sqrt(max(0.1, _projectile_scale));
     var _reverse = _direction + 180;
 
     part_type_size(_types.flash, 0.24 * _scale, 0.34 * _scale, 0.06 * _scale, 0);
@@ -62,14 +63,14 @@ function sc_particles_projectile_impact_emit(_key, _x, _y, _direction)
     part_particles_create(_system, _x, _y, _types.flash, 2);
     part_particles_create(_system, _x, _y, _types.ring, 1);
 
-    part_type_size(_types.spark, 0.045 * _scale, 0.09 * _scale, -0.003, 0.015);
+    part_type_size(_types.spark, 0.045 * _scale, 0.09 * _scale, -0.003 * _scale, 0.015);
     part_type_direction(_types.spark, _reverse - _config.spark_spread, _reverse + _config.spark_spread, 0, 0);
+    part_type_speed(_types.spark, _config.speed_min * _speed_scale, _config.speed_max * _speed_scale, -0.08, 0.1);
     part_particles_create(_system, _x, _y, _types.spark, _config.spark_amount);
 
     part_type_direction(_types.spark, 0, 359, 0, 0);
-    part_type_speed(_types.spark, _config.speed_min * 0.45, _config.speed_max * 0.65, -0.06, 0.08);
+    part_type_speed(_types.spark, _config.speed_min * 0.45 * _speed_scale, _config.speed_max * 0.65 * _speed_scale, -0.06, 0.08);
     part_particles_create(_system, _x, _y, _types.spark, _config.fragment_amount);
 
-    part_type_speed(_types.spark, _config.speed_min, _config.speed_max, -0.08, 0.1);
     return true;
 }

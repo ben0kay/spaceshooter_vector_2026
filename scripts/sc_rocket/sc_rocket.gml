@@ -6,7 +6,7 @@ The rocket body is baked once during startup.
 Its circular attack area and explosion visual are created only when it detonates.
 */
 
-/// @description Registers the reusable baked Shard rocket template.
+/// @description Registers the reusable baked Shard rocket visual template.
 function sc_projectile_register_shard_rocket()
 {
     var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
@@ -14,9 +14,7 @@ function sc_projectile_register_shard_rocket()
     return sc_projectile_register({
         identity: { key: "projectile_shard_rocket", name: "Shard Rocket" },
         projectile_class: ProjectileClass.HEAVY,
-        movement: { speed: 12 },
         collision: { radius: 7 },
-        life: { maximum: 180 },
 
         detonation: {
             area: {
@@ -66,7 +64,8 @@ function sc_weapon_register_shard_rocket()
 
             projectile: {
                 scale: 1,
-                speed_multiplier: 1
+                speed: 12,
+                life: 180
             },
 
             damage: {
@@ -129,10 +128,10 @@ function sc_projectile_shard_rocket_particles_register()
     });
 }
 
-/// @description Emits the detached rocket impact particles.
-function sc_projectile_shard_rocket_impact(_x, _y, _direction, _target)
+/// @description Emits one scaled Shard rocket impact.
+function sc_projectile_shard_rocket_impact(_x, _y, _direction, _target, _scale)
 {
-    return sc_particles_projectile_impact_emit("impact_shard_rocket", _x, _y, _direction);
+    return sc_particles_projectile_impact_emit("impact_shard_rocket", _x, _y, _direction, _scale);
 }
 
 /// @description Draws one animated rocket frame for startup baking.

@@ -5,15 +5,13 @@ Contains the complete registration, baked projectile drawing and impact effects
 for the Shard's rapid light-kinetic test weapon.
 */
 
-/// @description Registers the reusable golden minigun projectile template.
+/// @description Registers the reusable golden minigun visual template.
 function sc_projectile_register_shard_minigun()
 {
     return sc_projectile_register({
         identity: { key: "projectile_shard_minigun", name: "Shard Minigun Round" },
         projectile_class: ProjectileClass.LIGHT,
-        movement: { speed: 30 },
         collision: { radius: 3 },
-        life: { maximum: 120 },
 
         visual: {
             radius: 2,
@@ -50,7 +48,8 @@ function sc_weapon_register_shard_minigun()
 
             projectile: {
                 scale: 1,
-                speed_multiplier: 1
+                speed: 30,
+                life: 120
             },
 
             damage: {
@@ -104,10 +103,10 @@ function sc_projectile_shard_minigun_particles_register()
     });
 }
 
-/// @description Emits one small golden minigun impact.
-function sc_projectile_shard_minigun_impact(_x, _y, _direction, _target)
+/// @description Emits one scaled golden minigun impact.
+function sc_projectile_shard_minigun_impact(_x, _y, _direction, _target, _scale)
 {
-    return sc_particles_projectile_impact_emit("impact_shard_minigun", _x, _y, _direction);
+    return sc_particles_projectile_impact_emit("impact_shard_minigun", _x, _y, _direction, _scale);
 }
 
 /// @description Draws one golden kinetic projectile frame for startup baking.

@@ -13,7 +13,8 @@ function sc_weapon_register_simulant_pulse()
 
             projectile: {
                 scale: 1,
-                speed_multiplier: 1
+                speed: 17.5,
+                life: 180
             },
 
             damage: {

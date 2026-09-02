@@ -1,4 +1,4 @@
-/// @description Registers the reusable baked Simulant pulse template.
+/// @description Registers the reusable baked Simulant pulse visual template.
 function sc_projectile_register_simulant_pulse()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
@@ -6,9 +6,7 @@ function sc_projectile_register_simulant_pulse()
     return sc_projectile_register({
         identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
         projectile_class: ProjectileClass.REGULAR,
-        movement: { speed: 17.5 },
         collision: { radius: 6 },
-        life: { maximum: 180 },
 
         visual: {
             radius: 6,
@@ -42,11 +40,10 @@ function sc_projectile_simulant_pulse_particles_register()
     });
 }
 
-/// @description Emits one Simulant violet pulse impact.
-function sc_projectile_simulant_pulse_impact(_x, _y, _direction, _target)
+/// @description Emits one scaled Simulant violet pulse impact.
+function sc_projectile_simulant_pulse_impact(_x, _y, _direction, _target, _scale)
 {
-    // Target defence layer can alter impact colour here later.
-    return sc_particles_projectile_impact_emit("impact_simulant_pulse", _x, _y, _direction);
+    return sc_particles_projectile_impact_emit("impact_simulant_pulse", _x, _y, _direction, _scale);
 }
 
 /// @description Draws one animated Simulant violet pulse frame for startup baking.

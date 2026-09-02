@@ -10,7 +10,8 @@ function sc_weapon_register_shard_pulse()
 
             projectile: {
                 scale: 1,
-                speed_multiplier: 1
+                speed: 19,
+                life: 150
             },
 
             damage: {
@@ -45,7 +46,7 @@ function sc_weapon_register_shard_pulse()
     });
 }
 
-/// @description Registers the reusable animated aqua pulse projectile template.
+/// @description Registers the reusable animated aqua pulse visual template.
 function sc_projectile_register_shard_pulse()
 {
     var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
@@ -53,9 +54,7 @@ function sc_projectile_register_shard_pulse()
     return sc_projectile_register({
         identity: { key: "projectile_shard_pulse", name: "Shard Pulse" },
         projectile_class: ProjectileClass.REGULAR,
-        movement: { speed: 19 },
         collision: { radius: 5 },
-        life: { maximum: 150 },
 
         visual: {
             radius: 5,
@@ -89,11 +88,10 @@ function sc_projectile_shard_pulse_particles_register()
     });
 }
 
-/// @description Emits one Shard aqua pulse impact.
-function sc_projectile_shard_pulse_impact(_x, _y, _direction, _target)
+/// @description Emits one scaled Shard aqua pulse impact.
+function sc_projectile_shard_pulse_impact(_x, _y, _direction, _target, _scale)
 {
-    // Target defence layer can alter impact colour here later.
-    return sc_particles_projectile_impact_emit("impact_shard_pulse", _x, _y, _direction);
+    return sc_particles_projectile_impact_emit("impact_shard_pulse", _x, _y, _direction, _scale);
 }
 
 /// @description Draws one animated Shard aqua pulse frame for startup baking.
