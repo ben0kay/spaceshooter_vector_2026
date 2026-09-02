@@ -292,12 +292,11 @@ function sc_projectile_shield_impact_get(_projectile, _target)
 function sc_projectile_ricochet_begin(_projectile, _impact, _class_config)
 {
     var _data = _projectile.projectile;
-    var _direction = (
-        2 * _impact.normal
-        - _data.direction
-        + 180
-        + random_range(-_class_config.deflect_spread, _class_config.deflect_spread)
-    ) mod 360;
+    var _reflected = 2 * _impact.normal - _data.direction + 180;
+
+	var _direction = _data.direction
+	    + angle_difference(_reflected, _data.direction) * _class_config.deflect_strength
+	    + random_range(-_class_config.deflect_spread, _class_config.deflect_spread);
 
     var _life = max(1, round(_class_config.deflect_life));
 

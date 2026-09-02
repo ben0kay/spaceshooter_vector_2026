@@ -24,7 +24,7 @@ function sc_config_init()
                     shield_deflect: 1, deflect_chance: 0.5,
                     deflect_speed: 4.5, deflect_life: 24,
                     deflect_shrink: 0.97, deflect_scale: 0.9,
-                    deflect_spread: 7
+                    deflect_spread: 3, deflect_strength: 0.3
                 },
                 {
                     name: "Regular",
