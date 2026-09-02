@@ -26,38 +26,7 @@ function sc_enemy_register_twin_fighter()
             fire_rate_multiplier: 1
         },
 
-        visual: {
-            radius: 58,
-            palette: sc_faction_palette_get(Faction.SIMULANT),
-
-            draw: {
-                body: sc_enemy_twin_fighter_body_draw,
-                core: sc_enemy_twin_fighter_core_draw
-            },
-
-            death: {
-                script: sc_enemy_twin_fighter_death,
-                draw_scripts: [
-                    sc_enemy_twin_fighter_fragment_front_draw,
-                    sc_enemy_twin_fighter_fragment_left_draw,
-                    sc_enemy_twin_fighter_fragment_right_draw
-                ]
-            },
-
-            thrust: {
-                draw_script: sc_enemy_simulant_thrust_draw,
-                ignition_script: sc_particles_simulant_ignition,
-                particle_script: sc_particles_simulant_thrust
-            },
-
-            bake: {
-                body_canvas_size: 256,
-                core_canvas_size: 128,
-                hardpoint_canvas_size: 128,
-                thrust_canvas_size: 128,
-                fragment_canvas_size: 192
-            }
-        },
+        visual: sc_enemy_twin_fighter_visual_data(),
 
         collision: {
             radius_scale: 0.62,
@@ -133,6 +102,45 @@ function sc_enemy_register_twin_fighter()
             ]
         }
     });
+}
+
+/// @description Returns the complete visual definition for the Twin Fighter.
+function sc_enemy_twin_fighter_visual_data()
+{
+    return {
+        radius: 58,
+
+        palette: sc_faction_palette_get(Faction.SIMULANT),
+
+        draw: {
+            body: sc_enemy_twin_fighter_body_draw,
+            core: sc_enemy_twin_fighter_core_draw
+        },
+
+        death: {
+            script: sc_enemy_twin_fighter_death,
+
+            draw_scripts: [
+                sc_enemy_twin_fighter_fragment_front_draw,
+                sc_enemy_twin_fighter_fragment_left_draw,
+                sc_enemy_twin_fighter_fragment_right_draw
+            ]
+        },
+
+        thrust: {
+            draw_script: sc_enemy_simulant_thrust_draw,
+            ignition_script: sc_particles_simulant_ignition,
+            particle_script: sc_particles_simulant_thrust
+        },
+
+        bake: {
+            body_canvas_size: 256,
+            core_canvas_size: 128,
+            hardpoint_canvas_size: 128,
+            thrust_canvas_size: 128,
+            fragment_canvas_size: 192
+        }
+    };
 }
 
 /// @description Draws the longer Twin Fighter layered gunmetal body.

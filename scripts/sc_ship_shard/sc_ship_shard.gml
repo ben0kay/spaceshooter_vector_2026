@@ -1,11 +1,103 @@
+/// @description Registers the fast silver-aqua Shard chassis.
+function sc_ship_register_shard()
+{
+    return sc_ship_register({
+        identity: { key: "ship_shard", name: "Shard", description: "A fast silver-aqua interceptor with adaptive swept wings." },
+
+        stats_base: {
+            hull_max: 75, armour_max: 25, shield_max: 40,
+            shield_recharge_delay: 150, shield_recharge_rate: 0.35,
+            speed_max: 10, acceleration: 0.6, deceleration: 0.7, turn_speed: 10,
+            damage_multiplier: 1, fire_rate_multiplier: 1, cargo_capacity: 12,
+            boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
+            dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
+            weapons_while_boosting: 0, weapons_while_dashing: 0
+        },
+
+        collision: { radius: 30 },
+
+        visual: sc_ship_shard_visual_data(),
+
+        hardpoints: {
+            primary: [
+                { key: "primary_left", x: 13, y: -21, angle: 0, muzzle_forward: 32, scale: 1 },
+                { key: "primary_right", x: 13, y: 21, angle: 0, muzzle_forward: 32, scale: 1 }
+            ],
+
+            utility: []
+        },
+
+        starting_loadout: { primary: "weapon_shard_pulse", secondary: undefined }
+    });
+}
+
+/// @description Returns the complete visual definition for the Shard chassis.
+function sc_ship_shard_visual_data()
+{
+    return {
+        radius: 46,
+
+        // Compatibility fields used by ship-selection previews.
+        scale: 1,
+        colour_primary: make_colour_rgb(65, 235, 255),
+        colour_secondary: make_colour_rgb(210, 224, 230),
+
+        palette: {
+            void: make_colour_rgb(4, 8, 13),
+            hull_dark: make_colour_rgb(18, 27, 34),
+            hull_mid: make_colour_rgb(57, 78, 91),
+            hull_light: make_colour_rgb(134, 156, 165),
+            metal: make_colour_rgb(210, 224, 230),
+            accent: make_colour_rgb(45, 135, 255),
+            energy: make_colour_rgb(65, 235, 255),
+            core: make_colour_rgb(230, 255, 255),
+            glow: make_colour_rgb(25, 130, 170)
+        },
+
+        wing: {
+            hinge_forward: -0.02, hinge_side: 0.27,
+            fold_idle: -7, fold_moving: 8, fold_boost: 20, fold_dash: 30,
+            fold_response: 0.14
+        },
+
+        core: {
+            forward: -0.18, side: 0,
+            idle_speed: 0.45, movement_speed: 4.5,
+            boost_multiplier: 1.35, dash_multiplier: 1.75,
+            response: 0.12
+        },
+
+        draw: {
+            hull: sc_ship_shard_hull_draw,
+            armour: sc_ship_shard_armour_draw,
+            wing_hull: sc_ship_shard_wing_hull_draw,
+            wing_armour: sc_ship_shard_wing_armour_draw,
+            core: sc_ship_shard_core_draw,
+            hardpoint: sc_ship_shard_cannon_draw,
+            muzzle_flash: sc_ship_shard_muzzle_flash_draw,
+            shield: sc_ship_shard_shield_draw,
+            thrust: sc_ship_shard_thrust_draw
+        },
+
+        death_script: sc_ship_shard_death,
+
+        bake: {
+            body_canvas_size: 224, wing_canvas_size: 160,
+            core_canvas_size: 96, hardpoint_canvas_size: 96,
+            muzzle_canvas_size: 96, muzzle_frames: 4,
+            shield_canvas_size: 224, thrust_canvas_size: 128,
+            damage_stages: 4
+        }
+    };
+}
+
 /*
-SHARD VISUAL SCRIPT
+SHARD VISUAL FUNCTIONS
 Contains all primitive drawing and visual-effect functions unique to the Shard chassis.
 Primitive components are baked into reusable sprites during game initialization.
 Hull, armour, wings, guns, muzzle flash, shield and thrust are drawn separately.
 Dynamic components can then move, recoil, animate or change damage stage during gameplay.
 sc_ship_shard_death() assembles cached components into the generic death-fragment effect.
-Gameplay stats, damage processing and player state changes do not belong in this file.
 */
 
 
