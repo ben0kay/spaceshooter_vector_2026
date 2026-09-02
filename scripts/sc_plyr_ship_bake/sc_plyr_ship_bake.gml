@@ -73,7 +73,7 @@ function sc_ship_visual_component_bake(_data, _component, _stage, _canvas_size)
         case "core": _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual); break;
         case "hardpoint": _visual.draw.hardpoint(_centre, _centre, _visual.radius, 0, _visual, _stage); break;
         case "muzzle_flash": _visual.draw.muzzle_flash(_centre, _centre, _visual.radius, 0, _visual, _stage, _visual.bake.muzzle_frames); break;
-        case "shield": _visual.draw.shield(_centre, _centre, _visual.radius, 0, _visual); break;
+       case "shield": _visual.draw.shield(_centre, _centre, _visual.radius, 0, _visual, _data.collision); break;
         case "thrust": _visual.draw.thrust(_centre, _centre, _visual.radius, 0, _visual); break;
     }
 

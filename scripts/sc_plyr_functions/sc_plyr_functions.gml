@@ -71,26 +71,27 @@ function sc_player_aim_update(_player)
     _player.draw_angle = _player.draw_angle mod 360;
 }
 
-/// @description Moves the player with axis-separated solid collision.
+/// @description Moves the player with axis-separated native-mask solid collision.
 function sc_player_solid_move(_player)
 {
     var _movement = _player.movement;
-    var _radius = _player.ship.collision.radius;
+    var _collision = _player.ship.collision;
+    var _extent = max(_collision.radius_forward, _collision.radius_side);
     var _next_x = _player.x + _movement.velocity_x;
     var _next_y = _player.y + _movement.velocity_y;
 
-    if (collision_circle(_next_x, _player.y, _radius, o_solid, false, true) == noone)
+    if (!place_meeting(_next_x, _player.y, o_solid))
         _player.x = _next_x;
     else
         _movement.velocity_x = 0;
 
-    if (collision_circle(_player.x, _next_y, _radius, o_solid, false, true) == noone)
+    if (!place_meeting(_player.x, _next_y, o_solid))
         _player.y = _next_y;
     else
         _movement.velocity_y = 0;
 
-    _player.x = clamp(_player.x, _radius, room_width - _radius);
-    _player.y = clamp(_player.y, _radius, room_height - _radius);
+    _player.x = clamp(_player.x, _extent, room_width - _extent);
+    _player.y = clamp(_player.y, _extent, room_height - _extent);
     _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
 }
 

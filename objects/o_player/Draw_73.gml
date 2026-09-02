@@ -1,10 +1,8 @@
-if (initialized)
-    sc_health_bar_draw(x, y, ship.collision.radius, defence, health_bar);
-	
-	//debug
-draw_set_alpha(0.9);
-draw_set_colour(c_lime);
-draw_circle(x, y, entity.collision_radius, true);
+event_inherited();
 
-draw_set_alpha(1);
-draw_set_colour(c_white);
+/// @description Draws the player health bar and temporary collision debug ellipse.
+if (!initialized) exit;
+
+sc_health_bar_draw(x, y, ship.collision.radius_side, defence, health_bar);
+sc_entity_collision_debug_draw(id);
+	

@@ -14,7 +14,10 @@ function sc_ship_register_shard()
             weapons_while_boosting: 0, weapons_while_dashing: 0
         },
 
-        collision: { radius: 30 },
+        collision: {
+		    radius_forward: 76,
+		    radius_side: 36
+		},
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
@@ -396,10 +399,10 @@ function sc_ship_shard_wing_armour_draw(_x, _y, _radius, _angle, _visual, _stage
     if (_stage == 2) sc_visual_line(_x, _y, _radius, _angle, -0.3, 0.36, -0.52, 0.49, 2, _p.void);
 }
 
-/// @description Bakes the Shard shield using the shared shield design.
-function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual)
+/// @description Bakes the Shard shield using its registered collision ellipse.
+function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual, _collision)
 {
-    sc_visual_shield_bake_draw(_x, _y, _radius, _visual.palette);
+    sc_visual_shield_bake_draw(_x, _y, _collision.radius_forward, _collision.radius_side, _visual.palette);
 }
 
 /// @description Draws one substantial baked Shard aqua flame.

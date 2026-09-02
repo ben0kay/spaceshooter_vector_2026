@@ -73,34 +73,86 @@ function sc_visual_arc(_x, _y, _radius_x, _radius_y, _angle_start, _angle_end, _
     draw_set_colour(c_white);
 }
 
-/// @description Draws the shared baked shield design using one palette.
-function sc_visual_shield_bake_draw(_x, _y, _radius, _palette)
+/// @description Draws one filled rotated ellipse with centre and edge colours.
+function sc_visual_ellipse_colour(_x, _y, _radius_forward, _radius_side, _angle, _centre_colour, _edge_colour, _alpha)
+{
+    var _segments = 48;
+
+    draw_primitive_begin(pr_trianglefan);
+    draw_vertex_colour(_x, _y, _centre_colour, _alpha);
+
+    for (var _i = 0; _i <= _segments; _i++)
+    {
+        var _direction = (_i / _segments) * 360;
+        var _cos = dcos(_direction);
+        var _sin = dsin(_direction);
+
+        var _point_x = _x
+            + lengthdir_x(_radius_forward * _cos, _angle)
+            + lengthdir_x(_radius_side * _sin, _angle + 90);
+
+        var _point_y = _y
+            + lengthdir_y(_radius_forward * _cos, _angle)
+            + lengthdir_y(_radius_side * _sin, _angle + 90);
+
+        draw_vertex_colour(_point_x, _point_y, _edge_colour, _alpha);
+    }
+
+    draw_primitive_end();
+}
+
+/// @description Draws one rotated elliptical outline.
+function sc_visual_ellipse_outline(_x, _y, _radius_forward, _radius_side, _angle, _segments, _width, _colour, _alpha)
+{
+    draw_set_colour(_colour);
+    draw_set_alpha(_alpha);
+
+    var _previous_x = _x + lengthdir_x(_radius_forward, _angle);
+    var _previous_y = _y + lengthdir_y(_radius_forward, _angle);
+
+    for (var _i = 1; _i <= _segments; _i++)
+    {
+        var _direction = (_i / _segments) * 360;
+        var _cos = dcos(_direction);
+        var _sin = dsin(_direction);
+
+        var _current_x = _x
+            + lengthdir_x(_radius_forward * _cos, _angle)
+            + lengthdir_x(_radius_side * _sin, _angle + 90);
+
+        var _current_y = _y
+            + lengthdir_y(_radius_forward * _cos, _angle)
+            + lengthdir_y(_radius_side * _sin, _angle + 90);
+
+        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width);
+        _previous_x = _current_x;
+        _previous_y = _current_y;
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws the shared baked elliptical shield using collision proportions.
+function sc_visual_shield_bake_draw(_x, _y, _radius_forward, _radius_side, _palette)
 {
     var _config = global.config.visual.shield;
-    var _shield_radius = _radius * _config.radius_scale;
+    var _forward = _radius_forward * _config.radius_scale;
+    var _side = _radius_side * _config.radius_scale;
     var _field_centre = merge_colour(_palette.void, _palette.glow, _config.field_centre_mix);
     var _field_edge = merge_colour(_palette.glow, _palette.energy, _config.field_edge_mix);
 
-    draw_set_alpha(_config.field_alpha);
-    draw_circle_colour(_x, _y, _shield_radius, _field_centre, _field_edge, false);
-
-    draw_set_alpha(_config.inner_alpha);
-    draw_circle_colour(_x, _y, _shield_radius * _config.inner_scale, _palette.glow, _palette.energy, false);
+    sc_visual_ellipse_colour(_x, _y, _forward, _side, 0, _field_centre, _field_edge, _config.field_alpha);
+    sc_visual_ellipse_colour(_x, _y, _forward * _config.inner_scale, _side * _config.inner_scale, 0, _palette.glow, _palette.energy, _config.inner_alpha);
 
     for (var _i = 0; _i < _config.glow_layers; _i++)
     {
-        draw_set_alpha(max(0, _config.glow_alpha - _i * _config.glow_alpha_falloff));
-        draw_set_colour(_palette.glow);
-        draw_circle(_x, _y, _shield_radius + _i * _config.glow_spacing, true);
+        var _alpha = max(0, _config.glow_alpha - _i * _config.glow_alpha_falloff);
+        sc_visual_ellipse_outline(_x, _y, _forward + _i * _config.glow_spacing, _side + _i * _config.glow_spacing, 0, 48, 1, _palette.glow, _alpha);
     }
 
-    draw_set_alpha(_config.outline_alpha);
-    draw_set_colour(_palette.energy);
-    draw_circle(_x, _y, _shield_radius, true);
-
-    draw_set_alpha(_config.inner_outline_alpha);
-    draw_set_colour(_palette.core);
-    draw_circle(_x, _y, _shield_radius - _config.inner_outline_offset, true);
+    sc_visual_ellipse_outline(_x, _y, _forward, _side, 0, 48, 2, _palette.energy, _config.outline_alpha);
+    sc_visual_ellipse_outline(_x, _y, _forward - _config.inner_outline_offset, _side - _config.inner_outline_offset, 0, 48, 1, _palette.core, _config.inner_outline_alpha);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

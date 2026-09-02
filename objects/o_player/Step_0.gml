@@ -1,3 +1,4 @@
+/// @description Updates the player state and synchronizes its rotated collision mask.
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_player_movement_runtime_update(id);
@@ -27,3 +28,5 @@ switch (global.PlayerState)
         sc_player_update_destroyed(id);
     break;
 }
+
+image_angle = draw_angle;

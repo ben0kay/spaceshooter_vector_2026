@@ -1,3 +1,4 @@
+/// @description Initializes the selected player ship.
 initialized = false;
 
 if (!variable_instance_exists(id, "ship_key"))
@@ -14,4 +15,4 @@ if (!sc_player_init(id, ship_key))
 }
 
 health_bar = sc_health_bar_create(true);
-health_bar.width = max(72, ship.collision.radius * 2.2);
+health_bar.width = max(72, ship.collision.radius_side * 2.2);

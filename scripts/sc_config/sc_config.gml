@@ -4,7 +4,7 @@ function sc_config_init()
     global.config = {
         visual: {
             shield: {
-                radius_scale: 1.86,
+                radius_scale: 1.08,
                 field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,
                 inner_scale: 0.93, inner_alpha: 0.18,
                 glow_layers: 3, glow_spacing: 1, glow_alpha: 0.16, glow_alpha_falloff: 0.035,

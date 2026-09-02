@@ -50,10 +50,11 @@ function sc_player_init(_player, _ship_key)
     if (!sc_player_stats_init(_player, _definition.stats_base)) return false;
 
     var _final = _player.ship.stats.final;
+	_player.draw_angle = 0;
 
-    if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision.radius))
-        return false;
-
+   if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision))
+    return false;
+	
     _player.defence = {
         shield: {
             current: _final.shield_max,
@@ -118,7 +119,7 @@ function sc_player_init(_player, _ship_key)
         direction: 0
     };
 
-    _player.draw_angle = 0;
+    
     _player.initialized = true;
 
     global.player_id = _player;
