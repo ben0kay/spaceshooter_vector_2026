@@ -6,6 +6,7 @@ enum EnemyState { IDLE, CHASING, ATTACKING, STUNNED, DEAD }
 enum Faction { PLAYER, SIMULANT, REBEL, CORPORATION, ALIEN }
 enum AttackSelection { SEQUENTIAL, RANDOM, WEIGHTED }
 enum AttackDelivery { PROJECTILE, AREA, BEAM }
+enum AttackAreaShape { CIRCLE, CAPSULE, CONE }
 enum WeaponMountMode { HARDPOINT, CENTRE }
 enum AimMode { MOUNT, TARGET, TARGET_LEAD, WORLD }
 enum ShotPattern { SINGLE, SPREAD, RANDOM_CONE }

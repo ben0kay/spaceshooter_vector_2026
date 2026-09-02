@@ -65,6 +65,7 @@
     {"id":{"name":"particles_main","path":"scripts/particles_main/particles_main.yy",},},
     {"id":{"name":"particles_projectile_impact","path":"scripts/particles_projectile_impact/particles_projectile_impact.yy",},},
     {"id":{"name":"particles_simulant","path":"scripts/particles_simulant/particles_simulant.yy",},},
+    {"id":{"name":"sc_attack_area","path":"scripts/sc_attack_area/sc_attack_area.yy",},},
     {"id":{"name":"sc_background_space","path":"scripts/sc_background_space/sc_background_space.yy",},},
     {"id":{"name":"sc_boot","path":"scripts/sc_boot/sc_boot.yy",},},
     {"id":{"name":"sc_camera","path":"scripts/sc_camera/sc_camera.yy",},},
