@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_plyr_register_combat",
+  "%Name":"sc_plyr_pulse_weapon",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_plyr_register_combat",
+  "name":"sc_plyr_pulse_weapon",
   "parent":{
-    "name":"player",
-    "path":"folders/scripts/player.yy",
+    "name":"weapons",
+    "path":"folders/scripts/player/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

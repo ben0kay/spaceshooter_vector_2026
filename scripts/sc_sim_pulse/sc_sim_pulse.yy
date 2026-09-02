@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_pulse",
   "parent":{
-    "name":"simulant",
-    "path":"folders/scripts/enemy/enemy_register/simulant.yy",
+    "name":"projectiles",
+    "path":"folders/scripts/enemy/factions/simulant/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

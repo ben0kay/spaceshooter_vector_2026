@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_simulant_weapons",
   "parent":{
-    "name":"simulant",
-    "path":"folders/scripts/enemy/enemy_register/simulant.yy",
+    "name":"weapons",
+    "path":"folders/scripts/enemy/factions/simulant/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

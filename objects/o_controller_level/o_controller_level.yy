@@ -9,8 +9,8 @@
   "name":"o_controller_level",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"controllers",
+    "path":"folders/objects/controllers.yy",
   },
   "parentObjectId":null,
   "persistent":false,

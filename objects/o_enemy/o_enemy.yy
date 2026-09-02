@@ -12,8 +12,8 @@
   "name":"o_enemy",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"entities",
+    "path":"folders/objects/entities.yy",
   },
   "parentObjectId":{
     "name":"o_entity",

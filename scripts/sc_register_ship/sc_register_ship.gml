@@ -1,23 +1,4 @@
-/// @description Registers one validated ship definition.
-function sc_ship_register(_ship)
-{
-    if (!is_struct(_ship) || !variable_struct_exists(_ship, "identity") || !variable_struct_exists(_ship.identity, "key"))
-    {
-        show_debug_message("SHIP REGISTRATION ERROR - invalid ship definition");
-        return false;
-    }
 
-    var _key = _ship.identity.key;
-
-    if (variable_struct_exists(global.data.ships, _key))
-    {
-        show_debug_message("SHIP REGISTRATION ERROR - duplicate key: " + _key);
-        return false;
-    }
-
-    variable_struct_set(global.data.ships, _key, _ship);
-    return true;
-}
 
 
 function sc_ship_register_fighter()

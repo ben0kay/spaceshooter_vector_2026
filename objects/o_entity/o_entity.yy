@@ -6,8 +6,8 @@
   "name":"o_entity",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"entities",
+    "path":"folders/objects/entities.yy",
   },
   "parentObjectId":null,
   "persistent":false,
