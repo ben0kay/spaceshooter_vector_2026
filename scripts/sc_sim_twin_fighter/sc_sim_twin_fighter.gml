@@ -29,11 +29,19 @@ function sc_enemy_register_twin_fighter()
         visual: {
             radius: 58,
             palette: sc_faction_palette_get(Faction.SIMULANT),
-			death_script: sc_particles_simulant_enemy_death,
 
             draw: {
                 body: sc_enemy_twin_fighter_body_draw,
                 core: sc_enemy_twin_fighter_core_draw
+            },
+
+            death: {
+                script: sc_enemy_twin_fighter_death,
+                draw_scripts: [
+                    sc_enemy_twin_fighter_fragment_front_draw,
+                    sc_enemy_twin_fighter_fragment_left_draw,
+                    sc_enemy_twin_fighter_fragment_right_draw
+                ]
             },
 
             thrust: {
@@ -46,7 +54,8 @@ function sc_enemy_register_twin_fighter()
                 body_canvas_size: 256,
                 core_canvas_size: 128,
                 hardpoint_canvas_size: 128,
-                thrust_canvas_size: 128
+                thrust_canvas_size: 128,
+                fragment_canvas_size: 192
             }
         },
 
@@ -450,4 +459,106 @@ function sc_enemy_simulant_thrust_draw(_x, _y, _radius, _angle, _visual, _alpha)
     draw_line_width(_x, _y, _outer_tip_x, _outer_tip_y, 2);
 
     draw_set_alpha(1);
+}
+
+/// @description Creates the complete Twin Fighter destruction visual.
+function sc_enemy_twin_fighter_death(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _visual = _data.visual;
+    var _palette = _visual.palette;
+    var _cache = sc_enemy_visual_cache_get(_data.key);
+    var _angle = _enemy.draw_angle;
+    var _radius = _visual.radius;
+    var _x = _enemy.x;
+    var _y = _enemy.y;
+    var _velocity_x = _data.movement.velocity_x;
+    var _velocity_y = _data.movement.velocity_y;
+    var _fragments = [];
+
+    sc_particles_simulant_enemy_death(_x, _y, _radius);
+
+    array_push(_fragments, sc_death_fragment_data(_cache.fragments[0], _x + lengthdir_x(_radius * 0.38, _angle), _y + lengthdir_y(_radius * 0.38, _angle), _angle + random_range(-18, 18), random_range(2.2, 3.4), _angle, choose(-7, 7), 1));
+    array_push(_fragments, sc_death_fragment_data(_cache.fragments[1], _x + lengthdir_x(-_radius * 0.1, _angle) + lengthdir_x(-_radius * 0.42, _angle + 90), _y + lengthdir_y(-_radius * 0.1, _angle) + lengthdir_y(-_radius * 0.42, _angle + 90), _angle - 65 + random_range(-14, 14), random_range(2.4, 4), _angle, random_range(-9, -5), 1));
+    array_push(_fragments, sc_death_fragment_data(_cache.fragments[2], _x + lengthdir_x(-_radius * 0.1, _angle) + lengthdir_x(_radius * 0.42, _angle + 90), _y + lengthdir_y(-_radius * 0.1, _angle) + lengthdir_y(_radius * 0.42, _angle + 90), _angle + 65 + random_range(-14, 14), random_range(2.4, 4), _angle, random_range(5, 9), 1));
+    array_push(_fragments, sc_death_fragment_data(_cache.core, _x, _y, irandom(359), random_range(1.3, 2.3), _angle, choose(-11, 11), 0.9));
+
+    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    {
+        var _hardpoint = _data.hardpoints[_i];
+        var _hardpoint_x = _x + lengthdir_x(_hardpoint.forward * _radius, _angle) + lengthdir_x(_hardpoint.side * _radius, _angle + 90);
+        var _hardpoint_y = _y + lengthdir_y(_hardpoint.forward * _radius, _angle) + lengthdir_y(_hardpoint.side * _radius, _angle + 90);
+        var _direction = _angle + (_hardpoint.side < 0 ? -48 : 48) + random_range(-12, 12);
+
+        array_push(_fragments, sc_death_fragment_data(_cache.hardpoints[_i], _hardpoint_x, _hardpoint_y, _direction, random_range(3, 4.4), _angle, _hardpoint.side < 0 ? -12 : 12, 0.95));
+    }
+
+    for (var _i = 0; _i < array_length(_fragments); _i++)
+    {
+        _fragments[_i].velocity_x += _velocity_x * 0.35;
+        _fragments[_i].velocity_y += _velocity_y * 0.35;
+    }
+
+    sc_death_fragment_create(_x, _y, _fragments, _palette.core, _palette.glow, _radius, 42);
+    return true;
+}
+
+/// @description Draws the broken forward fuselage fragment.
+function sc_enemy_twin_fighter_fragment_front_draw(_x, _y, _radius, _angle, _visual)
+{
+    var _palette = _visual.palette;
+    var _tip_x = _x + lengthdir_x(_radius * 0.84, _angle);
+    var _tip_y = _y + lengthdir_y(_radius * 0.84, _angle);
+    var _rear_top_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(-_radius * 0.26, _angle + 90);
+    var _rear_top_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(-_radius * 0.26, _angle + 90);
+    var _rear_bottom_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(_radius * 0.26, _angle + 90);
+    var _rear_bottom_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(_radius * 0.26, _angle + 90);
+
+    draw_set_colour(_palette.hull_dark);
+    draw_triangle(_tip_x, _tip_y, _rear_top_x, _rear_top_y, _rear_bottom_x, _rear_bottom_y, false);
+    draw_set_colour(_palette.hull_light);
+    draw_line_width(_tip_x, _tip_y, _rear_top_x, _rear_top_y, 2);
+    draw_line_width(_tip_x, _tip_y, _rear_bottom_x, _rear_bottom_y, 2);
+    draw_set_colour(_palette.energy);
+    draw_line_width(_x, _y, _tip_x, _tip_y, 2);
+}
+
+/// @description Draws the broken left hull and wing fragment.
+function sc_enemy_twin_fighter_fragment_left_draw(_x, _y, _radius, _angle, _visual)
+{
+    var _palette = _visual.palette;
+    var _inner_front_x = _x + lengthdir_x(_radius * 0.26, _angle) + lengthdir_x(-_radius * 0.18, _angle + 90);
+    var _inner_front_y = _y + lengthdir_y(_radius * 0.26, _angle) + lengthdir_y(-_radius * 0.18, _angle + 90);
+    var _outer_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(-_radius * 0.84, _angle + 90);
+    var _outer_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(-_radius * 0.84, _angle + 90);
+    var _rear_x = _x + lengthdir_x(-_radius * 0.7, _angle) + lengthdir_x(-_radius * 0.3, _angle + 90);
+    var _rear_y = _y + lengthdir_y(-_radius * 0.7, _angle) + lengthdir_y(-_radius * 0.3, _angle + 90);
+
+    draw_set_colour(_palette.hull_dark);
+    draw_triangle(_inner_front_x, _inner_front_y, _outer_x, _outer_y, _rear_x, _rear_y, false);
+    draw_set_colour(_palette.metal);
+    draw_line_width(_inner_front_x, _inner_front_y, _outer_x, _outer_y, 2);
+    draw_line_width(_outer_x, _outer_y, _rear_x, _rear_y, 2);
+    draw_set_colour(_palette.accent);
+    draw_line_width(_inner_front_x, _inner_front_y, _rear_x, _rear_y, 3);
+}
+
+/// @description Draws the broken right hull and wing fragment.
+function sc_enemy_twin_fighter_fragment_right_draw(_x, _y, _radius, _angle, _visual)
+{
+    var _palette = _visual.palette;
+    var _inner_front_x = _x + lengthdir_x(_radius * 0.26, _angle) + lengthdir_x(_radius * 0.18, _angle + 90);
+    var _inner_front_y = _y + lengthdir_y(_radius * 0.26, _angle) + lengthdir_y(_radius * 0.18, _angle + 90);
+    var _outer_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(_radius * 0.84, _angle + 90);
+    var _outer_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(_radius * 0.84, _angle + 90);
+    var _rear_x = _x + lengthdir_x(-_radius * 0.7, _angle) + lengthdir_x(_radius * 0.3, _angle + 90);
+    var _rear_y = _y + lengthdir_y(-_radius * 0.7, _angle) + lengthdir_y(_radius * 0.3, _angle + 90);
+
+    draw_set_colour(_palette.hull_dark);
+    draw_triangle(_inner_front_x, _inner_front_y, _rear_x, _rear_y, _outer_x, _outer_y, false);
+    draw_set_colour(_palette.metal);
+    draw_line_width(_inner_front_x, _inner_front_y, _outer_x, _outer_y, 2);
+    draw_line_width(_outer_x, _outer_y, _rear_x, _rear_y, 2);
+    draw_set_colour(_palette.accent);
+    draw_line_width(_inner_front_x, _inner_front_y, _rear_x, _rear_y, 3);
 }

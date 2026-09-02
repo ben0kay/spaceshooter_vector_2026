@@ -66,6 +66,7 @@
     {"id":{"name":"sc_config","path":"scripts/sc_config/sc_config.yy",},},
     {"id":{"name":"sc_damage","path":"scripts/sc_damage/sc_damage.yy",},},
     {"id":{"name":"sc_data_init","path":"scripts/sc_data_init/sc_data_init.yy",},},
+    {"id":{"name":"sc_death_fragment","path":"scripts/sc_death_fragment/sc_death_fragment.yy",},},
     {"id":{"name":"sc_enemy_bake","path":"scripts/sc_enemy_bake/sc_enemy_bake.yy",},},
     {"id":{"name":"sc_enemy_stats","path":"scripts/sc_enemy_stats/sc_enemy_stats.yy",},},
     {"id":{"name":"sc_enemy","path":"scripts/sc_enemy/sc_enemy.yy",},},

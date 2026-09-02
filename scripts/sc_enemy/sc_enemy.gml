@@ -629,10 +629,8 @@ function sc_enemy_die(_enemy, _packet)
 
     sc_enemy_attack_cancel(_enemy);
     _data.target_id = noone;
-    _data.movement.velocity_x = 0;
-    _data.movement.velocity_y = 0;
 
-    _data.visual.death_script(_enemy.x, _enemy.y, _data.visual.radius);
+    _data.visual.death.script(_enemy);
 
     if (_source.faction == Faction.PLAYER)
     {
