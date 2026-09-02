@@ -13,7 +13,6 @@ function sc_data_init()
 	if (!sc_enemy_register_all()) return false;
     if (!sc_plyr_ships_register_all()) return false;
 
-
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
     return true;
 }

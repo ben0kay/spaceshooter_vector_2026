@@ -2,7 +2,10 @@
 function sc_plyr_ships_register_all(){
 	
 	if !(sc_shard_register_all()) return false;
-
+	if (!sc_ship_register_fighter()) return false;
+    if (!sc_ship_register_bastion()) return false;
+	    // Register future player chassis families here.
+    return true;
 }
 
 function sc_shard_register_all()
