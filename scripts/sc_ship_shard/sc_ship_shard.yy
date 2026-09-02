@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_ship_shard_visual",
+  "%Name":"sc_ship_shard",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_ship_shard_visual",
+  "name":"sc_ship_shard",
   "parent":{
     "name":"visuals",
     "path":"folders/scripts/player/visuals.yy",
