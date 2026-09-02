@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_functions",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_functions",
+  "parent":{
+    "name":"player",
+    "path":"folders/scripts/player.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

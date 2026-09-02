@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"ship_shard_visual",
+  "%Name":"sc_player_register_combat",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"ship_shard_visual",
+  "name":"sc_player_register_combat",
   "parent":{
     "name":"player",
     "path":"folders/scripts/player.yy",

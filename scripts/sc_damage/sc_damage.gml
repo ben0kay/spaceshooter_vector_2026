@@ -1,3 +1,5 @@
+
+
 /// @description Returns centralized tuning for one damage type.
 function sc_damage_type_config_get(_type)
 {

@@ -12,12 +12,13 @@ function sc_data_init()
 
     if (!sc_faction_register_simulant()) return false;
 
-//move this crap out of here ?? this script is main data, no?
     if (!sc_ship_register_shard()) return false;
     if (!sc_ship_register_fighter()) return false;
     if (!sc_ship_register_bastion()) return false;
 
-//move this crap out of here
+    if (!sc_projectile_register_shard_pulse()) return false;
+    if (!sc_weapon_register_shard_pulse()) return false;
+
     if (!sc_projectile_register_simulant_pulse()) return false;
     if (!sc_weapon_register_simulant_pulse()) return false;
     if (!sc_enemy_register_twin_fighter()) return false;
@@ -25,4 +26,3 @@ function sc_data_init()
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
     return true;
 }
-

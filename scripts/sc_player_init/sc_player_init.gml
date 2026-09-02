@@ -89,9 +89,14 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.combat = {
-        weapons_allowed: true
+        weapons_allowed: true,
 
-        // LMB primary, MMB special and RMB frontal shield runtime go here later.
+        primary: {
+            hardpoint_cursor: 0,
+            next_fire_tick: 0
+        }
+
+        // MMB special and RMB frontal shield runtime go here later.
     };
 
     _player.aim = {

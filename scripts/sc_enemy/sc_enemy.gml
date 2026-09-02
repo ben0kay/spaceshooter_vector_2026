@@ -388,15 +388,15 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     var _side = _hardpoint.side * _radius;
     var _recoil = _hardpoint.runtime.recoil;
 
-    var _mount_x = _enemy.x +
-        lengthdir_x(_forward, _enemy.draw_angle) +
-        lengthdir_x(_side, _enemy.draw_angle + 90) -
-        lengthdir_x(_recoil, _mount_angle);
+    var _mount_x = _enemy.x
+        + lengthdir_x(_forward, _enemy.draw_angle)
+        + lengthdir_x(_side, _enemy.draw_angle + 90)
+        - lengthdir_x(_recoil, _mount_angle);
 
-    var _mount_y = _enemy.y +
-        lengthdir_y(_forward, _enemy.draw_angle) +
-        lengthdir_y(_side, _enemy.draw_angle + 90) -
-        lengthdir_y(_recoil, _mount_angle);
+    var _mount_y = _enemy.y
+        + lengthdir_y(_forward, _enemy.draw_angle)
+        + lengthdir_y(_side, _enemy.draw_angle + 90)
+        - lengthdir_y(_recoil, _mount_angle);
 
     var _muzzle_distance = _hardpoint.muzzle_forward * _radius;
     var _muzzle_x = _mount_x + lengthdir_x(_muzzle_distance, _mount_angle);
@@ -427,7 +427,8 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
         _attack.shot,
         _muzzle_x,
         _muzzle_y,
-        _direction
+        _direction,
+        _data.stats.final.damage_multiplier
     );
 
     _hardpoint.runtime.recoil = _radius * 0.14;
@@ -435,42 +436,6 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     // Insert muzzle flash and weapon audio here.
 }
 
-/// @description Fires one registered weapon using a shot pattern.
-function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction)
-{
-    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
-
-    if (_weapon.delivery.type != AttackDelivery.PROJECTILE)
-        return false;
-
-    var _source = {
-	    owner_id: _owner,
-	    faction: _owner.enemy.identity.faction,
-	    damage_multiplier: _owner.enemy.stats.final.damage_multiplier
-	};
-
-    switch (_shot.pattern)
-    {
-        case ShotPattern.SINGLE:
-            sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _direction, _owner.layer);
-        break;
-
-        case ShotPattern.SPREAD:
-            var _step = _shot.amount > 1 ? _shot.angle_total / (_shot.amount - 1) : 0;
-            var _start = _direction - _shot.angle_total * 0.5;
-
-            for (var _i = 0; _i < _shot.amount; _i++)
-                sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _start + _step * _i, _owner.layer);
-        break;
-
-        case ShotPattern.RANDOM_CONE:
-            for (var _i = 0; _i < _shot.amount; _i++)
-                sc_projectile_create(_weapon.delivery.projectile_key, _source, _x, _y, _direction + random_range(-_shot.angle_total * 0.5, _shot.angle_total * 0.5), _owner.layer);
-        break;
-    }
-
-    return true;
-}
 
 /// @description Draws one enemy using shared baked components.
 function sc_enemy_draw(_enemy)

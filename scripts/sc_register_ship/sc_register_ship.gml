@@ -87,7 +87,7 @@ function sc_ship_register_shard()
             utility: []
         },
 
-        starting_loadout: { primary: "weapon_pulse_basic", secondary: undefined }
+        starting_loadout: { primary: "weapon_shard_pulse", secondary: undefined }
     });
 }
 

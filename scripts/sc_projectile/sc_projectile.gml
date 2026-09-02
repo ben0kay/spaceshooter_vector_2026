@@ -36,6 +36,12 @@ function sc_projectile_init(_projectile, _create)
         }
     };
 
+    _projectile.mask_index = s_collision_circle;
+
+    var _mask_scale = _projectile.projectile.collision.radius / 16;
+    _projectile.image_xscale = _mask_scale;
+    _projectile.image_yscale = _mask_scale;
+
     _projectile.draw_angle = _create.direction;
     _projectile.initialized = true;
     return true;
@@ -51,24 +57,23 @@ function sc_projectile_update(_projectile)
     _data.life.remaining--;
 
     if (_data.life.remaining <= 0)
-    {
         instance_destroy(_projectile);
-        return;
-    }
+}
 
-    if (_data.source.faction == Faction.PLAYER || !instance_exists(global.player_id)) return;
+/// @description Resolves one projectile collision against a damageable entity.
+function sc_projectile_entity_collision(_projectile, _target)
+{
+    var _data = _projectile.projectile;
 
-    var _player = global.player_id;
-    var _hit_radius = _data.collision.radius + _player.ship.collision.radius;
-    var _dx = _player.x - _projectile.x;
-    var _dy = _player.y - _projectile.y;
+    if (_target == _data.source.owner_id) return false;
+    if (_target.entity.faction == _data.source.faction) return false;
 
-    if (_dx * _dx + _dy * _dy > _hit_radius * _hit_radius) return;
+    var _damage_script = _target.entity.damage_script;
+    _damage_script(_target, _data.damage);
 
-    if (sc_player_damage(_player, _data.damage))
-        sc_camera_shake(3, 8);
-
+    // Insert impact particle and audio callbacks here.
     instance_destroy(_projectile);
+    return true;
 }
 
 /// @description Draws one basic pulse projectile.

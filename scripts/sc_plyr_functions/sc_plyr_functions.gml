@@ -196,6 +196,49 @@ function sc_player_dash_ghost_record(_player)
     _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
+/// @description Fires the player's held-LMB primary weapon from alternating hardpoints.
+function sc_player_primary_weapon_update(_player)
+{
+    if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left)) return false;
+
+    var _runtime = _player.combat.primary;
+    if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+    var _weapon_key = _player.ship.loadout.primary;
+    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+    var _hardpoints = _player.ship.hardpoints.primary;
+    var _hardpoint = _hardpoints[_runtime.hardpoint_cursor];
+    var _angle = _player.draw_angle + _hardpoint.angle;
+
+    var _muzzle_x = _player.x
+        + lengthdir_x(_hardpoint.x, _player.draw_angle)
+        + lengthdir_x(_hardpoint.y, _player.draw_angle + 90);
+
+    var _muzzle_y = _player.y
+        + lengthdir_y(_hardpoint.x, _player.draw_angle)
+        + lengthdir_y(_hardpoint.y, _player.draw_angle + 90);
+
+    if (!sc_weapon_fire(
+        _player,
+        _weapon_key,
+        _weapon.shot,
+        _muzzle_x,
+        _muzzle_y,
+        _angle,
+        _player.ship.stats.final.damage_multiplier
+    ))
+    {
+        return false;
+    }
+
+    var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
+    _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval / _fire_rate));
+    _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
+
+    // Cannon recoil, muzzle flash, particles and audio are added next.
+    return true;
+}
+
 /// @description Updates normal player movement, boost and dash activation.
 function sc_player_update_active(_player)
 {
@@ -210,6 +253,7 @@ function sc_player_update_active(_player)
 
     sc_player_normal_movement_update(_player);
     sc_player_combat_permission_update(_player);
+    sc_player_primary_weapon_update(_player);
     sc_player_visual_update(_player);
 }
 
@@ -227,6 +271,7 @@ function sc_player_update_dashing(_player)
 
     sc_player_solid_move(_player);
     sc_player_combat_permission_update(_player);
+    sc_player_primary_weapon_update(_player);
     sc_player_visual_update(_player);
 
     // Insert continuous player dash corridor particles here.
@@ -352,6 +397,7 @@ function sc_player_damage(_player, _packet)
 
     _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
     sc_health_bar_damage_show(_player.health_bar);
+    sc_camera_shake(3, 8);
 
     if (_result.dealt.shield > 0)
         _player.ship.visual.runtime.shield_hit_alpha = 1;
@@ -369,7 +415,6 @@ function sc_player_damage(_player, _packet)
     // _result.effect is ready for the upcoming timed-effect manager.
     return true;
 }
-
 /// @description Updates player shield recharge after its damage delay expires.
 function sc_player_defence_update(_player)
 {

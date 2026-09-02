@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_plyr_movement",
+  "%Name":"sc_weapon",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_plyr_movement",
+  "name":"sc_weapon",
   "parent":{
-    "name":"player",
-    "path":"folders/scripts/player.yy",
+    "name":"scripts",
+    "path":"folders/scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
