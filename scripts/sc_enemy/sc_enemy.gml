@@ -32,12 +32,14 @@ function sc_enemy_init(_enemy, _enemy_key)
         attack_controller: variable_clone(_data.attack_controller)
     };
 
-    if (!sc_enemy_stats_init(_enemy, _data.stats_base))
-        return false;
+    if (!sc_enemy_stats_init(_enemy, _data.stats_base)) return false;
 
     var _runtime = _enemy.enemy;
     var _final = _runtime.stats.final;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
+
+    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision.radius))
+        return false;
 
     _runtime.defence = {
         shield: {

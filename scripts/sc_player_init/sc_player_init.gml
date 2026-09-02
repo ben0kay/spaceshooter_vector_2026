@@ -27,17 +27,19 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.ship.visual.runtime = {
-	    cache: _cache,
-	    thrust_power: 0,
-	    thrust_phase: irandom(359),
-	    shield_hit_alpha: 0,
-	    wing_fold: _definition.visual.wing.fold_idle
-	};
+        cache: _cache,
+        thrust_power: 0,
+        thrust_phase: irandom(359),
+        shield_hit_alpha: 0,
+        wing_fold: _definition.visual.wing.fold_idle
+    };
 
-    if (!sc_player_stats_init(_player, _definition.stats_base))
-        return false;
+    if (!sc_player_stats_init(_player, _definition.stats_base)) return false;
 
     var _final = _player.ship.stats.final;
+
+    if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision.radius))
+        return false;
 
     _player.defence = {
         shield: {
@@ -70,20 +72,20 @@ function sc_player_init(_player, _ship_key)
         },
 
         dash: {
-	    direction: 0,
-	    remaining: 0,
-	    cooldown_remaining: 0,
-	    double_tap_remaining: 0,
-	    invulnerable: false,
+            direction: 0,
+            remaining: 0,
+            cooldown_remaining: 0,
+            double_tap_remaining: 0,
+            invulnerable: false,
 
-	    ghosts: array_create(8, undefined),
-		ghost_count: 0,
-		ghost_limit: 8,
-		ghost_interval: 2,
-		ghost_life: 30,
-		ghost_scale_min: 0.55,
-		ghost_alpha_max: 0.78
-	}
+            ghosts: array_create(8, undefined),
+            ghost_count: 0,
+            ghost_limit: 8,
+            ghost_interval: 2,
+            ghost_life: 30,
+            ghost_scale_min: 0.55,
+            ghost_alpha_max: 0.78
+        }
     };
 
     _player.combat = {
