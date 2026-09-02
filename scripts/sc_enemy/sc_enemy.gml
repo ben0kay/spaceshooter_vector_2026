@@ -16,7 +16,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         state: EnemyState.IDLE,
         target_id: noone,
         target_distance_sq: 0,
-
         stats: undefined,
         defence: undefined,
         movement: { velocity_x: 0, velocity_y: 0 },
@@ -42,26 +41,17 @@ function sc_enemy_init(_enemy, _enemy_key)
         return false;
 
     _runtime.defence = {
-        shield: {
-            current: _final.shield_max,
-            maximum: _final.shield_max
-        },
-
-        armour: {
-            current: _final.armour_max,
-            maximum: _final.armour_max
-        },
-
-        hull: {
-            current: _final.hull_max,
-            maximum: _final.hull_max
-        }
+        shield: { current: _final.shield_max, maximum: _final.shield_max },
+        armour: { current: _final.armour_max, maximum: _final.armour_max },
+        hull: { current: _final.hull_max, maximum: _final.hull_max }
     };
 
     _runtime.visual.runtime = {
         body_sprite: is_struct(_cache) ? _cache.body : -1,
         core_sprite: is_struct(_cache) ? _cache.core : -1,
         thrust_sprite: is_struct(_cache) ? _cache.thrust : -1,
+        shield_sprite: is_struct(_cache) ? _cache.shield : -1,
+        shield_hit_alpha: 0,
         core_angle: 0,
         core_alpha: 1
     };
@@ -161,7 +151,7 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates shared visual animation, recoil and registered thrusters.
+/// @description Updates shared visual animation, shield feedback, recoil and registered thrusters.
 function sc_enemy_visual_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -171,6 +161,7 @@ function sc_enemy_visual_update(_enemy)
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
+    _visual.runtime.shield_hit_alpha = max(0, _visual.runtime.shield_hit_alpha - 0.06);
 
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
@@ -436,155 +427,86 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     // Insert muzzle flash and weapon audio here.
 }
 
-
 /// @description Draws one enemy using shared baked components.
 function sc_enemy_draw(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
-    var _visual_runtime = _visual.runtime;
+    var _runtime = _visual.runtime;
+    var _defence = _data.defence;
+
+    // Shield is drawn first so its filled field remains behind the ship.
+    if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
+    {
+        var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
+
+        sc_visual_shield_sprite_draw(
+            _runtime.shield_sprite,
+            _enemy.x,
+            _enemy.y,
+            _enemy.draw_angle,
+            _visual.palette,
+            _shield_ratio,
+            _runtime.shield_hit_alpha,
+            1
+        );
+    }
 
     for (var _i = 0; _i < array_length(_data.thrusters); _i++)
     {
         var _thruster = _data.thrusters[_i];
         var _power = _thruster.runtime.power;
-
-        if (_power <= 0.01)
-            continue;
+        if (_power <= 0.01) continue;
 
         var _forward = _thruster.forward * _visual.radius;
         var _side = _thruster.side * _visual.radius;
-
-        var _thruster_x = _enemy.x
-            + lengthdir_x(_forward, _enemy.draw_angle)
-            + lengthdir_x(_side, _enemy.draw_angle + 90);
-
-        var _thruster_y = _enemy.y
-            + lengthdir_y(_forward, _enemy.draw_angle)
-            + lengthdir_y(_side, _enemy.draw_angle + 90);
-
+        var _thruster_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+        var _thruster_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
         var _thruster_angle = _enemy.draw_angle + _thruster.angle;
         var _flicker = 0.94 + sin(GAME_TICK * 0.35 + _thruster.runtime.phase) * 0.06;
         var _length_scale = _thruster.scale * (0.25 + _power * 0.75) * _flicker;
         var _width_scale = _thruster.scale * (0.82 + _power * 0.18);
 
-        if (sprite_exists(_visual_runtime.thrust_sprite))
-        {
-            draw_sprite_ext(
-                _visual_runtime.thrust_sprite,
-                0,
-                _thruster_x,
-                _thruster_y,
-                _length_scale,
-                _width_scale,
-                _thruster_angle,
-                c_white,
-                _power
-            );
-        }
+        if (sprite_exists(_runtime.thrust_sprite))
+            draw_sprite_ext(_runtime.thrust_sprite, 0, _thruster_x, _thruster_y, _length_scale, _width_scale, _thruster_angle, c_white, _power);
         else
-        {
-            _visual.thrust.draw_script(
-		    _thruster_x,
-		    _thruster_y,
-		    _visual.radius * _thruster.scale,
-		    _thruster_angle,
-		    _visual,
-		    _power
-		);
-        }
+            _visual.thrust.draw_script(_thruster_x, _thruster_y, _visual.radius * _thruster.scale, _thruster_angle, _visual, _power);
     }
 
-    if (sprite_exists(_visual_runtime.body_sprite))
-    {
-        draw_sprite_ext(
-            _visual_runtime.body_sprite,
-            0,
-            _enemy.x,
-            _enemy.y,
-            1,
-            1,
-            _enemy.draw_angle,
-            c_white,
-            1
-        );
-    }
+    if (sprite_exists(_runtime.body_sprite))
+        draw_sprite_ext(_runtime.body_sprite, 0, _enemy.x, _enemy.y, 1, 1, _enemy.draw_angle, c_white, 1);
     else
-    {
         _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
-    }
 
-    var _core_angle = _enemy.draw_angle + _visual_runtime.core_angle;
+    var _core_angle = _enemy.draw_angle + _runtime.core_angle;
 
-    if (sprite_exists(_visual_runtime.core_sprite))
-    {
-        draw_sprite_ext(
-            _visual_runtime.core_sprite,
-            0,
-            _enemy.x,
-            _enemy.y,
-            1,
-            1,
-            _core_angle,
-            c_white,
-            _visual_runtime.core_alpha
-        );
-    }
+    if (sprite_exists(_runtime.core_sprite))
+        draw_sprite_ext(_runtime.core_sprite, 0, _enemy.x, _enemy.y, 1, 1, _core_angle, c_white, _runtime.core_alpha);
     else
-    {
-        _visual.draw.core(
-            _enemy.x,
-            _enemy.y,
-            _visual.radius,
-            _core_angle,
-            _visual,
-            _visual_runtime.core_alpha
-        );
-    }
+        _visual.draw.core(_enemy.x, _enemy.y, _visual.radius, _core_angle, _visual, _runtime.core_alpha);
 
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
         var _hardpoint = _data.hardpoints[_i];
         var _forward = _hardpoint.forward * _visual.radius;
         var _side = _hardpoint.side * _visual.radius;
-        var _hardpoint_angle = _enemy.draw_angle + _hardpoint.angle;
+        var _angle = _enemy.draw_angle + _hardpoint.angle;
         var _recoil = _hardpoint.runtime.recoil;
 
         var _hardpoint_x = _enemy.x
             + lengthdir_x(_forward, _enemy.draw_angle)
             + lengthdir_x(_side, _enemy.draw_angle + 90)
-            - lengthdir_x(_recoil, _hardpoint_angle);
+            - lengthdir_x(_recoil, _angle);
 
         var _hardpoint_y = _enemy.y
             + lengthdir_y(_forward, _enemy.draw_angle)
             + lengthdir_y(_side, _enemy.draw_angle + 90)
-            - lengthdir_y(_recoil, _hardpoint_angle);
+            - lengthdir_y(_recoil, _angle);
 
         if (sprite_exists(_hardpoint.runtime.sprite))
-        {
-            draw_sprite_ext(
-                _hardpoint.runtime.sprite,
-                0,
-                _hardpoint_x,
-                _hardpoint_y,
-                1,
-                1,
-                _hardpoint_angle,
-                c_white,
-                1
-            );
-        }
+            draw_sprite_ext(_hardpoint.runtime.sprite, 0, _hardpoint_x, _hardpoint_y, 1, 1, _angle, c_white, 1);
         else
-        {
-            _hardpoint.draw_script(
-                _hardpoint_x,
-                _hardpoint_y,
-                _visual.radius,
-                _hardpoint_angle,
-                _visual,
-                1
-            );
-        }
+            _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _angle, _visual, 1);
     }
 }
 
@@ -605,6 +527,9 @@ function sc_enemy_damage(_enemy, _packet)
 
     sc_health_bar_damage_show(_enemy.health_bar);
 
+    if (_result.dealt.shield > 0)
+        _data.visual.runtime.shield_hit_alpha = 1;
+
     if (_defence.hull.current <= 0)
     {
         _defence.hull.current = 0;
@@ -615,6 +540,7 @@ function sc_enemy_damage(_enemy, _packet)
     // _result.effect is ready for the upcoming timed-effect manager.
     return _result;
 }
+
 /// @description Processes one enemy death and its final killing source.
 function sc_enemy_die(_enemy, _packet)
 {

@@ -18,6 +18,10 @@ function sc_enemy_visual_cache_init()
             body: sc_enemy_visual_component_bake(_key, _data, "body", -1, _visual.bake.body_canvas_size),
             core: sc_enemy_visual_component_bake(_key, _data, "core", -1, _visual.bake.core_canvas_size),
             thrust: sc_enemy_visual_component_bake(_key, _data, "thrust", -1, _visual.bake.thrust_canvas_size),
+            shield: _data.stats_base.shield_max > 0
+                ? sc_enemy_visual_component_bake(_key, _data, "shield", -1, _visual.bake.body_canvas_size)
+                : -1,
+
             hardpoints: array_create(_hardpoint_count, -1),
             fragments: array_create(_fragment_count, -1)
         };
@@ -63,9 +67,21 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
 
     switch (_component)
     {
-        case "body": _visual.draw.body(_centre, _centre, _visual.radius, 0, _visual); break;
-        case "core": _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual, 1); break;
-        case "thrust": _visual.thrust.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1); break;
+        case "body":
+            _visual.draw.body(_centre, _centre, _visual.radius, 0, _visual);
+        break;
+
+        case "core":
+            _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual, 1);
+        break;
+
+        case "thrust":
+            _visual.thrust.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1);
+        break;
+
+        case "shield":
+            sc_visual_shield_bake_draw(_centre, _centre, _visual.radius, _visual.palette);
+        break;
 
         case "hardpoint":
             var _hardpoint = _data.hardpoints[_component_index];
@@ -99,6 +115,7 @@ function sc_enemy_visual_cache_get(_enemy_key)
 {
     if (!variable_global_exists("enemy_visual_cache")) return undefined;
     if (!variable_struct_exists(global.enemy_visual_cache, _enemy_key)) return undefined;
+
     return variable_struct_get(global.enemy_visual_cache, _enemy_key);
 }
 
@@ -116,6 +133,7 @@ function sc_enemy_visual_cache_destroy()
         if (sprite_exists(_cache.body)) sprite_delete(_cache.body);
         if (sprite_exists(_cache.core)) sprite_delete(_cache.core);
         if (sprite_exists(_cache.thrust)) sprite_delete(_cache.thrust);
+        if (sprite_exists(_cache.shield)) sprite_delete(_cache.shield);
 
         for (var _h = 0; _h < array_length(_cache.hardpoints); _h++)
             if (sprite_exists(_cache.hardpoints[_h])) sprite_delete(_cache.hardpoints[_h]);
