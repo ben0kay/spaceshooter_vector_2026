@@ -29,6 +29,7 @@ function sc_enemy_register_twin_fighter()
         visual: {
             radius: 58,
             palette: sc_faction_palette_get(Faction.SIMULANT),
+			death_script: sc_particles_simulant_enemy_death,
 
             draw: {
                 body: sc_enemy_twin_fighter_body_draw,

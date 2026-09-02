@@ -616,7 +616,9 @@ function sc_enemy_damage(_enemy, _packet)
         _data.state = EnemyState.DEAD;
         sc_enemy_attack_cancel(_enemy);
 
-        // Insert enemy death effect, drops and audio here.
+        _data.visual.death_script(_enemy.x, _enemy.y, _data.visual.radius);
+
+        // Insert drops and enemy destruction audio here later.
         instance_destroy(_enemy);
     }
 

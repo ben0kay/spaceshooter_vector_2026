@@ -241,3 +241,27 @@ function sc_particles_simulant_thrust(
 
     return true;
 }
+
+/// @description Emits one Simulant enemy destruction burst above gameplay entities.
+function sc_particles_simulant_enemy_death(_x, _y, _radius)
+{
+    var _types = sc_particles_group_get("simulant");
+    if (!is_struct(_types)) return false;
+
+    var _system = global.particles.impact_system;
+    var _scale = max(0.8, _radius / 58);
+
+    part_type_size(_types.ignition, 0.45 * _scale, 0.6 * _scale, 0.1 * _scale, 0);
+    part_particles_create(_system, _x, _y, _types.ignition, 2);
+
+    part_type_direction(_types.trail, 0, 359, 0, 0);
+    part_type_size(_types.trail, 0.18 * _scale, 0.38 * _scale, -0.006, 0.04);
+    part_particles_create(_system, _x, _y, _types.trail, 18);
+
+    part_type_direction(_types.trail, 0, 359, 0, 0);
+    part_type_size(_types.trail, 0.08 * _scale, 0.16 * _scale, -0.003, 0.02);
+    part_particles_create(_system, _x, _y, _types.trail, 10);
+
+    // Insert Simulant destruction audio and debris here later.
+    return true;
+}
