@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_register_ship",
+  "%Name":"sc_plyr_register",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_register_ship",
+  "name":"sc_plyr_register",
   "parent":{
     "name":"player",
     "path":"folders/scripts/player.yy",
