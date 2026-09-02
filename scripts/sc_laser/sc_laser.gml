@@ -59,7 +59,7 @@ function sc_weapon_register_shard_laser()
     });
 }
 
-/// @description Registers small detached aqua embers for the Shard laser.
+/// @description Registers bright detached aqua embers for the Shard laser.
 function sc_shard_laser_particles_register()
 {
     var _p = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
@@ -72,12 +72,12 @@ function sc_shard_laser_particles_register()
     }
 
     part_type_sprite(_ember, s_blur, false, false, false);
-    part_type_size(_ember, 0.025, 0.065, -0.0015, 0.012);
+    part_type_size(_ember, 0.055, 0.12, -0.002, 0.018);
     part_type_colour3(_ember, _p.core, _p.energy, _p.glow);
-    part_type_alpha3(_ember, 0.9, 0.55, 0);
-    part_type_speed(_ember, 0.35, 1.4, -0.025, 0.08);
+    part_type_alpha3(_ember, 1, 0.72, 0);
+    part_type_speed(_ember, 0.6, 1.8, -0.025, 0.12);
     part_type_direction(_ember, 0, 359, 0, 0);
-    part_type_life(_ember, 14, 26);
+    part_type_life(_ember, 24, 42);
     part_type_blend(_ember, true);
 
     return sc_particles_group_register("beam_shard_laser", {
@@ -85,35 +85,41 @@ function sc_shard_laser_particles_register()
     });
 }
 
-/// @description Emits detached embers from random points along the active beam.
+/// @description Spews visible energy embers from random points along the active beam.
 function sc_shard_laser_particles_emit(_area, _data)
 {
-    if ((GAME_TICK mod 2) != 0) return;
-
     var _particles = sc_particles_group_get("beam_shard_laser");
     if (!is_struct(_particles)) return;
 
     var _length = _data.geometry.length;
-    if (_length < 50) return;
+    if (_length < 40) return;
 
-    var _distance = random_range(28, _length);
-    var _side = random_range(-_data.geometry.radius * 0.8, _data.geometry.radius * 0.8);
+    var _distance = random_range(24, _length);
+    var _side_direction = choose(-1, 1);
+    var _side_offset = random_range(_data.geometry.radius * 0.3, _data.geometry.radius);
     var _x = _area.x
         + lengthdir_x(_distance, _data.direction)
-        + lengthdir_x(_side, _data.direction + 90);
+        + lengthdir_x(_side_offset * _side_direction, _data.direction + 90);
 
     var _y = _area.y
         + lengthdir_y(_distance, _data.direction)
-        + lengthdir_y(_side, _data.direction + 90);
+        + lengthdir_y(_side_offset * _side_direction, _data.direction + 90);
+
+    var _ember_direction = _data.direction + 90 * _side_direction + random_range(-32, 32);
 
     part_type_direction(
         _particles.ember,
-        _data.direction + 55,
-        _data.direction + 305,
+        _ember_direction - 10,
+        _ember_direction + 10,
         0, 0
     );
 
-    part_particles_create(global.particles.impact_system, _x, _y, _particles.ember, irandom_range(1, 2));
+    part_particles_create(
+        global.particles.impact_system,
+        _x, _y,
+        _particles.ember,
+        irandom_range(2, 3)
+    );
 }
 
 /// @description Draws the extending, pulsing and visually unstable Shard laser.
