@@ -105,34 +105,64 @@ function sc_ship_shard_cannon_draw(_x, _y, _radius, _angle, _visual, _stage)
     sc_visual_circle(_x, _y, _radius, _angle, 0.7, 0, 0.032, _p.core, false);
 }
 
-/// @description Draws one Shard muzzle-flash animation frame for startup baking.
+/// @description Draws one bright Shard muzzle-flash animation frame for startup baking.
 function sc_ship_shard_muzzle_flash_draw(_x, _y, _radius, _angle, _visual, _frame, _frame_count)
 {
     var _p = _visual.palette;
     var _progress = _frame_count > 1 ? _frame / (_frame_count - 1) : 0;
-    var _power = 1 - _progress;
-    var _length = _radius * lerp(0.48, 0.18, _progress);
-    var _width = _radius * lerp(0.24, 0.08, _progress);
+    var _power = 1 - _progress * 0.72;
+    var _length = _radius * lerp(0.72, 0.28, _progress);
+    var _width = _radius * lerp(0.34, 0.13, _progress);
     var _tip_x = _x + lengthdir_x(_length, _angle);
     var _tip_y = _y + lengthdir_y(_length, _angle);
 
-    draw_set_alpha(0.28 * _power);
+    draw_set_alpha(0.48 * _power);
     draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _width * 1.65, false);
+    draw_circle(_x, _y, _width * 1.9, false);
 
-    draw_set_alpha(0.75 * _power);
+    draw_set_alpha(0.82 * _power);
     draw_set_colour(_p.energy);
     draw_triangle(
-        _x + lengthdir_x(-_width, _angle + 90), _y + lengthdir_y(-_width, _angle + 90),
-        _tip_x, _tip_y,
-        _x + lengthdir_x(_width, _angle + 90), _y + lengthdir_y(_width, _angle + 90),
+        _x + lengthdir_x(-_width, _angle + 90),
+        _y + lengthdir_y(-_width, _angle + 90),
+        _tip_x,
+        _tip_y,
+        _x + lengthdir_x(_width, _angle + 90),
+        _y + lengthdir_y(_width, _angle + 90),
+        false
+    );
+
+    var _side_length = _length * 0.55;
+    var _side_width = _width * 1.35;
+
+    draw_set_alpha(0.72 * _power);
+    draw_set_colour(_p.energy);
+    draw_triangle(
+        _x,
+        _y,
+        _x + lengthdir_x(_side_length, _angle - 28),
+        _y + lengthdir_y(_side_length, _angle - 28),
+        _x + lengthdir_x(_side_width, _angle - 90),
+        _y + lengthdir_y(_side_width, _angle - 90),
+        false
+    );
+    draw_triangle(
+        _x,
+        _y,
+        _x + lengthdir_x(_side_width, _angle + 90),
+        _y + lengthdir_y(_side_width, _angle + 90),
+        _x + lengthdir_x(_side_length, _angle + 28),
+        _y + lengthdir_y(_side_length, _angle + 28),
         false
     );
 
     draw_set_alpha(_power);
     draw_set_colour(_p.core);
-    draw_line_width(_x, _y, _tip_x, _tip_y, max(2, _width * 0.42));
-    draw_circle(_x, _y, max(1, _width * 0.45), false);
+    draw_line_width(_x, _y, _tip_x, _tip_y, max(3, _width * 0.48));
+    draw_circle(_x, _y, max(2, _width * 0.58), false);
+
+    draw_set_colour(c_white);
+    draw_circle(_x, _y, max(1, _width * 0.24), false);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
