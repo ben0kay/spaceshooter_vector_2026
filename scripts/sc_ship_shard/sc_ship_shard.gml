@@ -30,17 +30,18 @@ function sc_ship_register_shard()
         },
 
         starting_loadout: {
-            primary: "weapon_shard_pulse",
-            primary_slot: 0,
-            primary_slots: [
-                "weapon_shard_pulse",
-                "weapon_shard_minigun",
-                undefined,
-                undefined
-            ],
+		    primary: "weapon_shard_pulse",
+		    primary_slot: 0,
 
-            secondary: undefined
-        }
+		    primary_slots: [
+		        "weapon_shard_pulse",
+		        "weapon_shard_minigun",
+		        "weapon_shard_laser",
+		        "weapon_shard_rocket"
+		    ],
+
+		    secondary: undefined
+		}
     });
 }
 
