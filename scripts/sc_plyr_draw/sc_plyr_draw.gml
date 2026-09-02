@@ -1,4 +1,4 @@
-/// @description Draws the player's current primitive fallback or baked layered ship.
+/// @description Draws the player's baked layered ship with its shield above the ship.
 function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shield)
 {
     var _visual = _player.ship.visual;
@@ -15,18 +15,20 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _radius = _visual.radius;
     var _thrust_power = _runtime.thrust_power;
 
-    if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
-    {
-        var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
-        sc_visual_shield_sprite_draw(_cache.shield, _player.x, _player.y, _angle, _visual.palette, _shield_ratio, _runtime.shield_hit_alpha, _alpha);
-    }
-
     if (_draw_thrust && _thrust_power > 0.01 && sprite_exists(_cache.thrust))
     {
         var _thrust_x = _player.x + lengthdir_x(-_radius * 0.92, _angle);
         var _thrust_y = _player.y + lengthdir_y(-_radius * 0.92, _angle);
         var _flicker = 0.94 + sin(GAME_TICK * 0.38 + _runtime.thrust_phase) * 0.06;
-        draw_sprite_ext(_cache.thrust, 0, _thrust_x, _thrust_y, (0.3 + _thrust_power * 0.9) * _flicker, 0.85 + _thrust_power * 0.2, _angle + 180, _colour, _thrust_power * _alpha);
+
+        draw_sprite_ext(
+            _cache.thrust, 0, _thrust_x, _thrust_y,
+            (0.3 + _thrust_power * 0.9) * _flicker,
+            0.85 + _thrust_power * 0.2,
+            _angle + 180,
+            _colour,
+            _thrust_power * _alpha
+        );
     }
 
     var _hull_stage = sc_player_damage_visual_stage(_player.defence.hull.current, _player.defence.hull.maximum);
@@ -39,34 +41,97 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
-        var _hinge_y = _player.y + lengthdir_y(_hinge_forward, _angle) + lengthdir_y(_hinge_side * _side, _angle + 90);
-        draw_sprite_ext(_cache.wing_hull[_hull_stage], 0, _hinge_x, _hinge_y, 1, _side, _angle + _fold * _side, _colour, _alpha);
+        var _hinge_x = _player.x
+            + lengthdir_x(_hinge_forward, _angle)
+            + lengthdir_x(_hinge_side * _side, _angle + 90);
+
+        var _hinge_y = _player.y
+            + lengthdir_y(_hinge_forward, _angle)
+            + lengthdir_y(_hinge_side * _side, _angle + 90);
+
+        draw_sprite_ext(
+            _cache.wing_hull[_hull_stage], 0,
+            _hinge_x, _hinge_y,
+            1, _side,
+            _angle + _fold * _side,
+            _colour, _alpha
+        );
     }
 
-    draw_sprite_ext(_cache.hull[_hull_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
+    draw_sprite_ext(
+        _cache.hull[_hull_stage], 0,
+        _player.x, _player.y,
+        1, 1, _angle,
+        _colour, _alpha
+    );
 
     if (_armour_visible)
     {
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            var _hinge_x = _player.x + lengthdir_x(_hinge_forward, _angle) + lengthdir_x(_hinge_side * _side, _angle + 90);
-            var _hinge_y = _player.y + lengthdir_y(_hinge_forward, _angle) + lengthdir_y(_hinge_side * _side, _angle + 90);
-            draw_sprite_ext(_cache.wing_armour[_armour_stage], 0, _hinge_x, _hinge_y, 1, _side, _angle + _fold * _side, _colour, _alpha);
+            var _hinge_x = _player.x
+                + lengthdir_x(_hinge_forward, _angle)
+                + lengthdir_x(_hinge_side * _side, _angle + 90);
+
+            var _hinge_y = _player.y
+                + lengthdir_y(_hinge_forward, _angle)
+                + lengthdir_y(_hinge_side * _side, _angle + 90);
+
+            draw_sprite_ext(
+                _cache.wing_armour[_armour_stage], 0,
+                _hinge_x, _hinge_y,
+                1, _side,
+                _angle + _fold * _side,
+                _colour, _alpha
+            );
         }
 
-        draw_sprite_ext(_cache.armour[_armour_stage], 0, _player.x, _player.y, 1, 1, _angle, _colour, _alpha);
+        draw_sprite_ext(
+            _cache.armour[_armour_stage], 0,
+            _player.x, _player.y,
+            1, 1, _angle,
+            _colour, _alpha
+        );
     }
 
     if (sprite_exists(_cache.core))
     {
         var _core = _visual.core;
-        var _core_x = _player.x + lengthdir_x(_core.forward * _radius, _angle) + lengthdir_x(_core.side * _radius, _angle + 90);
-        var _core_y = _player.y + lengthdir_y(_core.forward * _radius, _angle) + lengthdir_y(_core.side * _radius, _angle + 90);
-        draw_sprite_ext(_cache.core, 0, _core_x, _core_y, 1, 1, _angle + _runtime.core_angle, _colour, _alpha);
+        var _core_x = _player.x
+            + lengthdir_x(_core.forward * _radius, _angle)
+            + lengthdir_x(_core.side * _radius, _angle + 90);
+
+        var _core_y = _player.y
+            + lengthdir_y(_core.forward * _radius, _angle)
+            + lengthdir_y(_core.side * _radius, _angle + 90);
+
+        draw_sprite_ext(
+            _cache.core, 0,
+            _core_x, _core_y,
+            1, 1,
+            _angle + _runtime.core_angle,
+            _colour, _alpha
+        );
     }
 
     sc_player_hardpoints_draw(_player, _colour, _alpha);
+
+    // Draw shield last so its field, outline and hit pulse remain visible.
+    if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
+    {
+        var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
+
+        sc_visual_shield_sprite_draw(
+            _cache.shield,
+            _player.x,
+            _player.y,
+            _angle,
+            _visual.palette,
+            _shield_ratio,
+            _runtime.shield_hit_alpha,
+            _alpha
+        );
+    }
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

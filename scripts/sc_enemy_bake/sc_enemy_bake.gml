@@ -77,7 +77,9 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
         break;
 
         case "shield":
-            sc_visual_shield_bake_draw(_centre, _centre, _visual.radius, _visual.palette);
+            var _radius_forward = _visual.radius * _data.collision.radius_forward_scale;
+            var _radius_side = _visual.radius * _data.collision.radius_side_scale;
+            sc_visual_shield_bake_draw(_centre, _centre, _radius_forward, _radius_side, _visual.palette);
         break;
 
         case "hardpoint":

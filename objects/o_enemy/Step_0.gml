@@ -1,3 +1,4 @@
+/// @description Updates the enemy state and synchronizes its rotated collision mask.
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_enemy_perception_update(id);
@@ -25,3 +26,5 @@ switch (enemy.state)
         // Future death pipeline.
     break;
 }
+
+image_angle = draw_angle;

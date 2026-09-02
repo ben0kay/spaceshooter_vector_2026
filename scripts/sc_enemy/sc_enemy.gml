@@ -21,7 +21,8 @@ function sc_enemy_init(_enemy, _enemy_key)
         movement: { velocity_x: 0, velocity_y: 0 },
 
         collision: {
-            radius: _radius * _data.collision.radius_scale,
+            radius_forward: _radius * _data.collision.radius_forward_scale,
+            radius_side: _radius * _data.collision.radius_side_scale,
             blocks_player: _data.collision.blocks_player
         },
 
@@ -37,7 +38,9 @@ function sc_enemy_init(_enemy, _enemy_key)
     var _final = _runtime.stats.final;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
-    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision.radius))
+    _enemy.draw_angle = 0;
+
+    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision))
         return false;
 
     _runtime.defence = {
@@ -87,7 +90,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         cooldown_until: 0
     };
 
-    _enemy.draw_angle = 0;
     _enemy.initialized = true;
 
     global.level.enemies_alive++;
@@ -427,30 +429,13 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     // Insert muzzle flash and weapon audio here.
 }
 
-/// @description Draws one enemy using shared baked components.
+/// @description Draws one enemy using shared baked components with its shield above the ship.
 function sc_enemy_draw(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _runtime = _visual.runtime;
     var _defence = _data.defence;
-
-    // Shield is drawn first so its filled field remains behind the ship.
-    if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
-    {
-        var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
-
-        sc_visual_shield_sprite_draw(
-            _runtime.shield_sprite,
-            _enemy.x,
-            _enemy.y,
-            _enemy.draw_angle,
-            _visual.palette,
-            _shield_ratio,
-            _runtime.shield_hit_alpha,
-            1
-        );
-    }
 
     for (var _i = 0; _i < array_length(_data.thrusters); _i++)
     {
@@ -507,6 +492,23 @@ function sc_enemy_draw(_enemy)
             draw_sprite_ext(_hardpoint.runtime.sprite, 0, _hardpoint_x, _hardpoint_y, 1, 1, _angle, c_white, 1);
         else
             _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _angle, _visual, 1);
+    }
+
+    // Draw shield last so its field, outline and damage pulse remain visible.
+    if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
+    {
+        var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
+
+        sc_visual_shield_sprite_draw(
+            _runtime.shield_sprite,
+            _enemy.x,
+            _enemy.y,
+            _enemy.draw_angle,
+            _visual.palette,
+            _shield_ratio,
+            _runtime.shield_hit_alpha,
+            1
+        );
     }
 }
 

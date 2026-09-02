@@ -29,9 +29,10 @@ function sc_enemy_register_twin_fighter()
         visual: sc_enemy_twin_fighter_visual_data(),
 
         collision: {
-            radius_scale: 0.62,
-            blocks_player: true
-        },
+		    radius_forward_scale: 1.2,
+		    radius_side_scale: 0.75,
+		    blocks_player: true
+		},
 
         hardpoints: [
             {
