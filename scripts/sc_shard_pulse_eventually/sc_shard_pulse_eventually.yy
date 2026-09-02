@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_shard_pulse",
+  "%Name":"sc_shard_pulse_eventually",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_shard_pulse",
+  "name":"sc_shard_pulse_eventually",
   "parent":{
     "name":"projectiles",
     "path":"folders/scripts/player/projectiles.yy",

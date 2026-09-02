@@ -99,7 +99,7 @@
     {"id":{"name":"sc_pulse","path":"scripts/sc_pulse/sc_pulse.yy",},},
     {"id":{"name":"sc_register_ship_old_move","path":"scripts/sc_register_ship_old_move/sc_register_ship_old_move.yy",},},
     {"id":{"name":"sc_rocket","path":"scripts/sc_rocket/sc_rocket.yy",},},
-    {"id":{"name":"sc_shard_pulse","path":"scripts/sc_shard_pulse/sc_shard_pulse.yy",},},
+    {"id":{"name":"sc_shard_pulse_eventually","path":"scripts/sc_shard_pulse_eventually/sc_shard_pulse_eventually.yy",},},
     {"id":{"name":"sc_ship_select","path":"scripts/sc_ship_select/sc_ship_select.yy",},},
     {"id":{"name":"sc_ship_shard","path":"scripts/sc_ship_shard/sc_ship_shard.yy",},},
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
