@@ -1,3 +1,11 @@
+/// @description Returns squared distance between two points without a square root.
+function sc_point_distance_sq(_x1, _y1, _x2, _y2)
+{
+    var _dx = _x2 - _x1;
+    var _dy = _y2 - _y1;
+    return _dx * _dx + _dy * _dy;
+}
+
 /// @description Creates one reusable attack area and resolves its first damage tick immediately.
 function sc_attack_area_create(_definition, _source, _x, _y, _direction, _layer)
 {
@@ -74,12 +82,12 @@ function sc_attack_area_point_segment_distance_sq(_px, _py, _x1, _y1, _x2, _y2)
     var _length_sq = _vx * _vx + _vy * _vy;
 
     if (_length_sq <= 0)
-        return point_distance_squared(_px, _py, _x1, _y1);
+        return sc_point_distance_sq(_px, _py, _x1, _y1);
 
     var _progress = clamp(((_px - _x1) * _vx + (_py - _y1) * _vy) / _length_sq, 0, 1);
     var _nearest_x = _x1 + _vx * _progress;
     var _nearest_y = _y1 + _vy * _progress;
-    return point_distance_squared(_px, _py, _nearest_x, _nearest_y);
+    return sc_point_distance_sq(_px, _py, _nearest_x, _nearest_y);
 }
 
 /// @description Collects possible entities using one inexpensive native broad-phase query.
@@ -139,7 +147,7 @@ function sc_attack_area_target_inside(_area, _target)
     {
         case AttackAreaShape.CIRCLE:
             var _radius = _geometry.radius + _target_radius;
-            return point_distance_squared(_area.x, _area.y, _target.x, _target.y) <= _radius * _radius;
+            return sc_point_distance_sq(_area.x, _area.y, _target.x, _target.y) <= _radius * _radius;
 
         case AttackAreaShape.CAPSULE:
             var _end_x = _area.x + lengthdir_x(_geometry.length, _data.direction);

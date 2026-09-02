@@ -35,7 +35,7 @@ function sc_projectile_target_find(_projectile, _range)
         if (_candidate == _data.source.owner_id) continue;
         if (_candidate.entity.faction == _data.source.faction) continue;
 
-        var _distance_sq = point_distance_squared(
+        var _distance_sq = sc_point_distance_sq(
             _projectile.x, _projectile.y,
             _candidate.x, _candidate.y
         );
