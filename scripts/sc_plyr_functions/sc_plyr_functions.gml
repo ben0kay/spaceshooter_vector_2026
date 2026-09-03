@@ -162,7 +162,7 @@ function sc_player_resources_update(_player)
         _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
 }
 
-/// @description Updates ordinary acceleration and held-Shift boost.
+/// @description Updates acceleration, directional efficiency and held-Shift boost.
 function sc_player_normal_movement_update(_player)
 {
     var _movement = _player.movement;
@@ -181,7 +181,18 @@ function sc_player_normal_movement_update(_player)
         }
     }
 
-    var _speed_max = _stats.speed_max;
+    var _alignment = 1;
+
+    if (_movement.moving)
+    {
+        var _travel_direction = _movement.speed > 0.05
+            ? point_direction(0, 0, _movement.velocity_x, _movement.velocity_y)
+            : point_direction(0, 0, _movement.input_x, _movement.input_y);
+
+        _alignment = (dcos(angle_difference(_travel_direction, _player.draw_angle)) + 1) * 0.5;
+    }
+
+    var _speed_max = _stats.speed_max * lerp(_stats.directional_speed_min, 1, _alignment);
     if (_movement.boost.active) _speed_max *= _stats.boost_speed_multiplier;
 
     var _target_vx = _movement.moving ? _movement.input_x * _speed_max : 0;
@@ -480,7 +491,7 @@ function sc_player_thrust_ignition_emit(_player, _power)
     return true;
 }
 
-/// @description Updates player visual animation and registered thruster particles.
+/// @description Updates visual animation and emits interpolated registered thrusters.
 function sc_player_visual_update(_player)
 {
     var _visual = _player.ship.visual;
@@ -488,9 +499,18 @@ function sc_player_visual_update(_player)
     if (!is_struct(_runtime.cache)) return;
 
     var _movement = _player.movement;
-    var _speed_max = _player.ship.stats.final.speed_max;
-    var _speed_ratio = _speed_max > 0 ? clamp(_movement.speed / _speed_max, 0, 1) : 0;
-    var _thrust_target = _speed_ratio;
+    var _stats = _player.ship.stats.final;
+    var _speed_ratio = _stats.speed_max > 0 ? clamp(_movement.speed / _stats.speed_max, 0, 1) : 0;
+    var _alignment = 1;
+
+    if (_movement.speed > 0.05)
+    {
+        var _travel_direction = point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
+        _alignment = (dcos(angle_difference(_travel_direction, _player.draw_angle)) + 1) * 0.5;
+    }
+
+    var _thrust_alignment = lerp(_stats.directional_thrust_min, 1, _alignment);
+    var _thrust_target = _speed_ratio * _thrust_alignment;
     var _was_active = _runtime.thrust_power > 0.05;
 
     _runtime.thrust_power = lerp(_runtime.thrust_power, _thrust_target, _thrust_target > _runtime.thrust_power ? 0.2 : 0.12);
@@ -506,16 +526,28 @@ function sc_player_visual_update(_player)
     {
         var _thrust = _visual.thrust;
         var _radius = _visual.radius;
-        var _angle = _player.draw_angle;
-        var _direction = _angle + 180;
+        var _distance = point_distance(_movement.previous_x, _movement.previous_y, _player.x, _player.y);
+        var _spacing = _dashing ? 6 : 8;
+        var _step_max = _dashing ? 4 : 3;
+        var _steps = clamp(ceil(_distance / _spacing), 1, _step_max);
+        var _angle_change = angle_difference(_player.draw_angle, _movement.previous_angle);
 
-        for (var _i = 0; _i < array_length(_thrust.mounts); _i++)
+        for (var _step = 1; _step <= _steps; _step++)
         {
-            var _mount = _thrust.mounts[_i];
-            var _x = _player.x + lengthdir_x(_mount.forward * _radius, _angle) + lengthdir_x(_mount.side * _radius, _angle + 90);
-            var _y = _player.y + lengthdir_y(_mount.forward * _radius, _angle) + lengthdir_y(_mount.side * _radius, _angle + 90);
+            var _amount = _step / _steps;
+            var _base_x = lerp(_movement.previous_x, _player.x, _amount);
+            var _base_y = lerp(_movement.previous_y, _player.y, _amount);
+            var _angle = _movement.previous_angle + _angle_change * _amount;
+            var _direction = _angle + 180;
 
-            _thrust.particle_script(_x, _y, _direction, _runtime.thrust_power, _mount.scale, _boosting, _dashing);
+            for (var _i = 0; _i < array_length(_thrust.mounts); _i++)
+            {
+                var _mount = _thrust.mounts[_i];
+                var _x = _base_x + lengthdir_x(_mount.forward * _radius, _angle) + lengthdir_x(_mount.side * _radius, _angle + 90);
+                var _y = _base_y + lengthdir_y(_mount.forward * _radius, _angle) + lengthdir_y(_mount.side * _radius, _angle + 90);
+
+                _thrust.particle_script(_x, _y, _direction, _runtime.thrust_power, _mount.scale, _boosting, _dashing);
+            }
         }
     }
 

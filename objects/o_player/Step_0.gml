@@ -1,6 +1,11 @@
 /// @description Updates the player state and synchronizes its rotated collision mask.
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
+// Preserve the previous transform for interpolated thruster emission.
+movement.previous_x = x;
+movement.previous_y = y;
+movement.previous_angle = draw_angle;
+
 sc_player_movement_runtime_update(id);
 
 if (global.PlayerState != PlayerState.DESTROYED)

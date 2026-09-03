@@ -16,6 +16,7 @@ function sc_ship_register_shard()
             cargo_capacity: 12,
 
             speed_max: 10, acceleration: 0.6, deceleration: 0.7, turn_speed: 10,
+            directional_speed_min: 0.72, directional_thrust_min: 0.28,
             damage_multiplier: 1, fire_rate_multiplier: 1,
 
             boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
@@ -31,13 +32,13 @@ function sc_ship_register_shard()
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
-    primary: [
-        { key: "primary_left", x: 5, y: -32, angle: 0, muzzle_forward: 25, scale: 0.9 },
-        { key: "primary_right", x: 5, y: 32, angle: 0, muzzle_forward: 25, scale: 0.9 }
-    ],
+            primary: [
+                { key: "primary_left", x: 5, y: -32, angle: 0, muzzle_forward: 25, scale: 0.9 },
+                { key: "primary_right", x: 5, y: 32, angle: 0, muzzle_forward: 25, scale: 0.9 }
+            ],
 
-    utility: []
-},
+            utility: []
+        },
 
         starting_loadout: {
             primary: "weapon_shard_pulse",
@@ -625,34 +626,32 @@ function sc_particles_register_shard()
         return false;
     }
 
-    // Dense outer blue flame.
+    // Short-lived overlapping flame avoids comb trails while turning.
     part_type_sprite(_outer, s_particle_trail_white_beam, false, false, false);
     part_type_colour3(_outer, make_colour_rgb(0, 65, 210), make_colour_rgb(0, 175, 255), make_colour_rgb(35, 235, 255));
     part_type_alpha3(_outer, 0.78, 0.52, 0);
-    part_type_speed(_outer, 0.4, 1.1, -0.025, 0);
-    part_type_life(_outer, 10, 15);
+    part_type_speed(_outer, 0.15, 0.55, -0.02, 0);
+    part_type_life(_outer, 3, 5);
     part_type_orientation(_outer, 180, 180, 0, 0, true);
     part_type_blend(_outer, true);
 
-    // Bright white-aqua flame centre.
     part_type_sprite(_inner, s_particle_trail_white_beam, false, false, false);
     part_type_colour3(_inner, c_white, make_colour_rgb(175, 255, 255), make_colour_rgb(15, 195, 255));
     part_type_alpha3(_inner, 1, 0.68, 0);
-    part_type_speed(_inner, 0.6, 1.35, -0.03, 0);
-    part_type_life(_inner, 8, 13);
+    part_type_speed(_inner, 0.2, 0.7, -0.025, 0);
+    part_type_life(_inner, 2, 4);
     part_type_orientation(_inner, 180, 180, 0, 0, true);
     part_type_blend(_inner, true);
 
-    // Occasional orange combustion inside the blue flame.
+    // Softer fire is allowed to detach and linger slightly longer.
     part_type_sprite(_fire, s_particle_firesmoke_trail_color, false, false, false);
     part_type_colour1(_fire, c_white);
-    part_type_alpha3(_fire, 0.34, 0.2, 0);
-    part_type_speed(_fire, 0.45, 1.15, -0.025, 0);
-    part_type_life(_fire, 8, 13);
+    part_type_alpha3(_fire, 0.3, 0.16, 0);
+    part_type_speed(_fire, 0.4, 1, -0.025, 0);
+    part_type_life(_fire, 7, 11);
     part_type_orientation(_fire, 180, 180, 0, 0, true);
     part_type_blend(_fire, false);
 
-    // Expanding ignition ring.
     part_type_sprite(_ring, s_particle_ring_v2, false, false, false);
     part_type_colour2(_ring, c_white, make_colour_rgb(25, 225, 255));
     part_type_alpha2(_ring, 0.95, 0);
@@ -661,7 +660,6 @@ function sc_particles_register_shard()
     part_type_orientation(_ring, 0, 359, 0, 2, false);
     part_type_blend(_ring, true);
 
-    // Bright engine ignition flash.
     part_type_sprite(_flash, s_particle_exposion_star, false, false, false);
     part_type_colour2(_flash, c_white, make_colour_rgb(25, 225, 255));
     part_type_alpha3(_flash, 1, 0.65, 0);
@@ -670,12 +668,11 @@ function sc_particles_register_shard()
     part_type_orientation(_flash, 0, 359, 0, 5, false);
     part_type_blend(_flash, true);
 
-    // Strong arrow-shaped boost and dodge wake.
     part_type_sprite(_dash, s_particle_trail_white_arrow, false, false, false);
     part_type_colour3(_dash, c_white, make_colour_rgb(40, 235, 255), make_colour_rgb(0, 80, 220));
     part_type_alpha3(_dash, 0.9, 0.58, 0);
-    part_type_speed(_dash, 0.8, 1.8, -0.04, 0);
-    part_type_life(_dash, 9, 15);
+    part_type_speed(_dash, 0.35, 0.9, -0.03, 0);
+    part_type_life(_dash, 3, 5);
     part_type_orientation(_dash, 180, 180, 0, 0, true);
     part_type_blend(_dash, true);
 
