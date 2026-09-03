@@ -64,7 +64,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         var _hardpoint = _runtime.hardpoints[_i];
         var _sprite = is_struct(_cache) && _i < array_length(_cache.hardpoints) ? _cache.hardpoints[_i] : -1;
 
-        // Old hardpoints remain fixed without requiring definition changes.
         if (!variable_struct_exists(_hardpoint, "rotation"))
             _hardpoint.rotation = { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true };
 
@@ -97,7 +96,9 @@ function sc_enemy_init(_enemy, _enemy_key)
         hardpoint_cursor: 0,
         volley_count: 0,
         next_fire_tick: 0,
-        cooldown_until: 0
+        cooldown_until: 0,
+        attack_end_tick: 0,
+        active_deliveries: []
     };
 
     _enemy.initialized = true;
@@ -343,14 +344,43 @@ function sc_enemy_update_attacking(_enemy)
     sc_enemy_attack_update(_enemy);
 }
 
-/// @description Cancels the currently active attack volley.
+/// @description Releases active deliveries and cancels the current enemy attack.
 function sc_enemy_attack_cancel(_enemy)
 {
     var _runtime = _enemy.enemy.attack_controller.runtime;
+
+    for (var _i = 0; _i < array_length(_runtime.active_deliveries); _i++)
+    {
+        var _delivery = _runtime.active_deliveries[_i].delivery_id;
+        if (instance_exists(_delivery)) sc_beam_release(_delivery);
+    }
+
+    _runtime.active_deliveries = [];
     _runtime.active = false;
     _runtime.current_attack = -1;
     _runtime.hardpoint_cursor = 0;
     _runtime.volley_count = 0;
+    _runtime.attack_end_tick = 0;
+}
+
+/// @description Completes one enemy attack and begins its registered cooldown.
+function sc_enemy_attack_finish(_enemy, _cooldown)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+
+    for (var _i = 0; _i < array_length(_runtime.active_deliveries); _i++)
+    {
+        var _delivery = _runtime.active_deliveries[_i].delivery_id;
+        if (instance_exists(_delivery)) sc_beam_release(_delivery);
+    }
+
+    _runtime.active_deliveries = [];
+    _runtime.active = false;
+    _runtime.current_attack = -1;
+    _runtime.hardpoint_cursor = 0;
+    _runtime.volley_count = 0;
+    _runtime.attack_end_tick = 0;
+    _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
 /// @description Chooses an attack using the configured selection method.
@@ -390,7 +420,151 @@ function sc_enemy_attack_select(_enemy)
     return 0;
 }
 
-/// @description Updates attack timing using final enemy fire-rate stats.
+/// @description Resolves one hardpoint muzzle and attack direction into a reusable transform.
+function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform)
+{
+    var _data = _enemy.enemy;
+    var _hardpoint = _data.hardpoints[_hardpoint_index];
+    var _radius = _data.visual.radius;
+    var _mount_angle = _hardpoint.runtime.aim_angle;
+    var _forward = _hardpoint.forward * _radius;
+    var _side = _hardpoint.side * _radius;
+    var _recoil = _hardpoint.runtime.recoil;
+
+    var _mount_x = _enemy.x
+        + lengthdir_x(_forward, _enemy.draw_angle)
+        + lengthdir_x(_side, _enemy.draw_angle + 90)
+        - lengthdir_x(_recoil, _mount_angle);
+
+    var _mount_y = _enemy.y
+        + lengthdir_y(_forward, _enemy.draw_angle)
+        + lengthdir_y(_side, _enemy.draw_angle + 90)
+        - lengthdir_y(_recoil, _mount_angle);
+
+    _transform.x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward * _radius, _mount_angle);
+    _transform.y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward * _radius, _mount_angle);
+    _transform.direction = _mount_angle;
+
+    if (_hardpoint.rotation.mode == HardpointRotation.FIXED)
+    {
+        switch (_attack.aim.mode)
+        {
+            case AimMode.TARGET:
+                _transform.direction = point_direction(_transform.x, _transform.y, _data.target_id.x, _data.target_id.y);
+            break;
+
+            case AimMode.TARGET_LEAD:
+                // Target-leading solution goes here later.
+                _transform.direction = point_direction(_transform.x, _transform.y, _data.target_id.x, _data.target_id.y);
+            break;
+
+            case AimMode.WORLD:
+                _transform.direction = _attack.aim.world_direction;
+            break;
+        }
+    }
+    else if (_attack.aim.mode == AimMode.WORLD)
+        _transform.direction = _attack.aim.world_direction;
+
+    _transform.direction += _attack.aim.angle_offset;
+    return _transform;
+}
+
+/// @description Fires one hardpoint and returns its created delivery instance.
+function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
+{
+    var _transform = { x: 0, y: 0, direction: 0 };
+    sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform);
+
+    var _direction = _transform.direction + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
+    var _delivery = sc_weapon_fire(
+        _enemy,
+        _attack.weapon_key,
+        _attack.shot,
+        _transform.x,
+        _transform.y,
+        _direction,
+        _enemy.enemy.stats.final.damage_multiplier
+    );
+
+    _enemy.enemy.hardpoints[_hardpoint_index].runtime.recoil = _enemy.enemy.visual.radius * 0.14;
+    return _delivery;
+}
+
+/// @description Creates every beam delivery required by the selected enemy beam attack.
+function sc_enemy_beam_attack_start(_enemy, _attack)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+    var _indices = _attack.hardpoint_indices;
+
+    switch (_attack.firing.order)
+    {
+        case HardpointFireOrder.ALL:
+            for (var _i = 0; _i < array_length(_indices); _i++)
+            {
+                var _beam = sc_enemy_attack_fire_hardpoint(_enemy, _attack, _indices[_i]);
+
+                if (instance_exists(_beam))
+                    array_push(_runtime.active_deliveries, {
+                        hardpoint_index: _indices[_i],
+                        delivery_id: _beam,
+                        x: 0, y: 0, direction: 0
+                    });
+            }
+        break;
+
+        case HardpointFireOrder.SEQUENTIAL:
+            var _index = _indices[_runtime.hardpoint_cursor];
+            var _beam = sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
+            _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_indices);
+
+            if (instance_exists(_beam))
+                array_push(_runtime.active_deliveries, {
+                    hardpoint_index: _index,
+                    delivery_id: _beam,
+                    x: 0, y: 0, direction: 0
+                });
+        break;
+
+        case HardpointFireOrder.RANDOM:
+            var _index = _indices[irandom(array_length(_indices) - 1)];
+            var _beam = sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
+
+            if (instance_exists(_beam))
+                array_push(_runtime.active_deliveries, {
+                    hardpoint_index: _index,
+                    delivery_id: _beam,
+                    x: 0, y: 0, direction: 0
+                });
+        break;
+    }
+
+    return array_length(_runtime.active_deliveries) > 0;
+}
+
+/// @description Keeps all active enemy beams attached to their moving hardpoints.
+function sc_enemy_beam_attack_sustain(_enemy, _attack)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+
+    for (var _i = array_length(_runtime.active_deliveries) - 1; _i >= 0; _i--)
+    {
+        var _active = _runtime.active_deliveries[_i];
+
+        if (!instance_exists(_active.delivery_id))
+        {
+            array_delete(_runtime.active_deliveries, _i, 1);
+            continue;
+        }
+
+        sc_enemy_hardpoint_attack_transform(_enemy, _attack, _active.hardpoint_index, _active);
+        sc_beam_sustain(_active.delivery_id, _active.x, _active.y, _active.direction);
+    }
+
+    return array_length(_runtime.active_deliveries) > 0;
+}
+
+/// @description Updates projectile volleys or sustained beam attacks.
 function sc_enemy_attack_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -407,11 +581,35 @@ function sc_enemy_attack_update(_enemy)
         _runtime.hardpoint_cursor = 0;
         _runtime.volley_count = 0;
         _runtime.next_fire_tick = GAME_TICK;
+        _runtime.active_deliveries = [];
+
+        var _attack = _controller.attacks[_runtime.current_attack];
+        var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
+
+        if (_weapon.delivery.type == AttackDelivery.BEAM)
+        {
+            _runtime.attack_end_tick = GAME_TICK + max(1, round(_attack.firing.duration));
+
+            if (!sc_enemy_beam_attack_start(_enemy, _attack))
+                sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
+
+            return;
+        }
+    }
+
+    var _attack = _controller.attacks[_runtime.current_attack];
+    var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
+
+    if (_weapon.delivery.type == AttackDelivery.BEAM)
+    {
+        if (GAME_TICK >= _runtime.attack_end_tick || !sc_enemy_beam_attack_sustain(_enemy, _attack))
+            sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
+
+        return;
     }
 
     if (GAME_TICK < _runtime.next_fire_tick) return;
 
-    var _attack = _controller.attacks[_runtime.current_attack];
     var _indices = _attack.hardpoint_indices;
 
     switch (_attack.firing.order)
@@ -436,78 +634,9 @@ function sc_enemy_attack_update(_enemy)
     _runtime.volley_count++;
 
     if (_runtime.volley_count >= _attack.firing.volley_max)
-    {
-        _runtime.active = false;
-        _runtime.current_attack = -1;
-        _runtime.cooldown_until = GAME_TICK + max(1, round(_attack.firing.cooldown / _fire_rate));
-    }
+        sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
     else
         _runtime.next_fire_tick = GAME_TICK + max(1, round(_attack.firing.interval / _fire_rate));
-}
-
-/// @description Resolves one hardpoint muzzle and fires its configured weapon.
-function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
-{
-    var _data = _enemy.enemy;
-    var _hardpoint = _data.hardpoints[_hardpoint_index];
-    var _radius = _data.visual.radius;
-    var _mount_angle = _hardpoint.runtime.aim_angle;
-    var _forward = _hardpoint.forward * _radius;
-    var _side = _hardpoint.side * _radius;
-    var _recoil = _hardpoint.runtime.recoil;
-
-    var _mount_x = _enemy.x
-        + lengthdir_x(_forward, _enemy.draw_angle)
-        + lengthdir_x(_side, _enemy.draw_angle + 90)
-        - lengthdir_x(_recoil, _mount_angle);
-
-    var _mount_y = _enemy.y
-        + lengthdir_y(_forward, _enemy.draw_angle)
-        + lengthdir_y(_side, _enemy.draw_angle + 90)
-        - lengthdir_y(_recoil, _mount_angle);
-
-    var _muzzle_distance = _hardpoint.muzzle_forward * _radius;
-    var _muzzle_x = _mount_x + lengthdir_x(_muzzle_distance, _mount_angle);
-    var _muzzle_y = _mount_y + lengthdir_y(_muzzle_distance, _mount_angle);
-    var _direction = _mount_angle;
-
-    // Fixed cannons retain the existing attack aiming behaviour.
-    if (_hardpoint.rotation.mode == HardpointRotation.FIXED)
-    {
-        switch (_attack.aim.mode)
-        {
-            case AimMode.TARGET:
-                _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
-            break;
-
-            case AimMode.TARGET_LEAD:
-                // Target-leading solution goes here later.
-                _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
-            break;
-
-            case AimMode.WORLD:
-                _direction = _attack.aim.world_direction;
-            break;
-        }
-    }
-    else if (_attack.aim.mode == AimMode.WORLD)
-        _direction = _attack.aim.world_direction;
-
-    _direction += _attack.aim.angle_offset + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
-
-    sc_weapon_fire(
-        _enemy,
-        _attack.weapon_key,
-        _attack.shot,
-        _muzzle_x,
-        _muzzle_y,
-        _direction,
-        _data.stats.final.damage_multiplier
-    );
-
-    _hardpoint.runtime.recoil = _radius * 0.14;
-
-    // Insert muzzle flash and weapon audio here.
 }
 
 /// @description Draws one enemy using shared baked components with its shield above the ship.

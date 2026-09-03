@@ -56,6 +56,12 @@ function sc_enemy_register_sim_dreadwing()
                 draw_script: sc_enemy_sim_dreadwing_cannon_draw
             },
             {
+                key: "beam_centre", group: "beam",
+                forward: 0.69, side: 0, angle: 0, muzzle_forward: 0.25,
+                rotation: { mode: HardpointRotation.TARGET, turn_speed: 1.8, arc: 65, return_to_rest: true },
+                draw_script: sc_enemy_simulant_thin_beam_emitter_draw
+            },
+            {
                 key: "cannon_inner_right", group: "cannons",
                 forward: 0.57, side: 0.37, angle: 0, muzzle_forward: 0.44,
                 rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.8, arc: 65, return_to_rest: true },
@@ -86,22 +92,29 @@ function sc_enemy_register_sim_dreadwing()
                     hardpoint_group: "cannons",
                     weapon_key: "weapon_simulant_pulse",
 
-                    aim: {
-                        mode: AimMode.TARGET,
-                        angle_offset: 0,
-                        inaccuracy: 2
-                    },
-
-                    shot: {
-                        pattern: ShotPattern.SINGLE,
-                        amount: 1
-                    },
+                    aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 2 },
+                    shot: { pattern: ShotPattern.SINGLE, amount: 1 },
 
                     firing: {
                         order: HardpointFireOrder.ALL,
                         interval: 24,
                         volley_max: 4,
                         cooldown: 150
+                    }
+                },
+                {
+                    key: "centre_beam",
+                    weight: 35,
+                    hardpoint_group: "beam",
+                    weapon_key: "weapon_simulant_thin_beam",
+
+                    aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 0 },
+                    shot: { pattern: ShotPattern.SINGLE, amount: 1 },
+
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        duration: 90,
+                        cooldown: 260
                     }
                 }
             ]

@@ -113,6 +113,7 @@
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
+    {"id":{"name":"sc_simulant_beam","path":"scripts/sc_simulant_beam/sc_simulant_beam.yy",},},
     {"id":{"name":"sc_simulant_weapons","path":"scripts/sc_simulant_weapons/sc_simulant_weapons.yy",},},
     {"id":{"name":"sc_stats","path":"scripts/sc_stats/sc_stats.yy",},},
     {"id":{"name":"sc_visual_helper","path":"scripts/sc_visual_helper/sc_visual_helper.yy",},},

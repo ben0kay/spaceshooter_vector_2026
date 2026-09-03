@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_simulant_beam",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_simulant_beam",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/scripts/enemy/factions/simulant/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
