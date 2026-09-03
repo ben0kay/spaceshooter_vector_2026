@@ -23,10 +23,14 @@ function sc_enemy_register_sim_skirmisher()
                 directional_thrust_min: 0.78
             },
 
-            detection_range: 1120,
-			retreat_range: 260,
-            combat_range: 760,
-            forget_range: 1320,
+            range: {
+		    detection: 1120,
+		    combat: 760,
+		    retreat: 260,
+		    forget: 1320,
+		    wander: 0,
+		    alert_share: 1200
+		},
 
             damage_multiplier: 1,
             fire_rate_multiplier: 1

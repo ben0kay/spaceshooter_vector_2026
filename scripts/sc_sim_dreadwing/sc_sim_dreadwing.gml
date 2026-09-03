@@ -31,10 +31,15 @@ function sc_enemy_register_sim_dreadwing()
                 directional_thrust_min: 0.42
             },
 
-            detection_range: 1340,
-			retreat_range: 420,
-            combat_range: 940,
-            forget_range: 1560,
+            // Simulant Dreadwing
+			range: {
+			    detection: 1340,
+			    combat: 940,
+			    retreat: 420,
+			    forget: 1560,
+			    wander: 0,
+			    alert_share: 1600
+			},
 
             damage_multiplier: 1.2,
             fire_rate_multiplier: 0.85

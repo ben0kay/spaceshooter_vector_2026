@@ -23,10 +23,14 @@ function sc_enemy_register_twin_fighter()
                 directional_thrust_min: 0.58
             },
 
-            detection_range: 1080,
-            combat_range: 840,
-			retreat_range: 300,
-            forget_range: 1280,
+		range: {
+            detection: 1080,
+            combat: 840,
+			retreat: 300,
+            forget: 1280,
+			wander: 0,
+			alert_share: 1200			
+		},
 
             damage_multiplier: 1,
             fire_rate_multiplier: 1
