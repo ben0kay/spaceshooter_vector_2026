@@ -23,31 +23,17 @@ function sc_particles_init()
     part_system_depth(_system, 10);
     part_system_depth(_impact_system, -10);
 
-    if (!sc_particles_register_simulant())
+    if (!sc_particles_register_simulant()
+    || !sc_particles_register_shard()
+    || !sc_particles_register_shockwave()
+    || !sc_particles_register_projectile_content()
+    || !sc_particles_register_weapon_content())
     {
         sc_particles_destroy();
         return false;
     }
 
-    if (!sc_particles_register_shard())
-    {
-        sc_particles_destroy();
-        return false;
-    }
-
-    if (!sc_particles_register_projectile_content())
-    {
-        sc_particles_destroy();
-        return false;
-    }
-
-    if (!sc_particles_register_weapon_content())
-    {
-        sc_particles_destroy();
-        return false;
-    }
-
-    // Register additional ship/faction particle families here.
+    // Register additional ship and faction particle families here.
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
 }
@@ -100,6 +86,7 @@ function sc_particles_register_weapon_content()
 
     return true;
 }
+
 /// @description Creates and tracks one owned particle type.
 function sc_particles_type_create()
 {

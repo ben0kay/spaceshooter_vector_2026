@@ -32,7 +32,27 @@ function sc_projectile_register_shard_rocket()
 
                 visual: {
                     palette: _palette,
-                    draw_script: sc_attack_area_shard_rocket_explosion_draw
+                    draw_script: sc_attack_area_shard_rocket_explosion_draw,
+
+                    shockwave: {
+                        radius_scale: 1.15,
+                        expansion_response: 0.2,
+                        fade_speed: 0.05,
+                        thickness: 4,
+                        colour: _palette.energy,
+
+                        particles_enabled: true,
+                        particle_interval: 1,
+                        particle_min_radius: 8,
+
+                        smoke_enabled: true,
+                        smoke_amount_max: 3,
+                        smoke_colour: make_colour_rgb(55, 80, 90),
+
+                        fragments_enabled: true,
+                        fragment_chance: 0.42,
+                        fragment_colour: _palette.energy
+                    }
                 }
             }
         },

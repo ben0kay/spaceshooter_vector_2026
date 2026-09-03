@@ -116,6 +116,10 @@ function sc_attack_area_standard_init(_area, _create)
 
     _area.draw_angle = _create.direction;
     _area.initialized = true;
+
+    if (variable_struct_exists(_area.attack_area.visual, "shockwave"))
+        sc_shockwave_create(_area.x, _area.y, _area.layer, _area.attack_area.visual.shockwave, _falloff_distance);
+
     sc_attack_area_damage_apply(_area);
     return true;
 }
