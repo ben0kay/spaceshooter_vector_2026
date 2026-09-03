@@ -33,48 +33,76 @@ function sc_particles_register_enemy_thrust()
     });
 }
 
-/// @description Emits a faction-coloured ignition burst scaled by ship radius, visual mass and mount size.
+/// @description Calculates shared enemy-thruster width and length factors.
+function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _length_config)
+{
+    var _config = global.config.visual.enemy_thrust;
+    var _radius_factor = clamp(_ship_radius / _config.radius_reference, _config.radius_factor_min, _config.radius_factor_max);
+    var _mass_factor = clamp(_visual_mass, _config.visual_mass_min, _config.visual_mass_max);
+
+    return {
+        width: _mount_scale * lerp(_config.width_base, _radius_factor, _config.width_radius_mix),
+        length: _mount_scale * (_length_config.length_base + _mass_factor * _length_config.mass_weight)
+            * lerp(_length_config.power_min, _length_config.power_max, _power),
+        mass: _mass_factor
+    };
+}
+
+/// @description Emits a faction-coloured ignition burst scaled by radius, visual mass and mount size.
 function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_scale, _ship_radius, _visual_mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
-    var _size_factor = clamp(_ship_radius / 52, 0.65, 2.5);
-    var _mass_factor = clamp(_visual_mass, 0.5, 3);
-    var _width = _mount_scale * lerp(0.8, _size_factor, 0.72);
-    var _length = _mount_scale * (0.7 + _mass_factor * 0.45) * lerp(0.8, 1.3, _power);
-    var _trail_count = clamp(ceil(_width * 4), 3, 8);
+    var _config = global.config.visual.enemy_thrust.ignition;
+    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _config);
+    var _width = _scale.width;
+    var _length = _scale.length;
+    var _trail_count = clamp(ceil(_width * _config.trail_count_scale), _config.trail_count_min, _config.trail_count_max);
 
     part_type_colour2(_types.ignition, _palette.core, _palette.energy);
-    part_type_size(_types.ignition, 0.22 * _width, 0.34 * _width, 0.065 * _width, 0);
-    part_type_life(_types.ignition, round(10 + _mass_factor * 2), round(14 + _mass_factor * 3));
+    part_type_size(_types.ignition, _config.ring_size_min * _width, _config.ring_size_max * _width, _config.ring_growth * _width, 0);
+    part_type_life(_types.ignition,
+        round(_config.life_min_base + _scale.mass * _config.life_min_mass),
+        round(_config.life_max_base + _scale.mass * _config.life_max_mass)
+    );
     part_particles_create(global.particles.system, _x, _y, _types.ignition, 1);
 
     part_type_colour3(_types.trail, _palette.core, _palette.energy, _palette.glow);
-    part_type_direction(_types.trail, _direction - 20, _direction + 20, 0, 0);
-    part_type_size(_types.trail, 0.14 * _width, 0.3 * _width, -0.005, 0.035 * _width);
-    part_type_speed(_types.trail, 1.2 * _length, 3.2 * _length, -0.04, 0);
-    part_type_life(_types.trail, round(10 + 4 * _length), round(16 + 7 * _length));
+    part_type_direction(_types.trail, _direction - _config.trail_spread, _direction + _config.trail_spread, 0, 0);
+    part_type_size(_types.trail, _config.trail_size_min * _width, _config.trail_size_max * _width,
+        _config.trail_shrink, _config.trail_growth * _width);
+    part_type_speed(_types.trail, _config.trail_speed_min * _length, _config.trail_speed_max * _length,
+        _config.trail_speed_reduce, 0);
+    part_type_life(_types.trail,
+        round(_config.trail_life_min_base + _config.trail_life_min_length * _length),
+        round(_config.trail_life_max_base + _config.trail_life_max_length * _length)
+    );
     part_particles_create(global.particles.system, _x, _y, _types.trail, _trail_count);
     return true;
 }
 
-/// @description Emits continuous faction-coloured exhaust; radius controls width while mass and speed control length.
+/// @description Emits continuous faction-coloured exhaust scaled by radius, visual mass and movement power.
 function sc_particles_enemy_thrust_emit(_x, _y, _direction, _power, _mount_scale, _ship_radius, _visual_mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
-    var _size_factor = clamp(_ship_radius / 52, 0.65, 2.5);
-    var _mass_factor = clamp(_visual_mass, 0.5, 3);
-    var _width = _mount_scale * lerp(0.8, _size_factor, 0.72);
-    var _length = _mount_scale * (0.65 + _mass_factor * 0.42) * lerp(0.55, 1.75, _power);
-    var _side_offset = random_range(-2.5, 2.5) * _width;
+    var _config = global.config.visual.enemy_thrust.trail;
+    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _config);
+    var _width = _scale.width;
+    var _length = _scale.length;
+    var _side_offset = random_range(-_config.side_spread, _config.side_spread) * _width;
     var _emit_x = _x + lengthdir_x(_side_offset, _direction + 90);
     var _emit_y = _y + lengthdir_y(_side_offset, _direction + 90);
-    var _count = _width >= 1.25 ? 2 : 1;
+    var _count = _width >= _config.wide_threshold ? _config.count_wide : _config.count_normal;
 
     part_type_colour3(_types.trail, _palette.core, _palette.energy, _palette.glow);
-    part_type_direction(_types.trail, _direction - 7, _direction + 7, 0, 0);
-    part_type_size(_types.trail, 0.1 * _width, (0.15 + 0.1 * _power) * _width, -0.004, 0.018 * _width);
-    part_type_speed(_types.trail, 0.8 * _length, 2.3 * _length, -0.025, 0);
-    part_type_life(_types.trail, round(11 + 4 * _length), round(17 + 7 * _length));
+    part_type_direction(_types.trail, _direction - _config.direction_spread, _direction + _config.direction_spread, 0, 0);
+    part_type_size(_types.trail, _config.size_min * _width,
+        (_config.size_max_base + _config.size_max_power * _power) * _width,
+        _config.shrink, _config.growth * _width);
+    part_type_speed(_types.trail, _config.speed_min * _length, _config.speed_max * _length, _config.speed_reduce, 0);
+    part_type_life(_types.trail,
+        round(_config.life_min_base + _config.life_min_length * _length),
+        round(_config.life_max_base + _config.life_max_length * _length)
+    );
     part_particles_create(global.particles.system, _emit_x, _emit_y, _types.trail, _count);
     return true;
 }

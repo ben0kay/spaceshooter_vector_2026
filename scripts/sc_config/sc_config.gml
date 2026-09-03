@@ -3,14 +3,44 @@ function sc_config_init()
 {
     global.config = {
         visual: {
-			
-			ship_motion: {
-                side_amount: 0.6,
-                side_speed: 0.018,
-                forward_amount: 1.2,
-                forward_speed: 0.012
+            ship_motion: {
+                side_amount: 0.6, side_speed: 0.018,
+                forward_amount: 1.2, forward_speed: 0.012
             },
-			
+
+            enemy_thrust: {
+                active_power_min: 0.05, emit_power_min: 0.15, emit_interval: 3,
+                radius_reference: 52, radius_factor_min: 0.65, radius_factor_max: 2.5,
+                visual_mass_min: 0.5, visual_mass_max: 3,
+                width_base: 0.8, width_radius_mix: 0.72,
+
+                ignition: {
+                    length_base: 0.7, mass_weight: 0.45,
+                    power_min: 0.8, power_max: 1.3,
+                    ring_size_min: 0.22, ring_size_max: 0.34, ring_growth: 0.065,
+                    life_min_base: 10, life_min_mass: 2,
+                    life_max_base: 14, life_max_mass: 3,
+                    trail_spread: 20, trail_size_min: 0.14, trail_size_max: 0.3,
+                    trail_shrink: -0.005, trail_growth: 0.035,
+                    trail_speed_min: 1.2, trail_speed_max: 3.2, trail_speed_reduce: -0.04,
+                    trail_life_min_base: 10, trail_life_min_length: 4,
+                    trail_life_max_base: 16, trail_life_max_length: 7,
+                    trail_count_scale: 4, trail_count_min: 3, trail_count_max: 8
+                },
+
+                trail: {
+                    length_base: 0.65, mass_weight: 0.42,
+                    power_min: 0.55, power_max: 1.75,
+                    direction_spread: 7, side_spread: 2.5,
+                    size_min: 0.1, size_max_base: 0.15, size_max_power: 0.1,
+                    shrink: -0.004, growth: 0.018,
+                    speed_min: 0.8, speed_max: 2.3, speed_reduce: -0.025,
+                    life_min_base: 11, life_min_length: 4,
+                    life_max_base: 17, life_max_length: 7,
+                    wide_threshold: 1.25, count_normal: 1, count_wide: 2
+                }
+            },
+
             shield: {
                 radius_scale: 1.28,
                 field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,
@@ -63,7 +93,7 @@ function sc_config_init()
                 { name: "Corrosive", shield_multiplier: 0.55, armour_multiplier: 1.3, hull_multiplier: 1.2, default_effect: DamageEffect.CORROSION }
             ],
 
-                        effects: [
+            effects: [
                 { name: "None", chance: 0, duration: 0, strength: 0, tick_interval: 0 },
                 { name: "Disruption", chance: 0.25, duration: 180, strength: 0.25, tick_interval: 0 },
                 { name: "Burn", chance: 0.2, duration: 180, strength: 0.15, tick_interval: 30 },
@@ -71,15 +101,15 @@ function sc_config_init()
                 { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
             ]
         },
-			
-		enemy: {
+
+        enemy: {
             separation: {
                 strength: 0.14,
                 maximum_push: 0.8,
                 position_correction: 0.18
             },
-			
-			wander: {
+
+            wander: {
                 speed_scale: 0.45,
                 arrival_radius: 32,
                 wait_min: 60,
@@ -87,7 +117,7 @@ function sc_config_init()
                 candidate_attempts: 4,
                 edge_margin: 24
             }
-        },
+        }
     };
 
     return true;

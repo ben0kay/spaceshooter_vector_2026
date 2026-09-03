@@ -183,6 +183,7 @@ function sc_enemy_visual_update(_enemy)
     var _movement = _data.movement;
     var _speed_max = _data.stats.final.handling.speed_max;
     var _has_target = instance_exists(_data.target_id);
+    var _thrust_config = global.config.visual.enemy_thrust;
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
@@ -234,7 +235,7 @@ function sc_enemy_visual_update(_enemy)
     {
         var _thruster = _data.thrusters[_i];
         var _runtime = _thruster.runtime;
-        var _active = _target_power > 0.05;
+        var _active = _target_power > _thrust_config.active_power_min;
         var _forward = _thruster.forward * _visual.radius;
         var _side = _thruster.side * _visual.radius;
         var _thruster_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
@@ -242,13 +243,16 @@ function sc_enemy_visual_update(_enemy)
         var _thruster_angle = _enemy.draw_angle + _thruster.angle;
 
         if (_active && !_runtime.active)
-            _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _target_power, _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
+            _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _target_power,
+                _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
 
         _runtime.active = _active;
         _runtime.power = lerp(_runtime.power, _target_power, _target_power > _runtime.power ? 0.22 : 0.12);
 
-        if (_runtime.power > 0.15 && ((GAME_TICK + _runtime.phase) mod 3) == 0)
-            _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power, _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
+        if (_runtime.power > _thrust_config.emit_power_min
+        && ((GAME_TICK + _runtime.phase) mod _thrust_config.emit_interval) == 0)
+            _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power,
+                _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
     }
 }
 
