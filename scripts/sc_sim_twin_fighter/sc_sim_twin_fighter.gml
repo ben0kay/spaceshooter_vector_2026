@@ -29,47 +29,19 @@ function sc_enemy_register_twin_fighter()
         visual: sc_enemy_twin_fighter_visual_data(),
 
         collision: {
-		    radius_forward_scale: 1.2,
-		    radius_side_scale: 0.75,
-		    blocks_player: true
-		},
+            radius_forward_scale: 1.35,
+            radius_side_scale: 0.82,
+            blocks_player: true
+        },
 
         hardpoints: [
-            {
-                key: "cannon_left",
-                group: "cannons",
-                forward: 0.83,
-                side: -0.48,
-                angle: 0,
-                muzzle_forward: 0.48,
-                draw_script: sc_enemy_twin_fighter_cannon_draw
-            },
-            {
-                key: "cannon_right",
-                group: "cannons",
-                forward: 0.83,
-                side: 0.48,
-                angle: 0,
-                muzzle_forward: 0.48,
-                draw_script: sc_enemy_twin_fighter_cannon_draw
-            }
+            { key: "cannon_left", group: "cannons", forward: 0.48, side: -0.56, angle: 0, muzzle_forward: 0.82, draw_script: sc_enemy_twin_fighter_cannon_draw },
+            { key: "cannon_right", group: "cannons", forward: 0.48, side: 0.56, angle: 0, muzzle_forward: 0.82, draw_script: sc_enemy_twin_fighter_cannon_draw }
         ],
 
         thrusters: [
-            {
-                key: "thruster_left",
-                forward: -0.86,
-                side: -0.32,
-                angle: 180,
-                scale: 0.9
-            },
-            {
-                key: "thruster_right",
-                forward: -0.86,
-                side: 0.32,
-                angle: 180,
-                scale: 0.9
-            }
+            { key: "thruster_left", forward: -0.92, side: -0.29, angle: 180, scale: 0.82 },
+            { key: "thruster_right", forward: -0.92, side: 0.29, angle: 180, scale: 0.82 }
         ],
 
         attack_controller: {
@@ -110,7 +82,6 @@ function sc_enemy_twin_fighter_visual_data()
 {
     return {
         radius: 58,
-
         palette: sc_faction_palette_get(Faction.SIMULANT),
 
         draw: {
@@ -120,7 +91,6 @@ function sc_enemy_twin_fighter_visual_data()
 
         death: {
             script: sc_enemy_twin_fighter_death,
-
             draw_scripts: [
                 sc_enemy_twin_fighter_fragment_front_draw,
                 sc_enemy_twin_fighter_fragment_left_draw,
@@ -137,286 +107,209 @@ function sc_enemy_twin_fighter_visual_data()
         bake: {
             body_canvas_size: 256,
             core_canvas_size: 128,
-            hardpoint_canvas_size: 128,
+            hardpoint_canvas_size: 160,
             thrust_canvas_size: 128,
             fragment_canvas_size: 192
         }
     };
 }
 
-/// @description Draws the longer Twin Fighter layered gunmetal body.
+/// @description Draws the heavy dark twin-nacelle Simulant Fighter body.
 function sc_enemy_twin_fighter_body_draw(_x, _y, _radius, _angle, _visual)
 {
-    var _palette = _visual.palette;
+    var _p = _visual.palette;
 
-    var _nose_x = _x + lengthdir_x(_radius * 1.32, _angle);
-    var _nose_y = _y + lengthdir_y(_radius * 1.32, _angle);
-    var _tail_x = _x + lengthdir_x(-_radius * 1.14, _angle);
-    var _tail_y = _y + lengthdir_y(-_radius * 1.14, _angle);
-
-    // Main elongated central hull.
-    var _front_top_x = _x + lengthdir_x(_radius * 0.62, _angle) + lengthdir_x(-_radius * 0.31, _angle + 90);
-    var _front_top_y = _y + lengthdir_y(_radius * 0.62, _angle) + lengthdir_y(-_radius * 0.31, _angle + 90);
-    var _front_bottom_x = _x + lengthdir_x(_radius * 0.62, _angle) + lengthdir_x(_radius * 0.31, _angle + 90);
-    var _front_bottom_y = _y + lengthdir_y(_radius * 0.62, _angle) + lengthdir_y(_radius * 0.31, _angle + 90);
-    var _rear_top_x = _x + lengthdir_x(-_radius * 0.82, _angle) + lengthdir_x(-_radius * 0.38, _angle + 90);
-    var _rear_top_y = _y + lengthdir_y(-_radius * 0.82, _angle) + lengthdir_y(-_radius * 0.38, _angle + 90);
-    var _rear_bottom_x = _x + lengthdir_x(-_radius * 0.82, _angle) + lengthdir_x(_radius * 0.38, _angle + 90);
-    var _rear_bottom_y = _y + lengthdir_y(-_radius * 0.82, _angle) + lengthdir_y(_radius * 0.38, _angle + 90);
-
-    draw_set_colour(_palette.hull_dark);
-    draw_triangle(_nose_x, _nose_y, _front_top_x, _front_top_y, _rear_top_x, _rear_top_y, false);
-    draw_triangle(_nose_x, _nose_y, _rear_top_x, _rear_top_y, _tail_x, _tail_y, false);
-    draw_triangle(_nose_x, _nose_y, _tail_x, _tail_y, _rear_bottom_x, _rear_bottom_y, false);
-    draw_triangle(_nose_x, _nose_y, _rear_bottom_x, _rear_bottom_y, _front_bottom_x, _front_bottom_y, false);
+    // Main compact central chassis.
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.18, 0, 0.57, -0.29, 0.57, 0.29, _p.hull_dark, false);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.57, -0.29, -0.5, -0.36, -0.5, 0.36, 0.57, 0.29, _p.hull_dark);
+    sc_visual_quad(_x, _y, _radius, _angle, -0.5, -0.36, -1.01, -0.23, -1.01, 0.23, -0.5, 0.36, _p.hull_dark);
 
     // Raised central armour.
-    var _plate_front_x = _x + lengthdir_x(_radius * 0.78, _angle);
-    var _plate_front_y = _y + lengthdir_y(_radius * 0.78, _angle);
-    var _plate_rear_x = _x + lengthdir_x(-_radius * 0.68, _angle);
-    var _plate_rear_y = _y + lengthdir_y(-_radius * 0.68, _angle);
-    var _plate_top_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(-_radius * 0.24, _angle + 90);
-    var _plate_top_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(-_radius * 0.24, _angle + 90);
-    var _plate_bottom_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(_radius * 0.24, _angle + 90);
-    var _plate_bottom_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(_radius * 0.24, _angle + 90);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.08, 0, 0.48, -0.18, -0.48, -0.17, _p.hull_mid, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.08, 0, -0.48, 0.17, 0.48, 0.18, _p.hull_mid, false);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.36, -0.13, -0.44, -0.14, -0.73, 0, 0.36, 0, _p.hull_light);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.36, 0, -0.73, 0, -0.44, 0.14, 0.36, 0.13, _p.hull_light);
 
-    draw_set_colour(_palette.hull_mid);
-    draw_triangle(_plate_front_x, _plate_front_y, _plate_top_x, _plate_top_y, _plate_rear_x, _plate_rear_y, false);
-    draw_triangle(_plate_front_x, _plate_front_y, _plate_rear_x, _plate_rear_y, _plate_bottom_x, _plate_bottom_y, false);
+    // Sharp nose armour.
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.18, 0, 0.67, -0.11, 0.78, 0, _p.metal, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.18, 0, 0.78, 0, 0.67, 0.11, _p.metal, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.09, 0, 0.73, -0.065, 0.59, 0, _p.hull_dark, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.09, 0, 0.59, 0, 0.73, 0.065, _p.hull_dark, false);
 
-    draw_set_colour(_palette.hull_light);
-    draw_line_width(_plate_front_x, _plate_front_y, _plate_top_x, _plate_top_y, 2);
-    draw_line_width(_plate_top_x, _plate_top_y, _plate_rear_x, _plate_rear_y, 2);
-    draw_line_width(_plate_rear_x, _plate_rear_y, _plate_bottom_x, _plate_bottom_y, 2);
-    draw_line_width(_plate_bottom_x, _plate_bottom_y, _plate_front_x, _plate_front_y, 2);
-
-    // Mirrored segmented wings.
-    for (var _side_sign = -1; _side_sign <= 1; _side_sign += 2)
+    // Rear shoulder machinery and armour.
+    for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _wing_front_x = _x + lengthdir_x(_radius * 0.62, _angle) + lengthdir_x(_radius * 0.42 * _side_sign, _angle + 90);
-        var _wing_front_y = _y + lengthdir_y(_radius * 0.62, _angle) + lengthdir_y(_radius * 0.42 * _side_sign, _angle + 90);
-        var _wing_tip_x = _x + lengthdir_x(_radius * 0.06, _angle) + lengthdir_x(_radius * 1.07 * _side_sign, _angle + 90);
-        var _wing_tip_y = _y + lengthdir_y(_radius * 0.06, _angle) + lengthdir_y(_radius * 1.07 * _side_sign, _angle + 90);
-        var _wing_rear_x = _x + lengthdir_x(-_radius * 0.98, _angle) + lengthdir_x(_radius * 0.78 * _side_sign, _angle + 90);
-        var _wing_rear_y = _y + lengthdir_y(-_radius * 0.98, _angle) + lengthdir_y(_radius * 0.78 * _side_sign, _angle + 90);
-        var _wing_inner_x = _x + lengthdir_x(-_radius * 0.66, _angle) + lengthdir_x(_radius * 0.37 * _side_sign, _angle + 90);
-        var _wing_inner_y = _y + lengthdir_y(-_radius * 0.66, _angle) + lengthdir_y(_radius * 0.37 * _side_sign, _angle + 90);
+        sc_visual_quad(_x, _y, _radius, _angle, 0.42, 0.25 * _side, 0.02, 0.48 * _side, -0.62, 0.51 * _side, -0.79, 0.29 * _side, _p.hull_dark);
+        sc_visual_quad(_x, _y, _radius, _angle, 0.3, 0.28 * _side, -0.04, 0.41 * _side, -0.52, 0.43 * _side, -0.66, 0.29 * _side, _p.hull_mid);
 
-        draw_set_colour(_palette.hull_dark);
-        draw_triangle(_wing_front_x, _wing_front_y, _wing_tip_x, _wing_tip_y, _wing_inner_x, _wing_inner_y, false);
-        draw_triangle(_wing_tip_x, _wing_tip_y, _wing_rear_x, _wing_rear_y, _wing_inner_x, _wing_inner_y, false);
+        sc_visual_line(_x, _y, _radius, _angle, 0.42, 0.25 * _side, 0.02, 0.48 * _side, 2, _p.metal);
+        sc_visual_line(_x, _y, _radius, _angle, 0.02, 0.48 * _side, -0.62, 0.51 * _side, 2, _p.outline);
 
-        // Raised wing armour.
-        var _panel_front_x = _x + lengthdir_x(_radius * 0.43, _angle) + lengthdir_x(_radius * 0.48 * _side_sign, _angle + 90);
-        var _panel_front_y = _y + lengthdir_y(_radius * 0.43, _angle) + lengthdir_y(_radius * 0.48 * _side_sign, _angle + 90);
-        var _panel_outer_x = _x + lengthdir_x(-_radius * 0.08, _angle) + lengthdir_x(_radius * 0.87 * _side_sign, _angle + 90);
-        var _panel_outer_y = _y + lengthdir_y(-_radius * 0.08, _angle) + lengthdir_y(_radius * 0.87 * _side_sign, _angle + 90);
-        var _panel_rear_x = _x + lengthdir_x(-_radius * 0.78, _angle) + lengthdir_x(_radius * 0.66 * _side_sign, _angle + 90);
-        var _panel_rear_y = _y + lengthdir_y(-_radius * 0.78, _angle) + lengthdir_y(_radius * 0.66 * _side_sign, _angle + 90);
-        var _panel_inner_x = _x + lengthdir_x(-_radius * 0.48, _angle) + lengthdir_x(_radius * 0.42 * _side_sign, _angle + 90);
-        var _panel_inner_y = _y + lengthdir_y(-_radius * 0.48, _angle) + lengthdir_y(_radius * 0.42 * _side_sign, _angle + 90);
-
-        draw_set_colour(_palette.hull_mid);
-        draw_triangle(_panel_front_x, _panel_front_y, _panel_outer_x, _panel_outer_y, _panel_inner_x, _panel_inner_y, false);
-        draw_triangle(_panel_outer_x, _panel_outer_y, _panel_rear_x, _panel_rear_y, _panel_inner_x, _panel_inner_y, false);
-
-        draw_set_colour(_palette.hull_light);
-        draw_line_width(_wing_front_x, _wing_front_y, _wing_tip_x, _wing_tip_y, 2);
-        draw_line_width(_wing_tip_x, _wing_tip_y, _wing_rear_x, _wing_rear_y, 2);
-        draw_line_width(_panel_front_x, _panel_front_y, _panel_outer_x, _panel_outer_y, 2);
-        draw_line_width(_panel_outer_x, _panel_outer_y, _panel_rear_x, _panel_rear_y, 2);
-
-        // Recessed energy trench.
-        var _energy_front_x = _x + lengthdir_x(_radius * 0.35, _angle) + lengthdir_x(_radius * 0.53 * _side_sign, _angle + 90);
-        var _energy_front_y = _y + lengthdir_y(_radius * 0.35, _angle) + lengthdir_y(_radius * 0.53 * _side_sign, _angle + 90);
-        var _energy_rear_x = _x + lengthdir_x(-_radius * 0.58, _angle) + lengthdir_x(_radius * 0.58 * _side_sign, _angle + 90);
-        var _energy_rear_y = _y + lengthdir_y(-_radius * 0.58, _angle) + lengthdir_y(_radius * 0.58 * _side_sign, _angle + 90);
-
-        draw_set_colour(_palette.accent);
-        draw_line_width(_energy_front_x, _energy_front_y, _energy_rear_x, _energy_rear_y, 3);
-
-        // Cannon housing aligned with hardpoint forward 0.83, side 0.48.
-        var _mount_x = _x + lengthdir_x(_radius * 0.83, _angle) + lengthdir_x(_radius * 0.48 * _side_sign, _angle + 90);
-        var _mount_y = _y + lengthdir_y(_radius * 0.83, _angle) + lengthdir_y(_radius * 0.48 * _side_sign, _angle + 90);
-
-        draw_set_colour(_palette.void);
-        draw_circle(_mount_x, _mount_y, _radius * 0.2, false);
-
-        draw_set_colour(_palette.metal);
-        draw_circle(_mount_x, _mount_y, _radius * 0.2, true);
-
-        draw_set_colour(_palette.energy);
-        draw_circle(_mount_x, _mount_y, _radius * 0.09, true);
+        // Purple recessed trench.
+        sc_visual_line(_x, _y, _radius, _angle, 0.17, 0.36 * _side, -0.46, 0.39 * _side, 6, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.16, 0.36 * _side, -0.45, 0.39 * _side, 2, _p.accent);
     }
 
-    // Central mechanical spine.
-    var _spine_front_x = _x + lengthdir_x(_radius * 1, _angle);
-    var _spine_front_y = _y + lengthdir_y(_radius * 1, _angle);
-    var _spine_rear_x = _x + lengthdir_x(-_radius * 0.96, _angle);
-    var _spine_rear_y = _y + lengthdir_y(-_radius * 0.96, _angle);
-
-    draw_set_colour(_palette.metal);
-    draw_line_width(_spine_rear_x, _spine_rear_y, _spine_front_x, _spine_front_y, 2);
-
-    // Rear energy channel.
-    draw_set_colour(_palette.accent);
-    draw_line_width(
-        _x + lengthdir_x(-_radius * 0.74, _angle),
-        _y + lengthdir_y(-_radius * 0.74, _angle),
-        _x + lengthdir_x(-_radius * 0.39, _angle),
-        _y + lengthdir_y(-_radius * 0.39, _angle),
-        3
-    );
-
-    // Nose armour highlights.
-    draw_set_colour(_palette.metal);
-    draw_line_width(_nose_x, _nose_y, _front_top_x, _front_top_y, 2);
-    draw_line_width(_nose_x, _nose_y, _front_bottom_x, _front_bottom_y, 2);
-
-    // Two rear engine housings aligned with registered thrusters.
-    for (var _side_sign = -1; _side_sign <= 1; _side_sign += 2)
+    // Short upper/lower swept stabilizer fins.
+    for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _engine_x = _x + lengthdir_x(-_radius * 0.86, _angle) + lengthdir_x(_radius * 0.32 * _side_sign, _angle + 90);
-        var _engine_y = _y + lengthdir_y(-_radius * 0.86, _angle) + lengthdir_y(_radius * 0.32 * _side_sign, _angle + 90);
+        sc_visual_triangle(_x, _y, _radius, _angle, 0.13, 0.43 * _side, -0.18, 0.78 * _side, -0.61, 0.47 * _side, _p.hull_dark, false);
+        sc_visual_triangle(_x, _y, _radius, _angle, 0.06, 0.45 * _side, -0.18, 0.68 * _side, -0.5, 0.47 * _side, _p.hull_mid, false);
 
-        draw_set_colour(_palette.void);
-        draw_circle(_engine_x, _engine_y, _radius * 0.17, false);
+        sc_visual_line(_x, _y, _radius, _angle, 0.13, 0.43 * _side, -0.18, 0.78 * _side, 2, _p.metal);
+        sc_visual_line(_x, _y, _radius, _angle, -0.18, 0.78 * _side, -0.61, 0.47 * _side, 2, _p.outline);
 
-        draw_set_colour(_palette.hull_light);
-        draw_circle(_engine_x, _engine_y, _radius * 0.17, true);
-
-        draw_set_colour(_palette.metal);
-        draw_circle(_engine_x, _engine_y, _radius * 0.12, true);
-
-        draw_set_colour(_palette.energy);
-        draw_circle(_engine_x, _engine_y, _radius * 0.065, false);
-
-        draw_set_colour(_palette.core);
-        draw_circle(_engine_x, _engine_y, _radius * 0.025, false);
+        // Small violet fin detail.
+        sc_visual_line(_x, _y, _radius, _angle, -0.06, 0.51 * _side, -0.31, 0.62 * _side, 2, _p.accent);
     }
+
+    // Heavy mounting shoulders for the two long side cannons.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_quad(_x, _y, _radius, _angle, 0.64, 0.38 * _side, 0.35, 0.66 * _side, -0.18, 0.66 * _side, -0.39, 0.42 * _side, _p.void);
+        sc_visual_quad(_x, _y, _radius, _angle, 0.57, 0.41 * _side, 0.32, 0.59 * _side, -0.11, 0.59 * _side, -0.29, 0.43 * _side, _p.hull_mid);
+
+        sc_visual_line(_x, _y, _radius, _angle, 0.57, 0.41 * _side, 0.32, 0.59 * _side, 2, _p.hull_light);
+        sc_visual_line(_x, _y, _radius, _angle, -0.11, 0.59 * _side, -0.29, 0.43 * _side, 2, _p.metal);
+
+        // Circular hardpoint collar.
+        sc_visual_circle(_x, _y, _radius, _angle, 0.48, 0.56 * _side, 0.17, _p.void, false);
+        sc_visual_circle(_x, _y, _radius, _angle, 0.48, 0.56 * _side, 0.17, _p.metal, true);
+        sc_visual_circle(_x, _y, _radius, _angle, 0.48, 0.56 * _side, 0.075, _p.energy, true);
+    }
+
+    // Central reactor housing, deliberately slightly rearward.
+    sc_visual_circle(_x, _y, _radius, _angle, -0.23, 0, 0.34, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.23, 0, 0.34, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.23, 0, 0.27, _p.hull_light, true);
+
+    // Structural spine.
+    sc_visual_line(_x, _y, _radius, _angle, -0.92, 0, 1.05, 0, 5, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, -0.81, 0, 0.72, 0, 2, _p.metal);
+
+    // Small central violet conduit.
+    sc_visual_line(_x, _y, _radius, _angle, 0.07, 0, 0.52, 0, 4, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, 0.08, 0, 0.51, 0, 2, _p.accent);
+
+    // Twin rear engine housings.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_quad(_x, _y, _radius, _angle, -0.55, 0.16 * _side, -0.78, 0.34 * _side, -1.02, 0.3 * _side, -1.03, 0.13 * _side, _p.hull_mid);
+        sc_visual_line(_x, _y, _radius, _angle, -0.73, 0.23 * _side, -1, 0.21 * _side, 7, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.76, 0.23 * _side, -1.01, 0.21 * _side, 3, _p.energy);
+        sc_visual_circle(_x, _y, _radius, _angle, -1.01, 0.21 * _side, 0.045, _p.core, false);
+    }
+
+    // Neutral silhouette and armour highlights.
+    sc_visual_line(_x, _y, _radius, _angle, 1.18, 0, 0.57, -0.29, 2, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 1.18, 0, 0.57, 0.29, 2, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.57, -0.29, -0.5, -0.36, 1, _p.outline);
+    sc_visual_line(_x, _y, _radius, _angle, 0.57, 0.29, -0.5, 0.36, 1, _p.outline);
 }
 
-/// @description Draws one layered mechanical Twin Fighter cannon.
+/// @description Draws one long silver-gunmetal Twin Fighter pulse nacelle.
 function sc_enemy_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
-    var _palette = _visual.palette;
-    var _length = _radius * 0.48;
-    var _half_width = _radius * 0.115;
-    var _front_x = _x + lengthdir_x(_length, _angle);
-    var _front_y = _y + lengthdir_y(_length, _angle);
-    var _rear_x = _x + lengthdir_x(-_length * 0.22, _angle);
-    var _rear_y = _y + lengthdir_y(-_length * 0.22, _angle);
-    var _front_top_x = _front_x + lengthdir_x(-_half_width, _angle + 90);
-    var _front_top_y = _front_y + lengthdir_y(-_half_width, _angle + 90);
-    var _front_bottom_x = _front_x + lengthdir_x(_half_width, _angle + 90);
-    var _front_bottom_y = _front_y + lengthdir_y(_half_width, _angle + 90);
-    var _rear_top_x = _rear_x + lengthdir_x(-_half_width * 1.15, _angle + 90);
-    var _rear_top_y = _rear_y + lengthdir_y(-_half_width * 1.15, _angle + 90);
-    var _rear_bottom_x = _rear_x + lengthdir_x(_half_width * 1.15, _angle + 90);
-    var _rear_bottom_y = _rear_y + lengthdir_y(_half_width * 1.15, _angle + 90);
+    var _p = _visual.palette;
 
     draw_set_alpha(_alpha);
-    draw_set_colour(_palette.hull_dark);
-    draw_triangle(_rear_top_x, _rear_top_y, _front_top_x, _front_top_y, _front_bottom_x, _front_bottom_y, false);
-    draw_triangle(_rear_top_x, _rear_top_y, _front_bottom_x, _front_bottom_y, _rear_bottom_x, _rear_bottom_y, false);
 
-    draw_set_colour(_palette.hull_light);
-    draw_line_width(_rear_top_x, _rear_top_y, _front_top_x, _front_top_y, 2);
-    draw_line_width(_rear_bottom_x, _rear_bottom_y, _front_bottom_x, _front_bottom_y, 2);
+    // Dark attachment/breech.
+    sc_visual_quad(_x, _y, _radius, _angle, -0.32, -0.2, 0.02, -0.22, 0.02, 0.22, -0.32, 0.2, _p.hull_dark);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.2, 0, 0.2, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.2, 0, 0.2, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.2, 0, 0.08, _p.energy, true);
 
-    // Twin metallic barrel rails.
-    var _rail_offset = _half_width * 0.62;
+    // Main long silver tube.
+    sc_visual_quad(_x, _y, _radius, _angle, -0.02, -0.16, 0.75, -0.14, 0.75, 0.14, -0.02, 0.16, _p.hull_light);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.03, -0.1, 0.73, -0.09, 0.73, 0.09, 0.03, 0.1, _p.metal);
 
-    draw_set_colour(_palette.metal);
-    draw_line_width(
-        _rear_x + lengthdir_x(-_rail_offset, _angle + 90),
-        _rear_y + lengthdir_y(-_rail_offset, _angle + 90),
-        _front_x + lengthdir_x(-_rail_offset, _angle + 90),
-        _front_y + lengthdir_y(-_rail_offset, _angle + 90),
-        2
-    );
-    draw_line_width(
-        _rear_x + lengthdir_x(_rail_offset, _angle + 90),
-        _rear_y + lengthdir_y(_rail_offset, _angle + 90),
-        _front_x + lengthdir_x(_rail_offset, _angle + 90),
-        _front_y + lengthdir_y(_rail_offset, _angle + 90),
-        2
-    );
+    // Dark central barrel channel.
+    sc_visual_line(_x, _y, _radius, _angle, 0.04, 0, 0.82, 0, 8, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, 0.11, 0, 0.79, 0, 2, _p.accent);
 
-    // Central active conduit.
-    draw_set_colour(_palette.energy);
-    draw_line_width(_rear_x, _rear_y, _front_x, _front_y, 3);
+    // Segmented mechanical collars.
+    sc_visual_line(_x, _y, _radius, _angle, 0.17, -0.17, 0.17, 0.17, 3, _p.hull_dark);
+    sc_visual_line(_x, _y, _radius, _angle, 0.22, -0.15, 0.22, 0.15, 2, _p.accent);
+    sc_visual_line(_x, _y, _radius, _angle, 0.49, -0.15, 0.49, 0.15, 3, _p.hull_dark);
+    sc_visual_line(_x, _y, _radius, _angle, 0.54, -0.13, 0.54, 0.13, 2, _p.outline);
 
-    // Segmented barrel rings.
-    for (var _i = 1; _i <= 3; _i++)
+    // Metallic outer rails.
+    sc_visual_line(_x, _y, _radius, _angle, 0.02, -0.15, 0.74, -0.13, 2, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0.15, 0.74, 0.13, 2, _p.metal);
+
+    // Large square-ish muzzle housing.
+    sc_visual_quad(_x, _y, _radius, _angle, 0.68, -0.2, 0.88, -0.18, 0.88, 0.18, 0.68, 0.2, _p.hull_dark);
+    sc_visual_line(_x, _y, _radius, _angle, 0.69, -0.2, 0.88, -0.18, 2, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.69, 0.2, 0.88, 0.18, 2, _p.metal);
+
+    // Purple muzzle aperture.
+    sc_visual_circle(_x, _y, _radius, _angle, 0.87, 0, 0.145, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.87, 0, 0.145, _p.metal, true);
+
+    // Small machine-like emitter pattern.
+    for (var _i = 0; _i < 6; _i++)
     {
-        var _segment_distance = _length * (_i * 0.22);
-        var _segment_x = _x + lengthdir_x(_segment_distance, _angle);
-        var _segment_y = _y + lengthdir_y(_segment_distance, _angle);
-
-        draw_set_colour(_i == 2 ? _palette.accent : _palette.outline);
-        draw_line_width(
-            _segment_x + lengthdir_x(-_half_width, _angle + 90),
-            _segment_y + lengthdir_y(-_half_width, _angle + 90),
-            _segment_x + lengthdir_x(_half_width, _angle + 90),
-            _segment_y + lengthdir_y(_half_width, _angle + 90),
-            2
-        );
+        var _dir = _i * 60;
+        var _f1 = 0.87 + dcos(_dir) * 0.055;
+        var _s1 = dsin(_dir) * 0.055;
+        var _f2 = 0.87 + dcos(_dir) * 0.105;
+        var _s2 = dsin(_dir) * 0.105;
+        sc_visual_line(_x, _y, _radius, _angle, _f1, _s1, _f2, _s2, 2, _p.energy);
     }
 
-    // Bright muzzle aperture.
-    draw_set_colour(_palette.void);
-    draw_circle(_front_x, _front_y, _radius * 0.105, false);
-    draw_set_colour(_palette.metal);
-    draw_circle(_front_x, _front_y, _radius * 0.105, true);
-    draw_set_colour(_palette.core);
-    draw_circle(_front_x, _front_y, _radius * 0.045, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.87, 0, 0.055, _p.energy, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.87, 0, 0.022, _p.core, false);
 
     draw_set_alpha(1);
 }
 
-/// @description Draws the Twin Fighter's rotating mechanical energy core.
+/// @description Draws the Twin Fighter's rear-set rotating mechanical energy core.
 function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
-    var _palette = _visual.palette;
-    var _outer_radius = _radius * 0.34;
-    var _middle_radius = _radius * 0.24;
-    var _inner_radius = _radius * 0.12;
+    var _p = _visual.palette;
+    var _outer = _radius * 0.32;
+    var _middle = _radius * 0.23;
+    var _inner = _radius * 0.105;
+
+    draw_set_alpha(_alpha * 0.28);
+    draw_set_colour(_p.glow);
+    draw_circle(_x, _y, _outer * 1.38, false);
 
     draw_set_alpha(_alpha);
+    draw_set_colour(_p.void);
+    draw_circle(_x, _y, _outer, false);
 
-    draw_set_colour(_palette.void);
-    draw_circle(_x, _y, _outer_radius, false);
+    draw_set_colour(_p.metal);
+    draw_circle(_x, _y, _outer, true);
 
-    draw_set_colour(_palette.metal);
-    draw_circle(_x, _y, _outer_radius, true);
+    draw_set_colour(_p.hull_light);
+    draw_circle(_x, _y, _middle, true);
 
-    draw_set_colour(_palette.hull_light);
-    draw_circle(_x, _y, _middle_radius, true);
-
-    // Rotating mechanical-energy spokes.
-    for (var _i = 0; _i < 8; _i++)
+    // Rotating mechanical vanes.
+    for (var _i = 0; _i < 6; _i++)
     {
-        var _direction = _angle + _i * 45;
-        var _inner_x = _x + lengthdir_x(_middle_radius * 0.65, _direction);
-        var _inner_y = _y + lengthdir_y(_middle_radius * 0.65, _direction);
-        var _outer_x = _x + lengthdir_x(_outer_radius * 1.15, _direction);
-        var _outer_y = _y + lengthdir_y(_outer_radius * 1.15, _direction);
+        var _dir = _angle + _i * 60;
+        var _x1 = _x + lengthdir_x(_inner * 0.7, _dir);
+        var _y1 = _y + lengthdir_y(_inner * 0.7, _dir);
+        var _x2 = _x + lengthdir_x(_outer * 0.88, _dir + 15);
+        var _y2 = _y + lengthdir_y(_outer * 0.88, _dir + 15);
 
-        draw_set_colour((_i mod 2) == 0 ? _palette.energy : _palette.outline);
-        draw_line_width(_inner_x, _inner_y, _outer_x, _outer_y, (_i mod 2) == 0 ? 3 : 2);
+        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.outline);
+        draw_line_width(_x1, _y1, _x2, _y2, 2);
     }
 
-    draw_set_colour(_palette.accent);
-    draw_circle(_x, _y, _inner_radius * 1.45, true);
+    draw_set_colour(_p.accent);
+    draw_circle(_x, _y, _inner * 1.55, true);
 
-    draw_set_colour(_palette.energy);
-    draw_circle(_x, _y, _inner_radius, false);
+    draw_set_colour(_p.energy);
+    draw_circle(_x, _y, _inner, false);
 
-    draw_set_colour(_palette.core);
-    draw_circle(_x, _y, _inner_radius * 0.48, false);
+    draw_set_colour(_p.core);
+    draw_circle(_x, _y, _inner * 0.45, false);
 
     draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws one substantial baked Simulant energy flame.
