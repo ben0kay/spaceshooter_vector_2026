@@ -127,6 +127,7 @@ function sc_enemy_perception_update(_enemy)
 
     if (!instance_exists(global.player_id))
     {
+        sc_enemy_attack_cancel(_enemy);
         _data.target_id = noone;
         _data.state = EnemyState.IDLE;
         return;
@@ -139,8 +140,6 @@ function sc_enemy_perception_update(_enemy)
     switch (_data.state)
     {
         case EnemyState.IDLE:
-            if (!UPDATE_4) return;
-
             if (_data.target_distance_sq <= _range.detection_sq)
             {
                 _data.target_id = global.player_id;
@@ -174,7 +173,6 @@ function sc_enemy_perception_update(_enemy)
         break;
     }
 }
-
 /// @description Updates enemy hardpoint aiming, aim locks and recoil runtime.
 function sc_enemy_hardpoint_update(_enemy)
 {

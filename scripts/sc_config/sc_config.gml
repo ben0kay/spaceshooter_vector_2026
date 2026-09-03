@@ -55,9 +55,23 @@ function sc_config_init()
         },
 		
 		optimization: {
-	    enemy_screen_padding: 128,
-	    enemy_visual_radius_scale: 1.75
-	},
+		    enemy_screen_padding: 128,
+		    enemy_visual_radius_scale: 1.75,
+
+		    enemy_updates: {
+		        perception_idle_interval: 4,
+		        perception_active_interval: 2,
+		        hardpoint_idle_interval: 4,
+
+		        lazy_visible: 1,
+		        lazy_offscreen: 2,
+		        lazy_distant: 4,
+		        lazy_very_distant: 8,
+
+		        distant_range: 1800,
+		        very_distant_range: 3600
+		    }
+		},
 
         projectile: {
             classes: [
