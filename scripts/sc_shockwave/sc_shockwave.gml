@@ -12,10 +12,10 @@ function sc_particles_register_shockwave()
 
     // Expanding smoke balls deposited around the shockwave ring.
     part_type_sprite(_smoke, s_blur, false, false, true);
-    part_type_size(_smoke, 0.16, 0.32, 0.018, 0.02);
+    part_type_size(_smoke, 0.28, 0.52, 0.022, 0.03);
     part_type_scale(_smoke, 1, 1);
     part_type_colour2(_smoke, make_colour_rgb(95, 105, 110), make_colour_rgb(25, 30, 35));
-    part_type_alpha3(_smoke, 0.32, 0.2, 0);
+    part_type_alpha3(_smoke, 0.52, 0.32, 0);
     part_type_blend(_smoke, false);
     part_type_speed(_smoke, 0.5, 1.5, -0.035, 0);
     part_type_direction(_smoke, 0, 359, 0, 0);

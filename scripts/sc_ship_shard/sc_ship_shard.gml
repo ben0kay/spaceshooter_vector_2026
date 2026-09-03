@@ -9,7 +9,7 @@ function sc_ship_register_shard()
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
 
             energy_max: 100, energy_regeneration: 0.2, energy_recharge_delay: 45,
-            fuel_max: 100, fuel_regeneration: 0,
+            fuel_max: 1000, fuel_regeneration: 0,
             fuel_movement_cost: 0.015, fuel_boost_cost: 0.06, fuel_dash_cost: 8,
 
             bullets_max: 600, explosives_max: 24,

@@ -1,0 +1,8 @@
+Use sc_sim_twin_fighter.gml as the complete enemy implementation example.
+
+Reuse existing registered weapons where suitable. If creating a new weapon:
+- Put weapon behaviour and numerical combat parameters in sc_simulant_weapons.gml.
+- Put the projectile registration, baked primitive drawing and projectile-specific particles in its dedicated projectile file.
+- Keep enemy-specific hardpoints, thrusters, visual components and attacks in the new enemy file.
+- Do not place faction-specific behaviour inside generic enemy, weapon, projectile or particle infrastructure.
+- Give complete vertically compact GML functions and preserve the current registration architecture.

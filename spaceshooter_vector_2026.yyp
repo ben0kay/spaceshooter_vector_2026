@@ -43,6 +43,7 @@
   },
   "name":"spaceshooter_vector_2026",
   "resources":[
+    {"id":{"name":"designing a new enemy","path":"notes/designing a new enemy/designing a new enemy.yy",},},
     {"id":{"name":"notes_code_preferences","path":"notes/notes_code_preferences/notes_code_preferences.yy",},},
     {"id":{"name":"notes_faction_visuals","path":"notes/notes_faction_visuals/notes_faction_visuals.yy",},},
     {"id":{"name":"notes_immediate_todo","path":"notes/notes_immediate_todo/notes_immediate_todo.yy",},},
@@ -109,6 +110,7 @@
     {"id":{"name":"sc_ship_shard","path":"scripts/sc_ship_shard/sc_ship_shard.yy",},},
     {"id":{"name":"sc_shockwave","path":"scripts/sc_shockwave/sc_shockwave.yy",},},
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
+    {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_simulant_weapons","path":"scripts/sc_simulant_weapons/sc_simulant_weapons.yy",},},
     {"id":{"name":"sc_stats","path":"scripts/sc_stats/sc_stats.yy",},},
