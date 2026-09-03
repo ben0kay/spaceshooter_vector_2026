@@ -92,6 +92,11 @@ function sc_enemy_register_sim_dreadwing()
                     weight: 50,
                     hardpoint_group: "cannons",
                     weapon_key: "weapon_simulant_pulse",
+					
+					conditions: {
+                        range_min: 120,
+                        range_max: 940
+                    },
 
                     aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 2 },
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },
@@ -108,6 +113,12 @@ function sc_enemy_register_sim_dreadwing()
                     weight: 35,
                     hardpoint_group: "beam",
                     weapon_key: "weapon_simulant_thin_beam",
+					
+					conditions: {
+                        range_min: 250,
+                        range_max: 900,
+                        hull_ratio_max: 0.5
+                    },
 
                     aim: { mode: AimMode.MOUNT, angle_offset: 0, inaccuracy: 0 },
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },

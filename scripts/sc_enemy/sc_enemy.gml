@@ -323,7 +323,7 @@ function sc_enemy_update_chasing(_enemy)
     _enemy.draw_angle = _enemy.draw_angle mod 360;
 }
 
-/// @description Holds combat range, faces the player and attacks.
+/// @description Attacks while retreating from targets that enter the registered close range.
 function sc_enemy_update_attacking(_enemy)
 {
     var _data = _enemy.enemy;
@@ -332,8 +332,20 @@ function sc_enemy_update_attacking(_enemy)
     var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
 
-    _movement.velocity_x *= _stats.friction;
-    _movement.velocity_y *= _stats.friction;
+    if (_stats.retreat_range > 0 && _data.target_distance_sq < _stats.retreat_range_sq)
+    {
+        var _retreat_direction = _direction + 180;
+        var _target_vx = lengthdir_x(_stats.speed_max, _retreat_direction);
+        var _target_vy = lengthdir_y(_stats.speed_max, _retreat_direction);
+
+        _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_stats.acceleration, _stats.acceleration);
+        _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_stats.acceleration, _stats.acceleration);
+    }
+    else
+    {
+        _movement.velocity_x *= _stats.friction;
+        _movement.velocity_y *= _stats.friction;
+    }
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
@@ -461,7 +473,39 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
-/// @description Chooses an attack using the configured selection method.
+/// @description Returns whether an attack satisfies its optional range and defence conditions.
+function sc_enemy_attack_can_use(_enemy, _attack)
+{
+    if (!variable_struct_exists(_attack, "conditions")) return true;
+
+    var _conditions = _attack.conditions;
+    var _data = _enemy.enemy;
+    var _defence = _data.defence;
+    var _distance_sq = _data.target_distance_sq;
+
+    if (variable_struct_exists(_conditions, "range_min")
+    && _distance_sq < sqr(_conditions.range_min))
+        return false;
+
+    if (variable_struct_exists(_conditions, "range_max")
+    && _distance_sq > sqr(_conditions.range_max))
+        return false;
+
+    var _shield_ratio = _defence.shield.maximum > 0 ? _defence.shield.current / _defence.shield.maximum : 0;
+    var _armour_ratio = _defence.armour.maximum > 0 ? _defence.armour.current / _defence.armour.maximum : 0;
+    var _hull_ratio = _defence.hull.current / _defence.hull.maximum;
+
+    if (variable_struct_exists(_conditions, "shield_ratio_min") && _shield_ratio < _conditions.shield_ratio_min) return false;
+    if (variable_struct_exists(_conditions, "shield_ratio_max") && _shield_ratio > _conditions.shield_ratio_max) return false;
+    if (variable_struct_exists(_conditions, "armour_ratio_min") && _armour_ratio < _conditions.armour_ratio_min) return false;
+    if (variable_struct_exists(_conditions, "armour_ratio_max") && _armour_ratio > _conditions.armour_ratio_max) return false;
+    if (variable_struct_exists(_conditions, "hull_ratio_min") && _hull_ratio < _conditions.hull_ratio_min) return false;
+    if (variable_struct_exists(_conditions, "hull_ratio_max") && _hull_ratio > _conditions.hull_ratio_max) return false;
+
+    return true;
+}
+
+/// @description Chooses one currently usable attack using the registered selection method.
 function sc_enemy_attack_select(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
@@ -471,31 +515,66 @@ function sc_enemy_attack_select(_enemy)
     switch (_controller.selection)
     {
         case AttackSelection.SEQUENTIAL:
-            var _selected = _runtime.next_attack_index;
-            _runtime.next_attack_index = (_runtime.next_attack_index + 1) mod _count;
-            return _selected;
+            for (var _offset = 0; _offset < _count; _offset++)
+            {
+                var _index = (_runtime.next_attack_index + _offset) mod _count;
+
+                if (sc_enemy_attack_can_use(_enemy, _controller.attacks[_index]))
+                {
+                    _runtime.next_attack_index = (_index + 1) mod _count;
+                    return _index;
+                }
+            }
+        break;
 
         case AttackSelection.RANDOM:
-            return irandom(_count - 1);
+            var _selected = -1;
+            var _eligible_count = 0;
+
+            for (var _i = 0; _i < _count; _i++)
+            {
+                if (!sc_enemy_attack_can_use(_enemy, _controller.attacks[_i])) continue;
+
+                _eligible_count++;
+                if (irandom(_eligible_count - 1) == 0) _selected = _i;
+            }
+
+            return _selected;
 
         case AttackSelection.WEIGHTED:
             var _weight_total = 0;
 
             for (var _i = 0; _i < _count; _i++)
-                _weight_total += _controller.attacks[_i].weight;
+            {
+                var _attack = _controller.attacks[_i];
+                if (sc_enemy_attack_can_use(_enemy, _attack))
+                    _weight_total += _attack.weight;
+            }
+
+            if (_weight_total <= 0) return -1;
 
             var _roll = random(_weight_total);
 
             for (var _i = 0; _i < _count; _i++)
             {
-                _roll -= _controller.attacks[_i].weight;
+                var _attack = _controller.attacks[_i];
+                if (!sc_enemy_attack_can_use(_enemy, _attack)) continue;
+
+                _roll -= _attack.weight;
                 if (_roll <= 0) return _i;
             }
+        break;
 
-            return _count - 1;
+        default:
+            for (var _i = 0; _i < _count; _i++)
+            {
+                if (sc_enemy_attack_can_use(_enemy, _controller.attacks[_i]))
+                    return _i;
+            }
+        break;
     }
 
-    return 0;
+    return -1;
 }
 
 /// @description Resolves one hardpoint muzzle and attack direction into a reusable transform.
@@ -771,7 +850,7 @@ function sc_enemy_beam_attack_sustain(_enemy, _attack)
     return array_length(_runtime.active_deliveries) > 0;
 }
 
-/// @description Updates telegraphs, projectile volleys and sustained beam attacks.
+/// @description Updates telegraphs, gated projectile volleys and sustained beam attacks.
 function sc_enemy_attack_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -787,12 +866,21 @@ function sc_enemy_attack_update(_enemy)
 
     if (_runtime.phase == EnemyAttackPhase.IDLE)
     {
-        _runtime.current_attack = sc_enemy_attack_select(_enemy);
+        var _selected = sc_enemy_attack_select(_enemy);
+
+        if (_selected < 0)
+        {
+            _runtime.phase = EnemyAttackPhase.COOLDOWN;
+            _runtime.cooldown_until = GAME_TICK + 15;
+            return;
+        }
+
+        _runtime.current_attack = _selected;
         _runtime.hardpoint_cursor = 0;
         _runtime.volley_count = 0;
         _runtime.active_deliveries = [];
 
-        var _attack = _controller.attacks[_runtime.current_attack];
+        var _attack = _controller.attacks[_selected];
 
         if (variable_struct_exists(_attack, "telegraph"))
         {
