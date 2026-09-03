@@ -92,6 +92,7 @@
     {"id":{"name":"sc_minigun","path":"scripts/sc_minigun/sc_minigun.yy",},},
     {"id":{"name":"sc_player_init","path":"scripts/sc_player_init/sc_player_init.yy",},},
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
+    {"id":{"name":"sc_plyr_dash","path":"scripts/sc_plyr_dash/sc_plyr_dash.yy",},},
     {"id":{"name":"sc_plyr_draw","path":"scripts/sc_plyr_draw/sc_plyr_draw.yy",},},
     {"id":{"name":"sc_plyr_functions","path":"scripts/sc_plyr_functions/sc_plyr_functions.yy",},},
     {"id":{"name":"sc_plyr_register","path":"scripts/sc_plyr_register/sc_plyr_register.yy",},},

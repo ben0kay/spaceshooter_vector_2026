@@ -162,58 +162,6 @@ function sc_player_resources_update(_player)
         _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
 }
 
-/// @description Starts a dash after a valid second Shift press.
-function sc_player_dash_begin(_player)
-{
-    var _movement = _player.movement;
-    var _dash = _movement.dash;
-    var _stats = _player.ship.stats.final;
-
-    if (!sc_player_resource_spend(_player, ResourceType.FUEL, _stats.fuel_dash_cost))
-        return false;
-
-    if (_movement.speed > 0.05)
-        _dash.direction = point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
-    else if (_movement.moving)
-        _dash.direction = point_direction(0, 0, _movement.input_x, _movement.input_y);
-    else
-        _dash.direction = _player.draw_angle;
-
-    _movement.velocity_x = lengthdir_x(_stats.dash_speed, _dash.direction);
-    _movement.velocity_y = lengthdir_y(_stats.dash_speed, _dash.direction);
-    _movement.speed = _stats.dash_speed;
-    _movement.boost.active = false;
-
-    _dash.remaining = max(1, round(_stats.dash_duration));
-    _dash.cooldown_remaining = max(1, round(_stats.dash_cooldown));
-    _dash.double_tap_remaining = 0;
-    _dash.invulnerable = _stats.dash_invulnerable > 0;
-    _dash.ghost_count = 0;
-
-    global.PlayerState = PlayerState.DASHING;
-    sc_player_combat_permission_update(_player);
-
-    // Insert player dash ignition particle burst and audio here.
-    return true;
-}
-
-/// @description Processes first and second Shift presses.
-function sc_player_dash_input_update(_player)
-{
-    var _movement = _player.movement;
-    var _dash = _movement.dash;
-    var _stats = _player.ship.stats.final;
-
-    if (!keyboard_check_pressed(vk_shift) || !_movement.moving) return false;
-    if (_dash.cooldown_remaining > 0) return false;
-
-    if (_dash.double_tap_remaining > 0)
-        return sc_player_dash_begin(_player);
-
-    _dash.double_tap_remaining = max(1, round(_stats.dash_double_tap_window));
-    return false;
-}
-
 /// @description Updates ordinary acceleration and held-Shift boost.
 function sc_player_normal_movement_update(_player)
 {
@@ -247,26 +195,6 @@ function sc_player_normal_movement_update(_player)
     if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
 
     sc_player_solid_move(_player);
-}
-
-/// @description Records one baked-sprite dash afterimage.
-function sc_player_dash_ghost_record(_player)
-{
-    var _dash = _player.movement.dash;
-    var _limit = _dash.ghost_limit;
-    var _last = min(_dash.ghost_count, _limit - 1);
-
-    for (var _i = _last; _i > 0; _i--)
-        _dash.ghosts[_i] = _dash.ghosts[_i - 1];
-
-    _dash.ghosts[0] = {
-        x: _player.x,
-        y: _player.y,
-        angle: _player.draw_angle,
-        life: _dash.ghost_life
-    };
-
-    _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
 }
 
 /// @description Releases the player's currently active beam.
@@ -444,38 +372,6 @@ function sc_player_update_active(_player)
     sc_player_visual_update(_player);
 }
 
-/// @description Updates the short direction-locked player dash.
-function sc_player_update_dashing(_player)
-{
-    var _movement = _player.movement;
-    var _dash = _movement.dash;
-    var _stats = _player.ship.stats.final;
-
-    sc_player_aim_update(_player);
-
-    if ((_dash.remaining mod _dash.ghost_interval) == 0)
-        sc_player_dash_ghost_record(_player);
-
-    sc_player_solid_move(_player);
-    sc_player_combat_permission_update(_player);
-    sc_player_primary_weapon_update(_player);
-    sc_player_visual_update(_player);
-
-    // Insert continuous player dash corridor particles here.
-
-    _dash.remaining--;
-
-    if (_dash.remaining > 0 && _movement.speed > 0.05) return;
-
-    _movement.velocity_x *= _stats.dash_exit_speed_multiplier;
-    _movement.velocity_y *= _stats.dash_exit_speed_multiplier;
-    _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
-
-    _dash.remaining = 0;
-    _dash.invulnerable = false;
-    global.PlayerState = PlayerState.ACTIVE;
-}
-
 /// @description Begins or extends a brief player movement and weapon disruption.
 function sc_player_stagger_begin(_player, _effect)
 {
@@ -563,7 +459,28 @@ function sc_player_damage_visual_stage(_current, _maximum)
     return 3;
 }
 
-/// @description Updates player-only visual animation.
+/// @description Emits registered ignition particles from every player thruster mount.
+function sc_player_thrust_ignition_emit(_player, _power)
+{
+    var _visual = _player.ship.visual;
+    var _thrust = _visual.thrust;
+    var _radius = _visual.radius;
+    var _angle = _player.draw_angle;
+    var _direction = _angle + 180;
+
+    for (var _i = 0; _i < array_length(_thrust.mounts); _i++)
+    {
+        var _mount = _thrust.mounts[_i];
+        var _x = _player.x + lengthdir_x(_mount.forward * _radius, _angle) + lengthdir_x(_mount.side * _radius, _angle + 90);
+        var _y = _player.y + lengthdir_y(_mount.forward * _radius, _angle) + lengthdir_y(_mount.side * _radius, _angle + 90);
+
+        _thrust.ignition_script(_x, _y, _direction, _mount.scale, _power);
+    }
+
+    return true;
+}
+
+/// @description Updates player visual animation and registered thruster particles.
 function sc_player_visual_update(_player)
 {
     var _visual = _player.ship.visual;
@@ -574,15 +491,42 @@ function sc_player_visual_update(_player)
     var _speed_max = _player.ship.stats.final.speed_max;
     var _speed_ratio = _speed_max > 0 ? clamp(_movement.speed / _speed_max, 0, 1) : 0;
     var _thrust_target = _speed_ratio;
+    var _was_active = _runtime.thrust_power > 0.05;
 
     _runtime.thrust_power = lerp(_runtime.thrust_power, _thrust_target, _thrust_target > _runtime.thrust_power ? 0.2 : 0.12);
+
+    var _thrust_active = _runtime.thrust_power > 0.05;
+    var _boosting = _movement.boost.active;
+    var _dashing = global.PlayerState == PlayerState.DASHING;
+
+    if (_thrust_active && !_was_active)
+        sc_player_thrust_ignition_emit(_player, 1);
+
+    if (_thrust_active)
+    {
+        var _thrust = _visual.thrust;
+        var _radius = _visual.radius;
+        var _angle = _player.draw_angle;
+        var _direction = _angle + 180;
+
+        for (var _i = 0; _i < array_length(_thrust.mounts); _i++)
+        {
+            var _mount = _thrust.mounts[_i];
+            if (((GAME_TICK + _mount.phase) mod 2) != 0) continue;
+
+            var _x = _player.x + lengthdir_x(_mount.forward * _radius, _angle) + lengthdir_x(_mount.side * _radius, _angle + 90);
+            var _y = _player.y + lengthdir_y(_mount.forward * _radius, _angle) + lengthdir_y(_mount.side * _radius, _angle + 90);
+
+            _thrust.particle_script(_x, _y, _direction, _runtime.thrust_power, _mount.scale, _boosting, _dashing);
+        }
+    }
 
     var _wing = _visual.wing;
     var _wing_target = _wing.fold_idle;
 
-    if (global.PlayerState == PlayerState.DASHING)
+    if (_dashing)
         _wing_target = _wing.fold_dash;
-    else if (_movement.boost.active)
+    else if (_boosting)
         _wing_target = _wing.fold_boost;
     else if (_movement.moving)
         _wing_target = _wing.fold_moving;
@@ -592,9 +536,9 @@ function sc_player_visual_update(_player)
     var _core = _visual.core;
     var _core_target_speed = _core.idle_speed + _core.movement_speed * _speed_ratio;
 
-    if (global.PlayerState == PlayerState.DASHING)
+    if (_dashing)
         _core_target_speed *= _core.dash_multiplier;
-    else if (_movement.boost.active)
+    else if (_boosting)
         _core_target_speed *= _core.boost_multiplier;
 
     _runtime.core_speed = lerp(_runtime.core_speed, _core_target_speed, _core.response);

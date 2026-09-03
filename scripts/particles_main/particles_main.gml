@@ -29,6 +29,12 @@ function sc_particles_init()
         return false;
     }
 
+    if (!sc_particles_register_shard())
+    {
+        sc_particles_destroy();
+        return false;
+    }
+
     if (!sc_particles_register_projectile_content())
     {
         sc_particles_destroy();
@@ -41,7 +47,7 @@ function sc_particles_init()
         return false;
     }
 
-    // Register additional particle families here later.
+    // Register additional ship/faction particle families here.
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
 }
