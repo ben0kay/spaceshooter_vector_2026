@@ -20,6 +20,7 @@ global.player_id = noone;
 global.level = {
     controller: id,
     camera: noone,
+    hud: noone,
     player: noone,
     ship_selector: noone,
     selected_ship_key: undefined,
@@ -37,6 +38,17 @@ if (!instance_exists(_camera))
 }
 
 global.level.camera = _camera;
+
+var _hud = instance_create_layer(0, 0, "Instances", o_hud_level);
+
+if (!instance_exists(_hud))
+{
+    show_debug_message("LEVEL INITIALIZATION ERROR - HUD creation failed");
+    global.LevelState = LevelState.FAILED;
+    exit;
+}
+
+global.level.hud = _hud;
 
 var _selector = instance_create_layer(0, 0, "Instances", o_ship_select, {
     spawn_x: room_width * 0.5,
