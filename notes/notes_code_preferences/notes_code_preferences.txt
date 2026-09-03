@@ -22,3 +22,4 @@ I like my sprite primitives that we draw to be easily adjustable overall by usin
 I like to keep my script gml files organized when possible so i don't get lost and overwhelmed
 If we are designing and implementing lots of matchups like kinetic bonus vs shield / armour - i like being able to tweak all the stats from 1 single spot for ease-of-access. like a config file for big more global parameters to edit. not for indiviual enemy / tower things though.
 Sometimes when appropriate, instead of booleans allowing/disallowing, we can use numbers instead - helps with implementing upgrades or allowing things to happen later, like combat_allow_weapons
+i like placing things in my global config script file to allow easy tweaking of things globally if i think it needs adjusting

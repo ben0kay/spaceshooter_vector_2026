@@ -18,6 +18,7 @@ function sc_particles_init()
     part_system_depth(_impact_system, -10);
 
     if (!sc_particles_register_attack_telegraph()
+    || !sc_particles_register_enemy_thrust()
     || !sc_particles_register_simulant()
     || !sc_particles_register_shard()
     || !sc_particles_register_shockwave()
@@ -28,7 +29,7 @@ function sc_particles_init()
         return false;
     }
 
-    // Register additional ship and faction particle families here.
+    // Register additional particle families here.
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
 }

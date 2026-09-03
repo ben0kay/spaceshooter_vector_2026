@@ -159,6 +159,8 @@ function sc_enemy_sim_dreadwing_visual_data()
 {
     return {
         radius: 88,
+		visual_mass: 2,
+		motion_strength: 2,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: -0.19, side: 0 },
 
@@ -177,10 +179,10 @@ function sc_enemy_sim_dreadwing_visual_data()
         },
 
         thrust: {
-            draw_script: sc_enemy_simulant_thrust_draw,
-            ignition_script: sc_particles_simulant_ignition,
-            particle_script: sc_particles_simulant_thrust
-        },
+	    draw_script: sc_enemy_simulant_thrust_draw,
+	    ignition_script: sc_particles_enemy_thrust_ignition,
+	    particle_script: sc_particles_enemy_thrust_emit
+	},
 
         bake: {
             body_canvas_size: 384,

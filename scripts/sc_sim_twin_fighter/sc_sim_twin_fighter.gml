@@ -92,6 +92,8 @@ function sc_enemy_twin_fighter_visual_data()
 {
     return {
         radius: 58,
+		visual_mass: 1.15,
+		motion_strength: 3,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: -0.23, side: 0 },
 
@@ -110,10 +112,10 @@ function sc_enemy_twin_fighter_visual_data()
         },
 
         thrust: {
-            draw_script: sc_enemy_simulant_thrust_draw,
-            ignition_script: sc_particles_simulant_ignition,
-            particle_script: sc_particles_simulant_thrust
-        },
+	    draw_script: sc_enemy_simulant_thrust_draw,
+	    ignition_script: sc_particles_enemy_thrust_ignition,
+	    particle_script: sc_particles_enemy_thrust_emit
+	},
 
         bake: {
             body_canvas_size: 256,

@@ -99,6 +99,8 @@ function sc_enemy_sim_skirmisher_visual_data()
 {
     return {
         radius: 52,
+		visual_mass: 0.8,
+		motion_strength: 4,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: 0, side: 0 },
 
@@ -118,10 +120,10 @@ function sc_enemy_sim_skirmisher_visual_data()
         },
 
         thrust: {
-            draw_script: sc_enemy_simulant_thrust_draw,
-            ignition_script: sc_particles_simulant_ignition,
-            particle_script: sc_particles_simulant_thrust
-        },
+	    draw_script: sc_enemy_simulant_thrust_draw,
+	    ignition_script: sc_particles_enemy_thrust_ignition,
+	    particle_script: sc_particles_enemy_thrust_emit
+	},
 
         bake: {
             body_canvas_size: 256,

@@ -68,7 +68,8 @@ function sc_enemy_init(_enemy, _enemy_key)
         shield_sprite: is_struct(_cache) ? _cache.shield : -1,
         shield_hit_alpha: 0,
         core_angle: 0,
-        core_alpha: 1
+        core_alpha: 1,
+        motion_phase: random(2 * pi)
     };
 
     for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
@@ -241,13 +242,13 @@ function sc_enemy_visual_update(_enemy)
         var _thruster_angle = _enemy.draw_angle + _thruster.angle;
 
         if (_active && !_runtime.active)
-            _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _thruster.scale);
+            _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _target_power, _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
 
         _runtime.active = _active;
         _runtime.power = lerp(_runtime.power, _target_power, _target_power > _runtime.power ? 0.22 : 0.12);
 
         if (_runtime.power > 0.15 && ((GAME_TICK + _runtime.phase) mod 3) == 0)
-            _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power, _thruster.scale);
+            _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power, _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
     }
 }
 
@@ -871,8 +872,8 @@ function sc_enemy_attack_telegraph_update(_enemy, _attack)
     }
 }
 
-/// @description Draws a generic faction-coloured energy charge at telegraphed hardpoints.
-function sc_enemy_attack_telegraph_draw(_enemy)
+/// @description Draws faction-coloured attack telegraphs at the enemy's visual position.
+function sc_enemy_attack_telegraph_draw(_enemy, _draw_x, _draw_y)
 {
     var _data = _enemy.enemy;
     var _controller = _data.attack_controller;
@@ -882,6 +883,8 @@ function sc_enemy_attack_telegraph_draw(_enemy)
 
     var _attack = _controller.attacks[_runtime.current_attack];
     var _telegraph = _attack.telegraph;
+    var _offset_x = _draw_x - _enemy.x;
+    var _offset_y = _draw_y - _enemy.y;
     var _progress = clamp(
         (GAME_TICK - _runtime.telegraph_start_tick)
         / max(1, _runtime.telegraph_end_tick - _runtime.telegraph_start_tick),
@@ -892,6 +895,10 @@ function sc_enemy_attack_telegraph_draw(_enemy)
     {
         var _transform = { x: 0, y: 0, direction: 0 };
         sc_enemy_hardpoint_attack_transform(_enemy, _attack, _attack.hardpoint_indices[_i], _transform);
+
+        _transform.x += _offset_x;
+        _transform.y += _offset_y;
+
         _telegraph.draw_script(_enemy, _attack, _transform, _progress, _data.visual.palette, _telegraph);
     }
 }
@@ -1115,13 +1122,27 @@ function sc_enemy_attack_update(_enemy)
         _runtime.next_fire_tick = GAME_TICK + max(1, round(_attack.firing.interval / _fire_rate));
 }
 
-/// @description Draws one enemy using shared baked components with its shield above the ship.
+/// @description Draws the complete enemy assembly with shared slow visual floating motion.
 function sc_enemy_draw(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _runtime = _visual.runtime;
     var _defence = _data.defence;
+    var _angle = _enemy.draw_angle;
+    var _motion = global.config.visual.ship_motion;
+    var _phase = _runtime.motion_phase;
+    var _strength = _visual.motion_strength;
+    var _bob_side = sin(GAME_TICK * _motion.side_speed + _phase) * _motion.side_amount * _strength;
+    var _bob_forward = sin(GAME_TICK * _motion.forward_speed + 1.7 + _phase * 0.73) * _motion.forward_amount * _strength;
+
+    var _draw_x = _enemy.x
+        + lengthdir_x(_bob_forward, _angle)
+        + lengthdir_x(_bob_side, _angle + 90);
+
+    var _draw_y = _enemy.y
+        + lengthdir_y(_bob_forward, _angle)
+        + lengthdir_y(_bob_side, _angle + 90);
 
     for (var _i = 0; _i < array_length(_data.thrusters); _i++)
     {
@@ -1131,9 +1152,9 @@ function sc_enemy_draw(_enemy)
 
         var _forward = _thruster.forward * _visual.radius;
         var _side = _thruster.side * _visual.radius;
-        var _thruster_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
-        var _thruster_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
-        var _thruster_angle = _enemy.draw_angle + _thruster.angle;
+        var _thruster_x = _draw_x + lengthdir_x(_forward, _angle) + lengthdir_x(_side, _angle + 90);
+        var _thruster_y = _draw_y + lengthdir_y(_forward, _angle) + lengthdir_y(_side, _angle + 90);
+        var _thruster_angle = _angle + _thruster.angle;
         var _flicker = 0.94 + sin(GAME_TICK * 0.35 + _thruster.runtime.phase) * 0.06;
         var _length_scale = _thruster.scale * (0.25 + _power * 0.75) * _flicker;
         var _width_scale = _thruster.scale * (0.82 + _power * 0.18);
@@ -1145,20 +1166,19 @@ function sc_enemy_draw(_enemy)
     }
 
     if (sprite_exists(_runtime.body_sprite))
-        draw_sprite_ext(_runtime.body_sprite, 0, _enemy.x, _enemy.y, 1, 1, _enemy.draw_angle, c_white, 1);
+        draw_sprite_ext(_runtime.body_sprite, 0, _draw_x, _draw_y, 1, 1, _angle, c_white, 1);
     else
-        _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
+        _visual.draw.body(_draw_x, _draw_y, _visual.radius, _angle, _visual);
 
-    // Position follows the ship angle; only the core sprite itself rotates.
-    var _core_x = _enemy.x
-        + lengthdir_x(_visual.core.forward * _visual.radius, _enemy.draw_angle)
-        + lengthdir_x(_visual.core.side * _visual.radius, _enemy.draw_angle + 90);
+    var _core_x = _draw_x
+        + lengthdir_x(_visual.core.forward * _visual.radius, _angle)
+        + lengthdir_x(_visual.core.side * _visual.radius, _angle + 90);
 
-    var _core_y = _enemy.y
-        + lengthdir_y(_visual.core.forward * _visual.radius, _enemy.draw_angle)
-        + lengthdir_y(_visual.core.side * _visual.radius, _enemy.draw_angle + 90);
+    var _core_y = _draw_y
+        + lengthdir_y(_visual.core.forward * _visual.radius, _angle)
+        + lengthdir_y(_visual.core.side * _visual.radius, _angle + 90);
 
-    var _core_angle = _enemy.draw_angle + _runtime.core_angle;
+    var _core_angle = _angle + _runtime.core_angle;
 
     if (sprite_exists(_runtime.core_sprite))
         draw_sprite_ext(_runtime.core_sprite, 0, _core_x, _core_y, 1, 1, _core_angle, c_white, _runtime.core_alpha);
@@ -1170,37 +1190,36 @@ function sc_enemy_draw(_enemy)
         var _hardpoint = _data.hardpoints[_i];
         var _forward = _hardpoint.forward * _visual.radius;
         var _side = _hardpoint.side * _visual.radius;
-        var _angle = _hardpoint.runtime.aim_angle;
+        var _hardpoint_angle = _hardpoint.runtime.aim_angle;
         var _recoil = _hardpoint.runtime.recoil;
 
-        var _hardpoint_x = _enemy.x
-            + lengthdir_x(_forward, _enemy.draw_angle)
-            + lengthdir_x(_side, _enemy.draw_angle + 90)
-            - lengthdir_x(_recoil, _angle);
+        var _hardpoint_x = _draw_x
+            + lengthdir_x(_forward, _angle)
+            + lengthdir_x(_side, _angle + 90)
+            - lengthdir_x(_recoil, _hardpoint_angle);
 
-        var _hardpoint_y = _enemy.y
-            + lengthdir_y(_forward, _enemy.draw_angle)
-            + lengthdir_y(_side, _enemy.draw_angle + 90)
-            - lengthdir_y(_recoil, _angle);
+        var _hardpoint_y = _draw_y
+            + lengthdir_y(_forward, _angle)
+            + lengthdir_y(_side, _angle + 90)
+            - lengthdir_y(_recoil, _hardpoint_angle);
 
         if (sprite_exists(_hardpoint.runtime.sprite))
-            draw_sprite_ext(_hardpoint.runtime.sprite, 0, _hardpoint_x, _hardpoint_y, 1, 1, _angle, c_white, 1);
+            draw_sprite_ext(_hardpoint.runtime.sprite, 0, _hardpoint_x, _hardpoint_y, 1, 1, _hardpoint_angle, c_white, 1);
         else
-            _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _angle, _visual, 1);
+            _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
     }
-	
-	sc_enemy_attack_telegraph_draw(_enemy);
 
-    // Shield remains above all ship components.
+    sc_enemy_attack_telegraph_draw(_enemy, _draw_x, _draw_y);
+
     if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
     {
         var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
 
         sc_visual_shield_sprite_draw(
             _runtime.shield_sprite,
-            _enemy.x,
-            _enemy.y,
-            _enemy.draw_angle,
+            _draw_x,
+            _draw_y,
+            _angle,
             _visual.palette,
             _shield_ratio,
             _runtime.shield_hit_alpha,

@@ -61,7 +61,7 @@ function sc_ship_shard_visual_data()
 {
     return {
         radius: 46,
-		motion_strength: 1,
+		motion_strength: 3,
 
         // Compatibility fields used by ship-selection previews.
         scale: 1,
