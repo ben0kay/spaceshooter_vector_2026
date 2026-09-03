@@ -13,43 +13,44 @@ function sc_hud_level_data()
 {
     return {
         palette: {
-            void: make_colour_rgb(3, 8, 13),
-            background: make_colour_rgb(7, 17, 25),
-            panel: make_colour_rgb(12, 29, 39),
-            panel_light: make_colour_rgb(24, 54, 67),
-            outline: make_colour_rgb(69, 166, 185),
-            accent: make_colour_rgb(55, 225, 255),
-            core: make_colour_rgb(220, 255, 255),
-            text: make_colour_rgb(190, 218, 225),
-            muted: make_colour_rgb(87, 120, 131),
+            void: make_colour_rgb(1, 5, 8),
+            background: make_colour_rgb(2, 10, 14),
+            panel: make_colour_rgb(4, 16, 21),
+            panel_light: make_colour_rgb(10, 38, 45),
+            outline: make_colour_rgb(0, 91, 105),
+            accent: make_colour_rgb(0, 232, 242),
+            core: make_colour_rgb(190, 255, 255),
+            text: make_colour_rgb(145, 218, 224),
+            muted: make_colour_rgb(60, 128, 136),
 
-            shield: make_colour_rgb(55, 225, 255),
-            armour: make_colour_rgb(205, 220, 230),
-            hull: make_colour_rgb(255, 70, 95),
-            energy: make_colour_rgb(50, 145, 255),
-            fuel: make_colour_rgb(255, 175, 55),
-            dash: make_colour_rgb(100, 245, 255),
-            cargo: make_colour_rgb(80, 220, 155)
+            shield: make_colour_rgb(25, 235, 245),
+            armour: make_colour_rgb(125, 210, 220),
+            hull: make_colour_rgb(55, 220, 230),
+            energy: make_colour_rgb(0, 245, 255),
+            fuel: make_colour_rgb(20, 205, 218),
+            dash: make_colour_rgb(105, 250, 255),
+            cargo: make_colour_rgb(45, 225, 205)
         },
 
         bottom: {
-            width: 1260,
-            height: 104,
-            margin_bottom: 18,
-            effect_frames: 10,
+            width: 1320,
+            height: 82,
+            margin_bottom: 10,
+            bar_segments: 10,
+            effect_frames: 12,
             effect_speed: 4,
 
             cells: {
-                shield: { x: 24, width: 105 },
-                armour: { x: 139, width: 105 },
-                hull: { x: 254, width: 105 },
-                energy: { x: 369, width: 125 },
-                fuel: { x: 504, width: 125 },
-                bullets: { x: 639, width: 90 },
-                explosives: { x: 739, width: 90 },
-                dash: { x: 839, width: 105 },
-                cargo: { x: 954, width: 110 },
-                weapon: { x: 1074, width: 162 }
+                shield: { x: 28, width: 112 },
+                armour: { x: 148, width: 112 },
+                hull: { x: 268, width: 112 },
+                energy: { x: 388, width: 125 },
+                fuel: { x: 521, width: 125 },
+                bullets: { x: 654, width: 92 },
+                explosives: { x: 754, width: 100 },
+                dash: { x: 862, width: 96 },
+                cargo: { x: 966, width: 100 },
+                weapon: { x: 1074, width: 218 }
             }
         },
 
@@ -94,109 +95,168 @@ function sc_hud_level_init(_hud_object)
     return sc_hud_level_cache_bake(_hud_object.hud);
 }
 
-/// @description Draws one reusable clipped-corner HUD panel.
+/// @description Draws one reusable dark jagged HUD panel.
 function sc_hud_panel_primitive_draw(_width, _height, _cut, _palette)
 {
-    var _middle = _height * 0.5;
+    var _base_y = _height - 8;
+    var _notch_left = _width * 0.43;
+    var _notch_inner_left = _width * 0.445;
+    var _notch_inner_right = _width * 0.555;
+    var _notch_right = _width * 0.57;
 
-    draw_set_colour(_palette.background);
-    draw_rectangle(_cut, 0, _width - _cut, _height, false);
-    draw_triangle(0, _middle, _cut, 0, _cut, _height, false);
-    draw_triangle(_width, _middle, _width - _cut, _height, _width - _cut, 0, false);
+    var _px = [
+        _cut, _width - _cut, _width, _width,
+        _width - _cut, _notch_right, _notch_inner_right, _notch_inner_left,
+        _notch_left, _cut, 0, 0
+    ];
 
-    draw_set_colour(_palette.panel);
-    draw_rectangle(_cut + 4, 5, _width - _cut - 4, _height - 5, false);
-    draw_triangle(7, _middle, _cut + 4, 5, _cut + 4, _height - 5, false);
-    draw_triangle(_width - 7, _middle, _width - _cut - 4, _height - 5, _width - _cut - 4, 5, false);
+    var _py = [
+        0, 0, 18, _base_y - 18,
+        _base_y, _base_y, _height, _height,
+        _base_y, _base_y, _base_y - 18, 18
+    ];
+
+    draw_primitive_begin(pr_trianglefan);
+    draw_vertex_colour(_width * 0.5, _base_y * 0.5, _palette.background, 0.98);
+
+    for (var _i = 0; _i < array_length(_px); _i++)
+        draw_vertex_colour(_px[_i], _py[_i], _palette.panel, 0.98);
+
+    draw_vertex_colour(_px[0], _py[0], _palette.panel, 0.98);
+    draw_primitive_end();
 
     draw_set_colour(_palette.outline);
-    draw_line_width(_cut, 0, _width - _cut, 0, 2);
-    draw_line_width(_width - _cut, 0, _width, _middle, 2);
-    draw_line_width(_width, _middle, _width - _cut, _height, 2);
-    draw_line_width(_width - _cut, _height, _cut, _height, 2);
-    draw_line_width(_cut, _height, 0, _middle, 2);
-    draw_line_width(0, _middle, _cut, 0, 2);
+    draw_set_alpha(0.9);
 
-    draw_set_colour(_palette.accent);
-    draw_line_width(_cut + 18, 5, _cut + 92, 5, 2);
-    draw_line_width(_width - _cut - 92, _height - 5, _width - _cut - 18, _height - 5, 2);
-}
-
-/// @description Draws the static primitive bottom-HUD body before baking.
-function sc_hud_bottom_body_primitive_draw(_data)
-{
-    var _bottom = _data.bottom;
-    var _palette = _data.palette;
-    var _cells = _bottom.cells;
-
-    sc_hud_panel_primitive_draw(_bottom.width, _bottom.height, 22, _palette);
-
-    var _names = variable_struct_get_names(_cells);
-
-    for (var _i = 0; _i < array_length(_names); _i++)
+    for (var _i = 0; _i < array_length(_px); _i++)
     {
-        var _cell = variable_struct_get(_cells, _names[_i]);
-        var _left = _cell.x;
-        var _right = _left + _cell.width;
-
-        draw_set_colour(_palette.void);
-        draw_rectangle(_left, 10, _right, _bottom.height - 11, false);
-
-        draw_set_colour(_palette.panel_light);
-        draw_rectangle(_left + 1, 11, _right - 1, _bottom.height - 12, true);
-
-        if (_i < array_length(_names) - 1)
-        {
-            draw_set_colour(_palette.outline);
-            draw_set_alpha(0.32);
-            draw_line(_right + 5, 17, _right + 5, _bottom.height - 17);
-            draw_set_alpha(1);
-        }
-    }
-
-    var _bar_names = ["shield", "armour", "hull", "energy", "fuel", "dash", "cargo"];
-
-    for (var _i = 0; _i < array_length(_bar_names); _i++)
-    {
-        var _cell = variable_struct_get(_cells, _bar_names[_i]);
-
-        draw_set_colour(_palette.background);
-        draw_rectangle(_cell.x + 6, 42, _cell.x + _cell.width - 6, 56, false);
-
-        draw_set_colour(_palette.panel_light);
-        draw_rectangle(_cell.x + 6, 42, _cell.x + _cell.width - 6, 56, true);
+        var _next = (_i + 1) mod array_length(_px);
+        draw_line_width(_px[_i], _py[_i], _px[_next], _py[_next], 2);
     }
 
     draw_set_colour(_palette.accent);
-    draw_circle(_bottom.width * 0.5, 5, 3, false);
-    draw_circle(_bottom.width * 0.5, _bottom.height - 5, 3, false);
+    draw_set_alpha(0.85);
+    draw_line_width(_cut + 18, 4, _cut + 108, 4, 2);
+    draw_line_width(_width - _cut - 108, 4, _width - _cut - 18, 4, 2);
+    draw_line_width(_notch_inner_left + 18, _height - 3, _notch_inner_right - 18, _height - 3, 2);
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.45);
+    draw_line_width(_cut + 5, 7, _width - _cut - 5, 7, 1);
+    draw_line_width(_cut + 5, _base_y - 5, _notch_left - 8, _base_y - 5, 1);
+    draw_line_width(_notch_right + 8, _base_y - 5, _width - _cut - 5, _base_y - 5, 1);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
 
-/// @description Draws one animated primitive bottom-HUD effect frame before baking.
+/// @description Draws the static slim segmented bottom-HUD body before baking.
+function sc_hud_bottom_body_primitive_draw(_data)
+{
+    var _bottom = _data.bottom;
+    var _palette = _data.palette;
+    var _cells = _bottom.cells;
+    var _cell_names = ["shield", "armour", "hull", "energy", "fuel", "bullets", "explosives", "dash", "cargo", "weapon"];
+    var _bar_names = ["shield", "armour", "hull", "energy", "fuel", "dash", "cargo"];
+
+    sc_hud_panel_primitive_draw(_bottom.width, _bottom.height, 18, _palette);
+
+    for (var _i = 0; _i < array_length(_cell_names); _i++)
+    {
+        var _cell = variable_struct_get(_cells, _cell_names[_i]);
+        var _left = _cell.x;
+        var _right = _left + _cell.width;
+
+        draw_set_colour(_palette.void);
+        draw_set_alpha(0.88);
+        draw_rectangle(_left, 8, _right, _bottom.height - 12, false);
+
+        draw_set_colour(_palette.panel_light);
+        draw_set_alpha(0.65);
+        draw_rectangle(_left, 8, _right, _bottom.height - 12, true);
+
+        // Small baked interface node beside each label.
+        draw_set_colour(_palette.outline);
+        draw_set_alpha(0.75);
+        draw_circle(_left + 10, 19, 4, true);
+
+        draw_set_colour(_palette.accent);
+        draw_set_alpha(0.6);
+        draw_circle(_left + 10, 19, 1.5, false);
+
+        if (_i < array_length(_cell_names) - 1)
+        {
+            draw_set_colour(_palette.outline);
+            draw_set_alpha(0.6);
+            draw_line_width(_right + 4, 13, _right + 4, _bottom.height - 17, 1);
+            draw_line_width(_right + 4, 13, _right + 8, 9, 1);
+            draw_line_width(_right + 4, _bottom.height - 17, _right + 8, _bottom.height - 13, 1);
+        }
+    }
+
+    for (var _i = 0; _i < array_length(_bar_names); _i++)
+    {
+        var _cell = variable_struct_get(_cells, _bar_names[_i]);
+        var _segments = _bottom.bar_segments;
+        var _left = _cell.x + 7;
+        var _available = _cell.width - 14;
+        var _gap = 2;
+        var _segment_width = (_available - (_segments - 1) * _gap) / _segments;
+
+        for (var _segment = 0; _segment < _segments; _segment++)
+        {
+            var _segment_x = _left + _segment * (_segment_width + _gap);
+
+            draw_set_colour(_palette.background);
+            draw_set_alpha(1);
+            draw_rectangle(_segment_x, 37, _segment_x + _segment_width, 49, false);
+
+            draw_set_colour(_palette.panel_light);
+            draw_set_alpha(0.8);
+            draw_rectangle(_segment_x, 37, _segment_x + _segment_width, 49, true);
+        }
+    }
+
+    // Reference-style central telemetry markings.
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.8);
+
+    for (var _i = -3; _i <= 3; _i++)
+    {
+        var _marker_x = _bottom.width * 0.5 + _i * 7;
+        var _marker_height = 2 + (3 - abs(_i));
+        draw_line(_marker_x, _bottom.height - 9, _marker_x, _bottom.height - 9 - _marker_height);
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws one restrained animated bottom-HUD effect frame before baking.
 function sc_hud_bottom_effect_primitive_draw(_data, _frame)
 {
     var _bottom = _data.bottom;
     var _palette = _data.palette;
     var _progress = _frame / max(1, _bottom.effect_frames - 1);
-    var _scan_x = lerp(28, _bottom.width - 28, _progress);
+    var _scan_x = lerp(24, _bottom.width - 24, _progress);
+    var _pulse = 0.25 + sin(_progress * 360) * 0.12;
 
-    draw_set_alpha(0.13);
     draw_set_colour(_palette.accent);
-    draw_line_width(_scan_x, 9, _scan_x, _bottom.height - 9, 4);
+    draw_set_alpha(0.08);
+    draw_line_width(_scan_x, 8, _scan_x, _bottom.height - 14, 5);
 
-    draw_set_alpha(0.32);
-    draw_line_width(_scan_x, 14, _scan_x, _bottom.height - 14, 1);
-
-    var _pulse = 0.35 + sin(_progress * 360) * 0.15;
+    draw_set_alpha(0.3);
+    draw_line_width(_scan_x, 12, _scan_x, _bottom.height - 18, 1);
 
     draw_set_alpha(_pulse);
-    draw_circle(14, _bottom.height * 0.5, 4, false);
-    draw_circle(_bottom.width - 14, _bottom.height * 0.5, 4, false);
-    draw_circle(_bottom.width * 0.5, 5, 2, false);
-    draw_circle(_bottom.width * 0.5, _bottom.height - 5, 2, false);
+    draw_circle(10, _bottom.height * 0.5 - 4, 3, false);
+    draw_circle(_bottom.width - 10, _bottom.height * 0.5 - 4, 3, false);
+
+    var _centre = _bottom.width * 0.5;
+
+    draw_set_alpha(0.35 + _pulse);
+    draw_line_width(_centre - 18, _bottom.height - 5, _centre - 7, _bottom.height - 5, 1);
+    draw_line_width(_centre + 7, _bottom.height - 5, _centre + 18, _bottom.height - 5, 1);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
@@ -270,129 +330,62 @@ function sc_hud_minimap_dock_primitive_draw(_data)
     draw_set_colour(c_white);
 }
 
-/// @description Bakes one HUD component into a runtime sprite.
-function sc_hud_level_component_bake(_data, _component, _frame)
-{
-    var _width;
-    var _height;
 
-    switch (_component)
-    {
-        case "bottom_body":
-        case "bottom_effect":
-            _width = _data.bottom.width;
-            _height = _data.bottom.height;
-        break;
 
-        case "top_body":
-        case "top_effect":
-            _width = _data.top.width;
-            _height = _data.top.height;
-        break;
-
-        case "minimap_dock":
-            _width = _data.minimap.width;
-            _height = _data.minimap.height;
-        break;
-
-        default:
-            return -1;
-    }
-
-    var _surface = surface_create(_width, _height);
-    if (!surface_exists(_surface)) return -1;
-
-    surface_set_target(_surface);
-    draw_clear_alpha(c_black, 0);
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
-
-    switch (_component)
-    {
-        case "bottom_body": sc_hud_bottom_body_primitive_draw(_data); break;
-        case "bottom_effect": sc_hud_bottom_effect_primitive_draw(_data, _frame); break;
-        case "top_body": sc_hud_top_body_primitive_draw(_data); break;
-        case "top_effect": sc_hud_top_effect_primitive_draw(_data, _frame); break;
-        case "minimap_dock": sc_hud_minimap_dock_primitive_draw(_data); break;
-    }
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
-    surface_reset_target();
-
-    var _sprite = sprite_create_from_surface(_surface, 0, 0, _width, _height, false, false, 0, 0);
-    surface_free(_surface);
-    return _sprite;
-}
-
-/// @description Bakes all permanent level-HUD visual components.
-function sc_hud_level_cache_bake(_hud)
+/// @description Draws one live labelled segmented HUD bar.
+function sc_hud_level_bar_draw(_hud, _origin_x, _origin_y, _cell, _label, _value, _ratio, _colour)
 {
     var _data = _hud.data;
-    var _cache = _hud.cache;
-
-    _cache.bottom_body = sc_hud_level_component_bake(_data, "bottom_body", 0);
-    _cache.top_body = sc_hud_level_component_bake(_data, "top_body", 0);
-    _cache.minimap_dock = sc_hud_level_component_bake(_data, "minimap_dock", 0);
-
-    for (var _frame = 0; _frame < array_length(_cache.bottom_effects); _frame++)
-        _cache.bottom_effects[_frame] = sc_hud_level_component_bake(_data, "bottom_effect", _frame);
-
-    for (var _frame = 0; _frame < array_length(_cache.top_effects); _frame++)
-        _cache.top_effects[_frame] = sc_hud_level_component_bake(_data, "top_effect", _frame);
-
-    if (!sprite_exists(_cache.bottom_body) || !sprite_exists(_cache.top_body) || !sprite_exists(_cache.minimap_dock))
-    {
-        sc_hud_level_cleanup(_hud);
-        return false;
-    }
-
-    show_debug_message("LEVEL HUD VISUAL CACHE BAKED");
-    return true;
-}
-
-/// @description Draws one live labelled HUD bar.
-function sc_hud_level_bar_draw(_origin_x, _origin_y, _cell, _label, _value, _ratio, _colour, _palette)
-{
+    var _palette = _data.palette;
+    var _segments = _data.bottom.bar_segments;
     var _left = _origin_x + _cell.x;
-    var _right = _left + _cell.width;
-    var _fill_left = _left + 8;
-    var _fill_right = _right - 8;
-    var _fill_width = max(0, (_fill_right - _fill_left) * clamp(_ratio, 0, 1));
+    var _available = _cell.width - 14;
+    var _gap = 2;
+    var _segment_width = (_available - (_segments - 1) * _gap) / _segments;
+    var _filled = ceil(clamp(_ratio, 0, 1) * _segments);
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     draw_set_colour(_palette.muted);
-    draw_text(_left + 6, _origin_y + 17, _label);
+    draw_text(_left + 19, _origin_y + 12, _label);
 
-    if (_fill_width > 0)
+    for (var _segment = 0; _segment < _filled; _segment++)
     {
-        draw_set_alpha(0.28);
-        draw_set_colour(_colour);
-        draw_rectangle(_fill_left - 2, _origin_y + 42, _fill_left + _fill_width + 2, _origin_y + 56, false);
+        var _segment_x = _left + 7 + _segment * (_segment_width + _gap);
 
-        draw_set_alpha(0.9);
-        draw_rectangle(_fill_left, _origin_y + 44, _fill_left + _fill_width, _origin_y + 54, false);
+        draw_set_colour(_colour);
+        draw_set_alpha(0.22);
+        draw_rectangle(_segment_x - 1, _origin_y + 36, _segment_x + _segment_width + 1, _origin_y + 50, false);
+
+        draw_set_alpha(0.95);
+        draw_rectangle(_segment_x, _origin_y + 38, _segment_x + _segment_width, _origin_y + 48, false);
     }
 
     draw_set_alpha(1);
     draw_set_halign(fa_center);
     draw_set_colour(_palette.text);
-    draw_text((_left + _right) * 0.5, _origin_y + 65, _value);
+    draw_text(_left + _cell.width * 0.5, _origin_y + 55, _value);
 }
 
-/// @description Draws one live numeric or textual HUD value.
+/// @description Draws one compact live numeric or textual HUD value.
 function sc_hud_level_value_draw(_origin_x, _origin_y, _cell, _label, _value, _palette)
 {
-    var _centre_x = _origin_x + _cell.x + _cell.width * 0.5;
+    var _left = _origin_x + _cell.x;
+    var _centre_x = _left + _cell.width * 0.5;
 
-    draw_set_halign(fa_center);
+    draw_set_halign(fa_left);
     draw_set_valign(fa_top);
     draw_set_colour(_palette.muted);
-    draw_text(_centre_x, _origin_y + 17, _label);
+    draw_text(_left + 19, _origin_y + 12, _label);
 
+    draw_set_halign(fa_center);
     draw_set_colour(_palette.core);
-    draw_text(_centre_x, _origin_y + 49, _value);
+    draw_text(_centre_x, _origin_y + 37, _value);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.8);
+    draw_line_width(_centre_x - 12, _origin_y + 57, _centre_x + 12, _origin_y + 57, 2);
+    draw_set_alpha(1);
 }
 
 /// @description Draws changing player data over the baked bottom HUD.
@@ -414,20 +407,20 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     var _dash_ratio = _stats.dash_cooldown > 0 ? 1 - _dash.cooldown_remaining / _stats.dash_cooldown : 1;
     var _cargo_ratio = _resources.cargo.capacity > 0 ? _resources.cargo.amount / _resources.cargo.capacity : 0;
 
-    sc_hud_level_bar_draw(_x, _y, _cells.shield, "SHIELD", string(floor(_defence.shield.current)) + " / " + string(floor(_defence.shield.maximum)), _shield_ratio, _palette.shield, _palette);
-    sc_hud_level_bar_draw(_x, _y, _cells.armour, "ARMOUR", string(floor(_defence.armour.current)) + " / " + string(floor(_defence.armour.maximum)), _armour_ratio, _palette.armour, _palette);
-    sc_hud_level_bar_draw(_x, _y, _cells.hull, "HULL", string(floor(_defence.hull.current)) + " / " + string(floor(_defence.hull.maximum)), _hull_ratio, _palette.hull, _palette);
-    sc_hud_level_bar_draw(_x, _y, _cells.energy, "ENERGY", string(floor(_resources.energy.current)) + " / " + string(floor(_resources.energy.maximum)), _energy_ratio, _palette.energy, _palette);
-    sc_hud_level_bar_draw(_x, _y, _cells.fuel, "FUEL", string(floor(_resources.fuel.current)) + " / " + string(floor(_resources.fuel.maximum)), _fuel_ratio, _palette.fuel, _palette);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.shield, "SHIELD", string(round(_shield_ratio * 100)) + "%", _shield_ratio, _palette.shield);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.armour, "ARMOUR", string(round(_armour_ratio * 100)) + "%", _armour_ratio, _palette.armour);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.hull, "HULL", string(round(_hull_ratio * 100)) + "%", _hull_ratio, _palette.hull);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.energy, "ENERGY", string(floor(_resources.energy.current)) + " / " + string(floor(_resources.energy.maximum)), _energy_ratio, _palette.energy);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.fuel, "FUEL", string(floor(_resources.fuel.current)) + " / " + string(floor(_resources.fuel.maximum)), _fuel_ratio, _palette.fuel);
 
     sc_hud_level_value_draw(_x, _y, _cells.bullets, "BULLETS", string(floor(_resources.bullets.current)), _palette);
     sc_hud_level_value_draw(_x, _y, _cells.explosives, "EXPLOSIVES", string(floor(_resources.explosives.current)), _palette);
 
     var _dash_text = _dash.cooldown_remaining <= 0 ? "READY" : string(ceil(_dash.cooldown_remaining));
-    sc_hud_level_bar_draw(_x, _y, _cells.dash, "DASH", _dash_text, _dash_ratio, _palette.dash, _palette);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.dash, "DASH", _dash_text, _dash_ratio, _palette.dash);
 
     var _cargo_text = string(floor(_resources.cargo.amount)) + " / " + string(floor(_resources.cargo.capacity));
-    sc_hud_level_bar_draw(_x, _y, _cells.cargo, "CARGO", _cargo_text, _cargo_ratio, _palette.cargo, _palette);
+    sc_hud_level_bar_draw(_hud, _x, _y, _cells.cargo, "CARGO", _cargo_text, _cargo_ratio, _palette.cargo);
 
     var _weapon = variable_struct_get(global.data.weapons, _player.ship.loadout.primary);
     sc_hud_level_value_draw(_x, _y, _cells.weapon, "PRIMARY WEAPON", _weapon.identity.name, _palette);
@@ -507,26 +500,3 @@ function sc_hud_level_draw(_hud)
     draw_set_valign(fa_top);
 }
 
-/// @description Deletes all generated HUD sprites.
-function sc_hud_level_cleanup(_hud)
-{
-    var _cache = _hud.cache;
-
-    if (sprite_exists(_cache.bottom_body)) sprite_delete(_cache.bottom_body);
-    if (sprite_exists(_cache.top_body)) sprite_delete(_cache.top_body);
-    if (sprite_exists(_cache.minimap_dock)) sprite_delete(_cache.minimap_dock);
-
-    for (var _i = 0; _i < array_length(_cache.bottom_effects); _i++)
-        if (sprite_exists(_cache.bottom_effects[_i])) sprite_delete(_cache.bottom_effects[_i]);
-
-    for (var _i = 0; _i < array_length(_cache.top_effects); _i++)
-        if (sprite_exists(_cache.top_effects[_i])) sprite_delete(_cache.top_effects[_i]);
-
-    _cache.bottom_body = -1;
-    _cache.top_body = -1;
-    _cache.minimap_dock = -1;
-    _cache.bottom_effects = [];
-    _cache.top_effects = [];
-
-    show_debug_message("LEVEL HUD VISUAL CACHE DESTROYED");
-}

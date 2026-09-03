@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_hud_level",
+  "%Name":"sc_hud_bake",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_hud_level",
+  "name":"sc_hud_bake",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"baking",
+    "path":"folders/scripts/baking.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
