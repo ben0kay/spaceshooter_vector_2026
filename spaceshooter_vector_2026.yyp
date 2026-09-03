@@ -95,6 +95,7 @@
     {"id":{"name":"sc_Macros","path":"scripts/sc_Macros/sc_Macros.yy",},},
     {"id":{"name":"sc_menu_main","path":"scripts/sc_menu_main/sc_menu_main.yy",},},
     {"id":{"name":"sc_minigun","path":"scripts/sc_minigun/sc_minigun.yy",},},
+    {"id":{"name":"sc_optimizations","path":"scripts/sc_optimizations/sc_optimizations.yy",},},
     {"id":{"name":"sc_player_init","path":"scripts/sc_player_init/sc_player_init.yy",},},
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
     {"id":{"name":"sc_plyr_dash","path":"scripts/sc_plyr_dash/sc_plyr_dash.yy",},},

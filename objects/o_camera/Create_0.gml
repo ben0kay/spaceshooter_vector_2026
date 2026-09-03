@@ -35,3 +35,5 @@ view_set_visible(0, true);
 view_set_camera(0, camera_data.camera_id);
 view_set_wport(0, camera_data.base.width);
 view_set_hport(0, camera_data.base.height);
+
+sc_optimization_camera_cache(camera_data.camera_id);

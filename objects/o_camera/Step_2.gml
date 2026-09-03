@@ -1,4 +1,4 @@
-/// @description Updates camera zoom, targeting and shake.
+/// @description Updates camera zoom, targeting, shake and cached world bounds.
 var _camera = camera_data;
 var _camera_id = _camera.camera_id;
 
@@ -15,8 +15,6 @@ if (abs(_camera.zoom.current - _camera.zoom.target) > 0.0001)
 
 var _view_w = camera_get_view_width(_camera_id);
 var _view_h = camera_get_view_height(_camera_id);
-
-// Without a target, preserve the camera's current world position.
 var _target_x = camera_get_view_x(_camera_id) + _view_w * 0.5;
 var _target_y = camera_get_view_y(_camera_id) + _view_h * 0.5;
 
@@ -27,9 +25,7 @@ if (instance_exists(global.player_id))
     _target_y = global.player_id.y;
 }
 else
-{
     _camera.target_id = noone;
-}
 
 var _camera_x = _target_x - _view_w * 0.5;
 var _camera_y = _target_y - _view_h * 0.5;
@@ -56,3 +52,4 @@ if (_camera.shake.time > 0)
 }
 
 camera_set_view_pos(_camera_id, round(_camera_x), round(_camera_y));
+sc_optimization_camera_cache(_camera_id);

@@ -15,6 +15,7 @@ function sc_game_init()
     global.player_id = noone;
 
     if (!sc_config_init()) return false;
+    if (!sc_optimization_init()) return false;
     if (!sc_data_init()) return false;
     if (!sc_particles_init()) return false;
     if (!sc_ship_visual_cache_init()) return false;

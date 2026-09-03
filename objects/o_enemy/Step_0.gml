@@ -1,11 +1,12 @@
-/// @description Updates enemy perception, hardpoints, visuals and active state.
+/// @description Updates enemy gameplay and visible visual effects.
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
+
+sc_optimization_enemy_update(id);
 
 if (enemy.state != EnemyState.STUNNED && enemy.state != EnemyState.DEAD)
     sc_enemy_perception_update(id);
 
 sc_enemy_hardpoint_update(id);
-sc_enemy_visual_update(id);
 
 switch (enemy.state)
 {
@@ -29,5 +30,10 @@ switch (enemy.state)
         // Death currently resolves immediately inside sc_enemy_die().
     break;
 }
+
+if (enemy.optimization.render_active)
+    sc_enemy_visual_update(id);
+else
+    enemy.visual.runtime.shield_hit_alpha = 0;
 
 image_angle = draw_angle;

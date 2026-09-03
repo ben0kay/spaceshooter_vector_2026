@@ -53,6 +53,11 @@ function sc_config_init()
                 hit_scale_amount: 0.11, hit_flash_alpha: 0.48
             }
         },
+		
+		optimization: {
+	    enemy_screen_padding: 128,
+	    enemy_visual_radius_scale: 1.75
+	},
 
         projectile: {
             classes: [
