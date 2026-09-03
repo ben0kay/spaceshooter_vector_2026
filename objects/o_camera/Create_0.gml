@@ -7,6 +7,13 @@ camera_data = {
         height: display_get_gui_height()
     },
 
+    follow: {
+        x: room_width * 0.5,
+        y: room_height * 0.5,
+        deadzone_width: 180,
+        deadzone_height: 110
+    },
+
     zoom: {
         current: 1,
         target: 1,
@@ -25,8 +32,8 @@ camera_data = {
 
 var _view_w = camera_data.base.width * camera_data.zoom.current;
 var _view_h = camera_data.base.height * camera_data.zoom.current;
-var _view_x = room_width * 0.5 - _view_w * 0.5;
-var _view_y = room_height * 0.5 - _view_h * 0.5;
+var _view_x = camera_data.follow.x - _view_w * 0.5;
+var _view_y = camera_data.follow.y - _view_h * 0.5;
 
 camera_data.camera_id = camera_create_view(_view_x, _view_y, _view_w, _view_h, 0, noone, -1, -1, -1, -1);
 

@@ -325,3 +325,31 @@ function sc_player_dash_ghosts_draw(_player)
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
+
+function sc_player_draw_aim_line(){
+// Fading aim guide.
+var _aim_start = 42;
+var _aim_length = 1080;
+var _segments = 12;
+var _segment_length = _aim_length / _segments;
+var _colour = make_colour_rgb(25, 225, 255);
+
+draw_set_colour(_colour);
+
+for (var _i = 0; _i < _segments; _i++)
+{
+    var _d1 = _aim_start + _segment_length * _i;
+    var _d2 = _aim_start + _segment_length * (_i + 1);
+    var _alpha = lerp(0.5, 0.03, _i / (_segments - 1));
+
+    draw_set_alpha(_alpha);
+    draw_line_width(
+        x + lengthdir_x(_d1, draw_angle), y + lengthdir_y(_d1, draw_angle),
+        x + lengthdir_x(_d2, draw_angle), y + lengthdir_y(_d2, draw_angle),
+        1
+    );
+}
+
+draw_set_alpha(1);
+draw_set_colour(c_white);
+}

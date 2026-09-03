@@ -93,7 +93,7 @@ function sc_weapon_register_shard_rocket()
             },
 
             damage: {
-                amount: 4,
+                amount: 20,
                 type: DamageType.EXPLOSIVE,
                 effect: DamageEffect.NONE
             },
@@ -120,7 +120,7 @@ function sc_weapon_register_shard_rocket()
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
-            interval: 42,
+            interval: 32,
             recoil: 8,
             muzzle_flash_duration: 8
         },
