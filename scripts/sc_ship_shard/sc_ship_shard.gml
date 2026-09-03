@@ -31,13 +31,13 @@ function sc_ship_register_shard()
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
-            primary: [
-                { key: "primary_left", x: 13, y: -21, angle: 0, muzzle_forward: 32, scale: 1 },
-                { key: "primary_right", x: 13, y: 21, angle: 0, muzzle_forward: 32, scale: 1 }
-            ],
+    primary: [
+        { key: "primary_left", x: 5, y: -32, angle: 0, muzzle_forward: 25, scale: 0.9 },
+        { key: "primary_right", x: 5, y: 32, angle: 0, muzzle_forward: 25, scale: 0.9 }
+    ],
 
-            utility: []
-        },
+    utility: []
+},
 
         starting_loadout: {
             primary: "weapon_shard_pulse",
@@ -67,29 +67,30 @@ function sc_ship_shard_visual_data()
         colour_secondary: make_colour_rgb(175, 220, 228),
 
         palette: {
-            void: make_colour_rgb(2, 7, 12),
-            hull_dark: make_colour_rgb(10, 23, 31),
-            hull_mid: make_colour_rgb(28, 56, 68),
-            hull_light: make_colour_rgb(75, 126, 140),
-            metal: make_colour_rgb(175, 220, 228),
-            accent: make_colour_rgb(25, 135, 255),
-            energy: make_colour_rgb(25, 225, 255),
-            core: make_colour_rgb(220, 255, 255),
-            glow: make_colour_rgb(0, 115, 195)
-        },
+		    void: make_colour_rgb(2, 7, 12),
+		    hull_dark: make_colour_rgb(10, 23, 31),
+		    hull_mid: make_colour_rgb(28, 56, 68),
+		    hull_light: make_colour_rgb(75, 126, 140),
+		    metal: make_colour_rgb(175, 220, 228),
+		    outline: make_colour_rgb(45, 105, 120),
+		    accent: make_colour_rgb(25, 135, 255),
+		    energy: make_colour_rgb(25, 225, 255),
+		    core: make_colour_rgb(220, 255, 255),
+		    glow: make_colour_rgb(0, 115, 195)
+		},
 
         wing: {
-            hinge_forward: -0.08, hinge_side: 0.3,
-            fold_idle: -4, fold_moving: 7, fold_boost: 15, fold_dash: 23,
-            fold_response: 0.14
-        },
+    hinge_forward: -0.03, hinge_side: 0.34,
+    fold_idle: -2, fold_moving: 4, fold_boost: 10, fold_dash: 16,
+    fold_response: 0.14
+},
 
-        core: {
-            forward: -0.08, side: 0,
-            idle_speed: 0.45, movement_speed: 4.5,
-            boost_multiplier: 1.35, dash_multiplier: 1.75,
-            response: 0.12
-        },
+core: {
+    forward: -0.18, side: 0,
+    idle_speed: 0.45, movement_speed: 4.5,
+    boost_multiplier: 1.35, dash_multiplier: 1.75,
+    response: 0.12
+},
 
         draw: {
             hull: sc_ship_shard_hull_draw,
@@ -125,296 +126,210 @@ sc_ship_shard_death() assembles cached components into the generic death-fragmen
 */
 
 
-/// @description Draws the Shard's compact dark arrowhead hull.
+/// @description Draws the Shard's compact twin-engine interceptor hull.
 function sc_ship_shard_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Main narrow arrowhead silhouette.
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.73, 0, 0.58, -0.2, 0.58, 0.2, _p.hull_dark, false);
-    sc_visual_quad(_x, _y, _radius, _angle, 0.58, -0.2, -0.27, -0.36, -0.27, 0.36, 0.58, 0.2, _p.hull_dark);
-    sc_visual_quad(_x, _y, _radius, _angle, -0.27, -0.36, -0.88, -0.29, -0.88, 0.29, -0.27, 0.36, _p.hull_dark);
-    sc_visual_quad(_x, _y, _radius, _angle, -0.88, -0.29, -1.2, -0.15, -1.2, 0.15, -0.88, 0.29, _p.void);
+    // Compact main fuselage.
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.18, 0, 0.48, -0.25, 0.48, 0.25, _p.hull_dark, false);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.48, -0.25, -0.37, -0.31, -0.37, 0.31, 0.48, 0.25, _p.hull_dark);
+    sc_visual_quad(_x, _y, _radius, _angle, -0.37, -0.31, -0.92, -0.23, -0.92, 0.23, -0.37, 0.31, _p.hull_dark);
 
-    // Raised central spear.
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.67, 0, 0.42, -0.13, -0.82, 0, _p.hull_mid, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.67, 0, -0.82, 0, 0.42, 0.13, _p.hull_mid, false);
+    // Distinct raised nose wedge.
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.18, 0, 0.53, -0.16, 0.53, 0.16, _p.hull_light, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.12, 0, 0.67, -0.105, 0.27, 0, _p.hull_mid, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.12, 0, 0.27, 0, 0.67, 0.105, _p.hull_mid, false);
 
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.57, 0, 0.56, -0.09, 0.16, 0, _p.hull_light, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.57, 0, 0.16, 0, 0.56, 0.09, _p.hull_light, false);
+    // Cockpit.
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.98, 0, 0.62, -0.09, 0.34, 0, _p.void, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.98, 0, 0.34, 0, 0.62, 0.09, _p.void, false);
+    sc_visual_line(_x, _y, _radius, _angle, 0.98, 0, 0.62, -0.09, 1, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, 0.98, 0, 0.62, 0.09, 1, _p.energy);
 
-    // Dark cockpit.
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.43, 0, 0.67, -0.115, 0.32, 0, _p.void, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.43, 0, 0.32, 0, 0.67, 0.115, _p.void, false);
-    sc_visual_line(_x, _y, _radius, _angle, 1.43, 0, 0.67, -0.115, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, 1.43, 0, 0.67, 0.115, 1, _p.energy);
-
-    // Compact side machinery.
+    // Shoulder structure joining fuselage to wings.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_quad(_x, _y, _radius, _angle,
-            0.48, 0.17 * _side,
-            0.02, 0.3 * _side,
-            -0.57, 0.29 * _side,
-            -0.86, 0.19 * _side,
-            _p.hull_mid
-        );
+        sc_visual_quad(_x, _y, _radius, _angle, 0.48, 0.18 * _side, 0.15, 0.36 * _side, -0.48, 0.41 * _side, -0.71, 0.24 * _side, _p.hull_mid);
+        sc_visual_quad(_x, _y, _radius, _angle, 0.33, 0.21 * _side, 0.08, 0.31 * _side, -0.41, 0.34 * _side, -0.58, 0.22 * _side, _p.hull_light);
 
-        sc_visual_quad(_x, _y, _radius, _angle,
-            0.28, 0.19 * _side,
-            -0.06, 0.265 * _side,
-            -0.46, 0.25 * _side,
-            -0.65, 0.17 * _side,
-            _p.hull_light
-        );
-
-        sc_visual_line(_x, _y, _radius, _angle, 0.42, 0.2 * _side, -0.04, 0.29 * _side, 1, _p.metal);
-        sc_visual_line(_x, _y, _radius, _angle, -0.04, 0.29 * _side, -0.56, 0.28 * _side, 1, _p.hull_light);
-
-        // Blue inset machinery.
-        sc_visual_line(_x, _y, _radius, _angle, 0.2, 0.225 * _side, -0.26, 0.255 * _side, 5, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.18, 0.225 * _side, -0.24, 0.25 * _side, 2, _p.accent);
+        sc_visual_line(_x, _y, _radius, _angle, 0.45, 0.2 * _side, 0.12, 0.34 * _side, 1, _p.metal);
+        sc_visual_line(_x, _y, _radius, _angle, 0.06, 0.31 * _side, -0.43, 0.34 * _side, 2, _p.accent);
     }
 
-    // Twin rear engine housings.
+    // Large separated rear engine pods.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_quad(_x, _y, _radius, _angle,
-            -0.49, 0.13 * _side,
-            -0.73, 0.25 * _side,
-            -1.16, 0.18 * _side,
-            -1.15, 0.07 * _side,
-            _p.hull_mid
-        );
+        sc_visual_quad(_x, _y, _radius, _angle, -0.27, 0.18 * _side, -0.47, 0.39 * _side, -1.02, 0.34 * _side, -1.08, 0.15 * _side, _p.void);
+        sc_visual_quad(_x, _y, _radius, _angle, -0.33, 0.2 * _side, -0.5, 0.34 * _side, -0.94, 0.3 * _side, -0.99, 0.17 * _side, _p.hull_mid);
 
-        sc_visual_line(_x, _y, _radius, _angle, -0.64, 0.17 * _side, -1.12, 0.125 * _side, 6, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, -0.68, 0.17 * _side, -1.14, 0.125 * _side, 3, _p.energy);
-        sc_visual_circle(_x, _y, _radius, _angle, -1.14, 0.125 * _side, 0.055, _p.core, false);
+        sc_visual_line(_x, _y, _radius, _angle, -0.51, 0.31 * _side, -0.93, 0.27 * _side, 2, _p.metal);
+
+        // Engine aperture.
+        sc_visual_line(_x, _y, _radius, _angle, -0.78, 0.22 * _side, -1.04, 0.19 * _side, 7, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.8, 0.22 * _side, -1.05, 0.19 * _side, 3, _p.energy);
+        sc_visual_circle(_x, _y, _radius, _angle, -1.04, 0.19 * _side, 0.055, _p.core, false);
     }
 
-    // Reactor socket behind the separately rotating core.
-    sc_visual_circle(_x, _y, _radius, _angle, -0.08, 0, 0.235, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.08, 0, 0.235, _p.hull_light, true);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.08, 0, 0.175, _p.glow, true);
+    // Central reactor socket.
+    sc_visual_circle(_x, _y, _radius, _angle, -0.18, 0, 0.22, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.18, 0, 0.22, _p.hull_light, true);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.18, 0, 0.16, _p.glow, true);
 
-    // Central spine.
-    sc_visual_line(_x, _y, _radius, _angle, -0.72, 0, 1.62, 0, 5, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.28, 0, 1.57, 0, 1, _p.energy);
+    // Strong central spine.
+    sc_visual_line(_x, _y, _radius, _angle, -0.72, 0, 1.08, 0, 5, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, 0.17, 0, 1.08, 0, 2, _p.energy);
 
-    // Thin aqua silhouette identifier.
-    sc_visual_line(_x, _y, _radius, _angle, 1.73, 0, 0.58, -0.2, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, 0.58, -0.2, -0.27, -0.36, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -0.27, -0.36, -0.88, -0.29, 1, _p.outline);
-    sc_visual_line(_x, _y, _radius, _angle, -0.88, -0.29, -1.2, -0.15, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -1.2, -0.15, -1.2, 0.15, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -1.2, 0.15, -0.88, 0.29, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -0.88, 0.29, -0.27, 0.36, 1, _p.outline);
-    sc_visual_line(_x, _y, _radius, _angle, -0.27, 0.36, 0.58, 0.2, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, 0.58, 0.2, 1.73, 0, 1, _p.energy);
+    // Cyan silhouette highlights.
+    sc_visual_line(_x, _y, _radius, _angle, 1.18, 0, 0.48, -0.25, 1, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, 1.18, 0, 0.48, 0.25, 1, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, 0.48, -0.25, -0.37, -0.31, 1, _p.outline);
+    sc_visual_line(_x, _y, _radius, _angle, 0.48, 0.25, -0.37, 0.31, 1, _p.outline);
 
-    // Hull damage remains visible beneath armour.
+    // Damage.
     if (_stage >= 1)
     {
-        sc_visual_line(_x, _y, _radius, _angle, 0.38, -0.19, 0.13, -0.31, 3, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.27, -0.25, 0.18, -0.1, 2, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.34, -0.18, 0.07, -0.29, 3, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.21, -0.23, 0.12, -0.07, 2, _p.void);
     }
 
     if (_stage >= 2)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, -0.43, 0.25, 0.14, _p.void, false);
-        sc_visual_line(_x, _y, _radius, _angle, -0.43, 0.25, -0.65, 0.31, 2, _p.accent);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.43, 0.26, 0.13, _p.void, false);
+        sc_visual_line(_x, _y, _radius, _angle, -0.43, 0.26, -0.62, 0.36, 2, _p.accent);
     }
 
     if (_stage >= 3)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, -0.91, -0.16, 0.17, _p.void, false);
-        sc_visual_line(_x, _y, _radius, _angle, -0.9, -0.16, -1.16, -0.25, 2, _p.energy);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.82, -0.18, 0.17, _p.void, false);
+        sc_visual_line(_x, _y, _radius, _angle, -0.82, -0.18, -1.04, -0.3, 2, _p.energy);
     }
 }
 
-/// @description Draws one compact independent Shard cannon.
+/// @description Draws one compact wing-mounted Shard pulse cannon.
 function sc_ship_shard_cannon_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Compact dark mount.
-    sc_visual_quad(_x, _y, _radius, _angle,
-        -0.2, -0.13,
-        0.14, -0.12,
-        0.14, 0.12,
-        -0.2, 0.13,
-        _p.hull_dark
-    );
+    // Low-profile mounting block.
+    sc_visual_quad(_x, _y, _radius, _angle, -0.2, -0.12, 0.13, -0.11, 0.13, 0.11, -0.2, 0.12, _p.hull_dark);
+    sc_visual_line(_x, _y, _radius, _angle, -0.17, -0.12, 0.14, -0.11, 1, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, -0.17, 0.12, 0.14, 0.11, 1, _p.metal);
 
-    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.15, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.15, _p.hull_light, true);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.1, 0, 0.055, _p.energy, false);
+    // Energy-fed breech.
+    sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0, 0.135, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0, 0.135, _p.hull_light, true);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0, 0.045, _p.energy, false);
 
-    // Short twin barrel rails.
-    sc_visual_line(_x, _y, _radius, _angle, -0.08, -0.075, 0.53, -0.075, 2, _p.metal);
-    sc_visual_line(_x, _y, _radius, _angle, -0.08, 0.075, 0.53, 0.075, 2, _p.metal);
+    // Short heavy barrel.
+    sc_visual_line(_x, _y, _radius, _angle, 0, 0, 0.47, 0, 7, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0, 0.48, 0, 3, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.1, 0, 0.46, 0, 1, _p.energy);
 
-    sc_visual_line(_x, _y, _radius, _angle, -0.05, 0, 0.55, 0, 6, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0, 0.55, 0, 2, _p.energy);
-
-    // Barrel segmentation.
-    sc_visual_line(_x, _y, _radius, _angle, 0.18, -0.1, 0.18, 0.1, 1, _p.accent);
-    sc_visual_line(_x, _y, _radius, _angle, 0.38, -0.09, 0.38, 0.09, 1, _p.hull_light);
-
-    // Bright muzzle aperture.
-    sc_visual_circle(_x, _y, _radius, _angle, 0.55, 0, 0.072, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.55, 0, 0.072, _p.energy, true);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.55, 0, 0.025, _p.core, false);
+    // Muzzle.
+    sc_visual_circle(_x, _y, _radius, _angle, 0.49, 0, 0.07, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.49, 0, 0.07, _p.energy, true);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.49, 0, 0.024, _p.core, false);
 }
 
-/// @description Draws compact Shard armour and fixed inner stabilizer blades.
+/// @description Draws compact interceptor armour over the Shard fuselage.
 function sc_ship_shard_armour_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Thin silver nose cap.
+    // Bright angular nose cap.
     if (_stage <= 2)
     {
         var _nose_colour = _stage == 0 ? _p.metal : (_stage == 1 ? _p.hull_light : _p.hull_mid);
 
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.68, 0, 0.73, -0.1, 1.03, 0, _nose_colour, false);
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.68, 0, 1.03, 0, 0.73, 0.1, _nose_colour, false);
+        sc_visual_triangle(_x, _y, _radius, _angle, 1.16, 0, 0.73, -0.095, 0.97, 0, _nose_colour, false);
+        sc_visual_triangle(_x, _y, _radius, _angle, 1.16, 0, 0.97, 0, 0.73, 0.095, _nose_colour, false);
 
-        sc_visual_line(_x, _y, _radius, _angle, 1.68, 0, 0.73, -0.1, 1, _p.core);
-        sc_visual_line(_x, _y, _radius, _angle, 1.68, 0, 0.73, 0.1, 1, _p.core);
+        sc_visual_line(_x, _y, _radius, _angle, 1.16, 0, 0.73, -0.095, 1, _p.core);
+        sc_visual_line(_x, _y, _radius, _angle, 1.16, 0, 0.73, 0.095, 1, _p.core);
     }
 
-    // Small layered shoulder plates.
+    // Broad shoulder armour.
     if (_stage <= 1)
     {
         var _plate_colour = _stage == 0 ? _p.hull_light : _p.hull_mid;
 
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_visual_quad(_x, _y, _radius, _angle,
-                0.55, 0.145 * _side,
-                0.16, 0.245 * _side,
-                -0.5, 0.245 * _side,
-                -0.7, 0.15 * _side,
-                _plate_colour
-            );
-
-            sc_visual_line(_x, _y, _radius, _angle, 0.55, 0.145 * _side, 0.16, 0.245 * _side, 1, _p.metal);
-            sc_visual_line(_x, _y, _radius, _angle, 0.06, 0.225 * _side, -0.42, 0.225 * _side, 2, _p.accent);
+            sc_visual_quad(_x, _y, _radius, _angle, 0.51, 0.17 * _side, 0.14, 0.3 * _side, -0.45, 0.32 * _side, -0.63, 0.19 * _side, _plate_colour);
+            sc_visual_line(_x, _y, _radius, _angle, 0.51, 0.17 * _side, 0.14, 0.3 * _side, 1, _p.metal);
+            sc_visual_line(_x, _y, _radius, _angle, 0.03, 0.27 * _side, -0.38, 0.28 * _side, 2, _p.energy);
         }
     }
 
-    // Small fixed blades close to the fuselage.
+    // Rear engine armour collars.
     if (_stage <= 2)
     {
-        var _fin_colour = _stage == 0 ? _p.hull_mid : (_stage == 1 ? _p.hull_dark : _p.void);
+        var _engine_colour = _stage == 0 ? _p.hull_mid : (_stage == 1 ? _p.hull_dark : _p.void);
 
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_visual_triangle(_x, _y, _radius, _angle,
-                0.05, 0.28 * _side,
-                -0.36, 0.52 * _side,
-                -0.7, 0.29 * _side,
-                _fin_colour,
-                false
-            );
-
-            sc_visual_line(_x, _y, _radius, _angle, 0.05, 0.28 * _side, -0.36, 0.52 * _side, 1, _p.energy);
-            sc_visual_line(_x, _y, _radius, _angle, -0.36, 0.52 * _side, -0.7, 0.29 * _side, 1, _p.outline);
+            sc_visual_quad(_x, _y, _radius, _angle, -0.38, 0.22 * _side, -0.52, 0.34 * _side, -0.82, 0.31 * _side, -0.72, 0.2 * _side, _engine_colour);
+            sc_visual_line(_x, _y, _radius, _angle, -0.52, 0.34 * _side, -0.82, 0.31 * _side, 1, _p.metal);
         }
     }
 
     if (_stage >= 3)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, -0.08, 0, 0.26, _p.hull_light, true);
-        sc_visual_circle(_x, _y, _radius, _angle, -0.08, 0, 0.2, _p.accent, true);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.18, 0, 0.25, _p.hull_light, true);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.18, 0, 0.19, _p.accent, true);
     }
 }
 
-/// @description Draws one short swept folding Shard wing.
+/// @description Draws one broad swept fighter wing with mechanical attachment.
 function sc_ship_shard_wing_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Mechanical attachment remains visible at the fuselage edge.
-    sc_visual_quad(_x, _y, _radius, _angle,
-        0.28, -0.06,
-        0.17, 0.18,
-        -0.34, 0.24,
-        -0.49, 0.04,
-        _p.void
-    );
+    // Mechanical wing root.
+    sc_visual_quad(_x, _y, _radius, _angle, 0.31, -0.05, 0.21, 0.2, -0.3, 0.28, -0.48, 0.04, _p.void);
+    sc_visual_quad(_x, _y, _radius, _angle, 0.26, 0, 0.17, 0.17, -0.27, 0.23, -0.4, 0.06, _p.hull_mid);
 
-    sc_visual_quad(_x, _y, _radius, _angle,
-        0.22, -0.015,
-        0.13, 0.15,
-        -0.3, 0.19,
-        -0.4, 0.055,
-        _p.hull_mid
-    );
+    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.12, 0.09, _p.void, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.12, 0.09, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.12, 0.035, _p.energy, false);
 
-    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.1, 0.085, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.1, 0.085, _p.metal, true);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.02, 0.1, 0.032, _p.energy, false);
+    // Broad swept wing silhouette.
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.3, 0.08, 0.03, 0.44, -0.74, 0.78, _p.hull_dark, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.3, 0.08, -0.74, 0.78, -0.63, 0.13, _p.hull_dark, false);
 
-    // Short rear-swept blade.
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.2, 0.08,
-        -0.02, 0.28,
-        -0.9, 0.55,
-        _p.hull_dark,
-        false
-    );
+    // Raised inner wing.
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.2, 0.13, 0.01, 0.37, -0.61, 0.67, _p.hull_mid, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.2, 0.13, -0.61, 0.67, -0.54, 0.17, _p.hull_mid, false);
 
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.2, 0.08,
-        -0.9, 0.55,
-        -0.49, 0.08,
-        _p.hull_dark,
-        false
-    );
+    // Wing edges.
+    sc_visual_line(_x, _y, _radius, _angle, 0.3, 0.08, 0.03, 0.44, 2, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, 0.03, 0.44, -0.74, 0.78, 2, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, -0.74, 0.78, -0.63, 0.13, 1, _p.outline);
+    sc_visual_line(_x, _y, _radius, _angle, -0.63, 0.13, 0.3, 0.08, 1, _p.metal);
 
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.14, 0.11,
-        -0.04, 0.24,
-        -0.77, 0.48,
-        _p.hull_mid,
-        false
-    );
+    // Powered wing channel.
+    sc_visual_line(_x, _y, _radius, _angle, 0.05, 0.32, -0.48, 0.59, 6, _p.void);
+    sc_visual_line(_x, _y, _radius, _angle, 0.05, 0.32, -0.47, 0.585, 2, _p.accent);
+    sc_visual_circle(_x, _y, _radius, _angle, -0.47, 0.585, 0.03, _p.core, false);
 
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.14, 0.11,
-        -0.77, 0.48,
-        -0.43, 0.12,
-        _p.hull_mid,
-        false
-    );
-
-    // Thin aqua outline.
-    sc_visual_line(_x, _y, _radius, _angle, 0.2, 0.08, -0.02, 0.28, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -0.02, 0.28, -0.9, 0.55, 1, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, -0.9, 0.55, -0.49, 0.08, 1, _p.outline);
-    sc_visual_line(_x, _y, _radius, _angle, -0.49, 0.08, 0.2, 0.08, 1, _p.energy);
-
-    // Narrow powered wing channel.
-    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0.21, -0.63, 0.42, 5, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0.21, -0.62, 0.415, 2, _p.accent);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.62, 0.415, 0.026, _p.core, false);
+    // Panel division.
+    sc_visual_line(_x, _y, _radius, _angle, -0.18, 0.34, -0.32, 0.59, 1, _p.hull_light);
 
     if (_stage >= 1)
-        sc_visual_line(_x, _y, _radius, _angle, -0.14, 0.22, -0.32, 0.34, 3, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.12, 0.31, -0.32, 0.49, 3, _p.void);
 
     if (_stage >= 2)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, -0.52, 0.38, 0.11, _p.void, false);
-        sc_visual_line(_x, _y, _radius, _angle, -0.52, 0.38, -0.69, 0.49, 2, _p.accent);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.45, 0.55, 0.12, _p.void, false);
+        sc_visual_line(_x, _y, _radius, _angle, -0.45, 0.55, -0.64, 0.7, 2, _p.accent);
     }
 
     if (_stage >= 3)
-        sc_visual_triangle(_x, _y, _radius, _angle, -0.65, 0.45, -0.9, 0.55, -0.76, 0.43, _p.void, false);
+        sc_visual_triangle(_x, _y, _radius, _angle, -0.52, 0.65, -0.74, 0.78, -0.63, 0.58, _p.void, false);
 }
 
-/// @description Draws the thin armour cap for one folding Shard wing.
+/// @description Draws the armour plate over one broad Shard fighter wing.
 function sc_ship_shard_wing_armour_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     if (_stage >= 3) return;
@@ -422,33 +337,20 @@ function sc_ship_shard_wing_armour_draw(_x, _y, _radius, _angle, _visual, _stage
     var _p = _visual.palette;
     var _colour = _stage == 0 ? _p.hull_light : (_stage == 1 ? _p.hull_mid : _p.hull_dark);
 
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.14, 0.1,
-        -0.02, 0.23,
-        -0.68, 0.44,
-        _colour,
-        false
-    );
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.19, 0.12, 0.02, 0.36, -0.54, 0.64, _colour, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.19, 0.12, -0.54, 0.64, -0.48, 0.18, _colour, false);
 
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.14, 0.1,
-        -0.68, 0.44,
-        -0.4, 0.13,
-        _colour,
-        false
-    );
-
-    sc_visual_line(_x, _y, _radius, _angle, 0.14, 0.1, -0.02, 0.23, 1, _p.metal);
-    sc_visual_line(_x, _y, _radius, _angle, -0.02, 0.23, -0.68, 0.44, 1, _p.core);
+    sc_visual_line(_x, _y, _radius, _angle, 0.19, 0.12, 0.02, 0.36, 1, _p.metal);
+    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0.36, -0.54, 0.64, 1, _p.core);
 
     if (_stage <= 1)
     {
-        sc_visual_line(_x, _y, _radius, _angle, 0.01, 0.2, -0.48, 0.355, 4, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.01, 0.2, -0.47, 0.35, 1, _p.energy);
+        sc_visual_line(_x, _y, _radius, _angle, 0.01, 0.3, -0.39, 0.51, 5, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.01, 0.3, -0.38, 0.505, 1, _p.energy);
     }
 
     if (_stage == 2)
-        sc_visual_line(_x, _y, _radius, _angle, -0.24, 0.27, -0.44, 0.37, 2, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.21, 0.39, -0.42, 0.54, 2, _p.void);
 }
 
 /// @description Bakes the Shard shield using its registered collision ellipse.
@@ -515,18 +417,20 @@ function sc_ship_shard_thrust_draw(_x, _y, _radius, _angle, _visual)
     draw_set_colour(c_white);
 }
 
-/// @description Draws the Shard's small independently rotating drive core.
+/// @description Draws the Shard's compact embedded rotating drive core.
 function sc_ship_shard_core_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
-    var _outer = _radius * 0.215;
-    var _middle = _radius * 0.15;
-    var _inner = _radius * 0.072;
+    var _outer = _radius * 0.195;
+    var _middle = _radius * 0.135;
+    var _inner = _radius * 0.06;
 
-    draw_set_alpha(0.28);
+    // Soft reactor glow.
+    draw_set_alpha(0.24);
     draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _outer * 1.5, false);
+    draw_circle(_x, _y, _outer * 1.45, false);
 
+    // Embedded socket.
     draw_set_alpha(1);
     draw_set_colour(_p.void);
     draw_circle(_x, _y, _outer, false);
@@ -534,22 +438,21 @@ function sc_ship_shard_core_draw(_x, _y, _radius, _angle, _visual)
     draw_set_colour(_p.hull_light);
     draw_circle(_x, _y, _outer, true);
 
-    draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _middle, true);
-
+    // Rotating four-blade mechanism.
     for (var _i = 0; _i < 4; _i++)
     {
         var _direction = _angle + _i * 90;
         var _inner_x = _x + lengthdir_x(_inner, _direction);
         var _inner_y = _y + lengthdir_y(_inner, _direction);
-        var _outer_x = _x + lengthdir_x(_outer * 0.88, _direction + 22);
-        var _outer_y = _y + lengthdir_y(_outer * 0.88, _direction + 22);
+        var _outer_x = _x + lengthdir_x(_outer * 0.86, _direction + 24);
+        var _outer_y = _y + lengthdir_y(_outer * 0.86, _direction + 24);
 
-        draw_set_colour((_i mod 2) == 0 ? _p.core : _p.accent);
+        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.accent);
         draw_line_width(_inner_x, _inner_y, _outer_x, _outer_y, 2);
     }
 
     draw_set_colour(_p.energy);
+    draw_circle(_x, _y, _middle, true);
     draw_circle(_x, _y, _inner, false);
 
     draw_set_colour(_p.core);
