@@ -11,8 +11,7 @@ var _perception_interval = enemy.state == EnemyState.IDLE
 
 var _perception_due = sc_optimization_update_due(id, _perception_interval, _optimization.lazy_factor);
 
-if (enemy.state != EnemyState.IDLE
-&& !instance_exists(enemy.target_id))
+if (enemy.state != EnemyState.IDLE && !instance_exists(enemy.target_id))
     _perception_due = true;
 
 if (!instance_exists(global.player_id))
@@ -30,28 +29,12 @@ var _hardpoint_due = _optimization.render_active
 if (_hardpoint_due)
     sc_enemy_hardpoint_update(id);
 
-switch (enemy.state)
-{
-    case EnemyState.IDLE:
-        sc_enemy_update_idle(id);
-    break;
+var _state_before_movement = enemy.state;
 
-    case EnemyState.CHASING:
-        sc_enemy_update_chasing(id);
-    break;
+sc_enemy_movement_update(id);
 
-    case EnemyState.ATTACKING:
-        sc_enemy_update_attacking(id);
-    break;
-
-    case EnemyState.STUNNED:
-        sc_enemy_update_stunned(id);
-    break;
-
-    case EnemyState.DEAD:
-        // Death currently resolves immediately inside sc_enemy_die().
-    break;
-}
+if (_state_before_movement == EnemyState.ATTACKING)
+    sc_enemy_attack_update(id);
 
 if (_optimization.render_active)
     sc_enemy_visual_update(id);

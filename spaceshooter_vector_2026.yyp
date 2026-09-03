@@ -81,6 +81,7 @@
     {"id":{"name":"sc_death_fragment","path":"scripts/sc_death_fragment/sc_death_fragment.yy",},},
     {"id":{"name":"sc_debug_visuals","path":"scripts/sc_debug_visuals/sc_debug_visuals.yy",},},
     {"id":{"name":"sc_enemy_bake","path":"scripts/sc_enemy_bake/sc_enemy_bake.yy",},},
+    {"id":{"name":"sc_enemy_movement","path":"scripts/sc_enemy_movement/sc_enemy_movement.yy",},},
     {"id":{"name":"sc_enemy_register","path":"scripts/sc_enemy_register/sc_enemy_register.yy",},},
     {"id":{"name":"sc_enemy_stats","path":"scripts/sc_enemy_stats/sc_enemy_stats.yy",},},
     {"id":{"name":"sc_enemy","path":"scripts/sc_enemy/sc_enemy.yy",},},

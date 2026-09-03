@@ -18,12 +18,25 @@ function sc_enemy_init(_enemy, _enemy_key)
         target_distance_sq: 0,
         stats: undefined,
         defence: undefined,
+
+        movement_controller: variable_clone(_data.movement_controller),
+
         movement: {
             velocity_x: 0,
             velocity_y: 0,
-
             spawn_x: _enemy.x,
             spawn_y: _enemy.y,
+            orbit_direction: 1,
+            strafe_phase: random(2 * pi),
+
+            command: {
+                active: false,
+                direction: 0,
+                speed_scale: 1,
+                apply_friction: true,
+                facing_mode: EnemyFacingMode.TARGET,
+                face_direction: 0
+            },
 
             wander: {
                 active: false,
@@ -50,8 +63,11 @@ function sc_enemy_init(_enemy, _enemy_key)
     var _runtime = _enemy.enemy;
     var _final = _runtime.stats.final;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
+    var _orbit_direction = _runtime.movement_controller.orbit.direction;
 
     _enemy.draw_angle = 0;
+    _runtime.movement.orbit_direction = _orbit_direction == 0 ? choose(-1, 1) : sign(_orbit_direction);
+    _runtime.movement.command.facing_mode = _runtime.movement_controller.facing.default_mode;
 
     if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision)) return false;
 
@@ -173,6 +189,7 @@ function sc_enemy_perception_update(_enemy)
         break;
     }
 }
+
 /// @description Updates enemy hardpoint aiming, aim locks and recoil runtime.
 function sc_enemy_hardpoint_update(_enemy)
 {
@@ -287,158 +304,6 @@ function sc_enemy_stagger_begin(_enemy, _effect)
     return true;
 }
 
-/// @description Updates brief enemy stagger drift and restores its previous state.
-function sc_enemy_update_stunned(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _movement = _data.movement;
-    var _stagger = _enemy.entity.status.stagger;
-    var _friction_coeff = _data.stats.final.handling.friction_coeff;
-
-    _movement.velocity_x *= _friction_coeff;
-    _movement.velocity_y *= _friction_coeff;
-
-    _enemy.x += _movement.velocity_x;
-    _enemy.y += _movement.velocity_y;
-
-    _stagger.remaining--;
-
-    if (_stagger.remaining <= 0)
-    {
-        _stagger.remaining = 0;
-        _data.state = _stagger.return_state;
-    }
-}
-
-/// @description Selects one unobstructed wander destination inside the registered spawn radius.
-function sc_enemy_wander_target_select(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _movement = _data.movement;
-    var _wander = _movement.wander;
-    var _range = _data.stats.final.range.wander;
-    var _config = global.config.enemy.wander;
-    var _extent = max(_data.collision.radius_forward, _data.collision.radius_side);
-    var _margin = _extent + _config.edge_margin;
-
-    for (var _i = 0; _i < _config.candidate_attempts; _i++)
-    {
-        var _direction = random(360);
-        var _distance = sqrt(random(1)) * _range;
-        var _target_x = _movement.spawn_x + lengthdir_x(_distance, _direction);
-        var _target_y = _movement.spawn_y + lengthdir_y(_distance, _direction);
-
-        if (_target_x < _margin || _target_x > room_width - _margin
-        || _target_y < _margin || _target_y > room_height - _margin)
-            continue;
-
-        if (place_meeting(_target_x, _target_y, o_solid)) continue;
-        if (collision_line(_enemy.x, _enemy.y, _target_x, _target_y, o_solid, false, true) != noone) continue;
-
-        _wander.target_x = _target_x;
-        _wander.target_y = _target_y;
-        _wander.active = true;
-        return true;
-    }
-
-    _wander.active = false;
-    _wander.next_move_tick = GAME_TICK + irandom_range(_config.wait_min, _config.wait_max);
-    return false;
-}
-
-/// @description Moves an idle enemy between occasional valid points around its spawn location.
-function sc_enemy_wander_update(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _movement = _data.movement;
-    var _wander = _movement.wander;
-    var _config = global.config.enemy.wander;
-
-    if (!_wander.active)
-    {
-        if (GAME_TICK >= _wander.next_move_tick)
-            sc_enemy_wander_target_select(_enemy);
-
-        return false;
-    }
-
-    var _dx = _wander.target_x - _enemy.x;
-    var _dy = _wander.target_y - _enemy.y;
-    var _distance_sq = _dx * _dx + _dy * _dy;
-
-    if (_distance_sq <= sqr(_config.arrival_radius))
-    {
-        _wander.active = false;
-        _wander.next_move_tick = GAME_TICK + irandom_range(_config.wait_min, _config.wait_max);
-        return false;
-    }
-
-    var _direction = point_direction(_enemy.x, _enemy.y, _wander.target_x, _wander.target_y);
-    var _turn_speed = _data.stats.final.handling.turn_speed;
-
-    sc_enemy_movement_accelerate(_enemy, _direction, _config.speed_scale);
-
-    var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_turn_speed, _turn_speed);
-    _enemy.draw_angle = _enemy.draw_angle mod 360;
-    return true;
-}
-
-/// @description Wanders around the spawn location or applies passive idle decay when disabled.
-function sc_enemy_update_idle(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _movement = _data.movement;
-    var _friction_coeff = _data.stats.final.handling.friction_coeff;
-    var _wandering = false;
-
-    if (_data.stats.final.range.wander > 0)
-        _wandering = sc_enemy_wander_update(_enemy);
-
-    if (!_wandering)
-    {
-        _movement.velocity_x *= _friction_coeff;
-        _movement.velocity_y *= _friction_coeff;
-
-        if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
-        if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
-    }
-
-    _enemy.x += _movement.velocity_x;
-    _enemy.y += _movement.velocity_y;
-
-    // Future: range.alert_share controls one-time nearby ally alert broadcasting.
-}
-
-/// @description Returns movement alignment where 1 is forward and 0 is directly backwards.
-function sc_enemy_movement_alignment(_enemy, _move_direction)
-{
-    var _handling = _enemy.enemy.stats.final.handling;
-    if (!_handling.directional) return 1;
-
-    return (dcos(angle_difference(_move_direction, _enemy.draw_angle)) + 1) * 0.5;
-}
-
-/// @description Accelerates toward a direction using final handling and optional directional penalties.
-function sc_enemy_movement_accelerate(_enemy, _move_direction, _speed_scale = 1)
-{
-    var _data = _enemy.enemy;
-    var _handling = _data.stats.final.handling;
-    var _movement = _data.movement;
-    var _alignment = sc_enemy_movement_alignment(_enemy, _move_direction);
-    var _speed_factor = lerp(_handling.directional_speed_min, 1, _alignment);
-    var _thrust_factor = lerp(_handling.directional_thrust_min, 1, _alignment);
-    var _speed_max = _handling.speed_max * _speed_scale * _speed_factor;
-    var _acceleration = _handling.acceleration * _thrust_factor;
-    var _target_vx = lengthdir_x(_speed_max, _move_direction);
-    var _target_vy = lengthdir_y(_speed_max, _move_direction);
-
-    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_acceleration, _acceleration);
-    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_acceleration, _acceleration);
-
-    return _alignment;
-}
-
 /// @description Returns a rotated ellipse's radius along one world direction.
 function sc_enemy_collision_radius_at_direction(_enemy, _direction)
 {
@@ -489,58 +354,6 @@ function sc_enemy_separation_resolve(_enemy, _other)
     _other.y += _ny * _correction * _weight_other;
 
     return true;
-}
-
-/// @description Moves the enemy toward its target using shared directional handling.
-function sc_enemy_update_chasing(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _handling = _data.stats.final.handling;
-    var _target = _data.target_id;
-    var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
-
-    sc_enemy_movement_accelerate(_enemy, _direction);
-
-    _enemy.x += _data.movement.velocity_x;
-    _enemy.y += _data.movement.velocity_y;
-
-    var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_handling.turn_speed, _handling.turn_speed);
-    _enemy.draw_angle = _enemy.draw_angle mod 360;
-}
-
-/// @description Attacks while retreating from targets that enter the registered close range.
-function sc_enemy_update_attacking(_enemy)
-{
-    var _data = _enemy.enemy;
-    var _stats = _data.stats.final;
-    var _handling = _stats.handling;
-    var _range = _stats.range;
-    var _movement = _data.movement;
-    var _target = _data.target_id;
-    var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
-
-    if (_range.retreat > 0 && _data.target_distance_sq < _range.retreat_sq)
-        sc_enemy_movement_accelerate(_enemy, _direction + 180);
-    else
-    {
-        _movement.velocity_x *= _handling.friction_coeff;
-        _movement.velocity_y *= _handling.friction_coeff;
-    }
-
-    _enemy.x += _movement.velocity_x;
-    _enemy.y += _movement.velocity_y;
-
-    if (!sc_enemy_attack_aim_locked(_enemy))
-    {
-        var _turn = angle_difference(_direction, _enemy.draw_angle);
-        _enemy.draw_angle += clamp(_turn, -_handling.turn_speed, _handling.turn_speed);
-        _enemy.draw_angle = _enemy.draw_angle mod 360;
-    }
-
-    sc_enemy_attack_update(_enemy);
-
-    // Future: range.alert_share controls one-time nearby ally alert broadcasting.
 }
 
 /// @description Returns whether a fixed participating hardpoint currently locks the enemy hull.
@@ -1270,8 +1083,6 @@ function sc_enemy_damage(_enemy, _packet)
 
     return _result;
 }
-
-
 
 /// @description Processes one enemy death and its final killing source.
 function sc_enemy_die(_enemy, _packet)

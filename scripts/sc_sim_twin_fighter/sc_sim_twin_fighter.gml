@@ -35,6 +35,32 @@ function sc_enemy_register_twin_fighter()
             damage_multiplier: 1,
             fire_rate_multiplier: 1
         },
+			
+		movement_controller: {
+		    idle_script: sc_enemy_movement_wander,
+		    chase_script: sc_enemy_movement_chase,
+		    combat_script: sc_enemy_movement_orbit,
+
+		    facing: {
+		        default_mode: EnemyFacingMode.TARGET,
+		        retreat_mode: EnemyFacingMode.MOVEMENT,
+		        angle_offset: 0,
+		        turn_speed_scale: 1,
+		        spin_speed: 0
+		    },
+
+		    orbit: {
+		        range: 540,
+		        direction: 0,
+		        radial_strength: 0.65,
+		        direction_change_chance: 0.005
+		    },
+
+		    strafe: {
+		        amount: 0,
+		        speed: 0
+		    }
+		},
 
         visual: sc_enemy_twin_fighter_visual_data(),
 

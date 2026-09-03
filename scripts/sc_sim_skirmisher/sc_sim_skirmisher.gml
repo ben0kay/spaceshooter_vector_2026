@@ -35,6 +35,32 @@ function sc_enemy_register_sim_skirmisher()
             damage_multiplier: 1,
             fire_rate_multiplier: 1
         },
+		
+		movement_controller: {
+		    idle_script: sc_enemy_movement_hold,
+		    chase_script: sc_enemy_movement_chase,
+		    combat_script: sc_enemy_movement_pursue,
+
+		    facing: {
+		        default_mode: EnemyFacingMode.TARGET,
+		        retreat_mode: EnemyFacingMode.TARGET,
+		        angle_offset: 0,
+		        turn_speed_scale: 1,
+		        spin_speed: 0
+		    },
+
+    orbit: {
+        range: 0,
+        direction: 1,
+        radial_strength: 0,
+        direction_change_chance: 0
+    },
+
+    strafe: {
+        amount: 0.25,
+        speed: 0.035
+    }
+},
 
         visual: sc_enemy_sim_skirmisher_visual_data(),
 

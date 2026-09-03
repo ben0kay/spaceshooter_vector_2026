@@ -34,7 +34,7 @@ function sc_enemy_register_sim_dreadwing()
             // Simulant Dreadwing
 			range: {
 			    detection: 1340,
-			    combat: 940,
+			    combat: 1080,
 			    retreat: 420,
 			    forget: 1560,
 			    wander: 0,
@@ -44,6 +44,32 @@ function sc_enemy_register_sim_dreadwing()
             damage_multiplier: 1.2,
             fire_rate_multiplier: 0.85
         },
+
+		movement_controller: {
+		    idle_script: sc_enemy_movement_hold,
+		    chase_script: sc_enemy_movement_chase,
+		    combat_script: sc_enemy_movement_hold,
+
+		    facing: {
+		        default_mode: EnemyFacingMode.TARGET,
+		        retreat_mode: EnemyFacingMode.MOVEMENT,
+		        angle_offset: 0,
+		        turn_speed_scale: 0.65,
+		        spin_speed: 0
+		    },
+
+		    orbit: {
+		        range: 0,
+		        direction: 1,
+		        radial_strength: 0,
+		        direction_change_chance: 0
+		    },
+
+		    strafe: {
+		        amount: 0,
+		        speed: 0
+		    }
+		},
 
         visual: sc_enemy_sim_dreadwing_visual_data(),
 
@@ -120,14 +146,14 @@ function sc_enemy_register_sim_dreadwing()
                 },
                                 {
                     key: "centre_beam",
-                    weight: 35,
+                    weight: 50,
                     hardpoint_group: "beam",
                     weapon_key: "weapon_simulant_thin_beam",
 					
 					conditions: {
                         range_min: 250,
                         range_max: 900,
-                        hull_ratio_max: 0.5
+                        hull_ratio_max: 0.9
                     },
 
                     aim: { mode: AimMode.MOUNT, angle_offset: 0, inaccuracy: 0 },
