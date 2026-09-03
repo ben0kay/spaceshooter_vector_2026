@@ -16,7 +16,7 @@ function sc_config_init()
             }
         },
 
-                projectile: {
+        projectile: {
             classes: [
                 {
                     name: "Light",
@@ -62,7 +62,15 @@ function sc_config_init()
                 { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 },
                 { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
             ]
-        }
+        },
+			
+		enemy: {
+            separation: {
+                strength: 0.14,
+                maximum_push: 0.8,
+                position_correction: 0.18
+            }
+        },
     };
 
     return true;

@@ -105,11 +105,11 @@ function sc_enemy_init(_enemy, _enemy_key)
     return true;
 }
 
-/// @description Updates detection, combat and forget transitions using final stats.
+/// @description Updates detection, combat and forget transitions using final ranges.
 function sc_enemy_perception_update(_enemy)
 {
     var _data = _enemy.enemy;
-    var _stats = _data.stats.final;
+    var _range = _data.stats.final.range;
 
     if (!instance_exists(global.player_id))
     {
@@ -127,7 +127,7 @@ function sc_enemy_perception_update(_enemy)
         case EnemyState.IDLE:
             if (!UPDATE_4) return;
 
-            if (_data.target_distance_sq <= _stats.detection_range_sq)
+            if (_data.target_distance_sq <= _range.detection_sq)
             {
                 _data.target_id = global.player_id;
                 _data.state = EnemyState.CHASING;
@@ -135,24 +135,24 @@ function sc_enemy_perception_update(_enemy)
         break;
 
         case EnemyState.CHASING:
-            if (_data.target_distance_sq > _stats.forget_range_sq)
+            if (_data.target_distance_sq > _range.forget_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.target_id = noone;
                 _data.state = EnemyState.IDLE;
             }
-            else if (_data.target_distance_sq <= _stats.combat_range_sq)
+            else if (_data.target_distance_sq <= _range.combat_sq)
                 _data.state = EnemyState.ATTACKING;
         break;
 
         case EnemyState.ATTACKING:
-            if (_data.target_distance_sq > _stats.forget_range_sq)
+            if (_data.target_distance_sq > _range.forget_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.target_id = noone;
                 _data.state = EnemyState.IDLE;
             }
-            else if (_data.target_distance_sq > _stats.combat_range_sq)
+            else if (_data.target_distance_sq > _range.combat_sq)
             {
                 sc_enemy_attack_cancel(_enemy);
                 _data.state = EnemyState.CHASING;
@@ -285,13 +285,14 @@ function sc_enemy_update_stunned(_enemy)
     }
 }
 
-/// @description Applies passive idle movement decay.
+/// @description Applies passive idle decay while reserving registered wander behaviour.
 function sc_enemy_update_idle(_enemy)
 {
     var _data = _enemy.enemy;
     var _movement = _data.movement;
     var _friction_coeff = _data.stats.final.handling.friction_coeff;
 
+    // Future: when range.wander > 0, call sc_enemy_wander_update() around the stored spawn position.
     _movement.velocity_x *= _friction_coeff;
     _movement.velocity_y *= _friction_coeff;
 
@@ -331,6 +332,58 @@ function sc_enemy_movement_accelerate(_enemy, _move_direction, _speed_scale = 1)
     return _alignment;
 }
 
+/// @description Returns a rotated ellipse's radius along one world direction.
+function sc_enemy_collision_radius_at_direction(_enemy, _direction)
+{
+    var _collision = _enemy.entity.collision;
+    var _forward = max(1, _collision.radius_forward);
+    var _side = max(1, _collision.radius_side);
+    var _relative = angle_difference(_direction, _enemy.draw_angle);
+    var _cos = dcos(_relative);
+    var _sin = dsin(_relative);
+
+    return 1 / sqrt(sqr(_cos / _forward) + sqr(_sin / _side));
+}
+
+/// @description Separates one overlapping enemy pair using their rotated elliptical collision shapes.
+function sc_enemy_separation_resolve(_enemy, _other)
+{
+    if (_enemy.enemy.state == EnemyState.DEAD || _other.enemy.state == EnemyState.DEAD) return false;
+
+    var _dx = _other.x - _enemy.x;
+    var _dy = _other.y - _enemy.y;
+    var _distance = point_distance(0, 0, _dx, _dy);
+    var _direction = _distance > 0.001 ? point_direction(0, 0, _dx, _dy) : (real(_enemy.id) mod 360);
+    var _radius_enemy = sc_enemy_collision_radius_at_direction(_enemy, _direction);
+    var _radius_other = sc_enemy_collision_radius_at_direction(_other, _direction + 180);
+    var _overlap = _radius_enemy + _radius_other - _distance;
+
+    if (_overlap <= 0) return false;
+
+    var _config = global.config.enemy.separation;
+    var _mass_enemy = _enemy.entity.collision.radius_forward * _enemy.entity.collision.radius_side;
+    var _mass_other = _other.entity.collision.radius_forward * _other.entity.collision.radius_side;
+    var _mass_total = max(1, _mass_enemy + _mass_other);
+    var _weight_enemy = _mass_other / _mass_total;
+    var _weight_other = _mass_enemy / _mass_total;
+    var _push = min(_config.maximum_push, _overlap * _config.strength);
+    var _correction = min(_overlap, _overlap * _config.position_correction);
+    var _nx = lengthdir_x(1, _direction);
+    var _ny = lengthdir_y(1, _direction);
+
+    _enemy.enemy.movement.velocity_x -= _nx * _push * _weight_enemy;
+    _enemy.enemy.movement.velocity_y -= _ny * _push * _weight_enemy;
+    _other.enemy.movement.velocity_x += _nx * _push * _weight_other;
+    _other.enemy.movement.velocity_y += _ny * _push * _weight_other;
+
+    _enemy.x -= _nx * _correction * _weight_enemy;
+    _enemy.y -= _ny * _correction * _weight_enemy;
+    _other.x += _nx * _correction * _weight_other;
+    _other.y += _ny * _correction * _weight_other;
+
+    return true;
+}
+
 /// @description Moves the enemy toward its target using shared directional handling.
 function sc_enemy_update_chasing(_enemy)
 {
@@ -355,11 +408,12 @@ function sc_enemy_update_attacking(_enemy)
     var _data = _enemy.enemy;
     var _stats = _data.stats.final;
     var _handling = _stats.handling;
+    var _range = _stats.range;
     var _movement = _data.movement;
     var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
 
-    if (_stats.retreat_range > 0 && _data.target_distance_sq < _stats.retreat_range_sq)
+    if (_range.retreat > 0 && _data.target_distance_sq < _range.retreat_sq)
         sc_enemy_movement_accelerate(_enemy, _direction + 180);
     else
     {
@@ -378,6 +432,8 @@ function sc_enemy_update_attacking(_enemy)
     }
 
     sc_enemy_attack_update(_enemy);
+
+    // Future: range.alert_share controls one-time nearby ally alert broadcasting.
 }
 
 /// @description Returns whether a fixed participating hardpoint currently locks the enemy hull.
@@ -1089,6 +1145,8 @@ function sc_enemy_damage(_enemy, _packet)
 
     return _result;
 }
+
+
 
 /// @description Processes one enemy death and its final killing source.
 function sc_enemy_die(_enemy, _packet)

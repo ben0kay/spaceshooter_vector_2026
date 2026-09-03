@@ -18,7 +18,7 @@ function sc_enemy_stats_init(_enemy, _stats_base)
     return sc_enemy_stats_recalculate(_enemy);
 }
 
-/// @description Rebuilds final enemy stats and nested handling only when modifiers change.
+/// @description Rebuilds final enemy stats, handling and ranges only when modifiers change.
 function sc_enemy_stats_recalculate(_enemy)
 {
     var _data = _enemy.enemy;
@@ -30,23 +30,27 @@ function sc_enemy_stats_recalculate(_enemy)
 
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.difficulty);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.difficulty);
+    sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.difficulty);
+
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.level);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.level);
+    sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.level);
+
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.local);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.local);
+    sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.local);
+
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.temporary);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.temporary);
+    sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.temporary);
 
     var _final = _stats.final;
     var _handling = _final.handling;
+    var _range = _final.range;
 
     _final.shield_max = max(0, _final.shield_max);
     _final.armour_max = max(0, _final.armour_max);
     _final.hull_max = max(1, _final.hull_max);
-    _final.retreat_range = max(0, _final.retreat_range);
-    _final.detection_range = max(0, _final.detection_range);
-    _final.combat_range = max(0, _final.combat_range);
-    _final.forget_range = max(0, _final.forget_range);
     _final.damage_multiplier = max(0, _final.damage_multiplier);
     _final.fire_rate_multiplier = max(0.01, _final.fire_rate_multiplier);
 
@@ -57,10 +61,19 @@ function sc_enemy_stats_recalculate(_enemy)
     _handling.directional_speed_min = clamp(_handling.directional_speed_min, 0, 1);
     _handling.directional_thrust_min = clamp(_handling.directional_thrust_min, 0, 1);
 
-    _final.retreat_range_sq = sqr(_final.retreat_range);
-    _final.detection_range_sq = sqr(_final.detection_range);
-    _final.combat_range_sq = sqr(_final.combat_range);
-    _final.forget_range_sq = sqr(_final.forget_range);
+    _range.retreat = max(0, _range.retreat);
+    _range.combat = max(0, _range.combat);
+    _range.detection = max(0, _range.detection);
+    _range.forget = max(0, _range.forget);
+    _range.wander = max(0, _range.wander);
+    _range.alert_share = max(0, _range.alert_share);
+
+    _range.retreat_sq = sqr(_range.retreat);
+    _range.combat_sq = sqr(_range.combat);
+    _range.detection_sq = sqr(_range.detection);
+    _range.forget_sq = sqr(_range.forget);
+    _range.wander_sq = sqr(_range.wander);
+    _range.alert_share_sq = sqr(_range.alert_share);
 
     if (is_struct(_data.defence))
     {

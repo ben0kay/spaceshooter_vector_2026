@@ -57,11 +57,11 @@ function sc_enemy_register(_data)
         return false;
     }
 
-    var _stats = _data.stats_base;
+    var _range = _data.stats_base.range;
 
-    if (_stats.retreat_range > _stats.combat_range
-    || _stats.combat_range > _stats.detection_range
-    || _stats.detection_range > _stats.forget_range)
+    if (_range.retreat > _range.combat
+    || _range.combat > _range.detection
+    || _range.detection > _range.forget)
     {
         show_debug_message("ENEMY REGISTRATION ERROR - invalid range order: " + _key);
         return false;
