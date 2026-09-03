@@ -13,10 +13,15 @@ function sc_enemy_register_twin_fighter()
             armour_max: 200,
             hull_max: 60,
 
-            speed_max: 5.5,
-            acceleration: 0.3,
-            friction: 0.985,
-            turn_speed: 4,
+            handling: {
+                speed_max: 5.5,
+                acceleration: 0.3,
+                friction_coeff: 0.985,
+                turn_speed: 4,
+                directional: true,
+                directional_speed_min: 0.48,
+                directional_thrust_min: 0.58
+            },
 
             detection_range: 1080,
             combat_range: 840,

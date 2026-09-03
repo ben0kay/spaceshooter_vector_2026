@@ -167,7 +167,7 @@ function sc_enemy_visual_update(_enemy)
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _movement = _data.movement;
-    var _speed_max = _data.stats.final.speed_max;
+    var _speed_max = _data.stats.final.handling.speed_max;
     var _has_target = instance_exists(_data.target_id);
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
@@ -268,9 +268,10 @@ function sc_enemy_update_stunned(_enemy)
     var _data = _enemy.enemy;
     var _movement = _data.movement;
     var _stagger = _enemy.entity.status.stagger;
+    var _friction_coeff = _data.stats.final.handling.friction_coeff;
 
-    _movement.velocity_x *= _data.stats.final.friction;
-    _movement.velocity_y *= _data.stats.final.friction;
+    _movement.velocity_x *= _friction_coeff;
+    _movement.velocity_y *= _friction_coeff;
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
@@ -289,10 +290,10 @@ function sc_enemy_update_idle(_enemy)
 {
     var _data = _enemy.enemy;
     var _movement = _data.movement;
-    var _friction = _data.stats.final.friction;
+    var _friction_coeff = _data.stats.final.handling.friction_coeff;
 
-    _movement.velocity_x *= _friction;
-    _movement.velocity_y *= _friction;
+    _movement.velocity_x *= _friction_coeff;
+    _movement.velocity_y *= _friction_coeff;
 
     if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
     if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
@@ -301,25 +302,50 @@ function sc_enemy_update_idle(_enemy)
     _enemy.y += _movement.velocity_y;
 }
 
-/// @description Moves the enemy toward its target using final stats.
+/// @description Returns movement alignment where 1 is forward and 0 is directly backwards.
+function sc_enemy_movement_alignment(_enemy, _move_direction)
+{
+    var _handling = _enemy.enemy.stats.final.handling;
+    if (!_handling.directional) return 1;
+
+    return (dcos(angle_difference(_move_direction, _enemy.draw_angle)) + 1) * 0.5;
+}
+
+/// @description Accelerates toward a direction using final handling and optional directional penalties.
+function sc_enemy_movement_accelerate(_enemy, _move_direction, _speed_scale = 1)
+{
+    var _data = _enemy.enemy;
+    var _handling = _data.stats.final.handling;
+    var _movement = _data.movement;
+    var _alignment = sc_enemy_movement_alignment(_enemy, _move_direction);
+    var _speed_factor = lerp(_handling.directional_speed_min, 1, _alignment);
+    var _thrust_factor = lerp(_handling.directional_thrust_min, 1, _alignment);
+    var _speed_max = _handling.speed_max * _speed_scale * _speed_factor;
+    var _acceleration = _handling.acceleration * _thrust_factor;
+    var _target_vx = lengthdir_x(_speed_max, _move_direction);
+    var _target_vy = lengthdir_y(_speed_max, _move_direction);
+
+    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_acceleration, _acceleration);
+    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_acceleration, _acceleration);
+
+    return _alignment;
+}
+
+/// @description Moves the enemy toward its target using shared directional handling.
 function sc_enemy_update_chasing(_enemy)
 {
     var _data = _enemy.enemy;
-    var _stats = _data.stats.final;
-    var _movement = _data.movement;
+    var _handling = _data.stats.final.handling;
     var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
-    var _target_vx = lengthdir_x(_stats.speed_max, _direction);
-    var _target_vy = lengthdir_y(_stats.speed_max, _direction);
 
-    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_stats.acceleration, _stats.acceleration);
-    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_stats.acceleration, _stats.acceleration);
+    sc_enemy_movement_accelerate(_enemy, _direction);
 
-    _enemy.x += _movement.velocity_x;
-    _enemy.y += _movement.velocity_y;
+    _enemy.x += _data.movement.velocity_x;
+    _enemy.y += _data.movement.velocity_y;
 
     var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
+    _enemy.draw_angle += clamp(_turn, -_handling.turn_speed, _handling.turn_speed);
     _enemy.draw_angle = _enemy.draw_angle mod 360;
 }
 
@@ -328,23 +354,17 @@ function sc_enemy_update_attacking(_enemy)
 {
     var _data = _enemy.enemy;
     var _stats = _data.stats.final;
+    var _handling = _stats.handling;
     var _movement = _data.movement;
     var _target = _data.target_id;
     var _direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
 
     if (_stats.retreat_range > 0 && _data.target_distance_sq < _stats.retreat_range_sq)
-    {
-        var _retreat_direction = _direction + 180;
-        var _target_vx = lengthdir_x(_stats.speed_max, _retreat_direction);
-        var _target_vy = lengthdir_y(_stats.speed_max, _retreat_direction);
-
-        _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_stats.acceleration, _stats.acceleration);
-        _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_stats.acceleration, _stats.acceleration);
-    }
+        sc_enemy_movement_accelerate(_enemy, _direction + 180);
     else
     {
-        _movement.velocity_x *= _stats.friction;
-        _movement.velocity_y *= _stats.friction;
+        _movement.velocity_x *= _handling.friction_coeff;
+        _movement.velocity_y *= _handling.friction_coeff;
     }
 
     _enemy.x += _movement.velocity_x;
@@ -353,7 +373,7 @@ function sc_enemy_update_attacking(_enemy)
     if (!sc_enemy_attack_aim_locked(_enemy))
     {
         var _turn = angle_difference(_direction, _enemy.draw_angle);
-        _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
+        _enemy.draw_angle += clamp(_turn, -_handling.turn_speed, _handling.turn_speed);
         _enemy.draw_angle = _enemy.draw_angle mod 360;
     }
 

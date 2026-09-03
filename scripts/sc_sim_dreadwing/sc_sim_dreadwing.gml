@@ -21,10 +21,15 @@ function sc_enemy_register_sim_dreadwing()
             armour_max: 600,
             hull_max: 250,
 
-            speed_max: 3,
-            acceleration: 0.12,
-            friction: 0.992,
-            turn_speed: 1,
+            handling: {
+                speed_max: 3,
+                acceleration: 0.12,
+                friction_coeff: 0.992,
+                turn_speed: 1,
+                directional: true,
+                directional_speed_min: 0.3,
+                directional_thrust_min: 0.42
+            },
 
             detection_range: 1340,
 			retreat_range: 420,

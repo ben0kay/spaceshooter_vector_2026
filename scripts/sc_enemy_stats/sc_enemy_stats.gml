@@ -18,7 +18,7 @@ function sc_enemy_stats_init(_enemy, _stats_base)
     return sc_enemy_stats_recalculate(_enemy);
 }
 
-/// @description Rebuilds final enemy stats only when modifiers change.
+/// @description Rebuilds final enemy stats and nested handling only when modifiers change.
 function sc_enemy_stats_recalculate(_enemy)
 {
     var _data = _enemy.enemy;
@@ -29,25 +29,33 @@ function sc_enemy_stats_recalculate(_enemy)
     _stats.final = variable_clone(_stats.base);
 
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.difficulty);
+    sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.difficulty);
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.level);
+    sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.level);
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.local);
+    sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.local);
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.temporary);
+    sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.temporary);
 
     var _final = _stats.final;
+    var _handling = _final.handling;
 
     _final.shield_max = max(0, _final.shield_max);
     _final.armour_max = max(0, _final.armour_max);
     _final.hull_max = max(1, _final.hull_max);
-    _final.speed_max = max(0, _final.speed_max);
-    _final.acceleration = max(0, _final.acceleration);
-    _final.friction = clamp(_final.friction, 0, 1);
-    _final.turn_speed = max(0, _final.turn_speed);
     _final.retreat_range = max(0, _final.retreat_range);
     _final.detection_range = max(0, _final.detection_range);
     _final.combat_range = max(0, _final.combat_range);
     _final.forget_range = max(0, _final.forget_range);
     _final.damage_multiplier = max(0, _final.damage_multiplier);
     _final.fire_rate_multiplier = max(0.01, _final.fire_rate_multiplier);
+
+    _handling.speed_max = max(0, _handling.speed_max);
+    _handling.acceleration = max(0, _handling.acceleration);
+    _handling.friction_coeff = clamp(_handling.friction_coeff, 0, 1);
+    _handling.turn_speed = max(0, _handling.turn_speed);
+    _handling.directional_speed_min = clamp(_handling.directional_speed_min, 0, 1);
+    _handling.directional_thrust_min = clamp(_handling.directional_thrust_min, 0, 1);
 
     _final.retreat_range_sq = sqr(_final.retreat_range);
     _final.detection_range_sq = sqr(_final.detection_range);

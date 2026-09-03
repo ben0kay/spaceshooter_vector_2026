@@ -13,10 +13,15 @@ function sc_enemy_register_sim_skirmisher()
             armour_max: 100,
             hull_max: 45,
 
-            speed_max: 7,
-            acceleration: 0.42,
-            friction: 0.985,
-            turn_speed: 5.5,
+            handling: {
+                speed_max: 7,
+                acceleration: 0.42,
+                friction_coeff: 0.985,
+                turn_speed: 5.5,
+                directional: true,
+                directional_speed_min: 0.7,
+                directional_thrust_min: 0.78
+            },
 
             detection_range: 1120,
 			retreat_range: 260,
