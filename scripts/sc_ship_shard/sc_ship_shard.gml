@@ -625,67 +625,63 @@ function sc_particles_register_shard()
         return false;
     }
 
-    // Wide blue-aqua exhaust body.
+    // Dense outer blue flame.
     part_type_sprite(_outer, s_particle_trail_white_beam, false, false, false);
-    part_type_colour3(_outer, make_colour_rgb(0, 70, 190), make_colour_rgb(0, 175, 255), make_colour_rgb(40, 235, 255));
-    part_type_alpha3(_outer, 0.62, 0.4, 0);
-    part_type_speed(_outer, 1.2, 2.5, -0.04, 0);
-    part_type_life(_outer, 10, 16);
-    part_type_orientation(_outer, 0, 0, 0, 0, true);
+    part_type_colour3(_outer, make_colour_rgb(0, 65, 210), make_colour_rgb(0, 175, 255), make_colour_rgb(35, 235, 255));
+    part_type_alpha3(_outer, 0.78, 0.52, 0);
+    part_type_speed(_outer, 0.4, 1.1, -0.025, 0);
+    part_type_life(_outer, 10, 15);
+    part_type_orientation(_outer, 180, 180, 0, 0, true);
     part_type_blend(_outer, true);
 
-    // Narrow white-hot exhaust centre.
+    // Bright white-aqua flame centre.
     part_type_sprite(_inner, s_particle_trail_white_beam, false, false, false);
-    part_type_colour3(_inner, c_white, make_colour_rgb(175, 255, 255), make_colour_rgb(20, 205, 255));
-    part_type_alpha3(_inner, 0.9, 0.55, 0);
-    part_type_speed(_inner, 1.8, 3.2, -0.05, 0);
-    part_type_life(_inner, 7, 12);
-    part_type_orientation(_inner, 0, 0, 0, 0, true);
+    part_type_colour3(_inner, c_white, make_colour_rgb(175, 255, 255), make_colour_rgb(15, 195, 255));
+    part_type_alpha3(_inner, 1, 0.68, 0);
+    part_type_speed(_inner, 0.6, 1.35, -0.03, 0);
+    part_type_life(_inner, 8, 13);
+    part_type_orientation(_inner, 180, 180, 0, 0, true);
     part_type_blend(_inner, true);
 
-    // Rare orange combustion mixed into the aqua exhaust.
+    // Occasional orange combustion inside the blue flame.
     part_type_sprite(_fire, s_particle_firesmoke_trail_color, false, false, false);
     part_type_colour1(_fire, c_white);
-    part_type_alpha3(_fire, 0.28, 0.16, 0);
-    part_type_speed(_fire, 1, 2.2, -0.04, 0);
-    part_type_life(_fire, 8, 14);
-    part_type_orientation(_fire, 0, 0, 0, 0, true);
+    part_type_alpha3(_fire, 0.34, 0.2, 0);
+    part_type_speed(_fire, 0.45, 1.15, -0.025, 0);
+    part_type_life(_fire, 8, 13);
+    part_type_orientation(_fire, 180, 180, 0, 0, true);
     part_type_blend(_fire, false);
 
-    // Engine ignition ring.
+    // Expanding ignition ring.
     part_type_sprite(_ring, s_particle_ring_v2, false, false, false);
     part_type_colour2(_ring, c_white, make_colour_rgb(25, 225, 255));
-    part_type_alpha2(_ring, 0.9, 0);
+    part_type_alpha2(_ring, 0.95, 0);
     part_type_speed(_ring, 0, 0, 0, 0);
     part_type_life(_ring, 8, 12);
     part_type_orientation(_ring, 0, 359, 0, 2, false);
     part_type_blend(_ring, true);
 
-    // Bright ignition flash.
+    // Bright engine ignition flash.
     part_type_sprite(_flash, s_particle_exposion_star, false, false, false);
     part_type_colour2(_flash, c_white, make_colour_rgb(25, 225, 255));
-    part_type_alpha3(_flash, 1, 0.55, 0);
+    part_type_alpha3(_flash, 1, 0.65, 0);
     part_type_speed(_flash, 0, 0, 0, 0);
     part_type_life(_flash, 5, 8);
     part_type_orientation(_flash, 0, 359, 0, 5, false);
     part_type_blend(_flash, true);
 
-    // Strong arrow-shaped boost and dodge exhaust.
+    // Strong arrow-shaped boost and dodge wake.
     part_type_sprite(_dash, s_particle_trail_white_arrow, false, false, false);
-    part_type_colour3(_dash, c_white, make_colour_rgb(40, 235, 255), make_colour_rgb(0, 90, 220));
-    part_type_alpha3(_dash, 0.85, 0.5, 0);
-    part_type_speed(_dash, 2.5, 4.5, -0.06, 0);
-    part_type_life(_dash, 8, 14);
-    part_type_orientation(_dash, 0, 0, 0, 0, true);
+    part_type_colour3(_dash, c_white, make_colour_rgb(40, 235, 255), make_colour_rgb(0, 80, 220));
+    part_type_alpha3(_dash, 0.9, 0.58, 0);
+    part_type_speed(_dash, 0.8, 1.8, -0.04, 0);
+    part_type_life(_dash, 9, 15);
+    part_type_orientation(_dash, 180, 180, 0, 0, true);
     part_type_blend(_dash, true);
 
     return sc_particles_group_register("shard", {
-        outer: _outer,
-        inner: _inner,
-        fire: _fire,
-        ring: _ring,
-        flash: _flash,
-        dash: _dash
+        outer: _outer, inner: _inner, fire: _fire,
+        ring: _ring, flash: _flash, dash: _dash
     });
 }
 
@@ -695,11 +691,10 @@ function sc_particles_shard_ignition(_x, _y, _direction, _scale, _power)
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
-    part_type_size(_types.ring, 0.11 * _scale, 0.15 * _scale, 0.035 * _scale, 0);
-    part_type_size(_types.flash, 0.1 * _scale, 0.15 * _scale, -0.012 * _scale, 0);
-    part_type_size(_types.dash, 0.13 * _scale, 0.2 * _scale, -0.008 * _scale, 0);
-
-    part_type_direction(_types.dash, _direction - 10, _direction + 10, 0, 0);
+    part_type_size(_types.ring, 0.13 * _scale, 0.18 * _scale, 0.045 * _scale, 0);
+    part_type_size(_types.flash, 0.13 * _scale, 0.19 * _scale, -0.014 * _scale, 0);
+    part_type_size(_types.dash, 0.2 * _scale, 0.3 * _scale, -0.01 * _scale, 0);
+    part_type_direction(_types.dash, _direction - 7, _direction + 7, 0, 0);
 
     part_particles_create(global.particles.system, _x, _y, _types.ring, 1);
     part_particles_create(global.particles.system, _x, _y, _types.flash, 1);
@@ -707,40 +702,43 @@ function sc_particles_shard_ignition(_x, _y, _direction, _scale, _power)
     return true;
 }
 
-/// @description Emits layered Shard exhaust responding to movement state.
+/// @description Emits dense layered Shard exhaust responding to movement state.
 function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting, _dashing)
 {
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
-    var _intensity = _power;
+    var _intensity = max(0.15, _power);
     if (_boosting) _intensity *= 1.25;
     if (_dashing) _intensity *= 1.55;
 
-    var _outer_size = (0.12 + _intensity * 0.22) * _scale;
-    var _inner_size = (0.07 + _intensity * 0.13) * _scale;
+    var _outer_size = (0.24 + _intensity * 0.42) * _scale;
+    var _inner_size = (0.13 + _intensity * 0.25) * _scale;
 
-    part_type_direction(_types.outer, _direction - 5, _direction + 5, 0, 0);
-    part_type_direction(_types.inner, _direction - 3, _direction + 3, 0, 0);
-    part_type_size(_types.outer, _outer_size * 0.82, _outer_size, -0.009 * _scale, 0.01);
-    part_type_size(_types.inner, _inner_size * 0.82, _inner_size, -0.008 * _scale, 0.008);
+    part_type_direction(_types.outer, _direction - 3, _direction + 3, 0, 0);
+    part_type_direction(_types.inner, _direction - 2, _direction + 2, 0, 0);
+    part_type_size(_types.outer, _outer_size * 0.9, _outer_size, -0.012 * _scale, 0.008);
+    part_type_size(_types.inner, _inner_size * 0.9, _inner_size, -0.01 * _scale, 0.006);
 
-    part_particles_create(global.particles.system, _x, _y, _types.outer, 1);
+    part_particles_create(global.particles.system, _x, _y, _types.outer, _boosting || _dashing ? 2 : 1);
     part_particles_create(global.particles.system, _x, _y, _types.inner, 1);
 
-    // Preserve the orange sprite's original colour and use it only as a rare accent.
-    if (irandom(_boosting || _dashing ? 6 : 12) == 0)
+    // Small warm flame flickers occasionally inside the aqua plume.
+    if (irandom(_boosting || _dashing ? 5 : 10) == 0)
     {
-        part_type_direction(_types.fire, _direction - 7, _direction + 7, 0, 0);
-        part_type_size(_types.fire, 0.08 * _scale, (0.1 + _intensity * 0.08) * _scale, -0.006 * _scale, 0);
+        var _fire_size = (0.12 + _intensity * 0.16) * _scale;
+
+        part_type_direction(_types.fire, _direction - 4, _direction + 4, 0, 0);
+        part_type_size(_types.fire, _fire_size * 0.85, _fire_size, -0.008 * _scale, 0);
         part_particles_create(global.particles.system, _x, _y, _types.fire, 1);
     }
 
     if (_boosting || _dashing)
     {
-        var _dash_size = (0.1 + _intensity * 0.12) * _scale;
-        part_type_direction(_types.dash, _direction - 4, _direction + 4, 0, 0);
-        part_type_size(_types.dash, _dash_size * 0.8, _dash_size, -0.01 * _scale, 0.008);
+        var _dash_size = (0.18 + _intensity * 0.25) * _scale;
+
+        part_type_direction(_types.dash, _direction - 3, _direction + 3, 0, 0);
+        part_type_size(_types.dash, _dash_size * 0.9, _dash_size, -0.014 * _scale, 0.006);
         part_particles_create(global.particles.system, _x, _y, _types.dash, _dashing ? 2 : 1);
     }
 

@@ -512,8 +512,6 @@ function sc_player_visual_update(_player)
         for (var _i = 0; _i < array_length(_thrust.mounts); _i++)
         {
             var _mount = _thrust.mounts[_i];
-            if (((GAME_TICK + _mount.phase) mod 2) != 0) continue;
-
             var _x = _player.x + lengthdir_x(_mount.forward * _radius, _angle) + lengthdir_x(_mount.side * _radius, _angle + 90);
             var _y = _player.y + lengthdir_y(_mount.forward * _radius, _angle) + lengthdir_y(_mount.side * _radius, _angle + 90);
 
