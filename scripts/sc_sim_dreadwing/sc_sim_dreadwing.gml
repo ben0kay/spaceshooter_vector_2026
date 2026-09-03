@@ -98,7 +98,7 @@ function sc_enemy_register_sim_dreadwing()
                     firing: {
                         order: HardpointFireOrder.RANDOM,
                         interval: 8,
-                        volley_max: 4,
+                        volley_max: 16,
                         cooldown: 150
                     }
                 },
@@ -114,6 +114,7 @@ function sc_enemy_register_sim_dreadwing()
                     telegraph: {
                         duration: 60,
                         aim_lock_remaining: 15,
+						track_during_active: false,
                         scale: 0.18,
                         particle_interval: 2,
                         draw_script: sc_attack_telegraph_energy_draw,

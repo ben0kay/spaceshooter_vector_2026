@@ -181,27 +181,31 @@ function sc_enemy_visual_update(_enemy)
         var _runtime = _hardpoint.runtime;
         var _base_angle = _enemy.draw_angle + _hardpoint.angle;
         var _desired_angle = _runtime.aim_angle;
+        var _aim_locked = sc_enemy_attack_hardpoint_aim_locked(_enemy, _i);
 
-        if (_rotation.mode == HardpointRotation.TARGET && _has_target)
+        if (!_aim_locked)
         {
-            var _forward = _hardpoint.forward * _visual.radius;
-            var _side = _hardpoint.side * _visual.radius;
-            var _mount_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
-            var _mount_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
-            var _target_angle = point_direction(_mount_x, _mount_y, _data.target_id.x, _data.target_id.y);
-            var _arc_half = _rotation.arc * 0.5;
+            if (_rotation.mode == HardpointRotation.TARGET && _has_target)
+            {
+                var _forward = _hardpoint.forward * _visual.radius;
+                var _side = _hardpoint.side * _visual.radius;
+                var _mount_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+                var _mount_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
+                var _target_angle = point_direction(_mount_x, _mount_y, _data.target_id.x, _data.target_id.y);
+                var _arc_half = _rotation.arc * 0.5;
 
-            _desired_angle = _rotation.arc >= 360
-                ? _target_angle
-                : _base_angle + clamp(angle_difference(_target_angle, _base_angle), -_arc_half, _arc_half);
+                _desired_angle = _rotation.arc >= 360
+                    ? _target_angle
+                    : _base_angle + clamp(angle_difference(_target_angle, _base_angle), -_arc_half, _arc_half);
+            }
+            else if (_rotation.mode == HardpointRotation.FIXED || _rotation.return_to_rest)
+                _desired_angle = _base_angle;
+
+            if (_rotation.mode == HardpointRotation.FIXED)
+                _runtime.aim_angle = _base_angle;
+            else
+                _runtime.aim_angle += clamp(angle_difference(_desired_angle, _runtime.aim_angle), -_rotation.turn_speed, _rotation.turn_speed);
         }
-        else if (_rotation.mode == HardpointRotation.FIXED || _rotation.return_to_rest)
-            _desired_angle = _base_angle;
-
-        if (_rotation.mode == HardpointRotation.FIXED)
-            _runtime.aim_angle = _base_angle;
-        else
-            _runtime.aim_angle += clamp(angle_difference(_desired_angle, _runtime.aim_angle), -_rotation.turn_speed, _rotation.turn_speed);
 
         if (_runtime.recoil > 0.01)
             _runtime.recoil = lerp(_runtime.recoil, 0, 0.22);
@@ -344,18 +348,74 @@ function sc_enemy_update_attacking(_enemy)
     sc_enemy_attack_update(_enemy);
 }
 
-/// @description Returns whether the current telegraph has entered its final aim-lock period.
+/// @description Returns whether a fixed participating hardpoint currently locks the enemy hull.
 function sc_enemy_attack_aim_locked(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
     var _runtime = _controller.runtime;
 
-    if (_runtime.phase != EnemyAttackPhase.TELEGRAPH || _runtime.current_attack < 0) return false;
+    if (_runtime.current_attack < 0) return false;
 
     var _attack = _controller.attacks[_runtime.current_attack];
-    if (!variable_struct_exists(_attack.telegraph, "aim_lock_remaining")) return false;
+    if (!variable_struct_exists(_attack, "telegraph")) return false;
 
-    return GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
+    var _locked = false;
+
+    switch (_runtime.phase)
+    {
+        case EnemyAttackPhase.TELEGRAPH:
+            _locked = GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
+        break;
+
+        case EnemyAttackPhase.ACTIVE:
+            _locked = !_attack.telegraph.track_during_active;
+        break;
+    }
+
+    if (!_locked) return false;
+
+    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+    {
+        var _hardpoint = _enemy.enemy.hardpoints[_attack.hardpoint_indices[_i]];
+        if (_hardpoint.rotation.mode == HardpointRotation.FIXED) return true;
+    }
+
+    return false;
+}
+
+/// @description Returns whether one independently rotating participating hardpoint has locked its aim.
+function sc_enemy_attack_hardpoint_aim_locked(_enemy, _hardpoint_index)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+
+    if (_runtime.current_attack < 0) return false;
+
+    var _attack = _controller.attacks[_runtime.current_attack];
+    if (!variable_struct_exists(_attack, "telegraph")) return false;
+
+    var _locked = false;
+
+    switch (_runtime.phase)
+    {
+        case EnemyAttackPhase.TELEGRAPH:
+            _locked = GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
+        break;
+
+        case EnemyAttackPhase.ACTIVE:
+            _locked = !_attack.telegraph.track_during_active;
+        break;
+    }
+
+    if (!_locked) return false;
+
+    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+    {
+        if (_attack.hardpoint_indices[_i] == _hardpoint_index)
+            return _enemy.enemy.hardpoints[_hardpoint_index].rotation.mode == HardpointRotation.TARGET;
+    }
+
+    return false;
 }
 
 /// @description Releases active deliveries and cancels the current enemy attack.
