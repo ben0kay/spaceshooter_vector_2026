@@ -121,6 +121,7 @@
     {"id":{"name":"sc_stats","path":"scripts/sc_stats/sc_stats.yy",},},
     {"id":{"name":"sc_visual_helper","path":"scripts/sc_visual_helper/sc_visual_helper.yy",},},
     {"id":{"name":"sc_weapon","path":"scripts/sc_weapon/sc_weapon.yy",},},
+    {"id":{"name":"sim_visuals_shared","path":"scripts/sim_visuals_shared/sim_visuals_shared.yy",},},
     {"id":{"name":"s_blur","path":"sprites/s_blur/s_blur.yy",},},
     {"id":{"name":"s_bright_flame_core","path":"sprites/s_bright_flame_core/s_bright_flame_core.yy",},},
     {"id":{"name":"s_broad_flame_body","path":"sprites/s_broad_flame_body/s_broad_flame_body.yy",},},

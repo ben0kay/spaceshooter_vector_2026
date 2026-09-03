@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sim_visuals_shared",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sim_visuals_shared",
+  "parent":{
+    "name":"simulant",
+    "path":"folders/scripts/enemy/factions/simulant.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
