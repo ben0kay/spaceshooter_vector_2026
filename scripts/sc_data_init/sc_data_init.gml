@@ -59,7 +59,9 @@ function sc_enemy_register(_data)
 
     var _stats = _data.stats_base;
 
-    if (_stats.combat_range > _stats.detection_range || _stats.detection_range > _stats.forget_range)
+    if (_stats.retreat_range > _stats.combat_range
+    || _stats.combat_range > _stats.detection_range
+    || _stats.detection_range > _stats.forget_range)
     {
         show_debug_message("ENEMY REGISTRATION ERROR - invalid range order: " + _key);
         return false;

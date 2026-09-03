@@ -27,6 +27,7 @@ function sc_enemy_register_sim_dreadwing()
             turn_speed: 1.5,
 
             detection_range: 1340,
+			retreat_range: 420,
             combat_range: 940,
             forget_range: 1560,
 

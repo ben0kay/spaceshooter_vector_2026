@@ -19,6 +19,7 @@ function sc_enemy_register_sim_skirmisher()
             turn_speed: 5.5,
 
             detection_range: 1120,
+			retreat_range: 260,
             combat_range: 760,
             forget_range: 1320,
 

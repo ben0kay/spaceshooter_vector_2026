@@ -20,6 +20,7 @@ function sc_enemy_register_twin_fighter()
 
             detection_range: 1080,
             combat_range: 840,
+			retreat_range: 300,
             forget_range: 1280,
 
             damage_multiplier: 1,

@@ -42,12 +42,14 @@ function sc_enemy_stats_recalculate(_enemy)
     _final.acceleration = max(0, _final.acceleration);
     _final.friction = clamp(_final.friction, 0, 1);
     _final.turn_speed = max(0, _final.turn_speed);
+    _final.retreat_range = max(0, _final.retreat_range);
     _final.detection_range = max(0, _final.detection_range);
     _final.combat_range = max(0, _final.combat_range);
     _final.forget_range = max(0, _final.forget_range);
     _final.damage_multiplier = max(0, _final.damage_multiplier);
     _final.fire_rate_multiplier = max(0.01, _final.fire_rate_multiplier);
 
+    _final.retreat_range_sq = sqr(_final.retreat_range);
     _final.detection_range_sq = sqr(_final.detection_range);
     _final.combat_range_sq = sqr(_final.combat_range);
     _final.forget_range_sq = sqr(_final.forget_range);

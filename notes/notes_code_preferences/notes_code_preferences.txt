@@ -6,7 +6,7 @@ I prefer vertically compressed code (check some functions in the project for exa
 I need you to give me code by pasting in chat. NEVER update the github yourself
 I dont like when u put like 1 little thing on its own line unless necessary.
 I like ENUMS where appropriate. - I like these on 1 line too
-I like you giving me full functions instead of inserting little snippets so i dont mess things up. 
+I like you giving me full functions instead of inserting little snippets so i dont mess things up. unless the snippet is small then i will allow exceptions. but not if too many snippets in same function
 I highly prefer OPTIMIZATION/PERFORMANCE where appropriate. 
 I like using structs to group similar named variables together. 
 I like using culling techniques and things like MACROS for something like #macro VTD_TICK global.vtd.tick #macro IFRAMES_2 \ (((VTD_TICK + real(id)) mod 2) == 0) #macro GAMEPLAY_ACTIVE \ (global.GameState == GameState.PLAYING \ && global.LevelState == LevelState.PLAYING) #macro OUTSIDE_VIEW_64 \ (!scr_culling_check_instance(id, 64)) 
