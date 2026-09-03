@@ -18,7 +18,20 @@ function sc_enemy_init(_enemy, _enemy_key)
         target_distance_sq: 0,
         stats: undefined,
         defence: undefined,
-        movement: { velocity_x: 0, velocity_y: 0 },
+        movement: {
+            velocity_x: 0,
+            velocity_y: 0,
+
+            spawn_x: _enemy.x,
+            spawn_y: _enemy.y,
+
+            wander: {
+                active: false,
+                target_x: _enemy.x,
+                target_y: _enemy.y,
+                next_move_tick: GAME_TICK + irandom_range(30, 90)
+            }
+        },
 
         collision: {
             radius_forward: _radius * _data.collision.radius_forward_scale,
@@ -285,22 +298,104 @@ function sc_enemy_update_stunned(_enemy)
     }
 }
 
-/// @description Applies passive idle decay while reserving registered wander behaviour.
+/// @description Selects one unobstructed wander destination inside the registered spawn radius.
+function sc_enemy_wander_target_select(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _wander = _movement.wander;
+    var _range = _data.stats.final.range.wander;
+    var _config = global.config.enemy.wander;
+    var _extent = max(_data.collision.radius_forward, _data.collision.radius_side);
+    var _margin = _extent + _config.edge_margin;
+
+    for (var _i = 0; _i < _config.candidate_attempts; _i++)
+    {
+        var _direction = random(360);
+        var _distance = sqrt(random(1)) * _range;
+        var _target_x = _movement.spawn_x + lengthdir_x(_distance, _direction);
+        var _target_y = _movement.spawn_y + lengthdir_y(_distance, _direction);
+
+        if (_target_x < _margin || _target_x > room_width - _margin
+        || _target_y < _margin || _target_y > room_height - _margin)
+            continue;
+
+        if (place_meeting(_target_x, _target_y, o_solid)) continue;
+        if (collision_line(_enemy.x, _enemy.y, _target_x, _target_y, o_solid, false, true) != noone) continue;
+
+        _wander.target_x = _target_x;
+        _wander.target_y = _target_y;
+        _wander.active = true;
+        return true;
+    }
+
+    _wander.active = false;
+    _wander.next_move_tick = GAME_TICK + irandom_range(_config.wait_min, _config.wait_max);
+    return false;
+}
+
+/// @description Moves an idle enemy between occasional valid points around its spawn location.
+function sc_enemy_wander_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _wander = _movement.wander;
+    var _config = global.config.enemy.wander;
+
+    if (!_wander.active)
+    {
+        if (GAME_TICK >= _wander.next_move_tick)
+            sc_enemy_wander_target_select(_enemy);
+
+        return false;
+    }
+
+    var _dx = _wander.target_x - _enemy.x;
+    var _dy = _wander.target_y - _enemy.y;
+    var _distance_sq = _dx * _dx + _dy * _dy;
+
+    if (_distance_sq <= sqr(_config.arrival_radius))
+    {
+        _wander.active = false;
+        _wander.next_move_tick = GAME_TICK + irandom_range(_config.wait_min, _config.wait_max);
+        return false;
+    }
+
+    var _direction = point_direction(_enemy.x, _enemy.y, _wander.target_x, _wander.target_y);
+    var _turn_speed = _data.stats.final.handling.turn_speed;
+
+    sc_enemy_movement_accelerate(_enemy, _direction, _config.speed_scale);
+
+    var _turn = angle_difference(_direction, _enemy.draw_angle);
+    _enemy.draw_angle += clamp(_turn, -_turn_speed, _turn_speed);
+    _enemy.draw_angle = _enemy.draw_angle mod 360;
+    return true;
+}
+
+/// @description Wanders around the spawn location or applies passive idle decay when disabled.
 function sc_enemy_update_idle(_enemy)
 {
     var _data = _enemy.enemy;
     var _movement = _data.movement;
     var _friction_coeff = _data.stats.final.handling.friction_coeff;
+    var _wandering = false;
 
-    // Future: when range.wander > 0, call sc_enemy_wander_update() around the stored spawn position.
-    _movement.velocity_x *= _friction_coeff;
-    _movement.velocity_y *= _friction_coeff;
+    if (_data.stats.final.range.wander > 0)
+        _wandering = sc_enemy_wander_update(_enemy);
 
-    if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
-    if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
+    if (!_wandering)
+    {
+        _movement.velocity_x *= _friction_coeff;
+        _movement.velocity_y *= _friction_coeff;
+
+        if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
+        if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
+    }
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
+
+    // Future: range.alert_share controls one-time nearby ally alert broadcasting.
 }
 
 /// @description Returns movement alignment where 1 is forward and 0 is directly backwards.

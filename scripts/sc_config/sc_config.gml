@@ -3,6 +3,14 @@ function sc_config_init()
 {
     global.config = {
         visual: {
+			
+			ship_motion: {
+                side_amount: 0.6,
+                side_speed: 0.018,
+                forward_amount: 1.2,
+                forward_speed: 0.012
+            },
+			
             shield: {
                 radius_scale: 1.28,
                 field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,
@@ -69,6 +77,15 @@ function sc_config_init()
                 strength: 0.14,
                 maximum_push: 0.8,
                 position_correction: 0.18
+            },
+			
+			wander: {
+                speed_scale: 0.45,
+                arrival_radius: 32,
+                wait_min: 60,
+                wait_max: 150,
+                candidate_attempts: 4,
+                edge_margin: 24
             }
         },
     };

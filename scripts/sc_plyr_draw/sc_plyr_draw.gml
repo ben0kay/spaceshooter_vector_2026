@@ -1,4 +1,4 @@
-/// @description Draws the player's baked layered ship with its shield above the ship.
+/// @description Draws the player's assembled baked ship with slow visual floating motion.
 function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shield)
 {
     var _visual = _player.ship.visual;
@@ -14,11 +14,23 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _angle = _player.draw_angle;
     var _radius = _visual.radius;
     var _thrust_power = _runtime.thrust_power;
+    var _motion = global.config.visual.ship_motion;
+    var _strength = _visual.motion_strength;
+    var _bob_side = sin(GAME_TICK * _motion.side_speed) * _motion.side_amount * _strength;
+    var _bob_forward = sin(GAME_TICK * _motion.forward_speed + 1.7) * _motion.forward_amount * _strength;
+
+    var _draw_x = _player.x
+        + lengthdir_x(_bob_forward, _angle)
+        + lengthdir_x(_bob_side, _angle + 90);
+
+    var _draw_y = _player.y
+        + lengthdir_y(_bob_forward, _angle)
+        + lengthdir_y(_bob_side, _angle + 90);
 
     if (_draw_thrust && _thrust_power > 0.01 && sprite_exists(_cache.thrust))
     {
-        var _thrust_x = _player.x + lengthdir_x(-_radius * 0.92, _angle);
-        var _thrust_y = _player.y + lengthdir_y(-_radius * 0.92, _angle);
+        var _thrust_x = _draw_x + lengthdir_x(-_radius * 0.92, _angle);
+        var _thrust_y = _draw_y + lengthdir_y(-_radius * 0.92, _angle);
         var _flicker = 0.94 + sin(GAME_TICK * 0.38 + _runtime.thrust_phase) * 0.06;
 
         draw_sprite_ext(
@@ -41,11 +53,11 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _hinge_x = _player.x
+        var _hinge_x = _draw_x
             + lengthdir_x(_hinge_forward, _angle)
             + lengthdir_x(_hinge_side * _side, _angle + 90);
 
-        var _hinge_y = _player.y
+        var _hinge_y = _draw_y
             + lengthdir_y(_hinge_forward, _angle)
             + lengthdir_y(_hinge_side * _side, _angle + 90);
 
@@ -60,7 +72,7 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
     draw_sprite_ext(
         _cache.hull[_hull_stage], 0,
-        _player.x, _player.y,
+        _draw_x, _draw_y,
         1, 1, _angle,
         _colour, _alpha
     );
@@ -69,11 +81,11 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     {
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            var _hinge_x = _player.x
+            var _hinge_x = _draw_x
                 + lengthdir_x(_hinge_forward, _angle)
                 + lengthdir_x(_hinge_side * _side, _angle + 90);
 
-            var _hinge_y = _player.y
+            var _hinge_y = _draw_y
                 + lengthdir_y(_hinge_forward, _angle)
                 + lengthdir_y(_hinge_side * _side, _angle + 90);
 
@@ -88,7 +100,7 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
         draw_sprite_ext(
             _cache.armour[_armour_stage], 0,
-            _player.x, _player.y,
+            _draw_x, _draw_y,
             1, 1, _angle,
             _colour, _alpha
         );
@@ -97,11 +109,11 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     if (sprite_exists(_cache.core))
     {
         var _core = _visual.core;
-        var _core_x = _player.x
+        var _core_x = _draw_x
             + lengthdir_x(_core.forward * _radius, _angle)
             + lengthdir_x(_core.side * _radius, _angle + 90);
 
-        var _core_y = _player.y
+        var _core_y = _draw_y
             + lengthdir_y(_core.forward * _radius, _angle)
             + lengthdir_y(_core.side * _radius, _angle + 90);
 
@@ -114,17 +126,16 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
         );
     }
 
-    sc_player_hardpoints_draw(_player, _colour, _alpha);
+    sc_player_hardpoints_draw(_player, _draw_x, _draw_y, _colour, _alpha);
 
-    // Draw shield last so its field, outline and hit pulse remain visible.
     if (_draw_shield && _player.defence.shield.current > 0 && sprite_exists(_cache.shield))
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
 
         sc_visual_shield_sprite_draw(
             _cache.shield,
-            _player.x,
-            _player.y,
+            _draw_x,
+            _draw_y,
             _angle,
             _visual.palette,
             _shield_ratio,
@@ -137,8 +148,8 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     draw_set_colour(c_white);
 }
 
-/// @description Draws the player's independent baked hardpoints, recoil and muzzle flashes.
-function sc_player_hardpoints_draw(_player, _colour, _alpha)
+/// @description Draws independent baked hardpoints and muzzle flashes at the visual ship position.
+function sc_player_hardpoints_draw(_player, _draw_x, _draw_y, _colour, _alpha)
 {
     var _cache = _player.ship.visual.runtime.cache;
     var _hardpoints = _player.ship.hardpoints.primary;
@@ -150,12 +161,12 @@ function sc_player_hardpoints_draw(_player, _colour, _alpha)
         var _angle = _player_angle + _hardpoint.angle;
         var _recoil = _hardpoint.runtime.recoil;
 
-        var _mount_x = _player.x
+        var _mount_x = _draw_x
             + lengthdir_x(_hardpoint.x, _player_angle)
             + lengthdir_x(_hardpoint.y, _player_angle + 90)
             - lengthdir_x(_recoil, _angle);
 
-        var _mount_y = _player.y
+        var _mount_y = _draw_y
             + lengthdir_y(_hardpoint.x, _player_angle)
             + lengthdir_y(_hardpoint.y, _player_angle + 90)
             - lengthdir_y(_recoil, _angle);
@@ -172,12 +183,12 @@ function sc_player_hardpoints_draw(_player, _colour, _alpha)
         if (_runtime.muzzle_flash <= 0) continue;
 
         var _angle = _player_angle + _hardpoint.angle;
-        var _mount_x = _player.x
+        var _mount_x = _draw_x
             + lengthdir_x(_hardpoint.x, _player_angle)
             + lengthdir_x(_hardpoint.y, _player_angle + 90)
             - lengthdir_x(_runtime.recoil, _angle);
 
-        var _mount_y = _player.y
+        var _mount_y = _draw_y
             + lengthdir_y(_hardpoint.x, _player_angle)
             + lengthdir_y(_hardpoint.y, _player_angle + 90)
             - lengthdir_y(_runtime.recoil, _angle);

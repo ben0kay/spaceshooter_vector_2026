@@ -28,7 +28,7 @@ function sc_enemy_register_twin_fighter()
             combat: 840,
 			retreat: 300,
             forget: 1280,
-			wander: 0,
+			wander: 500,
 			alert_share: 1200			
 		},
 
