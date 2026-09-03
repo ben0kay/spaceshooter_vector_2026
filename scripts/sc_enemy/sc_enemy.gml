@@ -175,23 +175,17 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates shared visual animation, hardpoint tracking, recoil and registered thrusters.
-function sc_enemy_visual_update(_enemy)
+/// @description Updates enemy hardpoint aiming, aim locks and recoil runtime.
+function sc_enemy_hardpoint_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
-    var _movement = _data.movement;
-    var _speed_max = _data.stats.final.handling.speed_max;
+    var _hardpoints = _data.hardpoints;
     var _has_target = instance_exists(_data.target_id);
-    var _thrust_config = global.config.visual.enemy_thrust;
 
-    _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
-    _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
-    _visual.runtime.shield_hit_alpha = max(0, _visual.runtime.shield_hit_alpha - 0.06);
-
-    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
     {
-        var _hardpoint = _data.hardpoints[_i];
+        var _hardpoint = _hardpoints[_i];
         var _rotation = _hardpoint.rotation;
         var _runtime = _hardpoint.runtime;
         var _base_angle = _enemy.draw_angle + _hardpoint.angle;
@@ -227,13 +221,28 @@ function sc_enemy_visual_update(_enemy)
         else
             _runtime.recoil = 0;
     }
+}
+
+/// @description Updates visual-only enemy animation, shield feedback and thruster effects.
+function sc_enemy_visual_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _visual = _data.visual;
+    var _movement = _data.movement;
+    var _thrusters = _data.thrusters;
+    var _speed_max = _data.stats.final.handling.speed_max;
+    var _thrust_config = global.config.visual.enemy_thrust;
+
+    _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
+    _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
+    _visual.runtime.shield_hit_alpha = max(0, _visual.runtime.shield_hit_alpha - 0.06);
 
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
     var _target_power = _speed_max > 0 ? clamp(_speed / _speed_max, 0, 1) : 0;
 
-    for (var _i = 0; _i < array_length(_data.thrusters); _i++)
+    for (var _i = 0; _i < array_length(_thrusters); _i++)
     {
-        var _thruster = _data.thrusters[_i];
+        var _thruster = _thrusters[_i];
         var _runtime = _thruster.runtime;
         var _active = _target_power > _thrust_config.active_power_min;
         var _forward = _thruster.forward * _visual.radius;

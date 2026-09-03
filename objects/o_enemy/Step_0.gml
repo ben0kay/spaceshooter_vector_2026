@@ -1,9 +1,10 @@
-/// @description Updates the enemy state and synchronizes its rotated collision mask.
+/// @description Updates enemy perception, hardpoints, visuals and active state.
 if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 if (enemy.state != EnemyState.STUNNED && enemy.state != EnemyState.DEAD)
     sc_enemy_perception_update(id);
 
+sc_enemy_hardpoint_update(id);
 sc_enemy_visual_update(id);
 
 switch (enemy.state)
