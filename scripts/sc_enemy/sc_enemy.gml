@@ -61,8 +61,18 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     for (var _i = 0; _i < array_length(_runtime.hardpoints); _i++)
     {
+        var _hardpoint = _runtime.hardpoints[_i];
         var _sprite = is_struct(_cache) && _i < array_length(_cache.hardpoints) ? _cache.hardpoints[_i] : -1;
-        _runtime.hardpoints[_i].runtime = { sprite: _sprite, recoil: 0 };
+
+        // Old hardpoints remain fixed without requiring definition changes.
+        if (!variable_struct_exists(_hardpoint, "rotation"))
+            _hardpoint.rotation = { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true };
+
+        _hardpoint.runtime = {
+            sprite: _sprite,
+            recoil: 0,
+            aim_angle: _enemy.draw_angle + _hardpoint.angle
+        };
     }
 
     for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
@@ -153,13 +163,14 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates shared visual animation, shield feedback, recoil and registered thrusters.
+/// @description Updates shared visual animation, hardpoint tracking, recoil and registered thrusters.
 function sc_enemy_visual_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _movement = _data.movement;
     var _speed_max = _data.stats.final.speed_max;
+    var _has_target = instance_exists(_data.target_id);
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
@@ -168,11 +179,36 @@ function sc_enemy_visual_update(_enemy)
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
         var _hardpoint = _data.hardpoints[_i];
+        var _rotation = _hardpoint.rotation;
+        var _runtime = _hardpoint.runtime;
+        var _base_angle = _enemy.draw_angle + _hardpoint.angle;
+        var _desired_angle = _runtime.aim_angle;
 
-        if (_hardpoint.runtime.recoil > 0.01)
-            _hardpoint.runtime.recoil = lerp(_hardpoint.runtime.recoil, 0, 0.22);
+        if (_rotation.mode == HardpointRotation.TARGET && _has_target)
+        {
+            var _forward = _hardpoint.forward * _visual.radius;
+            var _side = _hardpoint.side * _visual.radius;
+            var _mount_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+            var _mount_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
+            var _target_angle = point_direction(_mount_x, _mount_y, _data.target_id.x, _data.target_id.y);
+            var _arc_half = _rotation.arc * 0.5;
+
+            _desired_angle = _rotation.arc >= 360
+                ? _target_angle
+                : _base_angle + clamp(angle_difference(_target_angle, _base_angle), -_arc_half, _arc_half);
+        }
+        else if (_rotation.mode == HardpointRotation.FIXED || _rotation.return_to_rest)
+            _desired_angle = _base_angle;
+
+        if (_rotation.mode == HardpointRotation.FIXED)
+            _runtime.aim_angle = _base_angle;
         else
-            _hardpoint.runtime.recoil = 0;
+            _runtime.aim_angle += clamp(angle_difference(_desired_angle, _runtime.aim_angle), -_rotation.turn_speed, _rotation.turn_speed);
+
+        if (_runtime.recoil > 0.01)
+            _runtime.recoil = lerp(_runtime.recoil, 0, 0.22);
+        else
+            _runtime.recoil = 0;
     }
 
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
@@ -185,15 +221,8 @@ function sc_enemy_visual_update(_enemy)
         var _active = _target_power > 0.05;
         var _forward = _thruster.forward * _visual.radius;
         var _side = _thruster.side * _visual.radius;
-
-        var _thruster_x = _enemy.x
-            + lengthdir_x(_forward, _enemy.draw_angle)
-            + lengthdir_x(_side, _enemy.draw_angle + 90);
-
-        var _thruster_y = _enemy.y
-            + lengthdir_y(_forward, _enemy.draw_angle)
-            + lengthdir_y(_side, _enemy.draw_angle + 90);
-
+        var _thruster_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
+        var _thruster_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
         var _thruster_angle = _enemy.draw_angle + _thruster.angle;
 
         if (_active && !_runtime.active)
@@ -422,7 +451,7 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     var _data = _enemy.enemy;
     var _hardpoint = _data.hardpoints[_hardpoint_index];
     var _radius = _data.visual.radius;
-    var _mount_angle = _enemy.draw_angle + _hardpoint.angle;
+    var _mount_angle = _hardpoint.runtime.aim_angle;
     var _forward = _hardpoint.forward * _radius;
     var _side = _hardpoint.side * _radius;
     var _recoil = _hardpoint.runtime.recoil;
@@ -442,21 +471,27 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     var _muzzle_y = _mount_y + lengthdir_y(_muzzle_distance, _mount_angle);
     var _direction = _mount_angle;
 
-    switch (_attack.aim.mode)
+    // Fixed cannons retain the existing attack aiming behaviour.
+    if (_hardpoint.rotation.mode == HardpointRotation.FIXED)
     {
-        case AimMode.TARGET:
-            _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
-        break;
+        switch (_attack.aim.mode)
+        {
+            case AimMode.TARGET:
+                _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
+            break;
 
-        case AimMode.TARGET_LEAD:
-            // Target-leading solution goes here later.
-            _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
-        break;
+            case AimMode.TARGET_LEAD:
+                // Target-leading solution goes here later.
+                _direction = point_direction(_muzzle_x, _muzzle_y, _data.target_id.x, _data.target_id.y);
+            break;
 
-        case AimMode.WORLD:
-            _direction = _attack.aim.world_direction;
-        break;
+            case AimMode.WORLD:
+                _direction = _attack.aim.world_direction;
+            break;
+        }
     }
+    else if (_attack.aim.mode == AimMode.WORLD)
+        _direction = _attack.aim.world_direction;
 
     _direction += _attack.aim.angle_offset + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
 
@@ -474,6 +509,7 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
 
     // Insert muzzle flash and weapon audio here.
 }
+
 
 /// @description Draws one enemy using shared baked components with its shield above the ship.
 function sc_enemy_draw(_enemy)
@@ -521,7 +557,7 @@ function sc_enemy_draw(_enemy)
         var _hardpoint = _data.hardpoints[_i];
         var _forward = _hardpoint.forward * _visual.radius;
         var _side = _hardpoint.side * _visual.radius;
-        var _angle = _enemy.draw_angle + _hardpoint.angle;
+        var _angle = _hardpoint.runtime.aim_angle;
         var _recoil = _hardpoint.runtime.recoil;
 
         var _hardpoint_x = _enemy.x

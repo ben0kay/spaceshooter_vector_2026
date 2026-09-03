@@ -682,61 +682,62 @@ function sc_particles_register_shard()
     });
 }
 
-/// @description Emits one layered Shard engine ignition burst.
+/// @description Emits one powerful layered Shard engine ignition burst.
 function sc_particles_shard_ignition(_x, _y, _direction, _scale, _power)
 {
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
-    part_type_size(_types.ring, 0.13 * _scale, 0.18 * _scale, 0.045 * _scale, 0);
-    part_type_size(_types.flash, 0.13 * _scale, 0.19 * _scale, -0.014 * _scale, 0);
-    part_type_size(_types.dash, 0.2 * _scale, 0.3 * _scale, -0.01 * _scale, 0);
-    part_type_direction(_types.dash, _direction - 7, _direction + 7, 0, 0);
+    var _strength = max(1, _power);
+    part_type_size(_types.ring, 0.22 * _scale, 0.31 * _scale, 0.055 * _scale, 0);
+    part_type_size(_types.flash, 0.24 * _scale, 0.34 * _scale, -0.022 * _scale, 0);
+    part_type_size(_types.dash, 0.38 * _scale, 0.56 * _scale, -0.018 * _scale, 0);
+    part_type_direction(_types.dash, _direction - 6, _direction + 6, 0, 0);
 
-    part_particles_create(global.particles.system, _x, _y, _types.ring, 1);
-    part_particles_create(global.particles.system, _x, _y, _types.flash, 1);
-    part_particles_create(global.particles.system, _x, _y, _types.dash, _power > 1 ? 3 : 1);
+    part_particles_create(global.particles.system, _x, _y, _types.ring, 2);
+    part_particles_create(global.particles.system, _x, _y, _types.flash, 2);
+    part_particles_create(global.particles.system, _x, _y, _types.dash, _strength > 1 ? 5 : 3);
     return true;
 }
 
-/// @description Emits dense layered Shard exhaust responding to movement state.
+/// @description Emits a dense powerful Shard exhaust responding to movement state.
 function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting, _dashing)
 {
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
-    var _intensity = max(0.15, _power);
-    if (_boosting) _intensity *= 1.25;
-    if (_dashing) _intensity *= 1.55;
+    var _intensity = max(0.18, _power);
+    if (_boosting) _intensity *= 1.35;
+    if (_dashing) _intensity *= 1.7;
 
-    var _outer_size = (0.24 + _intensity * 0.42) * _scale;
-    var _inner_size = (0.13 + _intensity * 0.25) * _scale;
+    var _outer_size = (0.38 + _intensity * 0.62) * _scale;
+    var _inner_size = (0.2 + _intensity * 0.36) * _scale;
+    var _outer_count = _dashing ? 4 : (_boosting ? 3 : 2);
+    var _inner_count = _dashing ? 2 : 1;
 
-    part_type_direction(_types.outer, _direction - 3, _direction + 3, 0, 0);
+    part_type_direction(_types.outer, _direction - 4, _direction + 4, 0, 0);
     part_type_direction(_types.inner, _direction - 2, _direction + 2, 0, 0);
-    part_type_size(_types.outer, _outer_size * 0.9, _outer_size, -0.012 * _scale, 0.008);
-    part_type_size(_types.inner, _inner_size * 0.9, _inner_size, -0.01 * _scale, 0.006);
+    part_type_size(_types.outer, _outer_size * 0.82, _outer_size, -0.016 * _scale, 0.01);
+    part_type_size(_types.inner, _inner_size * 0.86, _inner_size, -0.012 * _scale, 0.008);
 
-    part_particles_create(global.particles.system, _x, _y, _types.outer, _boosting || _dashing ? 2 : 1);
-    part_particles_create(global.particles.system, _x, _y, _types.inner, 1);
+    part_particles_create(global.particles.system, _x, _y, _types.outer, _outer_count);
+    part_particles_create(global.particles.system, _x, _y, _types.inner, _inner_count);
 
-    // Small warm flame flickers occasionally inside the aqua plume.
-    if (irandom(_boosting || _dashing ? 5 : 10) == 0)
+    // Occasional warm flame inside the aqua exhaust.
+    if (irandom(_boosting || _dashing ? 3 : 7) == 0)
     {
-        var _fire_size = (0.12 + _intensity * 0.16) * _scale;
-
-        part_type_direction(_types.fire, _direction - 4, _direction + 4, 0, 0);
-        part_type_size(_types.fire, _fire_size * 0.85, _fire_size, -0.008 * _scale, 0);
+        var _fire_size = (0.18 + _intensity * 0.24) * _scale;
+        part_type_direction(_types.fire, _direction - 5, _direction + 5, 0, 0);
+        part_type_size(_types.fire, _fire_size * 0.82, _fire_size, -0.009 * _scale, 0);
         part_particles_create(global.particles.system, _x, _y, _types.fire, 1);
     }
 
     if (_boosting || _dashing)
     {
-        var _dash_size = (0.18 + _intensity * 0.25) * _scale;
-
+        var _dash_size = (0.3 + _intensity * 0.42) * _scale;
         part_type_direction(_types.dash, _direction - 3, _direction + 3, 0, 0);
-        part_type_size(_types.dash, _dash_size * 0.9, _dash_size, -0.014 * _scale, 0.006);
-        part_particles_create(global.particles.system, _x, _y, _types.dash, _dashing ? 2 : 1);
+        part_type_size(_types.dash, _dash_size * 0.85, _dash_size, -0.018 * _scale, 0.008);
+        part_particles_create(global.particles.system, _x, _y, _types.dash, _dashing ? 3 : 2);
     }
 
     return true;

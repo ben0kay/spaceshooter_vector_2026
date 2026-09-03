@@ -11,6 +11,7 @@ enum WeaponMountMode { HARDPOINT, CENTRE }
 enum AimMode { MOUNT, TARGET, TARGET_LEAD, WORLD }
 enum ShotPattern { SINGLE, SPREAD, RANDOM_CONE }
 enum HardpointFireOrder { ALL, SEQUENTIAL, RANDOM }
+enum HardpointRotation { FIXED, TARGET }
 enum DamageType { KINETIC, ENERGY, EXPLOSIVE, ELECTRIC, THERMAL, CORROSIVE }
 enum DamageEffect { NONE, DISRUPTION, BURN, CORROSION, STAGGER }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
