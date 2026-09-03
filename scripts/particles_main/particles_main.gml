@@ -8,22 +8,17 @@ function sc_particles_init()
     {
         if (part_system_exists(_system)) part_system_destroy(_system);
         if (part_system_exists(_impact_system)) part_system_destroy(_impact_system);
-
         show_debug_message("PARTICLE SYSTEM ERROR - creation failed");
         return false;
     }
 
-    global.particles = {
-        system: _system,
-        impact_system: _impact_system,
-        groups: {},
-        owned_types: []
-    };
+    global.particles = { system: _system, impact_system: _impact_system, groups: {}, owned_types: [] };
 
     part_system_depth(_system, 10);
     part_system_depth(_impact_system, -10);
 
-    if (!sc_particles_register_simulant()
+    if (!sc_particles_register_attack_telegraph()
+    || !sc_particles_register_simulant()
     || !sc_particles_register_shard()
     || !sc_particles_register_shockwave()
     || !sc_particles_register_projectile_content()

@@ -40,8 +40,7 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     _enemy.draw_angle = 0;
 
-    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision))
-        return false;
+    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision)) return false;
 
     _runtime.defence = {
         shield: { current: _final.shield_max, maximum: _final.shield_max },
@@ -67,11 +66,7 @@ function sc_enemy_init(_enemy, _enemy_key)
         if (!variable_struct_exists(_hardpoint, "rotation"))
             _hardpoint.rotation = { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true };
 
-        _hardpoint.runtime = {
-            sprite: _sprite,
-            recoil: 0,
-            aim_angle: _enemy.draw_angle + _hardpoint.angle
-        };
+        _hardpoint.runtime = { sprite: _sprite, recoil: 0, aim_angle: _enemy.draw_angle + _hardpoint.angle };
     }
 
     for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
@@ -90,7 +85,7 @@ function sc_enemy_init(_enemy, _enemy_key)
     }
 
     _runtime.attack_controller.runtime = {
-        active: false,
+        phase: EnemyAttackPhase.IDLE,
         current_attack: -1,
         next_attack_index: 0,
         hardpoint_cursor: 0,
@@ -98,11 +93,13 @@ function sc_enemy_init(_enemy, _enemy_key)
         next_fire_tick: 0,
         cooldown_until: 0,
         attack_end_tick: 0,
+        telegraph_start_tick: 0,
+        telegraph_end_tick: 0,
+        next_telegraph_particle_tick: 0,
         active_deliveries: []
     };
 
     _enemy.initialized = true;
-
     global.level.enemies_alive++;
     show_debug_message("ENEMY INITIALIZED - " + _runtime.identity.name);
     return true;
@@ -337,11 +334,28 @@ function sc_enemy_update_attacking(_enemy)
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
 
-    var _turn = angle_difference(_direction, _enemy.draw_angle);
-    _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
-    _enemy.draw_angle = _enemy.draw_angle mod 360;
+    if (!sc_enemy_attack_aim_locked(_enemy))
+    {
+        var _turn = angle_difference(_direction, _enemy.draw_angle);
+        _enemy.draw_angle += clamp(_turn, -_stats.turn_speed, _stats.turn_speed);
+        _enemy.draw_angle = _enemy.draw_angle mod 360;
+    }
 
     sc_enemy_attack_update(_enemy);
+}
+
+/// @description Returns whether the current telegraph has entered its final aim-lock period.
+function sc_enemy_attack_aim_locked(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+
+    if (_runtime.phase != EnemyAttackPhase.TELEGRAPH || _runtime.current_attack < 0) return false;
+
+    var _attack = _controller.attacks[_runtime.current_attack];
+    if (!variable_struct_exists(_attack.telegraph, "aim_lock_remaining")) return false;
+
+    return GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
 }
 
 /// @description Releases active deliveries and cancels the current enemy attack.
@@ -356,11 +370,13 @@ function sc_enemy_attack_cancel(_enemy)
     }
 
     _runtime.active_deliveries = [];
-    _runtime.active = false;
+    _runtime.phase = EnemyAttackPhase.IDLE;
     _runtime.current_attack = -1;
     _runtime.hardpoint_cursor = 0;
     _runtime.volley_count = 0;
     _runtime.attack_end_tick = 0;
+    _runtime.telegraph_start_tick = 0;
+    _runtime.telegraph_end_tick = 0;
 }
 
 /// @description Completes one enemy attack and begins its registered cooldown.
@@ -375,11 +391,13 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     }
 
     _runtime.active_deliveries = [];
-    _runtime.active = false;
+    _runtime.phase = EnemyAttackPhase.COOLDOWN;
     _runtime.current_attack = -1;
     _runtime.hardpoint_cursor = 0;
     _runtime.volley_count = 0;
     _runtime.attack_end_tick = 0;
+    _runtime.telegraph_start_tick = 0;
+    _runtime.telegraph_end_tick = 0;
     _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
@@ -491,6 +509,135 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     return _delivery;
 }
 
+/// @description Starts the selected enemy attack after any telegraph finishes.
+function sc_enemy_attack_activate(_enemy, _attack)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+    var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
+
+    _runtime.phase = EnemyAttackPhase.ACTIVE;
+    _runtime.next_fire_tick = GAME_TICK;
+
+    if (_weapon.delivery.type != AttackDelivery.BEAM) return true;
+
+    _runtime.attack_end_tick = GAME_TICK + max(1, round(_attack.firing.duration));
+
+    if (!sc_enemy_beam_attack_start(_enemy, _attack))
+    {
+        sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _enemy.enemy.stats.final.fire_rate_multiplier);
+        return false;
+    }
+
+    return true;
+}
+
+/// @description Updates faction-coloured particles during an enemy attack telegraph.
+function sc_enemy_attack_telegraph_update(_enemy, _attack)
+{
+    var _runtime = _enemy.enemy.attack_controller.runtime;
+    var _telegraph = _attack.telegraph;
+
+    if (GAME_TICK >= _runtime.telegraph_end_tick)
+    {
+        sc_enemy_attack_activate(_enemy, _attack);
+        return;
+    }
+
+    if (GAME_TICK < _runtime.next_telegraph_particle_tick) return;
+
+    _runtime.next_telegraph_particle_tick = GAME_TICK + max(1, round(_telegraph.particle_interval));
+
+    var _progress = clamp(
+        (GAME_TICK - _runtime.telegraph_start_tick)
+        / max(1, _runtime.telegraph_end_tick - _runtime.telegraph_start_tick),
+        0, 1
+    );
+
+    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+    {
+        var _transform = { x: 0, y: 0, direction: 0 };
+        sc_enemy_hardpoint_attack_transform(_enemy, _attack, _attack.hardpoint_indices[_i], _transform);
+        _telegraph.particle_script(_enemy, _attack, _transform, _progress, _enemy.enemy.visual.palette, _telegraph);
+    }
+}
+
+/// @description Draws a generic faction-coloured energy charge at telegraphed hardpoints.
+function sc_enemy_attack_telegraph_draw(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _controller = _data.attack_controller;
+    var _runtime = _controller.runtime;
+
+    if (_runtime.phase != EnemyAttackPhase.TELEGRAPH || _runtime.current_attack < 0) return;
+
+    var _attack = _controller.attacks[_runtime.current_attack];
+    var _telegraph = _attack.telegraph;
+    var _progress = clamp(
+        (GAME_TICK - _runtime.telegraph_start_tick)
+        / max(1, _runtime.telegraph_end_tick - _runtime.telegraph_start_tick),
+        0, 1
+    );
+
+    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+    {
+        var _transform = { x: 0, y: 0, direction: 0 };
+        sc_enemy_hardpoint_attack_transform(_enemy, _attack, _attack.hardpoint_indices[_i], _transform);
+        _telegraph.draw_script(_enemy, _attack, _transform, _progress, _data.visual.palette, _telegraph);
+    }
+}
+
+/// @description Draws the reusable glowing energy-ball attack telegraph.
+function sc_attack_telegraph_energy_draw(_enemy, _attack, _transform, _progress, _palette, _config)
+{
+    var _base_radius = _enemy.enemy.visual.radius * _config.scale;
+    var _pulse = 1 + sin(GAME_TICK * lerp(0.18, 0.55, _progress)) * lerp(0.08, 0.18, _progress);
+    var _radius = lerp(_base_radius * 0.18, _base_radius, _progress) * _pulse;
+    var _orbit_radius = lerp(_base_radius * 1.5, _base_radius * 0.58, _progress);
+    var _alpha = lerp(0.35, 1, _progress);
+    var _rotation = GAME_TICK * lerp(3, 9, _progress);
+
+    gpu_set_blendmode(bm_add);
+
+    draw_set_colour(_palette.glow);
+    draw_set_alpha(_alpha * 0.16);
+    draw_circle(_transform.x, _transform.y, _radius * 2.6, false);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(_alpha * 0.3);
+    draw_circle(_transform.x, _transform.y, _radius * 1.65, false);
+
+    draw_set_colour(_palette.energy);
+    draw_set_alpha(_alpha * 0.82);
+    draw_circle(_transform.x, _transform.y, _radius, false);
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(_alpha);
+    draw_circle(_transform.x, _transform.y, max(1.5, _radius * 0.32), false);
+
+    for (var _i = 0; _i < 4; _i++)
+    {
+        var _angle = _rotation + _i * 90;
+        var _spark_x = _transform.x + lengthdir_x(_orbit_radius, _angle);
+        var _spark_y = _transform.y + lengthdir_y(_orbit_radius, _angle);
+
+        draw_set_colour(_palette.energy);
+        draw_set_alpha(_alpha * 0.75);
+        draw_line_width(
+            _spark_x,
+            _spark_y,
+            _transform.x + lengthdir_x(_radius, _angle),
+            _transform.y + lengthdir_y(_radius, _angle),
+            max(1, _base_radius * 0.08)
+        );
+    }
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+
+    // Future: sc_attack_telegraph_cannon_charge_draw for sequential launcher lights.
+}
+
 /// @description Creates every beam delivery required by the selected enemy beam attack.
 function sc_enemy_beam_attack_start(_enemy, _attack)
 {
@@ -564,7 +711,7 @@ function sc_enemy_beam_attack_sustain(_enemy, _attack)
     return array_length(_runtime.active_deliveries) > 0;
 }
 
-/// @description Updates projectile volleys or sustained beam attacks.
+/// @description Updates telegraphs, projectile volleys and sustained beam attacks.
 function sc_enemy_attack_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -572,32 +719,42 @@ function sc_enemy_attack_update(_enemy)
     var _runtime = _controller.runtime;
     var _fire_rate = _data.stats.final.fire_rate_multiplier;
 
-    if (!_runtime.active)
+    if (_runtime.phase == EnemyAttackPhase.COOLDOWN)
     {
         if (GAME_TICK < _runtime.cooldown_until) return;
+        _runtime.phase = EnemyAttackPhase.IDLE;
+    }
 
+    if (_runtime.phase == EnemyAttackPhase.IDLE)
+    {
         _runtime.current_attack = sc_enemy_attack_select(_enemy);
-        _runtime.active = true;
         _runtime.hardpoint_cursor = 0;
         _runtime.volley_count = 0;
-        _runtime.next_fire_tick = GAME_TICK;
         _runtime.active_deliveries = [];
 
         var _attack = _controller.attacks[_runtime.current_attack];
-        var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
 
-        if (_weapon.delivery.type == AttackDelivery.BEAM)
+        if (variable_struct_exists(_attack, "telegraph"))
         {
-            _runtime.attack_end_tick = GAME_TICK + max(1, round(_attack.firing.duration));
-
-            if (!sc_enemy_beam_attack_start(_enemy, _attack))
-                sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
-
+            _runtime.phase = EnemyAttackPhase.TELEGRAPH;
+            _runtime.telegraph_start_tick = GAME_TICK;
+            _runtime.telegraph_end_tick = GAME_TICK + max(1, round(_attack.telegraph.duration));
+            _runtime.next_telegraph_particle_tick = GAME_TICK;
             return;
         }
+
+        sc_enemy_attack_activate(_enemy, _attack);
+        return;
     }
 
     var _attack = _controller.attacks[_runtime.current_attack];
+
+    if (_runtime.phase == EnemyAttackPhase.TELEGRAPH)
+    {
+        sc_enemy_attack_telegraph_update(_enemy, _attack);
+        return;
+    }
+
     var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
 
     if (_weapon.delivery.type == AttackDelivery.BEAM)
@@ -712,6 +869,8 @@ function sc_enemy_draw(_enemy)
         else
             _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _angle, _visual, 1);
     }
+	
+	sc_enemy_attack_telegraph_draw(_enemy);
 
     // Shield remains above all ship components.
     if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))

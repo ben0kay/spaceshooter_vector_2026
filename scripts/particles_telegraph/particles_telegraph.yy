@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"particles_telegraph",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"particles_telegraph",
+  "parent":{
+    "name":"particles",
+    "path":"folders/scripts/particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

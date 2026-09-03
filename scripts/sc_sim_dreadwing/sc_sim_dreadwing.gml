@@ -24,7 +24,7 @@ function sc_enemy_register_sim_dreadwing()
             speed_max: 3,
             acceleration: 0.12,
             friction: 0.992,
-            turn_speed: 1.5,
+            turn_speed: 1,
 
             detection_range: 1340,
             combat_range: 940,
@@ -52,19 +52,19 @@ function sc_enemy_register_sim_dreadwing()
             {
                 key: "cannon_inner_left", group: "cannons",
                 forward: 0.57, side: -0.37, angle: 0, muzzle_forward: 0.44,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.8, arc: 65, return_to_rest: true },
+                rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadwing_cannon_draw
             },
             {
                 key: "beam_centre", group: "beam",
                 forward: 0.69, side: 0, angle: 0, muzzle_forward: 0.25,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 1.8, arc: 65, return_to_rest: true },
+                rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_simulant_thin_beam_emitter_draw
             },
             {
                 key: "cannon_inner_right", group: "cannons",
                 forward: 0.57, side: 0.37, angle: 0, muzzle_forward: 0.44,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.8, arc: 65, return_to_rest: true },
+                rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadwing_cannon_draw
             },
             {
@@ -88,7 +88,7 @@ function sc_enemy_register_sim_dreadwing()
             attacks: [
                 {
                     key: "four_cannon_salvo",
-                    weight: 100,
+                    weight: 50,
                     hardpoint_group: "cannons",
                     weapon_key: "weapon_simulant_pulse",
 
@@ -96,20 +96,29 @@ function sc_enemy_register_sim_dreadwing()
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },
 
                     firing: {
-                        order: HardpointFireOrder.ALL,
-                        interval: 24,
+                        order: HardpointFireOrder.RANDOM,
+                        interval: 8,
                         volley_max: 4,
                         cooldown: 150
                     }
                 },
-                {
+                                {
                     key: "centre_beam",
                     weight: 35,
                     hardpoint_group: "beam",
                     weapon_key: "weapon_simulant_thin_beam",
 
-                    aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 0 },
+                    aim: { mode: AimMode.MOUNT, angle_offset: 0, inaccuracy: 0 },
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },
+
+                    telegraph: {
+                        duration: 60,
+                        aim_lock_remaining: 15,
+                        scale: 0.18,
+                        particle_interval: 2,
+                        draw_script: sc_attack_telegraph_energy_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
+                    },
 
                     firing: {
                         order: HardpointFireOrder.ALL,
