@@ -39,6 +39,7 @@ function sc_enemy_faction_simulant_ships_register()
 {
     if (!sc_enemy_register_twin_fighter()) return false;
 	if (!sc_enemy_register_sim_skirmisher()) return false;
+	if (!sc_enemy_register_sim_dreadwing()) return false
 
     return true;
 }

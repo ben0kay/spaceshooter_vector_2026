@@ -89,8 +89,8 @@ function sc_enemy_sim_skirmisher_visual_data()
 {
     return {
         radius: 52,
-
         palette: sc_faction_palette_get(Faction.SIMULANT),
+		core: { forward: 0, side: 0 },
 
         draw: {
             body: sc_enemy_sim_skirmisher_body_draw,

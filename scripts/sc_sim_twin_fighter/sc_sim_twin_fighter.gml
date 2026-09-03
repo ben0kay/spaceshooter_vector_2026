@@ -83,6 +83,7 @@ function sc_enemy_twin_fighter_visual_data()
     return {
         radius: 58,
         palette: sc_faction_palette_get(Faction.SIMULANT),
+		core: { forward: -0.23, side: 0 },
 
         draw: {
             body: sc_enemy_twin_fighter_body_draw,

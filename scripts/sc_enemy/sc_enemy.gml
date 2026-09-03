@@ -510,7 +510,6 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     // Insert muzzle flash and weapon audio here.
 }
 
-
 /// @description Draws one enemy using shared baked components with its shield above the ship.
 function sc_enemy_draw(_enemy)
 {
@@ -545,12 +544,21 @@ function sc_enemy_draw(_enemy)
     else
         _visual.draw.body(_enemy.x, _enemy.y, _visual.radius, _enemy.draw_angle, _visual);
 
+    // Position follows the ship angle; only the core sprite itself rotates.
+    var _core_x = _enemy.x
+        + lengthdir_x(_visual.core.forward * _visual.radius, _enemy.draw_angle)
+        + lengthdir_x(_visual.core.side * _visual.radius, _enemy.draw_angle + 90);
+
+    var _core_y = _enemy.y
+        + lengthdir_y(_visual.core.forward * _visual.radius, _enemy.draw_angle)
+        + lengthdir_y(_visual.core.side * _visual.radius, _enemy.draw_angle + 90);
+
     var _core_angle = _enemy.draw_angle + _runtime.core_angle;
 
     if (sprite_exists(_runtime.core_sprite))
-        draw_sprite_ext(_runtime.core_sprite, 0, _enemy.x, _enemy.y, 1, 1, _core_angle, c_white, _runtime.core_alpha);
+        draw_sprite_ext(_runtime.core_sprite, 0, _core_x, _core_y, 1, 1, _core_angle, c_white, _runtime.core_alpha);
     else
-        _visual.draw.core(_enemy.x, _enemy.y, _visual.radius, _core_angle, _visual, _runtime.core_alpha);
+        _visual.draw.core(_core_x, _core_y, _visual.radius, _core_angle, _visual, _runtime.core_alpha);
 
     for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
     {
@@ -576,7 +584,7 @@ function sc_enemy_draw(_enemy)
             _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _angle, _visual, 1);
     }
 
-    // Draw shield last so its field, outline and damage pulse remain visible.
+    // Shield remains above all ship components.
     if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
     {
         var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
