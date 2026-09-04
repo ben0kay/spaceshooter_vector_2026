@@ -715,6 +715,7 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
     var _delivery = sc_weapon_fire(
         _enemy,
         _attack.weapon_key,
+        _attack.shot,
         _transform.x,
         _transform.y,
         _direction,
