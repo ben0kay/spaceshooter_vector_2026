@@ -11,8 +11,8 @@
   "name":"o_boss_encounter",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"boss",
+    "path":"folders/objects/boss.yy",
   },
   "parentObjectId":null,
   "persistent":false,
