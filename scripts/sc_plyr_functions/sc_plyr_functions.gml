@@ -40,13 +40,14 @@ function sc_player_movement_runtime_update(_player)
     _dash.ghost_count = _write;
 }
 
-/// @description Reads and normalizes current WASD movement input.
+/// @description Reads and normalizes centralized movement input.
 function sc_player_input_update(_player)
 {
     var _movement = _player.movement;
+    var _input = global.input.action;
 
-	_movement.input_x = keyboard_check(vk_right) - keyboard_check(vk_left);
-	_movement.input_y = keyboard_check(vk_down) - keyboard_check(vk_up);
+    _movement.input_x = _input.move_right - _input.move_left;
+    _movement.input_y = _input.move_down - _input.move_up;
     _movement.moving = _movement.input_x != 0 || _movement.input_y != 0;
 
     if (!_movement.moving) return;
@@ -55,7 +56,6 @@ function sc_player_input_update(_player)
     _movement.input_x /= _length;
     _movement.input_y /= _length;
 }
-
 /// @description Updates player mouse aiming and visual rotation.
 function sc_player_aim_update(_player)
 {
@@ -168,7 +168,7 @@ function sc_player_normal_movement_update(_player)
     var _movement = _player.movement;
     var _stats = _player.ship.stats.final;
 
-    _movement.boost.active = keyboard_check(vk_shift) && _movement.moving;
+    _movement.boost.active = global.input.action.dash_pressed && _movement.moving;
 
     if (_movement.moving)
     {
@@ -228,12 +228,13 @@ function sc_player_continuous_weapon_release(_player)
 /// @description Selects one temporary primary weapon using number keys 1-4.
 function sc_player_weapon_selection_update(_player)
 {
-    var _slot = -1;
+   var _input = global.input.action;
+	var _slot = -1;
 
-    if (keyboard_check_pressed(ord("1"))) _slot = 0;
-    else if (keyboard_check_pressed(ord("2"))) _slot = 1;
-    else if (keyboard_check_pressed(ord("3"))) _slot = 2;
-    else if (keyboard_check_pressed(ord("4"))) _slot = 3;
+	if (_input.weapon_1_pressed) _slot = 0;
+	else if (_input.weapon_2_pressed) _slot = 1;
+	else if (_input.weapon_3_pressed) _slot = 2;
+	else if (_input.weapon_4_pressed) _slot = 3;
 
     if (_slot < 0) return false;
 
@@ -264,7 +265,7 @@ function sc_player_primary_weapon_update(_player)
 {
     var _runtime = _player.combat.primary;
 
-    if (!_player.combat.weapons_allowed || !mouse_check_button(mb_left))
+    if (!_player.combat.weapons_allowed || !global.input.action.fire_primary)
     {
         sc_player_continuous_weapon_release(_player);
         return false;

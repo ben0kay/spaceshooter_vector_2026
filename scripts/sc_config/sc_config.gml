@@ -148,3 +148,75 @@ function sc_config_init()
 
     return true;
 }
+
+/*
+CENTRAL INPUT
+
+All physical keyboard and mouse bindings live here.
+Gameplay systems consume named actions rather than checking keys directly.
+The bindings struct can later be changed and saved by an Options menu.
+*/
+
+/// @description Creates all default player bindings and input runtime.
+function sc_input_init()
+{
+    global.input = {
+        binding: {
+            move_left: keyboard_check(vk_left),
+            move_right: keyboard_check(vk_right),
+            move_up: keyboard_check(vk_up),
+            move_down: keyboard_check(vk_down),
+
+            fire_primary: mb_left,
+            fire_secondary: mb_right,
+            inventory: ord("E"),
+            dash: vk_shift,
+
+            weapon_1: ord("1"),
+            weapon_2: ord("2"),
+            weapon_3: ord("3"),
+            weapon_4: ord("4")
+        },
+
+        action: {
+            move_left: false,
+            move_right: false,
+            move_up: false,
+            move_down: false,
+
+            fire_primary: false,
+            fire_secondary: false,
+            inventory_pressed: false,
+            dash_pressed: false,
+
+            weapon_1_pressed: false,
+            weapon_2_pressed: false,
+            weapon_3_pressed: false,
+            weapon_4_pressed: false
+        }
+    };
+
+    return true;
+}
+
+/// @description Updates every centralized player action once per Step.
+function sc_input_update()
+{
+    var _binding = global.input.binding;
+    var _action = global.input.action;
+
+    _action.move_left = keyboard_check(_binding.move_left);
+    _action.move_right = keyboard_check(_binding.move_right);
+    _action.move_up = keyboard_check(_binding.move_up);
+    _action.move_down = keyboard_check(_binding.move_down);
+
+    _action.fire_primary = mouse_check_button(_binding.fire_primary);
+    _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
+    _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
+    _action.dash_pressed = keyboard_check_pressed(_binding.dash);
+
+    _action.weapon_1_pressed = keyboard_check_pressed(_binding.weapon_1);
+    _action.weapon_2_pressed = keyboard_check_pressed(_binding.weapon_2);
+    _action.weapon_3_pressed = keyboard_check_pressed(_binding.weapon_3);
+    _action.weapon_4_pressed = keyboard_check_pressed(_binding.weapon_4);
+}

@@ -6,7 +6,7 @@ sc_hud_level_update(hud);
 switch (global.PlayerState)
 {
     case PlayerState.ACTIVE:
-        if (keyboard_check_pressed(ord("E")))
+        if (global.input.action.inventory_pressed)
             sc_inventory_toggle(hud);
     break;
 
