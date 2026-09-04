@@ -70,6 +70,7 @@
     {"id":{"name":"o_solid","path":"objects/o_solid/o_solid.yy",},},
     {"id":{"name":"o_world_feedback","path":"objects/o_world_feedback/o_world_feedback.yy",},},
     {"id":{"name":"r_boot","path":"rooms/r_boot/r_boot.yy",},},
+    {"id":{"name":"r_boss_test","path":"rooms/r_boss_test/r_boss_test.yy",},},
     {"id":{"name":"r_combat_test","path":"rooms/r_combat_test/r_combat_test.yy",},},
     {"id":{"name":"r_menu_main","path":"rooms/r_menu_main/r_menu_main.yy",},},
     {"id":{"name":"particles_enemy_thruster","path":"scripts/particles_enemy_thruster/particles_enemy_thruster.yy",},},
@@ -78,6 +79,7 @@
     {"id":{"name":"particles_simulant","path":"scripts/particles_simulant/particles_simulant.yy",},},
     {"id":{"name":"particles_telegraph","path":"scripts/particles_telegraph/particles_telegraph.yy",},},
     {"id":{"name":"sc_attack_area","path":"scripts/sc_attack_area/sc_attack_area.yy",},},
+    {"id":{"name":"sc_background_boss","path":"scripts/sc_background_boss/sc_background_boss.yy",},},
     {"id":{"name":"sc_background_space","path":"scripts/sc_background_space/sc_background_space.yy",},},
     {"id":{"name":"sc_boot","path":"scripts/sc_boot/sc_boot.yy",},},
     {"id":{"name":"sc_boss_encounter","path":"scripts/sc_boss_encounter/sc_boss_encounter.yy",},},
@@ -155,6 +157,7 @@
     {"roomId":{"name":"r_boot","path":"rooms/r_boot/r_boot.yy",},},
     {"roomId":{"name":"r_combat_test","path":"rooms/r_combat_test/r_combat_test.yy",},},
     {"roomId":{"name":"r_menu_main","path":"rooms/r_menu_main/r_menu_main.yy",},},
+    {"roomId":{"name":"r_boss_test","path":"rooms/r_boss_test/r_boss_test.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[

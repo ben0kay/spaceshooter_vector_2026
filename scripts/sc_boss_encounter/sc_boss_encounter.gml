@@ -28,32 +28,33 @@ function sc_boss_encounter_create(_owner)
     };
 }
 
-/// @description Starts the encounter after normal player deployment has completed.
+/// @description Starts the encounter after player deployment.
 function sc_boss_encounter_begin(_encounter)
 {
-    var _camera = global.level.camera.camera_data;
-    var _view_w = camera_get_view_width(_camera.camera_id);
-    var _view_h = camera_get_view_height(_camera.camera_id);
-    var _centre_x = room_width * 0.5;
-    var _centre_y = room_height * 0.5;
+    var _camera_id = global.level.camera.camera_data.camera_id;
+    var _view_x = camera_get_view_x(_camera_id);
+    var _view_y = camera_get_view_y(_camera_id);
+    var _view_w = camera_get_view_width(_camera_id);
+    var _view_h = camera_get_view_height(_camera_id);
     var _arena = _encounter.arena;
     var _player = global.player_id;
 
-    _camera.follow.x = _centre_x;
-    _camera.follow.y = _centre_y;
-    _camera.follow.locked = true;
-
-    _arena.left = _centre_x - _view_w * 0.5 + _arena.margin_side;
-    _arena.right = _centre_x + _view_w * 0.5 - _arena.margin_side;
-    _arena.top = _centre_y - _view_h * 0.5 + _arena.margin_top;
-    _arena.bottom = _centre_y + _view_h * 0.5 - _arena.margin_bottom;
+    _arena.left = _view_x + _arena.margin_side;
+    _arena.right = _view_x + _view_w - _arena.margin_side;
+    _arena.top = _view_y + _arena.margin_top;
+    _arena.bottom = _view_y + _view_h - _arena.margin_bottom;
 
     _player.x = (_arena.left + _arena.right) * 0.5;
     _player.y = _arena.bottom - 80;
     _player.movement.velocity_x = 0;
     _player.movement.velocity_y = 0;
+    _player.movement.speed = 0;
 
-    _encounter.background_id = instance_find(o_background_space, 0);
+    _encounter.background_id = instance_find(o_background_boss, 0);
+
+    if (instance_exists(_encounter.background_id))
+        _encounter.background_id.boss_background.target_speed = _encounter.approach.scroll_speed;
+
     _encounter.timer = _encounter.approach.duration;
     _encounter.state = BossEncounterState.APPROACH;
 
@@ -73,6 +74,9 @@ function sc_boss_encounter_wave_spawn(_encounter)
         instance_create_layer(_centre_x + 260, _spawn_y, "Instances", o_enemy, { enemy_key: "enemy_sim_skirmisher" })
     ];
 
+    if (instance_exists(_encounter.background_id))
+        _encounter.background_id.boss_background.target_speed = _encounter.approach.scroll_speed * 0.7;
+
     _encounter.state = BossEncounterState.WAVE;
     show_debug_message("BOSS TEST - ESCORT WAVE SPAWNED");
 }
@@ -86,7 +90,7 @@ function sc_boss_encounter_group_alive(_ids)
     return false;
 }
 
-/// @description Spawns the temporary boss in the upper portion of the arena.
+/// @description Spawns the temporary boss in the upper arena.
 function sc_boss_encounter_boss_spawn(_encounter)
 {
     var _arena = _encounter.arena;
@@ -97,11 +101,14 @@ function sc_boss_encounter_boss_spawn(_encounter)
         enemy_key: _encounter.boss.key
     });
 
+    if (instance_exists(_encounter.background_id))
+        _encounter.background_id.boss_background.target_speed = 0.8;
+
     _encounter.state = BossEncounterState.BOSS;
     show_debug_message("BOSS TEST - BOSS ENTERED");
 }
 
-/// @description Updates approach scrolling, enemy wave, boss and victory flow.
+/// @description Updates approach, escort wave, boss and victory flow.
 function sc_boss_encounter_update(_encounter)
 {
     if (global.LevelState != LevelState.PLAYING || !instance_exists(global.player_id)) return;
@@ -113,9 +120,6 @@ function sc_boss_encounter_update(_encounter)
         break;
 
         case BossEncounterState.APPROACH:
-            if (instance_exists(_encounter.background_id))
-                _encounter.background_id.space_field.scroll_y += _encounter.approach.scroll_speed;
-
             _encounter.timer--;
 
             if (_encounter.timer <= 0)
@@ -123,9 +127,6 @@ function sc_boss_encounter_update(_encounter)
         break;
 
         case BossEncounterState.WAVE:
-            if (instance_exists(_encounter.background_id))
-                _encounter.background_id.space_field.scroll_y += _encounter.approach.scroll_speed * 0.7;
-
             if (!sc_boss_encounter_group_alive(_encounter.wave_ids))
                 sc_boss_encounter_boss_spawn(_encounter);
         break;
@@ -133,6 +134,9 @@ function sc_boss_encounter_update(_encounter)
         case BossEncounterState.BOSS:
             if (!instance_exists(_encounter.boss_id))
             {
+                if (instance_exists(_encounter.background_id))
+                    _encounter.background_id.boss_background.target_speed = 0;
+
                 _encounter.timer = 120;
                 _encounter.state = BossEncounterState.VICTORY;
                 show_debug_message("BOSS TEST - VICTORY");
@@ -166,6 +170,7 @@ function sc_boss_encounter_player_confine(_encounter)
 
     if (_player.x != _old_x) _movement.velocity_x = 0;
     if (_player.y != _old_y) _movement.velocity_y = 0;
+
     _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
 }
 
@@ -190,6 +195,7 @@ function sc_boss_encounter_draw_gui(_encounter)
     draw_set_colour(make_colour_rgb(45, 235, 255));
     draw_set_alpha(0.9);
     draw_text(_gui_w * 0.5, 75, _text);
+
     draw_set_alpha(1);
     draw_set_colour(c_white);
     draw_set_halign(fa_left);

@@ -1,3 +1,4 @@
+/// @description Initializes a gameplay level using its configured camera.
 if (!variable_global_exists("game") || !global.game.initialized)
 {
     show_debug_message("LEVEL INITIALIZATION ERROR - main controller runtime missing");
@@ -28,7 +29,7 @@ global.level = {
     initialized: false
 };
 
-var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", o_camera);
+var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", camera_object);
 
 if (!instance_exists(_camera))
 {
@@ -65,4 +66,4 @@ if (!instance_exists(_selector))
 global.level.ship_selector = _selector;
 global.LevelState = LevelState.SHIP_SELECT;
 
-show_debug_message("COMBAT TEST READY - AWAITING SHIP SELECTION");
+show_debug_message("LEVEL READY - AWAITING SHIP SELECTION");
