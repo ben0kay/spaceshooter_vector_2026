@@ -113,6 +113,8 @@ function sc_player_init(_player, _ship_key)
         velocity_y: 0,
         speed: 0,
         moving: false,
+		safe_x: _player.x,
+		safe_y: _player.y,
 
         boost: {
             active: false

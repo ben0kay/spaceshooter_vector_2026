@@ -95,6 +95,56 @@ function sc_player_solid_move_basic(_player)
     _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
 }
 
+/// @description Separates the player from any asteroid already overlapping its rotated mask.
+function sc_player_asteroid_overlap_resolve(_player)
+{
+    var _movement = _player.movement;
+    var _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+
+    if (!instance_exists(_asteroid))
+    {
+        _movement.safe_x = _player.x;
+        _movement.safe_y = _player.y;
+        return false;
+    }
+
+    var _impact_asteroid = _asteroid;
+
+    // This loop runs only during an exceptional existing overlap.
+    for (var _i = 0; _i < 96; _i++)
+    {
+        var _normal;
+
+        if (point_distance(_asteroid.x, _asteroid.y, _player.x, _player.y) > 0.01)
+            _normal = point_direction(_asteroid.x, _asteroid.y, _player.x, _player.y);
+        else if (_movement.speed > 0.01)
+            _normal = point_direction(0, 0, -_movement.velocity_x, -_movement.velocity_y);
+        else
+            _normal = _player.draw_angle + 180;
+
+        _player.x += lengthdir_x(2, _normal);
+        _player.y += lengthdir_y(2, _normal);
+
+        _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+
+        if (!instance_exists(_asteroid))
+        {
+            _movement.safe_x = _player.x;
+            _movement.safe_y = _player.y;
+            sc_player_asteroid_bounce(_player, _impact_asteroid);
+            return true;
+        }
+    }
+
+    // Absolute fallback: return to the last confirmed clear position.
+    _player.x = _movement.safe_x;
+    _player.y = _movement.safe_y;
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    _movement.speed = 0;
+    return true;
+}
+
 /// @description Reflects player velocity away from an asteroid impact.
 function sc_player_asteroid_bounce(_player, _asteroid)
 {
@@ -114,6 +164,52 @@ function sc_player_asteroid_bounce(_player, _asteroid)
     _movement.speed = _bounce_speed;
 
     // Collision particles, sound and light camera feedback can plug in here.
+    return true;
+}
+
+/// @description Separates the player from an asteroid already overlapping its rotated mask.
+function sc_player_asteroid_overlap_resolve(_player)
+{
+    var _movement = _player.movement;
+    var _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+
+    if (!instance_exists(_asteroid))
+    {
+        _movement.safe_x = _player.x;
+        _movement.safe_y = _player.y;
+        return false;
+    }
+
+    var _impact = _asteroid;
+
+    // Exceptional recovery only; this loop does not run during normal movement.
+    for (var _i = 0; _i < 96; _i++)
+    {
+        var _distance = point_distance(_asteroid.x, _asteroid.y, _player.x, _player.y);
+        var _normal = _distance > 0.01
+            ? point_direction(_asteroid.x, _asteroid.y, _player.x, _player.y)
+            : _player.draw_angle + 180;
+
+        _player.x += lengthdir_x(2, _normal);
+        _player.y += lengthdir_y(2, _normal);
+
+        _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+
+        if (!instance_exists(_asteroid))
+        {
+            _movement.safe_x = _player.x;
+            _movement.safe_y = _player.y;
+            sc_player_asteroid_bounce(_player, _impact);
+            return true;
+        }
+    }
+
+    // Guaranteed fallback to the last clear position.
+    _player.x = _movement.safe_x;
+    _player.y = _movement.safe_y;
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    _movement.speed = 0;
     return true;
 }
 
@@ -165,6 +261,8 @@ function sc_player_solid_move_asteroids(_player)
 
         _player.x = _candidate_x;
         _player.y = _candidate_y;
+        _movement.safe_x = _player.x;
+        _movement.safe_y = _player.y;
     }
 
     _player.x = clamp(_player.x, _extent, room_width - _extent);
@@ -176,9 +274,11 @@ function sc_player_solid_move_asteroids(_player)
 function sc_player_solid_move(_player)
 {
     var _movement = _player.movement;
-
-    // Keep the rotated elliptical collision mask synchronized before testing.
     _player.image_angle = _player.draw_angle;
+
+    // Must happen before the stationary return because rotation can cause overlap.
+    if (global.level.asteroids_alive > 0)
+        sc_player_asteroid_overlap_resolve(_player);
 
     if (_movement.velocity_x == 0 && _movement.velocity_y == 0)
     {
@@ -189,12 +289,13 @@ function sc_player_solid_move(_player)
     if (global.level.asteroids_alive <= 0)
     {
         sc_player_solid_move_basic(_player);
+        _movement.safe_x = _player.x;
+        _movement.safe_y = _player.y;
         return;
     }
 
     sc_player_solid_move_asteroids(_player);
 }
-
 /// @description Resolves whether the player may currently fire weapons.
 function sc_player_combat_permission_update(_player)
 {
