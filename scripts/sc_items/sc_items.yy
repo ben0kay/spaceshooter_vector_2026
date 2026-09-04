@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_data_init",
+  "%Name":"sc_items",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_data_init",
+  "name":"sc_items",
   "parent":{
-    "name":"BOOT",
-    "path":"folders/scripts/BOOT.yy",
+    "name":"scripts",
+    "path":"folders/scripts.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -2,8 +2,8 @@
 GENERIC ASTEROID RUNTIME
 
 Asteroids are factionless damageable entities.
-They cannot be selected by homing guidance.
-No Step event is required for visual rotation.
+Damage gradually releases resources.
+Mining attacks can provide improved extraction efficiency.
 */
 
 /// @description Returns base values for one asteroid size.
@@ -31,6 +31,10 @@ function sc_asteroid_init(_asteroid, _create)
 
     var _radius = _size.radius * random_range(0.9, 1.1);
     var _health = round(_size.health * _definition.stats.health_multiplier);
+    var _yield = max(1, round(
+        irandom_range(_size.yield_min, _size.yield_max)
+        * _definition.stats.yield_multiplier
+    ));
 
     _asteroid.draw_angle = random(360);
     _asteroid.asteroid = {
@@ -38,15 +42,21 @@ function sc_asteroid_init(_asteroid, _create)
         item_key: _definition.item_key,
         size: _create.size,
 
-        health: { current: _health, maximum: _health, stage: 0 },
-        yield: {
-            remaining: max(1, round(
-                irandom_range(_size.yield_min, _size.yield_max)
-                * _definition.stats.yield_multiplier
-            ))
+        health: {
+            current: _health,
+            maximum: _health,
+            stage: 0
         },
 
-        collision: { radius: _radius * 0.82 },
+        yield: {
+            total: _yield,
+            remaining: _yield,
+            progress: 0
+        },
+
+        collision: {
+            radius: _radius * 0.82
+        },
 
         visual: {
             radius: _radius,
@@ -70,7 +80,78 @@ function sc_asteroid_init(_asteroid, _create)
     return true;
 }
 
-/// @description Applies damage and updates the baked damage stage.
+/// @description Returns the yield multiplier supplied by the damage source.
+function sc_asteroid_source_yield_multiplier_get(_packet)
+{
+    if (_packet.source.faction != Faction.PLAYER
+    || !instance_exists(_packet.source.owner_id))
+        return 1;
+
+    return _packet.source.owner_id.ship.stats.final.resource_yield_multiplier;
+}
+
+/// @description Converts accumulated extraction progress into world pickups.
+function sc_asteroid_yield_emit(_asteroid)
+{
+    var _yield = _asteroid.asteroid.yield;
+    var _amount = min(_yield.remaining, floor(_yield.progress));
+
+    if (_amount <= 0) return 0;
+
+    _yield.progress -= _amount;
+    _yield.remaining -= _amount;
+
+    while (_amount > 0)
+    {
+        var _chunk = min(_amount, irandom_range(1, 3));
+
+        sc_resource_pickup_spawn(
+            _asteroid.x,
+            _asteroid.y,
+            _asteroid.layer,
+            _asteroid.asteroid.item_key,
+            _chunk
+        );
+
+        _amount -= _chunk;
+    }
+
+    return true;
+}
+
+/// @description Adds extraction progress from one asteroid hit.
+function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
+{
+    var _data = _asteroid.asteroid;
+    var _efficiency = global.config.asteroid.extraction.weapon_efficiency;
+
+    if (is_struct(_packet.extraction))
+        _efficiency = max(0, _packet.extraction.efficiency);
+
+    var _source_multiplier = sc_asteroid_source_yield_multiplier_get(_packet);
+    var _damage_ratio = _damage / max(1, _data.health.maximum);
+
+    _data.yield.progress += _damage_ratio
+        * _data.yield.total
+        * _efficiency
+        * _source_multiplier;
+
+    return sc_asteroid_yield_emit(_asteroid);
+}
+
+/// @description Releases the asteroid's final recoverable destruction yield.
+function sc_asteroid_yield_destruction_release(_asteroid, _packet)
+{
+    var _yield = _asteroid.asteroid.yield;
+
+    _yield.progress += _yield.remaining
+        * global.config.asteroid.extraction.destruction_efficiency
+        * sc_asteroid_source_yield_multiplier_get(_packet);
+
+    return sc_asteroid_yield_emit(_asteroid);
+}
+
+/// @description Applies damage, releases resources and updates the damage stage.
 function sc_asteroid_damage(_asteroid, _packet)
 {
     var _health = _asteroid.asteroid.health;
@@ -79,17 +160,22 @@ function sc_asteroid_damage(_asteroid, _packet)
     if (_damage <= 0) return false;
 
     _health.current -= _damage;
+    sc_asteroid_yield_damage_add(_asteroid, _packet, _damage);
 
     var _ratio = _health.current / _health.maximum;
     _health.stage = _ratio <= 0.25 ? 3 : (_ratio <= 0.5 ? 2 : (_ratio <= 0.75 ? 1 : 0));
 
     var _result = {
-        shield: 0, armour: 0, hull: _health.current,
+        shield: 0,
+        armour: 0,
+        hull: _health.current,
         impact_layer: DefenceLayer.HULL,
 
         dealt: {
-            shield: 0, armour: 0,
-            hull: _damage, total: _damage
+            shield: 0,
+            armour: 0,
+            hull: _damage,
+            total: _damage
         },
 
         effect: _packet.effect,
@@ -99,8 +185,7 @@ function sc_asteroid_damage(_asteroid, _packet)
     if (_health.current <= 0)
     {
         _health.current = 0;
-
-        // Resource drops, fragments and destruction particles plug in here next.
+        sc_asteroid_yield_destruction_release(_asteroid, _packet);
         instance_destroy(_asteroid);
     }
 
@@ -123,7 +208,8 @@ function sc_asteroid_draw(_asteroid)
 
     draw_sprite_ext(
         _sprite, 0, _asteroid.x, _asteroid.y,
-        _scale * _visual.scale_x, _scale * _visual.scale_y,
+        _scale * _visual.scale_x,
+        _scale * _visual.scale_y,
         _angle, c_white, 1
     );
 }
@@ -185,7 +271,10 @@ function sc_asteroid_test_field_spawn(_centre_x, _centre_y, _radius, _amount, _l
         var _size = sc_asteroid_weighted_choose(_sizes);
 
         instance_create_layer(_x, _y, _layer, o_asteroid, {
-            asteroid_create: { key: _material.key, size: _size.size }
+            asteroid_create: {
+                key: _material.key,
+                size: _size.size
+            }
         });
 
         _spawned++;

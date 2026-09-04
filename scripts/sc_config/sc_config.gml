@@ -143,7 +143,24 @@ function sc_config_init()
                 candidate_attempts: 4,
                 edge_margin: 24
             }
-        }
+        },
+			
+		asteroid: {
+		    extraction: {
+		        weapon_efficiency: 0.45,
+		        destruction_efficiency: 0.15
+		    },
+
+		    pickup: {
+		        launch_speed_min: 1.2,
+		        launch_speed_max: 2.8,
+		        movement_decay: 0.96,
+		        attraction_range: 150,
+		        attraction_strength: 0.32,
+		        attraction_speed_max: 7,
+		        collect_range: 30
+		    }
+		},
     };
 
     return true;

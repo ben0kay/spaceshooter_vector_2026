@@ -18,7 +18,7 @@ camera_data = {
         current: 1,
         target: 1,
         minimum: 1,
-        maximum: 1.1,
+        maximum: 2,
         step: 0.02,
         smoothing: 0.15
     },

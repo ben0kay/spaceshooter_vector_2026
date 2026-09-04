@@ -31,6 +31,10 @@ function sc_damage_packet_create(_definition, _source)
             tick_interval: variable_struct_exists(_definition, "effect_tick_interval") ? _definition.effect_tick_interval : _effect_config.tick_interval
         },
 
+        extraction: variable_struct_exists(_definition, "extraction")
+            ? variable_clone(_definition.extraction)
+            : undefined,
+
         source: {
             owner_id: _source.owner_id,
             faction: _source.faction,

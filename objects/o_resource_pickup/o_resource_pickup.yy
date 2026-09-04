@@ -1,21 +1,19 @@
 {
   "$GMObject":"",
-  "%Name":"o_asteroid",
+  "%Name":"o_resource_pickup",
   "eventList":[
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
     {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":8,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
   ],
   "managed":true,
-  "name":"o_asteroid",
+  "name":"o_resource_pickup",
   "overriddenProperties":[],
   "parent":{
-    "name":"entities",
-    "path":"folders/objects/entities.yy",
+    "name":"objects",
+    "path":"folders/objects.yy",
   },
-  "parentObjectId":{
-    "name":"o_entity",
-    "path":"objects/o_entity/o_entity.yy",
-  },
+  "parentObjectId":null,
   "persistent":false,
   "physicsAngularDamping":0.1,
   "physicsDensity":0.5,

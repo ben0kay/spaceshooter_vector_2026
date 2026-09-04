@@ -329,3 +329,78 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
     draw_text(_info_x + 18, _info_y + _info.height - 25,
         "SLOTS  " + string(array_length(_inventory.slots)));
 }
+
+/// @description Returns how many units of an item the player's cargo can accept.
+function sc_player_inventory_space_get(_player, _item_key)
+{
+    if (!instance_exists(_player) || !variable_struct_exists(global.data.items, _item_key))
+        return 0;
+
+    var _definition = variable_struct_get(global.data.items, _item_key);
+    var _inventory = _player.inventory;
+    var _weight = _definition.cargo.weight;
+    var _stack_max = _definition.cargo.stack_max;
+    var _weight_space = floor((_player.resources.cargo.capacity - _player.resources.cargo.weight) / max(0.001, _weight));
+    var _slot_space = 0;
+
+    for (var _i = 0; _i < array_length(_inventory.slots); _i++)
+    {
+        var _slot = _inventory.slots[_i];
+
+        if (is_undefined(_slot))
+            _slot_space += _stack_max;
+        else if (_slot.key == _item_key)
+            _slot_space += max(0, _stack_max - _slot.amount);
+    }
+
+    return max(0, min(_weight_space, _slot_space));
+}
+
+/// @description Adds an item to existing stacks and then empty cargo slots.
+function sc_player_inventory_add(_player, _item_key, _amount)
+{
+    var _result = { accepted: 0, remaining: max(0, floor(_amount)) };
+
+    if (!instance_exists(_player)
+    || _result.remaining <= 0
+    || !variable_struct_exists(global.data.items, _item_key))
+        return _result;
+
+    var _definition = variable_struct_get(global.data.items, _item_key);
+    var _inventory = _player.inventory;
+    var _stack_max = _definition.cargo.stack_max;
+    var _accepted = min(_result.remaining, sc_player_inventory_space_get(_player, _item_key));
+    var _placing = _accepted;
+
+    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; _i++)
+    {
+        var _slot = _inventory.slots[_i];
+
+        if (is_undefined(_slot) || _slot.key != _item_key) continue;
+
+        var _added = min(_placing, _stack_max - _slot.amount);
+        _slot.amount += _added;
+        _placing -= _added;
+    }
+
+    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; _i++)
+    {
+        if (!is_undefined(_inventory.slots[_i])) continue;
+
+        var _added = min(_placing, _stack_max);
+        _inventory.slots[_i] = {
+            key: _item_key,
+            name: _definition.identity.name,
+            amount: _added
+        };
+
+        _placing -= _added;
+    }
+
+    _player.resources.cargo.amount += _accepted;
+    _player.resources.cargo.weight += _accepted * _definition.cargo.weight;
+
+    _result.accepted = _accepted;
+    _result.remaining -= _accepted;
+    return _result;
+}
