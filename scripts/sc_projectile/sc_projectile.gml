@@ -373,7 +373,7 @@ function sc_projectile_entity_collision(_projectile, _target)
 
     if (is_struct(_result))
     {
-        if (_target == global.player_id && _class_config.camera_shake > 0)
+        if (_target.entity.faction == Faction.PLAYER && _class_config.camera_shake > 0)
             sc_camera_shake(_class_config.camera_shake, _class_config.shake_time);
 
         var _can_ricochet =
@@ -392,7 +392,6 @@ function sc_projectile_entity_collision(_projectile, _target)
     instance_destroy(_projectile);
     return true;
 }
-
 /// @description Draws one active projectile or fading shield ricochet.
 function sc_projectile_draw(_projectile)
 {

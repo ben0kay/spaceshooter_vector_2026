@@ -8,12 +8,12 @@ function sc_enemy_register_sim_skirmisher()
             faction: Faction.SIMULANT
         },
 
-		reward: { credits: 10 },
+		reward: { credits: 5 },
 
         stats_base: {
             shield_max: 30,
-            armour_max: 100,
-            hull_max: 45,
+            armour_max: 30,
+            hull_max: 30,
 
             handling: {
                 speed_max: 7,
@@ -113,7 +113,7 @@ function sc_enemy_register_sim_skirmisher()
                     firing: {
                         order: HardpointFireOrder.SEQUENTIAL,
                         interval: 0,
-                        volley_max: 6,
+                        volley_max: 3,
                         cooldown: 90
                     }
                 }
