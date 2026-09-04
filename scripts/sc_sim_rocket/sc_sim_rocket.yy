@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_rocket",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_rocket",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/scripts/enemy/factions/simulant/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
