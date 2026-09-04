@@ -8,6 +8,7 @@ function sc_boss_encounter_create(_owner)
         background_id: noone,
         wave_ids: [],
         boss_id: noone,
+        boss_key: "enemy_sim_dreadnaught",
 
         arena: {
             left: 0, right: 0,
@@ -20,11 +21,7 @@ function sc_boss_encounter_create(_owner)
         approach: {
             duration: 180,
             scroll_speed: 4
-        },
-
-        bboss: {
-		    key: "enemy_sim_dreadnaught"
-		}
+        }
     };
 }
 
@@ -90,22 +87,34 @@ function sc_boss_encounter_group_alive(_ids)
     return false;
 }
 
-/// @description Spawns the temporary boss in the upper arena.
+/// @description Spawns the configured boss above the arena facing downward.
 function sc_boss_encounter_boss_spawn(_encounter)
 {
     var _arena = _encounter.arena;
     var _boss_x = (_arena.left + _arena.right) * 0.5;
     var _boss_y = _arena.top + 150;
-
-    _encounter.boss_id = instance_create_layer(_boss_x, _boss_y, "Instances", o_enemy, {
-        enemy_key: _encounter.boss.key
+    var _boss = instance_create_layer(_boss_x, _boss_y, "Instances", o_enemy, {
+        enemy_key: _encounter.boss_key
     });
+
+    if (!instance_exists(_boss))
+    {
+        show_debug_message("BOSS TEST ERROR - BOSS CREATION FAILED: " + _encounter.boss_key);
+        return false;
+    }
+
+    _boss.draw_angle = 270;
+    _boss.enemy.movement.spawn_x = _boss_x;
+    _boss.enemy.movement.spawn_y = _boss_y;
+
+    _encounter.boss_id = _boss;
 
     if (instance_exists(_encounter.background_id))
         _encounter.background_id.boss_background.target_speed = 0.8;
 
     _encounter.state = BossEncounterState.BOSS;
-    show_debug_message("BOSS TEST - BOSS ENTERED");
+    show_debug_message("BOSS TEST - BOSS ENTERED: " + _encounter.boss_key);
+    return true;
 }
 
 /// @description Updates approach, escort wave, boss and victory flow.

@@ -98,7 +98,7 @@ function sc_weapon_register_simulant_dreadnaught_rocket()
             projectile_key: "projectile_simulant_rocket",
 
             projectile: {
-                scale: 2.2,
+                scale: 2,
                 speed: 8.5,
                 life: 300
             },
@@ -110,7 +110,7 @@ function sc_weapon_register_simulant_dreadnaught_rocket()
             },
 
             guidance: {
-                homing: 1,
+                homing: 0,
                 acquire_range: 1800,
                 turn_speed: 1.45,
                 reacquire_interval: 10
