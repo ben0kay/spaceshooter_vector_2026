@@ -44,7 +44,15 @@ function sc_enemy_init(_enemy, _enemy_key)
                 target_x: _enemy.x,
                 target_y: _enemy.y,
                 next_move_tick: GAME_TICK + irandom_range(30, 90)
-            }
+            },
+			
+			obstacle: {
+			    active: false,
+			    target_id: noone,
+			    direction: 0,
+			    side: 0,
+			    next_check_tick: GAME_TICK
+			}
         },
 
         collision: {
@@ -470,7 +478,64 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
-/// @description Returns whether an attack satisfies its optional range and defence conditions.
+/// @description Returns whether an attack requires an unobstructed target view.
+function sc_enemy_attack_line_of_sight_required(_attack)
+{
+    return variable_struct_exists(_attack, "conditions")
+        && variable_struct_exists(_attack.conditions, "line_of_sight")
+        && _attack.conditions.line_of_sight;
+}
+
+/// @description Requires a clear three-line corridor between enemy and target.
+function sc_enemy_attack_line_of_sight_clear(_enemy)
+{
+    if (global.level.asteroids_alive <= 0) return true;
+
+    var _target = _enemy.enemy.target_id;
+    if (!instance_exists(_target)) return false;
+
+    var _target_collision = _target.entity.collision;
+    var _width = min(
+        _target_collision.radius_forward,
+        _target_collision.radius_side
+    ) * global.config.enemy.asteroid.line_of_sight_width_scale;
+
+    var _direction = point_direction(
+        _enemy.x,
+        _enemy.y,
+        _target.x,
+        _target.y
+    );
+
+    var _offsets = [-_width, 0, _width];
+
+    for (var _i = 0; _i < 3; _i++)
+    {
+        var _offset = _offsets[_i];
+        var _start_x = _enemy.x + lengthdir_x(_offset, _direction + 90);
+        var _start_y = _enemy.y + lengthdir_y(_offset, _direction + 90);
+        var _end_x = _target.x + lengthdir_x(_offset, _direction + 90);
+        var _end_y = _target.y + lengthdir_y(_offset, _direction + 90);
+
+        if (collision_line(
+            _start_x, _start_y,
+            _end_x, _end_y,
+            o_asteroid, false, true
+        ) != noone)
+            return false;
+
+        if (collision_line(
+            _start_x, _start_y,
+            _end_x, _end_y,
+            o_solid, false, true
+        ) != noone)
+            return false;
+    }
+
+    return true;
+}
+
+/// @description Returns whether an attack satisfies its optional conditions.
 function sc_enemy_attack_can_use(_enemy, _attack)
 {
     if (!variable_struct_exists(_attack, "conditions")) return true;
@@ -488,8 +553,18 @@ function sc_enemy_attack_can_use(_enemy, _attack)
     && _distance_sq > sqr(_conditions.range_max))
         return false;
 
-    var _shield_ratio = _defence.shield.maximum > 0 ? _defence.shield.current / _defence.shield.maximum : 0;
-    var _armour_ratio = _defence.armour.maximum > 0 ? _defence.armour.current / _defence.armour.maximum : 0;
+    if (sc_enemy_attack_line_of_sight_required(_attack)
+    && !sc_enemy_attack_line_of_sight_clear(_enemy))
+        return false;
+
+    var _shield_ratio = _defence.shield.maximum > 0
+        ? _defence.shield.current / _defence.shield.maximum
+        : 0;
+
+    var _armour_ratio = _defence.armour.maximum > 0
+        ? _defence.armour.current / _defence.armour.maximum
+        : 0;
+
     var _hull_ratio = _defence.hull.current / _defence.hull.maximum;
 
     if (variable_struct_exists(_conditions, "shield_ratio_min") && _shield_ratio < _conditions.shield_ratio_min) return false;
@@ -624,24 +699,31 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
     return _transform;
 }
 
-/// @description Fires one hardpoint and returns its created delivery instance.
+/// @description Fires one hardpoint when its target corridor remains clear.
 function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
 {
+    if (sc_enemy_attack_line_of_sight_required(_attack)
+    && !sc_enemy_attack_line_of_sight_clear(_enemy))
+        return noone;
+
     var _transform = { x: 0, y: 0, direction: 0 };
     sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform);
 
-    var _direction = _transform.direction + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
+    var _direction = _transform.direction
+        + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
+
     var _delivery = sc_weapon_fire(
         _enemy,
         _attack.weapon_key,
-        _attack.shot,
         _transform.x,
         _transform.y,
         _direction,
         _enemy.enemy.stats.final.damage_multiplier
     );
 
-    _enemy.enemy.hardpoints[_hardpoint_index].runtime.recoil = _enemy.enemy.visual.radius * 0.14;
+    _enemy.enemy.hardpoints[_hardpoint_index].runtime.recoil =
+        _enemy.enemy.visual.radius * 0.14;
+
     return _delivery;
 }
 

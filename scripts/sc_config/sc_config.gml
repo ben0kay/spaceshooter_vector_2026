@@ -142,7 +142,18 @@ function sc_config_init()
                 wait_max: 150,
                 candidate_attempts: 4,
                 edge_margin: 24
-            }
+            },
+				
+			asteroid: {
+			    check_interval: 4,
+			    clearance_margin: 10,
+			    look_ahead_base: 70,
+			    look_ahead_speed: 14,
+			    sample_spacing_scale: 0.65,
+			    candidate_angles: [25, -25, 50, -50, 75, -75, 105, -105],
+			    side_switch_penalty: 30,
+			    line_of_sight_width_scale: 0.45
+			},
         },
 			
 		asteroid: {

@@ -48,6 +48,8 @@ function sc_enemy_register_sim_dreadwing()
         },
 
 		movement_controller: {
+			
+			asteroid_response: AsteroidResponse.AVOID,
 		    idle_script: sc_enemy_movement_hold,
 		    chase_script: sc_enemy_movement_chase,
 		    combat_script: sc_enemy_movement_hold,
@@ -132,8 +134,11 @@ function sc_enemy_register_sim_dreadwing()
                     weapon_key: "weapon_simulant_pulse",
 					
 					conditions: {
+						line_of_sight: true,
                         range_min: 120,
                         range_max: 940
+						
+						
                     },
 
                     aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 2 },
@@ -153,6 +158,7 @@ function sc_enemy_register_sim_dreadwing()
                     weapon_key: "weapon_simulant_thin_beam",
 					
 					conditions: {
+						line_of_sight: true,
                         range_min: 250,
                         range_max: 900,
                         hull_ratio_max: 0.9

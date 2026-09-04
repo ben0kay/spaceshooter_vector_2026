@@ -39,6 +39,8 @@ function sc_enemy_register_sim_skirmisher()
         },
 		
 		movement_controller: {
+			
+			asteroid_response: AsteroidResponse.AVOID,
 		    idle_script: sc_enemy_movement_hold,
 		    chase_script: sc_enemy_movement_chase,
 		    combat_script: sc_enemy_movement_pursue,
@@ -98,6 +100,10 @@ function sc_enemy_register_sim_skirmisher()
                     weight: 100,
                     hardpoint_group: "cannon",
                     weapon_key: "weapon_simulant_pulse",
+					
+					conditions: {
+					    line_of_sight: true
+					},
 
                     aim: {
                         mode: AimMode.TARGET,

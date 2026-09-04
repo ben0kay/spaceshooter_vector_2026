@@ -39,6 +39,7 @@ function sc_enemy_register_twin_fighter()
         },
 			
 		movement_controller: {
+			asteroid_response: AsteroidResponse.AVOID,
 		    idle_script: sc_enemy_movement_wander,
 		    chase_script: sc_enemy_movement_chase,
 		    combat_script: sc_enemy_movement_orbit,
@@ -91,6 +92,10 @@ function sc_enemy_register_twin_fighter()
                     weight: 100,
                     hardpoint_group: "cannons",
                     weapon_key: "weapon_simulant_pulse",
+					
+					conditions: {
+				    line_of_sight: true
+				},
 
                     aim: {
                         mode: AimMode.TARGET,

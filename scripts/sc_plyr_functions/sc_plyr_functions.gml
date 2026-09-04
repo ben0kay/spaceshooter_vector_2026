@@ -167,52 +167,6 @@ function sc_player_asteroid_bounce(_player, _asteroid)
     return true;
 }
 
-/// @description Separates the player from an asteroid already overlapping its rotated mask.
-function sc_player_asteroid_overlap_resolve(_player)
-{
-    var _movement = _player.movement;
-    var _asteroid = instance_place(_player.x, _player.y, o_asteroid);
-
-    if (!instance_exists(_asteroid))
-    {
-        _movement.safe_x = _player.x;
-        _movement.safe_y = _player.y;
-        return false;
-    }
-
-    var _impact = _asteroid;
-
-    // Exceptional recovery only; this loop does not run during normal movement.
-    for (var _i = 0; _i < 96; _i++)
-    {
-        var _distance = point_distance(_asteroid.x, _asteroid.y, _player.x, _player.y);
-        var _normal = _distance > 0.01
-            ? point_direction(_asteroid.x, _asteroid.y, _player.x, _player.y)
-            : _player.draw_angle + 180;
-
-        _player.x += lengthdir_x(2, _normal);
-        _player.y += lengthdir_y(2, _normal);
-
-        _asteroid = instance_place(_player.x, _player.y, o_asteroid);
-
-        if (!instance_exists(_asteroid))
-        {
-            _movement.safe_x = _player.x;
-            _movement.safe_y = _player.y;
-            sc_player_asteroid_bounce(_player, _impact);
-            return true;
-        }
-    }
-
-    // Guaranteed fallback to the last clear position.
-    _player.x = _movement.safe_x;
-    _player.y = _movement.safe_y;
-    _movement.velocity_x = 0;
-    _movement.velocity_y = 0;
-    _movement.speed = 0;
-    return true;
-}
-
 /// @description Moves through an asteroid-bearing level with speed-based substeps.
 function sc_player_solid_move_asteroids(_player)
 {
@@ -296,6 +250,7 @@ function sc_player_solid_move(_player)
 
     sc_player_solid_move_asteroids(_player);
 }
+
 /// @description Resolves whether the player may currently fire weapons.
 function sc_player_combat_permission_update(_player)
 {
