@@ -1,16 +1,13 @@
-/// @description Activates a camera shake only when stronger than the shake currently being displayed.
+/// @description Activates or strengthens the gameplay camera shake.
+/// Multiple requests do not add together; the strongest active values win.
 function sc_camera_shake(_magnitude, _time)
 {
     if (!is_struct(global.level) || !instance_exists(global.level.camera)) return false;
 
     var _shake = global.level.camera.camera_data.shake;
-    var _current = _shake.time > 0 ? _shake.magnitude * (_shake.time / max(1, _shake.duration)) : 0;
-
-    if (_magnitude <= _current) return false;
-
-    _shake.magnitude = max(0, _magnitude);
-    _shake.time = max(1, round(_time));
-    _shake.duration = _shake.time;
+    _shake.magnitude = max(_shake.magnitude, _magnitude);
+    _shake.time = max(_shake.time, _time);
+    _shake.duration = max(_shake.duration, _time);
     return true;
 }
 

@@ -9,11 +9,11 @@ function sc_config_init()
             },
 			
 			enemy_death: {
-			    shake_base: 1.5, shake_per_mass: 0.75,
-			    shake_min: 1.25, shake_max: 4,
-			    time_base: 5, time_per_mass: 2, time_max: 10,
-			    falloff_start: 640, falloff_end: 1600, falloff_min: 0
-			},
+		    shake_base: 3.5, shake_per_mass: 1.5,
+		    shake_min: 3.5, shake_max: 8,
+		    time_base: 7, time_per_mass: 2, time_max: 12,
+		    falloff_start: 640, falloff_end: 1600, falloff_min: 0
+		},
 
             enemy_thrust: {
                 active_power_min: 0.05, emit_power_min: 0.15, emit_interval: 3,
