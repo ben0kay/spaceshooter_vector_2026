@@ -71,7 +71,37 @@ function sc_hud_level_data()
             dragging: false,
             drag_offset_x: 0,
             drag_offset_y: 0
-        }
+        },
+			
+		inventory: {
+		    width: 1080,
+		    height: 680,
+
+		    tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
+		    tab_x: 48,
+		    tab_y: 98,
+		    tab_width: 154,
+		    tab_height: 40,
+		    tab_gap: 14,
+
+		    grid: {
+		        x: 58,
+		        y: 200,
+		        columns: 8,
+		        rows: 5,
+		        slot_size: 66,
+		        gap: 8,
+		        width: 584,
+		        height: 362
+		    },
+
+		    info: {
+		        x: 690,
+		        y: 182,
+		        width: 330,
+		        height: 398
+		    }
+		}
     };
 }
 
@@ -89,13 +119,20 @@ function sc_hud_level_init(_hud_object)
             credit_pulse: 0
         },
 
-        cache: {
-            bottom_body: -1,
-            bottom_effects: array_create(_data.bottom.effect_frames, -1),
-            top_body: -1,
-            top_effects: array_create(_data.top.effect_frames, -1),
-            minimap_dock: -1
-        }
+        inventory: {
+		    open: false,
+		    tab: InventoryTab.CARGO,
+		    selected_slot: 0
+		},
+
+		cache: {
+		    bottom_body: -1,
+		    bottom_effects: array_create(_data.bottom.effect_frames, -1),
+		    top_body: -1,
+		    top_effects: array_create(_data.top.effect_frames, -1),
+		    minimap_dock: -1,
+		    inventory_body: -1
+		}
     };
 
     return sc_hud_level_cache_bake(_hud_object.hud);

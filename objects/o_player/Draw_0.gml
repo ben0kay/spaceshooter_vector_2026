@@ -1,3 +1,4 @@
+/// @description Draws the player according to its current state.
 if (!initialized) exit;
 
 switch (global.PlayerState)
@@ -7,6 +8,7 @@ switch (global.PlayerState)
     break;
 
     case PlayerState.ACTIVE:
+    case PlayerState.INVENTORY:
         sc_player_draw_ship(id, c_white, 1, true, true);
     break;
 

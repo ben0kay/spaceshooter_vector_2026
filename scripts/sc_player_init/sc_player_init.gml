@@ -80,6 +80,7 @@ function sc_player_init(_player, _ship_key)
             maximum: _final.energy_max,
             recharge_delay_remaining: 0
         },
+	
 
         fuel: {
             current: _final.fuel_max,
@@ -102,6 +103,8 @@ function sc_player_init(_player, _ship_key)
             capacity: _final.cargo_capacity
         }
     };
+		
+	_player.inventory = sc_player_inventory_create();
 
     _player.movement = {
         input_x: 0,

@@ -23,8 +23,12 @@ function sc_hud_level_component_bake(_data, _component, _frame)
             _height = _data.minimap.height;
         break;
 
-        default:
-            return -1;
+        case "inventory_body":
+            _width = _data.inventory.width;
+            _height = _data.inventory.height;
+        break;
+
+        default: return -1;
     }
 
     var _surface = surface_create(_width, _height);
@@ -42,6 +46,7 @@ function sc_hud_level_component_bake(_data, _component, _frame)
         case "top_body": sc_hud_top_body_primitive_draw(_data); break;
         case "top_effect": sc_hud_top_effect_primitive_draw(_data, _frame); break;
         case "minimap_dock": sc_hud_minimap_dock_primitive_draw(_data); break;
+        case "inventory_body": sc_inventory_body_primitive_draw(_data); break;
     }
 
     draw_set_alpha(1);
@@ -62,6 +67,7 @@ function sc_hud_level_cache_bake(_hud)
     _cache.bottom_body = sc_hud_level_component_bake(_data, "bottom_body", 0);
     _cache.top_body = sc_hud_level_component_bake(_data, "top_body", 0);
     _cache.minimap_dock = sc_hud_level_component_bake(_data, "minimap_dock", 0);
+    _cache.inventory_body = sc_hud_level_component_bake(_data, "inventory_body", 0);
 
     for (var _frame = 0; _frame < array_length(_cache.bottom_effects); _frame++)
         _cache.bottom_effects[_frame] = sc_hud_level_component_bake(_data, "bottom_effect", _frame);
@@ -69,7 +75,8 @@ function sc_hud_level_cache_bake(_hud)
     for (var _frame = 0; _frame < array_length(_cache.top_effects); _frame++)
         _cache.top_effects[_frame] = sc_hud_level_component_bake(_data, "top_effect", _frame);
 
-    if (!sprite_exists(_cache.bottom_body) || !sprite_exists(_cache.top_body) || !sprite_exists(_cache.minimap_dock))
+    if (!sprite_exists(_cache.bottom_body) || !sprite_exists(_cache.top_body)
+    || !sprite_exists(_cache.minimap_dock) || !sprite_exists(_cache.inventory_body))
     {
         sc_hud_level_cleanup(_hud);
         return false;
@@ -87,6 +94,7 @@ function sc_hud_level_cleanup(_hud)
     if (sprite_exists(_cache.bottom_body)) sprite_delete(_cache.bottom_body);
     if (sprite_exists(_cache.top_body)) sprite_delete(_cache.top_body);
     if (sprite_exists(_cache.minimap_dock)) sprite_delete(_cache.minimap_dock);
+    if (sprite_exists(_cache.inventory_body)) sprite_delete(_cache.inventory_body);
 
     for (var _i = 0; _i < array_length(_cache.bottom_effects); _i++)
         if (sprite_exists(_cache.bottom_effects[_i])) sprite_delete(_cache.bottom_effects[_i]);
@@ -97,6 +105,7 @@ function sc_hud_level_cleanup(_hud)
     _cache.bottom_body = -1;
     _cache.top_body = -1;
     _cache.minimap_dock = -1;
+    _cache.inventory_body = -1;
     _cache.bottom_effects = [];
     _cache.top_effects = [];
 

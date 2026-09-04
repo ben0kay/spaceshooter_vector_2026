@@ -101,6 +101,7 @@
     {"id":{"name":"sc_health_bar","path":"scripts/sc_health_bar/sc_health_bar.yy",},},
     {"id":{"name":"sc_hud_bake","path":"scripts/sc_hud_bake/sc_hud_bake.yy",},},
     {"id":{"name":"sc_hud_level","path":"scripts/sc_hud_level/sc_hud_level.yy",},},
+    {"id":{"name":"sc_inventory","path":"scripts/sc_inventory/sc_inventory.yy",},},
     {"id":{"name":"sc_laser","path":"scripts/sc_laser/sc_laser.yy",},},
     {"id":{"name":"sc_Macros","path":"scripts/sc_Macros/sc_Macros.yy",},},
     {"id":{"name":"sc_menu_main","path":"scripts/sc_menu_main/sc_menu_main.yy",},},
