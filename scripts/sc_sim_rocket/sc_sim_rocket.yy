@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_rocket",
   "parent":{
-    "name":"weapons",
-    "path":"folders/scripts/enemy/factions/simulant/weapons.yy",
+    "name":"projectiles",
+    "path":"folders/scripts/enemy/factions/simulant/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

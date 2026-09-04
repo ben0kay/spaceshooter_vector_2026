@@ -11,9 +11,9 @@
   "defaultScriptType":1,
   "Folders":[
     {"$GMFolder":"","%Name":"objects","folderPath":"folders/objects.yy","name":"objects","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"boss","folderPath":"folders/objects/boss.yy","name":"boss","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"controllers","folderPath":"folders/objects/controllers.yy","name":"controllers","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"entities","folderPath":"folders/objects/entities.yy","name":"entities","resourceType":"GMFolder","resourceVersion":"2.0",},
-    {"$GMFolder":"","%Name":"boss","folderPath":"folders/objects/boss.yy","name":"boss","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"rooms","folderPath":"folders/rooms.yy","name":"rooms","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"scripts","folderPath":"folders/scripts.yy","name":"scripts","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"baking","folderPath":"folders/scripts/baking.yy","name":"baking","resourceType":"GMFolder","resourceVersion":"2.0",},
@@ -128,6 +128,7 @@
     {"id":{"name":"sc_sim_dreadnaught","path":"scripts/sc_sim_dreadnaught/sc_sim_dreadnaught.yy",},},
     {"id":{"name":"sc_sim_dreadwing","path":"scripts/sc_sim_dreadwing/sc_sim_dreadwing.yy",},},
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
+    {"id":{"name":"sc_sim_rocket_weapon","path":"scripts/sc_sim_rocket_weapon/sc_sim_rocket_weapon.yy",},},
     {"id":{"name":"sc_sim_rocket","path":"scripts/sc_sim_rocket/sc_sim_rocket.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
