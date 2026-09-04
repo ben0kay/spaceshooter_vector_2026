@@ -8,6 +8,8 @@ function sc_enemy_register_sim_skirmisher()
             faction: Faction.SIMULANT
         },
 
+		reward: { credits: 10 },
+
         stats_base: {
             shield_max: 30,
             armour_max: 100,

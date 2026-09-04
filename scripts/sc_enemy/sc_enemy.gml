@@ -1089,16 +1089,18 @@ function sc_enemy_die(_enemy, _packet)
 {
     var _data = _enemy.enemy;
     var _source = _packet.source;
+    var _death_x = _enemy.x;
+    var _death_y = _enemy.y;
+    var _death_layer = _enemy.layer;
 
     sc_enemy_attack_cancel(_enemy);
     _data.target_id = noone;
-
     _data.visual.death.script(_enemy);
 
     if (_source.faction == Faction.PLAYER)
     {
+        sc_player_reward_grant(_data.reward, _death_x, _death_y, _death_layer);
         // Increment player kill count and combat statistics here later.
-        // Award player-specific experience or bounty credit here later.
     }
     else
     {
@@ -1106,7 +1108,6 @@ function sc_enemy_die(_enemy, _packet)
     }
 
     // Roll registered enemy drops here later.
-    // Create floating kill or reward feedback here later.
     // Process registered on-death abilities here later.
     // Insert registered enemy death audio here later.
 

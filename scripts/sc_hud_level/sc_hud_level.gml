@@ -83,6 +83,12 @@ function sc_hud_level_init(_hud_object)
     _hud_object.hud = {
         data: _data,
 
+        runtime: {
+            credits_display: global.profile.credits,
+            credit_gain: 0,
+            credit_pulse: 0
+        },
+
         cache: {
             bottom_body: -1,
             bottom_effects: array_create(_data.bottom.effect_frames, -1),
@@ -93,6 +99,30 @@ function sc_hud_level_init(_hud_object)
     };
 
     return sc_hud_level_cache_bake(_hud_object.hud);
+}
+
+/// @description Triggers the top-HUD credit gain animation.
+function sc_hud_level_credit_gain(_hud, _amount)
+{
+    _hud.runtime.credit_gain += _amount;
+    _hud.runtime.credit_pulse = 1;
+}
+
+/// @description Smoothly updates lightweight HUD runtime values.
+function sc_hud_level_update(_hud)
+{
+    var _runtime = _hud.runtime;
+    var _target = global.profile.credits;
+    var _difference = _target - _runtime.credits_display;
+
+    if (_difference != 0)
+    {
+        var _step = max(1, ceil(abs(_difference) * 0.14));
+        _runtime.credits_display += sign(_difference) * min(abs(_difference), _step);
+    }
+
+    _runtime.credit_pulse = max(0, _runtime.credit_pulse - 0.045);
+    if (_runtime.credit_pulse <= 0) _runtime.credit_gain = 0;
 }
 
 /// @description Draws one reusable dark jagged HUD panel.
@@ -271,14 +301,15 @@ function sc_hud_top_body_primitive_draw(_data)
     sc_hud_panel_primitive_draw(_top.width, _top.height, 28, _palette);
 
     draw_set_colour(_palette.void);
-    draw_rectangle(45, 10, 285, _top.height - 10, false);
-    draw_rectangle(303, 10, _top.width - 303, _top.height - 10, false);
-    draw_rectangle(_top.width - 285, 10, _top.width - 45, _top.height - 10, false);
+    draw_rectangle(45, 10, 330, _top.height - 10, false);
+    draw_rectangle(348, 10, _top.width - 348, _top.height - 10, false);
+    draw_rectangle(_top.width - 330, 10, _top.width - 45, _top.height - 10, false);
 
     draw_set_colour(_palette.panel_light);
-    draw_rectangle(45, 10, 285, _top.height - 10, true);
-    draw_rectangle(303, 10, _top.width - 303, _top.height - 10, true);
-    draw_rectangle(_top.width - 285, 10, _top.width - 45, _top.height - 10, true);
+    draw_rectangle(45, 10, 330, _top.height - 10, true);
+    draw_rectangle(348, 10, _top.width - 348, _top.height - 10, true);
+    draw_rectangle(_top.width - 330, 10, _top.width - 45, _top.height - 10, true);
+    draw_line(150, 10, 150, _top.height - 10);
 
     draw_set_colour(_palette.accent);
     draw_line_width(_top.width * 0.5 - 42, 5, _top.width * 0.5 + 42, 5, 2);
@@ -426,27 +457,46 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     sc_hud_level_value_draw(_x, _y, _cells.weapon, "PRIMARY WEAPON", _weapon.identity.name, _palette);
 }
 
-/// @description Draws changing navigation data over the baked top HUD.
+/// @description Draws credits, location, navigation and coordinates.
 function sc_hud_level_top_content_draw(_hud, _player, _x, _y)
 {
     var _data = _hud.data;
+    var _runtime = _hud.runtime;
     var _palette = _data.palette;
-    var _centre = _x + _data.top.width * 0.5;
+    var _centre_y = _y + _data.top.height * 0.5;
+    var _pulse = _runtime.credit_pulse;
 
     draw_set_valign(fa_middle);
 
+    if (_pulse > 0)
+    {
+        gpu_set_blendmode(bm_add);
+        draw_set_colour(_palette.accent);
+        draw_set_alpha(_pulse * 0.22);
+        draw_rectangle(_x + 48, _y + 12, _x + 147, _y + _data.top.height - 12, false);
+        gpu_set_blendmode(bm_normal);
+    }
+
+    draw_set_alpha(1);
+    draw_set_halign(fa_center);
+    draw_set_colour(_pulse > 0 ? _palette.core : _palette.accent);
+
+    var _credit_text = "CR " + string(floor(_runtime.credits_display));
+    if (_runtime.credit_gain > 0 && _pulse > 0) _credit_text += "  +" + string(_runtime.credit_gain);
+    draw_text(_x + 98, _centre_y, _credit_text);
+
     draw_set_halign(fa_left);
     draw_set_colour(_palette.muted);
-    draw_text(_x + 58, _y + _data.top.height * 0.5, "AREA  //  " + string_upper(room_get_name(room)));
+    draw_text(_x + 162, _centre_y, "AREA // " + string_upper(room_get_name(room)));
 
     draw_set_halign(fa_center);
     draw_set_colour(_palette.core);
-    draw_text(_centre, _y + _data.top.height * 0.5, "VECTOR NAVIGATION");
+    draw_text(_x + _data.top.width * 0.5, _centre_y, "VECTOR NAVIGATION");
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
-    draw_text(_x + _data.top.width - 58, _y + _data.top.height * 0.5,
-        "X " + string(round(_player.x)) + "   Y " + string(round(_player.y)) + "   HDG " + string(round(_player.draw_angle)));
+    draw_text(_x + _data.top.width - 58, _centre_y,
+        "X " + string(round(_player.x)) + "  Y " + string(round(_player.y)) + "  HDG " + string(round(_player.draw_angle)));
 }
 
 /// @description Draws the complete permanent HUD in GUI space.

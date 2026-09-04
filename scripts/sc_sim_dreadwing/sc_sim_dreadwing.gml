@@ -15,6 +15,8 @@ function sc_enemy_register_sim_dreadwing()
             name: "Simulant Dreadwing",
             faction: Faction.SIMULANT
         },
+			
+		reward: { credits: 125 },	
 
         stats_base: {
             shield_max: 180,

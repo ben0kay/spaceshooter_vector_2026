@@ -8,6 +8,8 @@ function sc_enemy_register_twin_fighter()
             faction: Faction.SIMULANT
         },
 
+		reward: { credits: 20 },
+
         stats_base: {
             shield_max: 50,
             armour_max: 200,

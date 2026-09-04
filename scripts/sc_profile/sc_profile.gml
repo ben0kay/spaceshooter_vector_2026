@@ -13,6 +13,7 @@ function sc_profile_default(_slot, _pilot_name)
         pilot_name: _pilot_name,
         created_at: date_current_datetime(),
         last_played_at: date_current_datetime(),
+        credits: 0,
         selected_ship_key: "ship_fighter",
         unlocked_ship_keys: ["ship_shard", "ship_fighter", "ship_bastion"],
         persistent_modifiers: []
@@ -29,9 +30,12 @@ function sc_profile_validate(_profile, _slot)
     if (!variable_struct_exists(_profile, "pilot_name")) _profile.pilot_name = "Pilot " + string(_slot + 1);
     if (!variable_struct_exists(_profile, "created_at")) _profile.created_at = date_current_datetime();
     if (!variable_struct_exists(_profile, "last_played_at")) _profile.last_played_at = date_current_datetime();
+    if (!variable_struct_exists(_profile, "credits")) _profile.credits = 0;
     if (!variable_struct_exists(_profile, "selected_ship_key")) _profile.selected_ship_key = "ship_fighter";
+
     if (!variable_struct_exists(_profile, "unlocked_ship_keys") || !is_array(_profile.unlocked_ship_keys))
         _profile.unlocked_ship_keys = ["ship_shard", "ship_fighter", "ship_bastion"];
+
     if (!variable_struct_exists(_profile, "persistent_modifiers") || !is_array(_profile.persistent_modifiers))
         _profile.persistent_modifiers = [];
 
