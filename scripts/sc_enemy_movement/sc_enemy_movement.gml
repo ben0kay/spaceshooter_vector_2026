@@ -93,8 +93,9 @@ function sc_enemy_wander_target_select(_enemy)
     var _wander = _movement.wander;
     var _range = _data.stats.final.range.wander;
     var _config = global.config.enemy.wander;
-    var _extent = max(_data.collision.radius_forward, _data.collision.radius_side);
-    var _margin = _extent + _config.edge_margin;
+    var _radius_forward = _data.collision.radius_forward;
+    var _radius_side = _data.collision.radius_side;
+    var _margin = max(_radius_forward, _radius_side) + _config.edge_margin;
 
     for (var _i = 0; _i < _config.candidate_attempts; _i++)
     {
@@ -107,7 +108,13 @@ function sc_enemy_wander_target_select(_enemy)
         || _target_y < _margin || _target_y > room_height - _margin)
             continue;
 
-        if (place_meeting(_target_x, _target_y, o_solid)) continue;
+        var _blocked = collision_ellipse(
+            _target_x - _radius_forward, _target_y - _radius_side,
+            _target_x + _radius_forward, _target_y + _radius_side,
+            o_solid, false, true
+        ) != noone;
+
+        if (_blocked) continue;
         if (collision_line(_enemy.x, _enemy.y, _target_x, _target_y, o_solid, false, true) != noone) continue;
 
         _wander.target_x = _target_x;
