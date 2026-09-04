@@ -162,10 +162,10 @@ function sc_input_init()
 {
     global.input = {
         binding: {
-            move_left: keyboard_check(vk_left),
-            move_right: keyboard_check(vk_right),
-            move_up: keyboard_check(vk_up),
-            move_down: keyboard_check(vk_down),
+            move_left: vk_left,
+            move_right: vk_right,
+            move_up: vk_up,
+            move_down: vk_down,
 
             fire_primary: mb_left,
             fire_secondary: mb_right,
@@ -186,7 +186,10 @@ function sc_input_init()
 
             fire_primary: false,
             fire_secondary: false,
+            ui_select_pressed: false,
+
             inventory_pressed: false,
+            dash_held: false,
             dash_pressed: false,
 
             weapon_1_pressed: false,
@@ -199,7 +202,7 @@ function sc_input_init()
     return true;
 }
 
-/// @description Updates every centralized player action once per Step.
+/// @description Samples every centralized player action once per Step.
 function sc_input_update()
 {
     var _binding = global.input.binding;
@@ -212,7 +215,10 @@ function sc_input_update()
 
     _action.fire_primary = mouse_check_button(_binding.fire_primary);
     _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
+    _action.ui_select_pressed = mouse_check_button_pressed(mb_left);
+
     _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
+    _action.dash_held = keyboard_check(_binding.dash);
     _action.dash_pressed = keyboard_check_pressed(_binding.dash);
 
     _action.weapon_1_pressed = keyboard_check_pressed(_binding.weapon_1);

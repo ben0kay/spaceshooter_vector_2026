@@ -59,7 +59,7 @@ function sc_inventory_update(_hud)
     var _runtime = _hud.inventory;
     var _data = _hud.data.inventory;
 
-    if (keyboard_check_pressed(ord("E")))
+    if (global.input.action.inventory_pressed)
     {
         sc_inventory_toggle(_hud);
         return;
@@ -72,7 +72,7 @@ function sc_inventory_update(_hud)
     var _mouse_x = device_mouse_x_to_gui(0) - _panel_x;
     var _mouse_y = device_mouse_y_to_gui(0) - _panel_y;
 
-    if (mouse_check_button_pressed(mb_left)
+    if (global.input.action.ui_select_pressed
     && _mouse_y >= _data.tab_y
     && _mouse_y < _data.tab_y + _data.tab_height)
     {
@@ -88,7 +88,7 @@ function sc_inventory_update(_hud)
         }
     }
 
-    if (_runtime.tab != InventoryTab.CARGO || !mouse_check_button_pressed(mb_left)) return;
+    if (_runtime.tab != InventoryTab.CARGO || !global.input.action.ui_select_pressed) return;
 
     var _grid = _data.grid;
     var _column = floor((_mouse_x - _grid.x) / (_grid.slot_size + _grid.gap));

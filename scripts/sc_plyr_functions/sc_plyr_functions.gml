@@ -168,7 +168,7 @@ function sc_player_normal_movement_update(_player)
     var _movement = _player.movement;
     var _stats = _player.ship.stats.final;
 
-    _movement.boost.active = global.input.action.dash_pressed && _movement.moving;
+    _movement.boost.active = global.input.action.dash_held && _movement.moving;
 
     if (_movement.moving)
     {

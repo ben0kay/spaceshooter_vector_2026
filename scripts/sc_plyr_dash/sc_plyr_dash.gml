@@ -41,7 +41,7 @@ function sc_player_dash_input_update(_player)
     var _dash = _movement.dash;
     var _stats = _player.ship.stats.final;
 
-    if (!keyboard_check_pressed(vk_shift) || !_movement.moving) return false;
+    if (!global.input.action.dash_pressed || !_movement.moving) return false;
     if (_dash.cooldown_remaining > 0) return false;
 
     if (_dash.double_tap_remaining > 0)
