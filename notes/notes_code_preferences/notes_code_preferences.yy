@@ -3,8 +3,8 @@
   "%Name":"notes_code_preferences",
   "name":"notes_code_preferences",
   "parent":{
-    "name":"spaceshooter_vector_2026",
-    "path":"spaceshooter_vector_2026.yyp",
+    "name":"NOTES",
+    "path":"folders/NOTES.yy",
   },
   "resourceType":"GMNotes",
   "resourceVersion":"2.0",

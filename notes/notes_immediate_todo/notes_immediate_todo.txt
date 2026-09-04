@@ -1,88 +1,62 @@
-IMMEDIATE TODO - NEXT SESSION
+IMMEDIATE TODO
 
-CURRENT FOUNDATION
+1. ITEM DATA FOUNDATION
+Register reusable item definitions with:
+key, name, description, category, stack_max, weight, colour and optional sprite.
 
-Damage packets, defence routing, health bars, baked visuals, projectile collision, player death, death fragments, thrust, boost, dodge, hardpoints, muzzle flashes and the Shard pulse are implemented.
+Initial resources:
+Carbon, Silicon, Copper, Iron, Titanium, Crystal and Ice.
 
-Do not rebuild these systems without finding a specific problem first.
+2. CARGO INVENTORY
+Implement:
+- Add items with automatic stack merging
+- Remove items
+- Move and swap stacks
+- Split stacks later
+- Calculate occupied slots, total amount and cargo weight
+- Respect ship cargo capacity
 
-1. GENERIC ATTACK AREAS
+3. WORLD ITEM DROPS
+Create one generic world-pickup object driven by registered item data.
+Allow pickups to merge nearby and enter player cargo when collected.
+Allow inventory items to be dropped back into the world.
 
-Finish and test:
+4. ASTEROID FOUNDATION
+Register asteroid types with:
+- Size, health, collision and visual
+- Resource drop table
+- Drop amount/range
+- Mining resistance or required tool later
 
-enum AttackDelivery { PROJECTILE, AREA, BEAM }
-enum AttackAreaShape { CIRCLE, CAPSULE, CONE }
-enum WeaponMountMode { HARDPOINT, CENTRE }
+Initial drops:
+Carbon, Silicon, Copper, Iron, Titanium, Crystal and Ice.
 
-Use sc_attack_area_apply() for reusable circle, capsule and cone damage.
-Instant areas should not require an object.
-Persistent visual attacks may use their own lightweight object.
+5. INVENTORY INTERACTION
+Add item icons, quantities, selection details and click-drag movement.
+Add Drop, Split and Use actions only when their item type supports them.
 
-2. TEMPORARY WEAPON TEST LOADOUT
+6. FUTURE SHIP COMMAND TABS
+Equipment: installed weapons and modules.
+Systems: internal ship condition and repairs.
+Upgrades: permanent ship and weapon improvements.
+Navigation: sector map and destinations.
+Log: discoveries, factions and resources.
 
-Allow number keys 1-4 to select the current LMB weapon:
+IMPLEMENTATION ORDER
 
-1 - Existing aqua pulse
-2 - Rapid golden kinetic minigun shards
-3 - Centre-mounted capsule laser
-4 - Alternating explosive rockets
-
-Store weapon keys in primary_slots and track selected_slot.
-Reset the firing deadline and hardpoint cursor when switching.
-
-3. MINIGUN
-
-Add one dedicated script containing its weapon registration, projectile registration, impact particles and baked primitive visual.
-
-Use existing side hardpoints.
-Fast fire rate, low damage, small recoil and slight inaccuracy.
-
-4. LASER
-
-Create a reusable o_beam for beam visuals and lifetime.
-
-Beam damage must use the generic CAPSULE attack area.
-Support configurable width, range, piercing, visual duration and damage interval.
-A negative range may extend beyond the current camera edge.
-Allow centre mounting now and physical hardpoints later.
-
-5. ROCKETS
-
-Add one dedicated script containing rocket registration, weapon registration, explosion particles and baked visual.
-
-Use ordinary projectile collision followed by a generic CIRCLE attack area.
-Support explosion radius, distance falloff and future homing/interception.
-
-6. PLAYER ENERGY AND FUEL
-
-Add registered maximum values and runtime current values.
-
-Energy:
-Used by energy weapons, special abilities and focused shields.
-Regenerates after an optional delay.
-
-Fuel:
-Used by boost and dodge.
-Regenerates slowly or requires refuelling, depending on later design.
-
-Keep costs and regeneration configurable.
-Normal movement should remain available at zero fuel.
-Future upgrades may improve capacity, regeneration and efficiency.
-
-7. AFTER THE WEAPON TEST
-
-Add a small selected-weapon HUD indicator.
-Add player energy/fuel HUD bars.
-Implement RMB focused frontal shielding.
-Add optional projectile health for rockets and large projectiles.
-Add sustained-beam damage ticks and hardpoint-following.
-Add weapon audio, camera impulse and stronger particles.
+1. Asteroid and item registration
+2. Generic asteroid damage/destruction
+3. Generic world resource drops
+4. Cargo add/remove/stack functions
+5. Display collected resources in the existing inventory
+6. Add inventory movement and dropping
+7. Equipment, systems and upgrades later
 
 WORKING RULES
 
-Inspect the newest pushed source and notes_code_preferences first.
-Never update GitHub; provide code in chat.
-Use compact full functions and continuous replacement blocks.
-Keep generic systems independent of specific factions and weapons.
-Use registered data, shared damage packets and GAME_TICK deadlines.
-Test and profile each weapon before adding the next system.
+Keep item, asteroid and drop data registered and reusable.
+Use one generic asteroid object and one generic pickup object.
+Do not create separate objects for every resource.
+Keep actual items on the player; keep only interface state in the HUD.
+Avoid Step-event inventory work while Ship Command is closed.
+Keep static inventory artwork baked and draw changing content dynamically.

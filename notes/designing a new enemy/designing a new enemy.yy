@@ -3,8 +3,8 @@
   "%Name":"designing a new enemy",
   "name":"designing a new enemy",
   "parent":{
-    "name":"spaceshooter_vector_2026",
-    "path":"spaceshooter_vector_2026.yyp",
+    "name":"NOTES",
+    "path":"folders/NOTES.yy",
   },
   "resourceType":"GMNotes",
   "resourceVersion":"2.0",

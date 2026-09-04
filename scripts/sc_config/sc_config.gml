@@ -175,7 +175,10 @@ function sc_input_init()
             weapon_1: ord("1"),
             weapon_2: ord("2"),
             weapon_3: ord("3"),
-            weapon_4: ord("4")
+            weapon_4: ord("4"),
+			
+			fullscreen: vk_f11,
+					
         },
 
         action: {
@@ -187,6 +190,8 @@ function sc_input_init()
             fire_primary: false,
             fire_secondary: false,
             ui_select_pressed: false,
+			
+			fullscreen_pressed: false,
 
             inventory_pressed: false,
             dash_held: false,
@@ -207,6 +212,8 @@ function sc_input_update()
 {
     var _binding = global.input.binding;
     var _action = global.input.action;
+	
+	_action.fullscreen_pressed = keyboard_check_pressed(_binding.fullscreen);
 
     _action.move_left = keyboard_check(_binding.move_left);
     _action.move_right = keyboard_check(_binding.move_right);
