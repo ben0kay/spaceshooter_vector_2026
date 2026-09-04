@@ -161,6 +161,13 @@ function sc_config_init()
 		        collect_range: 30
 		    }
 		},
+			
+		player_collision: {
+		    asteroid_bounce: 0.38,
+		    asteroid_bounce_min: 1.2,
+		    dash_substep_threshold: 12,
+		    movement_step_max: 6
+		},
     };
 
     return true;

@@ -71,8 +71,8 @@ function sc_player_aim_update(_player)
     _player.draw_angle = _player.draw_angle mod 360;
 }
 
-/// @description Moves the player with axis-separated native-mask solid collision.
-function sc_player_solid_move(_player)
+/// @description Applies cheap axis-separated movement against ordinary solids.
+function sc_player_solid_move_basic(_player)
 {
     var _movement = _player.movement;
     var _collision = _player.ship.collision;
@@ -93,6 +93,106 @@ function sc_player_solid_move(_player)
     _player.x = clamp(_player.x, _extent, room_width - _extent);
     _player.y = clamp(_player.y, _extent, room_height - _extent);
     _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
+}
+
+/// @description Reflects player velocity away from an asteroid impact.
+function sc_player_asteroid_bounce(_player, _asteroid)
+{
+    var _movement = _player.movement;
+    var _config = global.config.player_collision;
+    var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
+
+    if (_speed <= 0) return false;
+
+    var _incoming = point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
+    var _normal = point_direction(_asteroid.x, _asteroid.y, _player.x, _player.y);
+    var _direction = (2 * _normal - _incoming + 180) mod 360;
+    var _bounce_speed = max(_config.asteroid_bounce_min, _speed * _config.asteroid_bounce);
+
+    _movement.velocity_x = lengthdir_x(_bounce_speed, _direction);
+    _movement.velocity_y = lengthdir_y(_bounce_speed, _direction);
+    _movement.speed = _bounce_speed;
+
+    // Collision particles, sound and light camera feedback can plug in here.
+    return true;
+}
+
+/// @description Moves through an asteroid-bearing level with speed-based substeps.
+function sc_player_solid_move_asteroids(_player)
+{
+    var _movement = _player.movement;
+    var _collision = _player.ship.collision;
+    var _config = global.config.player_collision;
+    var _extent = max(_collision.radius_forward, _collision.radius_side);
+    var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
+    var _steps = _speed > _config.dash_substep_threshold
+        ? max(1, ceil(_speed / _config.movement_step_max))
+        : 1;
+
+    var _step_x = _movement.velocity_x / _steps;
+    var _step_y = _movement.velocity_y / _steps;
+
+    for (var _i = 0; _i < _steps; _i++)
+    {
+        var _candidate_x = _player.x;
+        var _candidate_y = _player.y;
+        var _next_x = _player.x + _step_x;
+        var _next_y = _player.y + _step_y;
+
+        if (!place_meeting(_next_x, _player.y, o_solid))
+            _candidate_x = _next_x;
+        else
+        {
+            _movement.velocity_x = 0;
+            _step_x = 0;
+        }
+
+        if (!place_meeting(_candidate_x, _next_y, o_solid))
+            _candidate_y = _next_y;
+        else
+        {
+            _movement.velocity_y = 0;
+            _step_y = 0;
+        }
+
+        var _asteroid = instance_place(_candidate_x, _candidate_y, o_asteroid);
+
+        if (instance_exists(_asteroid))
+        {
+            sc_player_asteroid_bounce(_player, _asteroid);
+            break;
+        }
+
+        _player.x = _candidate_x;
+        _player.y = _candidate_y;
+    }
+
+    _player.x = clamp(_player.x, _extent, room_width - _extent);
+    _player.y = clamp(_player.y, _extent, room_height - _extent);
+    _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
+}
+
+/// @description Selects the cheapest movement collision route for the current level.
+function sc_player_solid_move(_player)
+{
+    var _movement = _player.movement;
+
+    // Keep the rotated elliptical collision mask synchronized before testing.
+    _player.image_angle = _player.draw_angle;
+
+    if (_movement.velocity_x == 0 && _movement.velocity_y == 0)
+    {
+        _movement.speed = 0;
+        return;
+    }
+
+    if (global.level.asteroids_alive <= 0)
+    {
+        sc_player_solid_move_basic(_player);
+        return;
+    }
+
+    sc_player_solid_move_asteroids(_player);
 }
 
 /// @description Resolves whether the player may currently fire weapons.

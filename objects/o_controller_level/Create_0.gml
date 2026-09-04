@@ -26,6 +26,7 @@ global.level = {
     ship_selector: noone,
     selected_ship_key: undefined,
     enemies_alive: 0,
+	asteroids_alive: 0,
     initialized: false
 };
 
