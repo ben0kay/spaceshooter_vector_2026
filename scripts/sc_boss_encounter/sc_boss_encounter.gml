@@ -22,9 +22,9 @@ function sc_boss_encounter_create(_owner)
             scroll_speed: 4
         },
 
-        boss: {
-            key: "enemy_sim_dreadwing"
-        }
+        bboss: {
+		    key: "enemy_sim_dreadnaught"
+		}
     };
 }
 

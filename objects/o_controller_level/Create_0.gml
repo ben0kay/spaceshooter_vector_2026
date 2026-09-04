@@ -29,7 +29,9 @@ global.level = {
     initialized: false
 };
 
-var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", camera_object);
+var _room_name = string_lower(room_get_name(room));
+var _camera_object = string_pos("boss", _room_name) > 0 ? o_camera_boss : o_camera;
+var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", _camera_object);
 
 if (!instance_exists(_camera))
 {

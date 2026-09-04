@@ -125,6 +125,7 @@
     {"id":{"name":"sc_ship_shard","path":"scripts/sc_ship_shard/sc_ship_shard.yy",},},
     {"id":{"name":"sc_ship_systems","path":"scripts/sc_ship_systems/sc_ship_systems.yy",},},
     {"id":{"name":"sc_shockwave","path":"scripts/sc_shockwave/sc_shockwave.yy",},},
+    {"id":{"name":"sc_sim_dreadnaught","path":"scripts/sc_sim_dreadnaught/sc_sim_dreadnaught.yy",},},
     {"id":{"name":"sc_sim_dreadwing","path":"scripts/sc_sim_dreadwing/sc_sim_dreadwing.yy",},},
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_dreadnaught",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_dreadnaught",
+  "parent":{
+    "name":"bosses",
+    "path":"folders/scripts/enemy/factions/simulant/bosses.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
