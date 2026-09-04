@@ -97,25 +97,34 @@ function sc_resource_pickup_draw(_pickup)
     var _definition = variable_struct_get(global.data.items, _data.item_key);
     var _visual = _definition.visual;
     var _bob = sin((GAME_TICK + _data.phase) * 0.08) * 2;
+    var _y = _pickup.y + _bob;
     var _size = 7 + min(3, _data.amount * 0.35);
 
-    draw_set_blend_mode(bm_add);
+    gpu_set_blendmode(bm_add);
+
     draw_set_colour(_visual.glow);
     draw_set_alpha(0.18);
-    draw_circle(_pickup.x, _pickup.y + _bob, _size * 2.2, false);
+    draw_circle(_pickup.x, _y, _size * 2.2, false);
 
     draw_set_alpha(0.45);
-    draw_circle(_pickup.x, _pickup.y + _bob, _size * 1.45, false);
+    draw_circle(_pickup.x, _y, _size * 1.45, false);
 
-    draw_set_blend_mode(bm_normal);
+    gpu_set_blendmode(bm_normal);
+
     draw_set_colour(_visual.colour);
     draw_set_alpha(0.95);
-    draw_circle(_pickup.x, _pickup.y + _bob, _size, false);
+    draw_circle(_pickup.x, _y, _size, false);
 
     draw_set_colour(c_white);
     draw_set_alpha(0.8);
-    draw_circle(_pickup.x - _size * 0.2, _pickup.y + _bob - _size * 0.2, _size * 0.32, false);
+    draw_circle(
+        _pickup.x - _size * 0.2,
+        _y - _size * 0.2,
+        _size * 0.32,
+        false
+    );
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
+    gpu_set_blendmode(bm_normal);
 }

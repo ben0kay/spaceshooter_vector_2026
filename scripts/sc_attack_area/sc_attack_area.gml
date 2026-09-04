@@ -337,6 +337,7 @@ function sc_attack_area_damage_packet_get(_area, _target)
         amount: _data.damage.amount * _falloff,
         type: _data.damage.type,
         effect: _data.damage.effect,
+        extraction: _data.damage.extraction,
         source: _data.damage.source
     };
 }
