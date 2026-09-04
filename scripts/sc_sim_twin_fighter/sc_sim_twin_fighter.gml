@@ -100,7 +100,8 @@ function sc_enemy_register_twin_fighter()
                     aim: {
                         mode: AimMode.TARGET,
                         angle_offset: 0,
-                        inaccuracy: 2
+                        inaccuracy: 2,
+						fire_tolerance: 8
                     },
 
                     shot: {

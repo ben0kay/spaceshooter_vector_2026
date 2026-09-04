@@ -90,41 +90,27 @@ function sc_resource_pickup_update(_pickup)
     }
 }
 
-/// @description Draws one resource pickup using its registered item colours.
+/// @description Draws one cached resource chunk with subtle floating motion.
 function sc_resource_pickup_draw(_pickup)
 {
     var _data = _pickup.resource_pickup;
-    var _definition = variable_struct_get(global.data.items, _data.item_key);
-    var _visual = _definition.visual;
-    var _bob = sin((GAME_TICK + _data.phase) * 0.08) * 2;
-    var _y = _pickup.y + _bob;
-    var _size = 7 + min(3, _data.amount * 0.35);
+    var _sprite = sc_resource_pickup_visual_cache_get(_data.item_key);
 
-    gpu_set_blendmode(bm_add);
+    var _time = GAME_TICK + _data.phase;
+    var _bob = sin(_time * 0.055) * 2;
+    var _rotation = _time * 0.7;
+    var _scale = 0.82 + min(0.28, _data.amount * 0.025);
+    var _pulse = 0.96 + sin(_time * 0.09) * 0.04;
 
-    draw_set_colour(_visual.glow);
-    draw_set_alpha(0.18);
-    draw_circle(_pickup.x, _y, _size * 2.2, false);
-
-    draw_set_alpha(0.45);
-    draw_circle(_pickup.x, _y, _size * 1.45, false);
-
-    gpu_set_blendmode(bm_normal);
-
-    draw_set_colour(_visual.colour);
-    draw_set_alpha(0.95);
-    draw_circle(_pickup.x, _y, _size, false);
-
-    draw_set_colour(c_white);
-    draw_set_alpha(0.8);
-    draw_circle(
-        _pickup.x - _size * 0.2,
-        _y - _size * 0.2,
-        _size * 0.32,
-        false
+    draw_sprite_ext(
+        _sprite,
+        0,
+        _pickup.x,
+        _pickup.y + _bob,
+        _scale * _pulse,
+        _scale * _pulse,
+        _rotation,
+        c_white,
+        1
     );
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
-    gpu_set_blendmode(bm_normal);
 }

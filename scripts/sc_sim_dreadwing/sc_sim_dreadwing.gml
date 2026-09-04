@@ -141,7 +141,7 @@ function sc_enemy_register_sim_dreadwing()
 						
                     },
 
-                    aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 2 },
+                    aim: { mode: AimMode.TARGET, angle_offset: 0, inaccuracy: 2, fire_tolerance: 10 },
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },
 
                     firing: {
@@ -164,7 +164,7 @@ function sc_enemy_register_sim_dreadwing()
                         hull_ratio_max: 0.9
                     },
 
-                    aim: { mode: AimMode.MOUNT, angle_offset: 0, inaccuracy: 0 },
+                    aim: { mode: AimMode.MOUNT, angle_offset: 0, inaccuracy: 0, fire_tolerance: 10 },
                     shot: { pattern: ShotPattern.SINGLE, amount: 1 },
 
                     telegraph: {

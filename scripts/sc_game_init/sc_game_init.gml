@@ -22,6 +22,7 @@ function sc_game_init()
     if (!sc_enemy_visual_cache_init()) return false;
     if (!sc_projectile_visual_cache_init()) return false;
     if (!sc_asteroid_visual_cache_init()) return false;
+	if (!sc_resource_pickup_visual_cache_init()) return false;
     if (!sc_input_init()) return false;
 
     global.game.initialized = true;

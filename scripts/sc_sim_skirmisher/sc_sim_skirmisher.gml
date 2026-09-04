@@ -108,7 +108,8 @@ function sc_enemy_register_sim_skirmisher()
                     aim: {
                         mode: AimMode.TARGET,
                         angle_offset: 0,
-                        inaccuracy: 3
+                        inaccuracy: 3,
+						fire_tolerance: 8
                     },
 
                     shot: {
