@@ -57,30 +57,38 @@ function sc_enemy_register_sim_dreadnaught()
         },
 
         movement_controller: {
-            idle_script: sc_enemy_movement_hold,
-            chase_script: sc_enemy_movement_hold,
-            combat_script: sc_enemy_movement_hold,
+		    idle_script: sc_enemy_movement_swing,
+		    chase_script: sc_enemy_movement_swing,
+		    combat_script: sc_enemy_movement_swing,
 
-            facing: {
-                default_mode: EnemyFacingMode.FIXED,
-                retreat_mode: EnemyFacingMode.FIXED,
-                angle_offset: 0,
-                turn_speed_scale: 0,
-                spin_speed: 0
-            },
+    facing: {
+        default_mode: EnemyFacingMode.FIXED,
+        retreat_mode: EnemyFacingMode.FIXED,
+        angle_offset: 0,
+        turn_speed_scale: 0,
+        spin_speed: 0
+    },
 
-            orbit: {
-                range: 0,
-                direction: 1,
-                radial_strength: 0,
-                direction_change_chance: 0
-            },
+    swing: {
+        width: 150,
+        arc_depth: 18,
+        speed: 0.004,
+        speed_scale: 0.85,
+        response_distance: 55
+    },
 
-            strafe: {
-                amount: 0,
-                speed: 0
-            }
-        },
+    orbit: {
+        range: 0,
+        direction: 1,
+        radial_strength: 0,
+        direction_change_chance: 0
+    },
+
+    strafe: {
+        amount: 0,
+        speed: 0
+    }
+},
 
         visual: sc_enemy_sim_dreadnaught_visual_data(),
 
@@ -213,19 +221,19 @@ function sc_enemy_register_sim_dreadnaught()
             // THREE UPPER ROCKET TUBES
             // ==================================================
             {
-                key: "rocket_upper_01", group: "rockets_upper",
+                key: "rocket_upper_01", group: "rockets",
                 forward: -0.2, side: -0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
             },
             {
-                key: "rocket_upper_02", group: "rockets_upper",
+                key: "rocket_upper_02", group: "rockets",
                 forward: 0, side: -0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
             },
             {
-                key: "rocket_upper_03", group: "rockets_upper",
+                key: "rocket_upper_03", group: "rockets",
                 forward: 0.2, side: -0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
@@ -235,19 +243,19 @@ function sc_enemy_register_sim_dreadnaught()
             // THREE LOWER ROCKET TUBES
             // ==================================================
             {
-                key: "rocket_lower_01", group: "rockets_lower",
+                key: "rocket_lower_01", group: "rocket",
                 forward: -0.2, side: 0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
             },
             {
-                key: "rocket_lower_02", group: "rockets_lower",
+                key: "rocket_lower_02", group: "rockets",
                 forward: 0, side: 0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
             },
             {
-                key: "rocket_lower_03", group: "rockets_lower",
+                key: "rocket_lower_03", group: "rockets",
                 forward: 0.2, side: 0.68, angle: 0, muzzle_forward: 0.26,
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_sim_dreadnaught_rocket_tube_draw
@@ -265,82 +273,120 @@ function sc_enemy_register_sim_dreadnaught()
         ],
 
         attack_controller: {
-            selection: AttackSelection.WEIGHTED,
+		    selection: AttackSelection.WEIGHTED,
 
-            attacks: [
-                {
-                    key: "edge_laser_spray",
-                    weight: 70,
-                    hardpoint_group: "edge_lasers",
-                    weapon_key: "weapon_simulant_pulse",
+		    attacks: [
+		        {
+		            key: "edge_laser_spray",
+		            weight: 55,
+		            hardpoint_group: "edge_lasers",
+		            weapon_key: "weapon_simulant_pulse",
 
-                    conditions: {
-                        range_min: 160,
-                        range_max: 1500
-                    },
+		            conditions: {
+		                range_min: 160,
+		                range_max: 1500
+		            },
 
-                    aim: {
-                        mode: AimMode.TARGET,
-                        angle_offset: 0,
-                        inaccuracy: 4
-                    },
+		            aim: {
+		                mode: AimMode.TARGET,
+		                angle_offset: 0,
+		                inaccuracy: 4
+		            },
 
-                    shot: {
-                        pattern: ShotPattern.SINGLE,
-                        amount: 1
-                    },
+		            shot: {
+		                pattern: ShotPattern.SINGLE,
+		                amount: 1
+		            },
 
-                    firing: {
-                        order: HardpointFireOrder.RANDOM,
-                        interval: 3,
-                        volley_max: 38,
-                        cooldown: 100
-                    }
-                },
-                {
-                    key: "twin_main_beams",
-                    weight: 30,
-                    hardpoint_group: "main_beams",
-                    weapon_key: "weapon_simulant_thin_beam",
+		            firing: {
+		                order: HardpointFireOrder.RANDOM,
+		                interval: 3,
+		                volley_max: 38,
+		                cooldown: 100
+		            }
+		        },
+		        {
+		            key: "twin_main_beams",
+		            weight: 20,
+		            hardpoint_group: "main_beams",
+		            weapon_key: "weapon_simulant_thin_beam",
 
-                    conditions: {
-                        range_min: 260,
-                        range_max: 1450,
-                        hull_ratio_max: 0.95
-                    },
+		            conditions: {
+		                range_min: 260,
+		                range_max: 1450,
+		                hull_ratio_max: 0.95
+		            },
 
-                    aim: {
-                        mode: AimMode.MOUNT,
-                        angle_offset: 0,
-                        inaccuracy: 0
-                    },
+		            aim: {
+		                mode: AimMode.MOUNT,
+		                angle_offset: 0,
+		                inaccuracy: 0
+		            },
 
-                    shot: {
-                        pattern: ShotPattern.SINGLE,
-                        amount: 1
-                    },
+		            shot: {
+		                pattern: ShotPattern.SINGLE,
+		                amount: 1
+		            },
 
-                    telegraph: {
-                        duration: 90,
-                        aim_lock_remaining: 90,
-                        track_during_active: false,
-                        scale: 0.24,
-                        particle_interval: 2,
-                        draw_script: sc_attack_telegraph_energy_draw,
-                        particle_script: sc_particles_attack_telegraph_emit
-                    },
+		            telegraph: {
+		                duration: 90,
+		                aim_lock_remaining: 90,
+		                track_during_active: false,
+		                scale: 0.24,
+		                particle_interval: 2,
+		                draw_script: sc_attack_telegraph_energy_draw,
+		                particle_script: sc_particles_attack_telegraph_emit
+		            },
 
-                    firing: {
-                        order: HardpointFireOrder.ALL,
-                        duration: 110,
-                        cooldown: 300
-                    }
-                }
+		            firing: {
+		                order: HardpointFireOrder.ALL,
+		                duration: 110,
+		                cooldown: 300
+		            }
+		        },
+		        {
+		            key: "six_rocket_salvo",
+		            weight: 25,
+		            hardpoint_group: "rockets",
+		            weapon_key: "weapon_simulant_dreadnaught_rocket",
 
-                // Future plasma_core attack goes here.
-                // Future upper/lower rocket salvo attacks go here.
-            ]
-        }
+		            conditions: {
+		                range_min: 280,
+		                range_max: 1550
+		            },
+
+		            aim: {
+		                mode: AimMode.TARGET,
+		                angle_offset: 0,
+		                inaccuracy: 3
+		            },
+
+		            shot: {
+		                pattern: ShotPattern.SINGLE,
+		                amount: 1
+		            },
+
+		            telegraph: {
+		                duration: 42,
+		                aim_lock_remaining: 10,
+		                track_during_active: true,
+		                scale: 0.11,
+		                particle_interval: 3,
+		                draw_script: sc_attack_telegraph_energy_draw,
+		                particle_script: sc_particles_attack_telegraph_emit
+		            },
+
+		            firing: {
+		                order: HardpointFireOrder.SEQUENTIAL,
+		                interval: 6,
+		                volley_max: 6,
+		                cooldown: 220
+		            }
+		        }
+
+		        // Future plasma_core attack goes here.
+		    ]
+		}
     });
 }
 

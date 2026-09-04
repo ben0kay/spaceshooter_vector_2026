@@ -18,6 +18,8 @@ function sc_enemy_movement_hold(_enemy)
     // Future stationary behaviour can be added here.
 }
 
+
+
 /// @description Commands direct movement toward the current target.
 function sc_enemy_movement_chase(_enemy)
 {
@@ -328,4 +330,28 @@ function sc_enemy_movement_update(_enemy)
 
     sc_enemy_facing_update(_enemy);
     sc_enemy_movement_apply(_enemy);
+}
+
+/// @description Moves an enemy slowly across a shallow repeating arc around its spawn anchor.
+function sc_enemy_movement_swing(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _swing = _data.movement_controller.swing;
+    var _command = _movement.command;
+    var _phase = GAME_TICK * _swing.speed + _movement.strafe_phase;
+    var _side = sin(_phase);
+    var _target_x = _movement.spawn_x + _side * _swing.width;
+    var _target_y = _movement.spawn_y + (1 - _side * _side) * _swing.arc_depth;
+    var _dx = _target_x - _enemy.x;
+    var _dy = _target_y - _enemy.y;
+    var _distance = point_distance(0, 0, _dx, _dy);
+
+    if (_distance < 0.1) return;
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.speed_scale = min(_swing.speed_scale, _distance / max(1, _swing.response_distance));
+    _command.facing_mode = EnemyFacingMode.FIXED;
 }
