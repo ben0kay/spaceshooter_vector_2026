@@ -28,7 +28,7 @@ function sc_ship_register_shard()
             radius_forward: 76,
             radius_side: 36
         },
-
+		systems: sc_ship_systems_standard(),
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {

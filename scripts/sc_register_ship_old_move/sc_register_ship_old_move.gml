@@ -23,6 +23,7 @@ function sc_ship_register_fighter()
 			weapons_while_dashing: 0,
         },
         collision: { radius: 26 },
+		systems: sc_ship_systems_standard(),
         visual: { colour_primary: make_colour_rgb(35, 165, 255), colour_secondary: make_colour_rgb(255, 135, 35), scale: 1 },
         hardpoints: { primary: [{ x: 36, y: -14, angle: 0 }, { x: 36, y: 14, angle: 0 }], utility: [] },
         starting_loadout: { primary: "weapon_pulse_basic", secondary: undefined }
@@ -51,6 +52,7 @@ function sc_ship_register_bastion()
 			weapons_while_dashing: 0,
         },
         collision: { radius: 38 },
+		systems: sc_ship_systems_standard(),
         visual: { colour_primary: make_colour_rgb(105, 95, 255), colour_secondary: make_colour_rgb(255, 90, 35), scale: 1.25 },
         hardpoints: { primary: [{ x: 45, y: -22, angle: 0 }, { x: 45, y: 22, angle: 0 }], utility: [] },
         starting_loadout: { primary: "weapon_pulse_heavy", secondary: undefined }

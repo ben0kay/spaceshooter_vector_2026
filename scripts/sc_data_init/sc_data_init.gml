@@ -74,7 +74,9 @@ function sc_enemy_register(_data)
 /// @description Registers one validated ship definition.
 function sc_ship_register(_ship)
 {
-    if (!is_struct(_ship) || !variable_struct_exists(_ship, "identity") || !variable_struct_exists(_ship.identity, "key"))
+    if (!is_struct(_ship)
+    || !variable_struct_exists(_ship, "identity")
+    || !variable_struct_exists(_ship.identity, "key"))
     {
         show_debug_message("SHIP REGISTRATION ERROR - invalid ship definition");
         return false;
@@ -85,6 +87,12 @@ function sc_ship_register(_ship)
     if (variable_struct_exists(global.data.ships, _key))
     {
         show_debug_message("SHIP REGISTRATION ERROR - duplicate key: " + _key);
+        return false;
+    }
+
+    if (!variable_struct_exists(_ship, "systems") || !sc_ship_systems_validate(_ship.systems))
+    {
+        show_debug_message("SHIP REGISTRATION ERROR - invalid internal systems: " + _key);
         return false;
     }
 

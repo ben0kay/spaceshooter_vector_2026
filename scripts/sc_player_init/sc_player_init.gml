@@ -20,6 +20,7 @@ function sc_player_init(_player, _ship_key)
         key: _ship_key,
         identity: variable_clone(_definition.identity),
         collision: variable_clone(_definition.collision),
+		systems: sc_ship_systems_runtime_create(_definition.systems),
         visual: variable_clone(_definition.visual),
         hardpoints: variable_clone(_definition.hardpoints),
         loadout: variable_clone(_definition.starting_loadout),

@@ -1,0 +1,17 @@
+INTERNAL SHIP SYSTEMS - FUTURE FOUNDATION
+
+Each player chassis registers:
+engines, thrusters, shield_generator, reactor, weapons, sensors, cargo_hold, life_support.
+
+Registered data stores condition_max. Player runtime receives an independent copy with condition_current initialized to maximum.
+
+Currently dormant:
+- No Step processing
+- No system damage
+- No stat penalties
+- No repairs or UI
+- No physical interior rooms
+
+Future hull penetration may damage systems. System condition can then affect movement, shields, energy, weapons, sensors, cargo and survival.
+
+Physical ship rooms should reference these existing system keys rather than creating a separate damage model.

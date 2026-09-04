@@ -13,6 +13,7 @@ function sc_enemy_init(_enemy, _enemy_key)
     _enemy.enemy = {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
+		reward: variable_clone(_data.reward),
         state: EnemyState.IDLE,
         target_id: noone,
         target_distance_sq: 0,
@@ -1092,10 +1093,31 @@ function sc_enemy_die(_enemy, _packet)
     var _death_x = _enemy.x;
     var _death_y = _enemy.y;
     var _death_layer = _enemy.layer;
+    var _shake_config = global.config.visual.enemy_death;
+    var _visual_mass = _data.visual.visual_mass;
 
     sc_enemy_attack_cancel(_enemy);
     _data.target_id = noone;
     _data.visual.death.script(_enemy);
+
+    var _shake_magnitude = clamp(
+        _shake_config.shake_base + _visual_mass * _shake_config.shake_per_mass,
+        _shake_config.shake_min,
+        _shake_config.shake_max
+    );
+
+    var _shake_time = min(
+        _shake_config.time_max,
+        round(_shake_config.time_base + _visual_mass * _shake_config.time_per_mass)
+    );
+
+    sc_camera_shake_at(
+        _death_x, _death_y,
+        _shake_magnitude, _shake_time,
+        _shake_config.falloff_start,
+        _shake_config.falloff_end,
+        _shake_config.falloff_min
+    );
 
     if (_source.faction == Faction.PLAYER)
     {

@@ -7,6 +7,13 @@ function sc_config_init()
                 side_amount: 0.6, side_speed: 0.018,
                 forward_amount: 1.2, forward_speed: 0.012
             },
+			
+			enemy_death: {
+			    shake_base: 1.5, shake_per_mass: 0.75,
+			    shake_min: 1.25, shake_max: 4,
+			    time_base: 5, time_per_mass: 2, time_max: 10,
+			    falloff_start: 640, falloff_end: 1600, falloff_min: 0
+			},
 
             enemy_thrust: {
                 active_power_min: 0.05, emit_power_min: 0.15, emit_interval: 3,
