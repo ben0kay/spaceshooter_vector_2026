@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_asteroid_bake",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_asteroid_bake",
+  "parent":{
+    "name":"baking",
+    "path":"folders/scripts/baking.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

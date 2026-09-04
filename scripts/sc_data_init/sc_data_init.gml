@@ -7,7 +7,8 @@ function sc_data_init()
         enemies: {},
         weapons: {},
         projectiles: {},
-        attacks: {}
+        attacks: {},
+		asteroids: {}
     };
 	
 	if (!sc_enemy_register_all()) return false;
@@ -16,6 +17,7 @@ function sc_data_init()
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
     return true;
 }
+
 /// @description Registers one projectile definition.
 function sc_projectile_register(_data)
 {
