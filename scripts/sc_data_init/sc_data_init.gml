@@ -2,7 +2,7 @@
 function sc_data_init()
 {
     global.data = {
-        factions: array_create(Faction.ALIEN + 1, undefined),
+        factions: array_create(Faction.AUTOMATED + 1, undefined),
         ships: {},
         enemies: {},
         weapons: {},

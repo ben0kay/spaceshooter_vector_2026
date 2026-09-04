@@ -13,7 +13,7 @@ enum MainMenuAction { DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT }
 //==================================================
 // FACTIONS / ENEMY STATE
 //==================================================
-enum Faction { PLAYER, SIMULANT, REBEL, CORPORATION, ALIEN }
+enum Faction { PLAYER, SIMULANT, REBEL, CORPORATION, ALIEN, AUTOMATED }
 enum EnemyState { IDLE, CHASING, ATTACKING, STUNNED, DEAD }
 enum EnemyFacingMode { TARGET, MOVEMENT, COMMAND, FIXED, SPIN }
 //==================================================
@@ -46,3 +46,5 @@ enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }
 // RESOURCES
 //==================================================
 enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
+
+enum AsteroidSize { SMALL, MEDIUM, LARGE }

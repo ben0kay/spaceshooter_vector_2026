@@ -94,17 +94,15 @@ function sc_projectile_create(_projectile_key, _source, _delivery, _x, _y, _dire
     });
 }
 
-/// @description Finds the nearest opposing entity for a homing launch.
+/// @description Finds the nearest valid opposing entity for a homing launch.
 function sc_projectile_target_find(_projectile, _range)
 {
     var _data = _projectile.projectile;
     var _list = ds_list_create();
 
     collision_circle_list(
-        _projectile.x, _projectile.y,
-        _range,
-        o_entity, false, true,
-        _list, false
+        _projectile.x, _projectile.y, _range,
+        o_entity, false, true, _list, false
     );
 
     var _target = noone;
@@ -115,6 +113,7 @@ function sc_projectile_target_find(_projectile, _range)
         var _candidate = _list[| _i];
 
         if (_candidate == _data.source.owner_id) continue;
+        if (!_candidate.entity.guidance_targetable) continue;
         if (_candidate.entity.faction == _data.source.faction) continue;
 
         var _distance_sq = sc_point_distance_sq(

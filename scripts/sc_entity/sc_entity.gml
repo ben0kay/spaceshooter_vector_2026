@@ -1,9 +1,10 @@
 /// @description Initializes the shared damageable-entity contract and elliptical collision mask.
-function sc_entity_init(_entity, _faction, _damage_script, _collision)
+function sc_entity_init(_entity, _faction, _damage_script, _collision, _guidance_targetable = true)
 {
     _entity.entity = {
         faction: _faction,
         damage_script: _damage_script,
+        guidance_targetable: _guidance_targetable,
 
         collision: {
             radius_forward: _collision.radius_forward,
