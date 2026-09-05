@@ -6,6 +6,7 @@ function sc_entity_init(_entity, _faction, _damage_script, _collision, _guidance
         damage_script: _damage_script,
         knockback_script: _knockback_script,
         guidance_targetable: _guidance_targetable,
+        effects: sc_effect_runtime_create(),
 
         collision: {
             radius_forward: _collision.radius_forward,

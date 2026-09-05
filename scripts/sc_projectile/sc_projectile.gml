@@ -35,13 +35,14 @@ function sc_projectile_init(_projectile, _create)
     }
 
     _projectile.projectile = {
-	    key: _create.key,
-	    state: ProjectileState.ACTIVE,
-	    projectile_class: _data.projectile_class,
-	    projectile_motion: _data.projectile_motion,
-	    source: _create.source,
-	    direction: _create.direction,
-	    scale: _scale,
+        key: _create.key,
+        state: ProjectileState.ACTIVE,
+        projectile_class: _data.projectile_class,
+        projectile_motion: _data.projectile_motion,
+        source: _create.source,
+        direction: _create.direction,
+        scale: _scale,
+        effects: sc_effect_runtime_create(),
 
         movement: {
             speed: max(0, _launch.speed)

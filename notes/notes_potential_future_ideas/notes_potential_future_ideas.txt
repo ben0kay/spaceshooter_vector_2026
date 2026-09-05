@@ -592,3 +592,35 @@ Projectile danger_level
 Tells feedback systems how seriously to present a projectile. Ordinary bullets might receive no warning, while rockets and boss attacks receive indicators, sounds or targeting brackets.
 
 Those seven additions open a lot of future gameplay without forcing unfinished mechanics to run or adding substantial per-step overhead.
+
+
+STATUS EFFECTS – FUTURE
+
+A dormant shared effect foundation now exists on players, enemies and projectiles.
+
+Runtime modifiers:
+- movement_scale: Controls movement speed.
+- rotation_scale: Controls turning and aiming speed.
+- weapon_scale: Controls weapon operation/cooldown speed.
+- time_scale: Controls overall simulation speed, especially projectiles.
+
+Nothing currently reads or updates these values, so gameplay remains unchanged.
+
+Future SLOW:
+- Temporarily reduces movement_scale.
+- May optionally reduce rotation_scale.
+- Strength, duration and stacking rules still need designing.
+
+Future STASIS:
+- Fundamentally different visuals and delivery from SLOW.
+- Can suspend ships, projectiles or both.
+- Frozen projectiles should remain as instances, preserving damage, owner, direction, target and remaining life.
+- Do not destroy and recreate frozen projectiles.
+
+Future pipeline:
+- Add StatusEffect enum only when implementing the first effect.
+- Add generic apply/update/remove functions.
+- Store duration, strength, source and stacking rules.
+- Add optional resistances/immunities later.
+- Status fields should scan nearby targets at staggered intervals instead of every target searching every Step.
+- Wire modifiers into shared movement, rotation, weapon and projectile update functions.
