@@ -134,7 +134,7 @@ function sc_enemy_asteroid_destroy_active(_enemy)
         && instance_exists(_runtime.target_id);
 }
 
-/// @description Stops and turns an enemy toward its blocking asteroid.
+/// @description Stops at an asteroid while periodically checking whether the player is visible again.
 function sc_enemy_asteroid_destroy_hold(_enemy)
 {
     var _data = _enemy.enemy;
@@ -144,6 +144,37 @@ function sc_enemy_asteroid_destroy_hold(_enemy)
     var _target = _runtime.target_id;
 
     if (!instance_exists(_target)) return false;
+
+    var _config = global.config.enemy.asteroid;
+
+    // Reconsider the asteroid only at a staggered interval.
+    if (GAME_TICK >= _runtime.next_check_tick)
+    {
+        var _lazy = _data.optimization.lazy_factor;
+
+        _runtime.next_check_tick = GAME_TICK
+            + max(
+                1,
+                round(
+                    _config.destroy_visibility_interval
+                    * _lazy
+                )
+            );
+
+        if (instance_exists(global.player_id)
+        && sc_enemy_attack_line_of_sight_clear_to(
+            _enemy,
+            global.player_id
+        ))
+        {
+            sc_enemy_attack_cancel(_enemy);
+
+            _runtime.active = false;
+            _runtime.target_id = noone;
+
+            return false;
+        }
+    }
 
     sc_enemy_asteroid_stop(_enemy);
 

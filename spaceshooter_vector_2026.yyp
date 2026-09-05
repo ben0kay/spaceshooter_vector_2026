@@ -187,6 +187,7 @@
     {"id":{"name":"s_particle_trail_white_beam","path":"sprites/s_particle_trail_white_beam/s_particle_trail_white_beam.yy",},},
     {"id":{"name":"s_ring","path":"sprites/s_ring/s_ring.yy",},},
     {"id":{"name":"s_sharp","path":"sprites/s_sharp/s_sharp.yy",},},
+    {"id":{"name":"s_sim_pulse","path":"sprites/s_sim_pulse/s_sim_pulse.yy",},},
     {"id":{"name":"s_smoke_puff","path":"sprites/s_smoke_puff/s_smoke_puff.yy",},},
   ],
   "resourceType":"GMProject",

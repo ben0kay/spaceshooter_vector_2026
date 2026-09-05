@@ -128,16 +128,10 @@ function sc_enemy_attack_target_get(_enemy)
     return _enemy.enemy.target_id;
 }
 
-/// @description Requires a clear three-line corridor between enemy and its current attack target.
-function sc_enemy_attack_line_of_sight_clear(_enemy)
+/// @description Checks a broad three-line corridor to one supplied target.
+function sc_enemy_attack_line_of_sight_clear_to(_enemy, _target)
 {
-    var _target = sc_enemy_attack_target_get(_enemy);
     if (!instance_exists(_target)) return false;
-
-    // The cached asteroid is itself the intended obstruction target.
-    if (sc_enemy_asteroid_destroy_active(_enemy))
-        return true;
-
     if (global.level.asteroids_alive <= 0) return true;
 
     var _target_collision = _target.entity.collision;
@@ -153,11 +147,9 @@ function sc_enemy_attack_line_of_sight_clear(_enemy)
         _target.y
     );
 
-    var _offsets = [-_width, 0, _width];
-
-    for (var _i = 0; _i < 3; _i++)
+    for (var _side = -1; _side <= 1; _side++)
     {
-        var _offset = _offsets[_i];
+        var _offset = _width * _side;
         var _start_x = _enemy.x + lengthdir_x(_offset, _direction + 90);
         var _start_y = _enemy.y + lengthdir_y(_offset, _direction + 90);
         var _end_x = _target.x + lengthdir_x(_offset, _direction + 90);
@@ -179,6 +171,22 @@ function sc_enemy_attack_line_of_sight_clear(_enemy)
     }
 
     return true;
+}
+
+/// @description Checks line of sight to the enemy's current attack target.
+function sc_enemy_attack_line_of_sight_clear(_enemy)
+{
+    var _target = sc_enemy_attack_target_get(_enemy);
+    if (!instance_exists(_target)) return false;
+
+    // The blocking asteroid is itself the intended target.
+    if (sc_enemy_asteroid_destroy_active(_enemy))
+        return true;
+
+    return sc_enemy_attack_line_of_sight_clear_to(
+        _enemy,
+        _target
+    );
 }
 
 /// @description Returns whether one attack is a committed telegraphed beam.

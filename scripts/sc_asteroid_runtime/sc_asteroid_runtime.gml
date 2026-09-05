@@ -151,19 +151,43 @@ function sc_asteroid_yield_destruction_release(_asteroid, _packet)
     return sc_asteroid_yield_emit(_asteroid);
 }
 
-/// @description Applies damage, releases resources and updates the damage stage.
+/// @description Applies damage, enemy demolition power, resource release and damage stages.
 function sc_asteroid_damage(_asteroid, _packet)
 {
     var _health = _asteroid.asteroid.health;
-    var _damage = min(_health.current, sc_damage_packet_amount_get(_packet));
+    var _damage_amount = sc_damage_packet_amount_get(_packet);
+
+    // Enemy demolition receives extra asteroid-only damage.
+    // This does not increase damage dealt to the player or other enemies.
+    if (_packet.source.faction != Faction.PLAYER
+    && _packet.source.faction != noone)
+    {
+        _damage_amount *=
+            global.config.enemy.asteroid.destroy_damage_multiplier;
+    }
+
+    var _damage = min(
+        _health.current,
+        _damage_amount
+    );
 
     if (_damage <= 0) return false;
 
     _health.current -= _damage;
-    sc_asteroid_yield_damage_add(_asteroid, _packet, _damage);
+
+    sc_asteroid_yield_damage_add(
+        _asteroid,
+        _packet,
+        _damage
+    );
 
     var _ratio = _health.current / _health.maximum;
-    _health.stage = _ratio <= 0.25 ? 3 : (_ratio <= 0.5 ? 2 : (_ratio <= 0.75 ? 1 : 0));
+
+    _health.stage = _ratio <= 0.25
+        ? 3
+        : (_ratio <= 0.5
+            ? 2
+            : (_ratio <= 0.75 ? 1 : 0));
 
     var _result = {
         shield: 0,
@@ -185,7 +209,12 @@ function sc_asteroid_damage(_asteroid, _packet)
     if (_health.current <= 0)
     {
         _health.current = 0;
-        sc_asteroid_yield_destruction_release(_asteroid, _packet);
+
+        sc_asteroid_yield_destruction_release(
+            _asteroid,
+            _packet
+        );
+
         instance_destroy(_asteroid);
     }
 

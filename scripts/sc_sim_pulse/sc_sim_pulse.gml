@@ -47,7 +47,7 @@ function sc_projectile_simulant_pulse_impact(_x, _y, _direction, _target, _scale
     return sc_particles_projectile_impact_emit("impact_simulant_pulse", _x, _y, _direction, _scale);
 }
 
-/// @description Draws one animated Simulant violet pulse frame for startup baking.
+/// @description Draws one animated Simulant pulse frame with an imported glow for startup baking.
 function sc_projectile_simulant_pulse_draw(_x, _y, _angle, _visual, _frame, _frame_count)
 {
     var _p = _visual.palette;
@@ -62,37 +62,133 @@ function sc_projectile_simulant_pulse_draw(_x, _y, _angle, _visual, _frame, _fra
     var _tail_x = _x - lengthdir_x(_length, _angle);
     var _tail_y = _y - lengthdir_y(_length, _angle);
 
+
+    // ==================================================
+    // IMPORTED SOFT GLOW
+    // ==================================================
+    // Assumes a 96x96 sprite with its origin at 48,48.
+    // The glow is baked into each cached projectile frame.
+    draw_sprite_ext(
+        s_sim_pulse,
+        0,
+        _x,
+        _y,
+        0.72 * _pulse,
+        0.46 * _pulse,
+        _angle,
+        c_white,
+        0.82
+    );
+
+
+    // ==================================================
+    // ENERGY TRAIL
+    // ==================================================
     draw_set_alpha(0.24);
     draw_set_colour(_p.glow);
-    draw_line_width(_tail_x, _tail_y, _front_x, _front_y, _radius * 2.5 * _pulse);
+    draw_line_width(
+        _tail_x,
+        _tail_y,
+        _front_x,
+        _front_y,
+        _radius * 2.5 * _pulse
+    );
 
     draw_set_alpha(0.7);
     draw_set_colour(_p.energy);
-    draw_line_width(_tail_x, _tail_y, _front_x, _front_y, _radius * 1.2 * _pulse);
+    draw_line_width(
+        _tail_x,
+        _tail_y,
+        _front_x,
+        _front_y,
+        _radius * 1.2 * _pulse
+    );
 
     draw_set_alpha(1);
     draw_set_colour(_p.core);
-    draw_line_width(_tail_x, _tail_y, _front_x, _front_y, max(2, _radius * 0.45));
+    draw_line_width(
+        _tail_x,
+        _tail_y,
+        _front_x,
+        _front_y,
+        max(2, _radius * 0.45)
+    );
 
+
+    // ==================================================
+    // ROTATING PULSE BODY
+    // ==================================================
     draw_set_colour(_p.void);
-    draw_circle(_x, _y, _radius * 0.95, false);
+    draw_circle(
+        _x,
+        _y,
+        _radius * 0.95,
+        false
+    );
 
     draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _radius * 1.15 * _pulse, true);
+    draw_circle(
+        _x,
+        _y,
+        _radius * 1.15 * _pulse,
+        true
+    );
 
     for (var _i = 0; _i < 4; _i++)
     {
         var _direction = _rotation + _i * 90;
-        var _inner_x = _x + lengthdir_x(_radius * 0.7, _direction);
-        var _inner_y = _y + lengthdir_y(_radius * 0.7, _direction);
-        var _outer_x = _x + lengthdir_x(_radius * 1.45, _direction);
-        var _outer_y = _y + lengthdir_y(_radius * 1.45, _direction);
 
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.accent);
-        draw_line_width(_inner_x, _inner_y, _outer_x, _outer_y, 2);
+        var _inner_x =
+            _x + lengthdir_x(
+                _radius * 0.7,
+                _direction
+            );
+
+        var _inner_y =
+            _y + lengthdir_y(
+                _radius * 0.7,
+                _direction
+            );
+
+        var _outer_x =
+            _x + lengthdir_x(
+                _radius * 1.45,
+                _direction
+            );
+
+        var _outer_y =
+            _y + lengthdir_y(
+                _radius * 1.45,
+                _direction
+            );
+
+        draw_set_colour(
+            (_i mod 2) == 0
+            ? _p.energy
+            : _p.accent
+        );
+
+        draw_line_width(
+            _inner_x,
+            _inner_y,
+            _outer_x,
+            _outer_y,
+            2
+        );
     }
 
     draw_set_colour(_p.core);
-    draw_circle(_x, _y, _radius * 0.45 * _pulse, false);
+    draw_circle(
+        _x,
+        _y,
+        _radius * 0.45 * _pulse,
+        false
+    );
+
+
+    // ==================================================
+    // RESTORE DRAW STATE
+    // ==================================================
     draw_set_alpha(1);
+    draw_set_colour(c_white);
 }

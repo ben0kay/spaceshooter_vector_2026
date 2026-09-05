@@ -186,6 +186,8 @@ function sc_config_init()
 				
 			asteroid: {
 			    check_interval: 4,
+				destroy_visibility_interval: 30,
+				destroy_damage_multiplier: 3,
 			    clearance_margin: 10,
 			    look_ahead_base: 70,
 			    look_ahead_speed: 14,
