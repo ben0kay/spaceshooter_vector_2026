@@ -13,6 +13,7 @@ function sc_enemy_init(_enemy, _enemy_key)
     _enemy.enemy = {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
+		doctrine: variable_clone(sc_faction_doctrine_get(_data.identity.faction)),
 		reward: variable_clone(_data.reward),
         state: EnemyState.IDLE,
         target_id: noone,
@@ -66,6 +67,19 @@ function sc_enemy_init(_enemy, _enemy_key)
             radius_side: _radius * _data.collision.radius_side_scale,
             blocks_player: _data.collision.blocks_player
         },
+			
+		alert: {
+		    attempts: 0,
+		    next_attempt_tick: 0
+		},
+
+		awareness: {
+		    memory_until: 0,
+		    last_known_x: _enemy.x,
+		    last_known_y: _enemy.y,
+		    arrived: false,
+		    search_until: 0
+		},
 
         visual: variable_clone(_data.visual),
         hardpoints: variable_clone(_data.hardpoints),
@@ -150,23 +164,185 @@ function sc_enemy_init(_enemy, _enemy_key)
     return true;
 }
 
-/// @description Updates detection, combat and forget transitions using final ranges.
+/// @description Begins investigating one unconfirmed world position.
+function sc_enemy_investigate_begin(_enemy, _x, _y, _duration)
+{
+    var _data = _enemy.enemy;
+    if (_data.state == EnemyState.DEAD || _data.state == EnemyState.STUNNED) return false;
+
+    sc_enemy_attack_cancel(_enemy);
+
+    _data.target_id = noone;
+    _data.awareness.last_known_x = _x;
+    _data.awareness.last_known_y = _y;
+    _data.awareness.memory_until = GAME_TICK + max(1, round(_duration));
+    _data.awareness.arrived = false;
+    _data.awareness.search_until = 0;
+    _data.state = EnemyState.INVESTIGATING;
+    return true;
+}
+
+/// @description Records a player attack and investigates it when the attacker is outside detection.
+function sc_enemy_investigate_damage_try(_enemy, _packet)
+{
+    var _data = _enemy.enemy;
+    var _source = _packet.source;
+
+    if (_source.faction != Faction.PLAYER
+    || !instance_exists(_source.owner_id))
+        return false;
+
+    var _attacker = _source.owner_id;
+    var _distance_sq = sc_point_distance_sq(_enemy.x, _enemy.y, _attacker.x, _attacker.y);
+
+    _data.awareness.last_known_x = _attacker.x;
+    _data.awareness.last_known_y = _attacker.y;
+
+    if (_data.state != EnemyState.IDLE
+    || _distance_sq <= _data.stats.final.range.detection_sq)
+        return false;
+
+    return sc_enemy_investigate_begin(
+        _enemy,
+        _attacker.x,
+        _attacker.y,
+        _data.doctrine.investigate.duration
+    );
+}
+
+/// @description Gives one idle ally an unconfirmed position to investigate.
+function sc_enemy_alert_receive(_enemy, _x, _y)
+{
+    if (!_enemy.initialized || _enemy.enemy.state != EnemyState.IDLE) return false;
+
+    return sc_enemy_investigate_begin(
+        _enemy,
+        _x,
+        _y,
+        _enemy.enemy.doctrine.alert.memory_duration
+    );
+}
+
+/// @description Creates one clean faction-coloured communication pulse.
+function sc_enemy_alert_pulse_create(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _palette = _data.visual.palette;
+    var _radius = clamp(_data.visual.radius * 4, 180, 320);
+
+    return sc_shockwave_create(
+        _enemy.x, _enemy.y, _enemy.layer,
+        {
+            radius_scale: 1,
+            expansion_response: 0.28,
+            fade_speed: 0.075,
+            thickness: 2,
+            colour: _palette.energy,
+
+            particles_enabled: false,
+            particle_interval: 1,
+            particle_min_radius: 0,
+
+            smoke_enabled: false,
+            smoke_amount_max: 1,
+            smoke_colour: _palette.glow,
+
+            fragments_enabled: false,
+            fragment_chance: 0,
+            fragment_colour: _palette.core
+        },
+        _radius
+    );
+}
+
+/// @description Attempts one doctrine-controlled alert and wakes nearby faction allies.
+function sc_enemy_alert_try(_enemy, _enabled)
+{
+    var _data = _enemy.enemy;
+    if (!_enabled || _data.state == EnemyState.DEAD || !instance_exists(global.player_id)) return false;
+
+    var _config = _data.doctrine.alert;
+    var _runtime = _data.alert;
+
+    if (_runtime.attempts >= _config.max_attempts
+    || GAME_TICK < _runtime.next_attempt_tick)
+        return false;
+
+    _runtime.attempts++;
+    _runtime.next_attempt_tick = GAME_TICK + max(0, round(_config.cooldown));
+
+    if (random(1) >= clamp(_config.chance, 0, 1))
+        return false;
+
+    var _range = _data.stats.final.range.alert_share;
+    if (_range <= 0) return false;
+	
+	if (instance_exists(_data.target_id))
+		{
+		    _data.awareness.last_known_x = _data.target_id.x;
+		    _data.awareness.last_known_y = _data.target_id.y;
+		}
+		else
+		{
+		    _data.awareness.last_known_x = global.player_id.x;
+		    _data.awareness.last_known_y = global.player_id.y;
+		}
+
+    var _list = ds_list_create();
+    var _alerted = 0;
+
+    collision_circle_list(
+        _enemy.x, _enemy.y, _range,
+        o_enemy, false, true, _list, false
+    );
+
+    for (var _i = 0; _i < ds_list_size(_list); _i++)
+    {
+        var _ally = _list[| _i];
+
+        if (_ally == _enemy
+        || !_ally.initialized
+        || _ally.enemy.identity.faction != _data.identity.faction)
+            continue;
+
+        if (sc_enemy_alert_receive(_ally, _data.awareness.last_known_x, _data.awareness.last_known_y))
+            _alerted++;
+    }
+
+    ds_list_destroy(_list);
+
+    if (_alerted <= 0)
+        return false;
+
+    sc_enemy_alert_pulse_create(_enemy);
+    return true;
+}
+
+/// @description Updates detection, investigation, combat and forget transitions.
 function sc_enemy_perception_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _range = _data.stats.final.range;
+    var _awareness = _data.awareness;
 
     if (!instance_exists(global.player_id))
     {
         sc_enemy_attack_cancel(_enemy);
         _data.target_id = noone;
         _data.state = EnemyState.IDLE;
+        _awareness.memory_until = 0;
         return;
     }
 
     var _dx = global.player_id.x - _enemy.x;
     var _dy = global.player_id.y - _enemy.y;
     _data.target_distance_sq = _dx * _dx + _dy * _dy;
+
+    if (_data.target_distance_sq <= _range.detection_sq)
+    {
+        _awareness.last_known_x = global.player_id.x;
+        _awareness.last_known_y = global.player_id.y;
+    }
 
     switch (_data.state)
     {
@@ -175,6 +351,18 @@ function sc_enemy_perception_update(_enemy)
             {
                 _data.target_id = global.player_id;
                 _data.state = EnemyState.CHASING;
+                sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_detection);
+            }
+        break;
+
+        case EnemyState.INVESTIGATING:
+            if (_data.target_distance_sq <= _range.detection_sq)
+            {
+                _data.target_id = global.player_id;
+                _awareness.memory_until = 0;
+                _awareness.arrived = false;
+                _data.state = EnemyState.CHASING;
+                sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_detection);
             }
         break;
 
@@ -484,7 +672,12 @@ function sc_enemy_damage(_enemy, _packet)
     if (_data.state == EnemyState.DEAD) return false;
 
     var _defence = _data.defence;
-    var _result = sc_damage_resolve(_packet, _defence.shield.current, _defence.armour.current, _defence.hull.current);
+    var _result = sc_damage_resolve(
+        _packet,
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current
+    );
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
@@ -497,13 +690,18 @@ function sc_enemy_damage(_enemy, _packet)
     if (_result.dealt.shield > 0)
         _data.visual.runtime.shield_hit_alpha = 1;
 
-    if (_defence.hull.current <= 0)
+    if (_defence.hull.current < 0)
     {
         _defence.hull.current = 0;
         _data.state = EnemyState.DEAD;
         sc_enemy_die(_enemy, _packet);
+        return _result;
     }
-    else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+	sc_enemy_investigate_damage_try(_enemy, _packet);
+    sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
+
+    if (_result.effect.type == DamageEffect.STAGGER
+    && sc_damage_effect_triggered(_result.effect))
         sc_enemy_stagger_begin(_enemy, _result.effect);
 
     return _result;

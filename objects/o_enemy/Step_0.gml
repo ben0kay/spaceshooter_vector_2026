@@ -11,7 +11,8 @@ var _perception_interval = enemy.state == EnemyState.IDLE
 
 var _perception_due = sc_optimization_update_due(id, _perception_interval, _optimization.lazy_factor);
 
-if (enemy.state != EnemyState.IDLE && !instance_exists(enemy.target_id))
+if ((enemy.state == EnemyState.CHASING || enemy.state == EnemyState.ATTACKING)
+&& !instance_exists(enemy.target_id))
     _perception_due = true;
 
 if (!instance_exists(global.player_id))

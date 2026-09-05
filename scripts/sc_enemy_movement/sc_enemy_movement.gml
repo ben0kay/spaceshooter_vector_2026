@@ -18,6 +18,49 @@ function sc_enemy_movement_hold(_enemy)
     // Future stationary behaviour can be added here.
 }
 
+/// @description Moves toward and briefly searches one last-known position.
+function sc_enemy_movement_investigate(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _awareness = _data.awareness;
+    var _config = _data.doctrine.investigate;
+    var _command = _data.movement.command;
+
+    if (GAME_TICK >= _awareness.memory_until)
+    {
+        _data.state = EnemyState.IDLE;
+        return;
+    }
+
+    if (_awareness.arrived)
+    {
+        if (GAME_TICK >= _awareness.search_until)
+        {
+            _data.state = EnemyState.IDLE;
+            _awareness.memory_until = 0;
+        }
+
+        return;
+    }
+
+    var _dx = _awareness.last_known_x - _enemy.x;
+    var _dy = _awareness.last_known_y - _enemy.y;
+
+    if (_dx * _dx + _dy * _dy <= sqr(_config.arrival_radius))
+    {
+        _awareness.arrived = true;
+        _awareness.search_until = GAME_TICK + max(1, round(_config.search_duration));
+        return;
+    }
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.face_direction = _command.direction;
+    _command.facing_mode = EnemyFacingMode.MOVEMENT;
+    _command.speed_scale = clamp(_config.speed_scale, 0, 1);
+}
+
 /// @description Holds during combat but repositions when its target view is obstructed.
 function sc_enemy_movement_hold_line_of_sight(_enemy)
 {
@@ -604,6 +647,10 @@ function sc_enemy_movement_update(_enemy)
         case EnemyState.IDLE:
             _controller.idle_script(_enemy);
         break;
+		
+		case EnemyState.INVESTIGATING:
+			sc_enemy_movement_investigate(_enemy);
+		break;
 
         case EnemyState.CHASING:
             _controller.chase_script(_enemy);

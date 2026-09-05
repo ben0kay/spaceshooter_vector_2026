@@ -46,7 +46,8 @@ function sc_faction_register_simulant()
 		        on_detection: false,
 		        on_damage: false,
 				max_attempts: 1,
-				cooldown: 300
+				cooldown: 300,
+				memory_duration: 300
 		    },
 
 		    flee: {
@@ -55,7 +56,14 @@ function sc_faction_register_simulant()
 		        trigger_ratio: 0.1,
 		        sway_amount: 4,
 		        sway_speed: 0.025
-		    }
+		    },
+			
+			investigate: {
+			    duration: 600,
+			    arrival_radius: 90,
+			    search_duration: 180,
+			    speed_scale: 0.65
+			},
 		},
     });
 }
@@ -82,11 +90,12 @@ function sc_faction_register_rebel()
 		
 		doctrine: {
 		    alert: {
-		        chance: 0.3,
+		        chance: 1,
 		        on_detection: false,
 		        on_damage: true,
 				max_attempts: 1,
-				cooldown: 300
+				cooldown: 300,
+				memory_duration: 300
 		    },
 
 		    flee: {
@@ -95,7 +104,14 @@ function sc_faction_register_rebel()
 		        trigger_ratio: 0.3,
 		        sway_amount: 14,
 		        sway_speed: 0.04
-		    }
+		    },
+			
+			investigate: {
+			    duration: 420,
+			    arrival_radius: 75,
+			    search_duration: 90,
+			    speed_scale: 0.85
+			},
 		},
     });
 }
