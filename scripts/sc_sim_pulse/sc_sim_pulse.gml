@@ -5,7 +5,7 @@ function sc_projectile_register_simulant_pulse()
 
     return sc_projectile_register({
         identity: { key: "projectile_simulant_pulse", name: "Simulant Pulse" },
-		projectile_motion: ProjectileMotion.ENERGY_BOLT,
+		projectile_motion: ProjectileMotion.STANDARD,
         projectile_class: ProjectileClass.REGULAR,
         collision: { radius: 6 },
 
