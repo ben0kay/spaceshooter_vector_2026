@@ -290,7 +290,8 @@ function sc_enemy_register_sim_dreadnaught()
 		            aim: {
 		                mode: AimMode.TARGET,
 		                angle_offset: 0,
-		                inaccuracy: 4
+		                inaccuracy: 4,
+						fire_tolerance: 10
 		            },
 
 		            shot: {
@@ -320,7 +321,8 @@ function sc_enemy_register_sim_dreadnaught()
 		            aim: {
 		                mode: AimMode.MOUNT,
 		                angle_offset: 0,
-		                inaccuracy: 0
+		                inaccuracy: 0,
+						fire_tolerance: 10
 		            },
 
 		            shot: {
@@ -358,7 +360,8 @@ function sc_enemy_register_sim_dreadnaught()
 		            aim: {
 		                mode: AimMode.TARGET,
 		                angle_offset: 0,
-		                inaccuracy: 3
+		                inaccuracy: 3,
+						fire_tolerance: 10
 		            },
 
 		            shot: {

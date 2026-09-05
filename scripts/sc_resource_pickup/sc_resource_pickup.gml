@@ -37,7 +37,9 @@ function sc_resource_pickup_init(_pickup, _create)
         amount: max(1, floor(_create.amount)),
         velocity_x: _create.velocity_x,
         velocity_y: _create.velocity_y,
-        phase: random(360)
+        variant: irandom(3),
+        phase: random(360),
+        spin_speed: random_range(-0.9, 0.9)
     };
 
     _pickup.initialized = true;
@@ -90,17 +92,20 @@ function sc_resource_pickup_update(_pickup)
     }
 }
 
-/// @description Draws one cached resource chunk with subtle floating motion.
+/// @description Draws one cached rotating ore fragment.
 function sc_resource_pickup_draw(_pickup)
 {
     var _data = _pickup.resource_pickup;
-    var _sprite = sc_resource_pickup_visual_cache_get(_data.item_key);
+    var _sprite = sc_resource_pickup_visual_cache_get(
+        _data.item_key,
+        _data.variant
+    );
 
     var _time = GAME_TICK + _data.phase;
     var _bob = sin(_time * 0.055) * 2;
-    var _rotation = _time * 0.7;
+    var _angle = _data.phase + GAME_TICK * _data.spin_speed;
     var _scale = 0.82 + min(0.28, _data.amount * 0.025);
-    var _pulse = 0.96 + sin(_time * 0.09) * 0.04;
+    var _pulse = 0.97 + sin(_time * 0.09) * 0.03;
 
     draw_sprite_ext(
         _sprite,
@@ -109,7 +114,7 @@ function sc_resource_pickup_draw(_pickup)
         _pickup.y + _bob,
         _scale * _pulse,
         _scale * _pulse,
-        _rotation,
+        _angle,
         c_white,
         1
     );
