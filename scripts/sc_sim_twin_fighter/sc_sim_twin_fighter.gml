@@ -31,7 +31,7 @@ function sc_enemy_register_twin_fighter()
 		range: {
             detection: 1080,
             combat: 840,
-			retreat: 300,
+			backaway: 300,
             forget: 1280,
 			wander: 500,
 			alert_share: 1200			
@@ -49,7 +49,7 @@ function sc_enemy_register_twin_fighter()
 
 		    facing: {
 		        default_mode: EnemyFacingMode.TARGET,
-		        retreat_mode: EnemyFacingMode.MOVEMENT,
+		        backaway_mode: EnemyFacingMode.MOVEMENT,
 		        angle_offset: 0,
 		        turn_speed_scale: 1,
 		        spin_speed: 0

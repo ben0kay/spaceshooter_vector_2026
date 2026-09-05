@@ -23,7 +23,10 @@ function sc_enemy_register_sim_dreadnaught()
         identity: {
             key: "enemy_sim_dreadnaught",
             name: "Simulant Dreadnaught",
-            faction: Faction.SIMULANT
+            faction: Faction.SIMULANT,
+			role: EnemyRole.FIGHTER,
+			ship_class: EnemyClass.CAPITAL,
+			rank: EnemyRank.BOSS
         },
 
         reward: { credits: 2500 },
@@ -46,7 +49,7 @@ function sc_enemy_register_sim_dreadnaught()
             range: {
                 detection: 2000,
                 combat: 1650,
-                retreat: 0,
+                backaway: 0,
                 forget: 2400,
                 wander: 0,
                 alert_share: 2000
@@ -63,7 +66,7 @@ function sc_enemy_register_sim_dreadnaught()
 
     facing: {
         default_mode: EnemyFacingMode.FIXED,
-        retreat_mode: EnemyFacingMode.FIXED,
+        backaway_mode: EnemyFacingMode.FIXED,
         angle_offset: 0,
         turn_speed_scale: 0,
         spin_speed: 0

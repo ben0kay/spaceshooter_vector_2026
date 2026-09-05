@@ -12,7 +12,10 @@ function sc_enemy_register_rebel_gunship()
         identity: {
             key: "enemy_rebel_gunship",
             name: "Rebel Flyby Gunship",
-            faction: Faction.REBEL
+            faction: Faction.REBEL,
+			role: EnemyRole.FIGHTER,
+			ship_class: EnemyClass.LIGHT,
+			rank: EnemyRank.COMMON
         },
 
         reward: { credits: 55 },
@@ -35,7 +38,7 @@ function sc_enemy_register_rebel_gunship()
             range: {
                 detection: 1400,
                 combat: 1050,
-                retreat: 0,
+                backaway: 0,
                 forget: 2100,
                 wander: 480,
                 alert_share: 1200
@@ -63,7 +66,7 @@ function sc_enemy_register_rebel_gunship()
 
             facing: {
                 default_mode: EnemyFacingMode.MOVEMENT,
-                retreat_mode: EnemyFacingMode.MOVEMENT,
+                backaway_mode: EnemyFacingMode.MOVEMENT,
                 angle_offset: 0,
                 turn_speed_scale: 1,
                 spin_speed: 0

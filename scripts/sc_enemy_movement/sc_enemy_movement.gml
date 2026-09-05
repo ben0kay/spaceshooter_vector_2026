@@ -113,8 +113,8 @@ function sc_enemy_movement_pursue(_enemy)
     sc_enemy_movement_chase(_enemy);
 }
 
-/// @description Commands movement directly away from a target inside the emergency retreat range.
-function sc_enemy_movement_retreat(_enemy)
+/// @description Commands movement directly away from a target inside the emergency backaway range.
+function sc_enemy_movement_backaway(_enemy)
 {
     var _data = _enemy.enemy;
     if (!instance_exists(_data.target_id)) return;
@@ -127,7 +127,7 @@ function sc_enemy_movement_retreat(_enemy)
     _command.apply_friction = false;
     _command.direction = _toward + 180;
     _command.face_direction = _command.direction;
-    _command.facing_mode = _controller.facing.retreat_mode;
+    _command.facing_mode = _controller.facing.backaway_mode;
 }
 
 /// @description Commands tangential movement while correcting toward the registered orbit radius.
@@ -589,13 +589,13 @@ function sc_enemy_movement_apply(_enemy)
     _enemy.y += _movement.velocity_y;
 }
 
-/// @description Resolves current state, retreat priority, obstacle response, facing and movement.
+/// @description Resolves current state, backaway priority, obstacle response, facing and movement.
 function sc_enemy_movement_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _controller = _data.movement_controller;
     var _state = _data.state;
-    var _retreating = false;
+    var _backawaying = false;
 
     sc_enemy_movement_command_reset(_enemy);
 
@@ -616,11 +616,11 @@ function sc_enemy_movement_update(_enemy)
                 var _dy = _data.target_id.y - _enemy.y;
                 _data.target_distance_sq = _dx * _dx + _dy * _dy;
 
-                if (_data.stats.final.range.retreat > 0
-                && _data.target_distance_sq < _data.stats.final.range.retreat_sq)
+                if (_data.stats.final.range.backaway > 0
+                && _data.target_distance_sq < _data.stats.final.range.backaway_sq)
                 {
-                    sc_enemy_movement_retreat(_enemy);
-                    _retreating = true;
+                    sc_enemy_movement_backaway(_enemy);
+                    _backawaying = true;
                 }
                 else
                     _controller.combat_script(_enemy);
@@ -639,7 +639,7 @@ function sc_enemy_movement_update(_enemy)
         break;
     }
 
-    if (_state == EnemyState.ATTACKING && !_retreating)
+    if (_state == EnemyState.ATTACKING && !_backawaying)
         sc_enemy_movement_strafe_apply(_enemy);
 
     sc_enemy_asteroid_response_apply(_enemy);

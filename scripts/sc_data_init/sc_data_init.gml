@@ -65,7 +65,7 @@ function sc_enemy_register(_data)
 
     var _range = _data.stats_base.range;
 
-    if (_range.retreat > _range.combat
+    if (_range.backaway > _range.combat
     || _range.combat > _range.detection
     || _range.detection > _range.forget)
     {

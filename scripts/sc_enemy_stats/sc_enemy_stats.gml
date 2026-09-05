@@ -61,14 +61,14 @@ function sc_enemy_stats_recalculate(_enemy)
     _handling.directional_speed_min = clamp(_handling.directional_speed_min, 0, 1);
     _handling.directional_thrust_min = clamp(_handling.directional_thrust_min, 0, 1);
 
-    _range.retreat = max(0, _range.retreat);
+    _range.backaway = max(0, _range.backaway);
     _range.combat = max(0, _range.combat);
     _range.detection = max(0, _range.detection);
     _range.forget = max(0, _range.forget);
     _range.wander = max(0, _range.wander);
     _range.alert_share = max(0, _range.alert_share);
 
-    _range.retreat_sq = sqr(_range.retreat);
+    _range.backaway_sq = sqr(_range.backaway);
     _range.combat_sq = sqr(_range.combat);
     _range.detection_sq = sqr(_range.detection);
     _range.forget_sq = sqr(_range.forget);

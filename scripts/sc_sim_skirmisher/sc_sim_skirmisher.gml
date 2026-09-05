@@ -31,7 +31,7 @@ function sc_enemy_register_sim_skirmisher()
             range: {
 		    detection: 1120,
 		    combat: 760,
-		    retreat: 260,
+		    backaway: 260,
 		    forget: 1320,
 		    wander: 0,
 		    alert_share: 1200
@@ -50,7 +50,7 @@ function sc_enemy_register_sim_skirmisher()
 
 		    facing: {
 		        default_mode: EnemyFacingMode.TARGET,
-		        retreat_mode: EnemyFacingMode.TARGET,
+		        backaway_mode: EnemyFacingMode.TARGET,
 		        angle_offset: 0,
 		        turn_speed_scale: 1,
 		        spin_speed: 0

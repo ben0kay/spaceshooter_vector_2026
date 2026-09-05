@@ -40,7 +40,7 @@ function sc_enemy_register_sim_dreadwing()
 			range: {
 			    detection: 1340,
 			    combat: 1080,
-			    retreat: 420,
+			    backaway: 420,
 			    forget: 1560,
 			    wander: 0,
 			    alert_share: 1600
@@ -59,7 +59,7 @@ function sc_enemy_register_sim_dreadwing()
 
 		    facing: {
 		        default_mode: EnemyFacingMode.TARGET,
-		        retreat_mode: EnemyFacingMode.MOVEMENT,
+		        backaway_mode: EnemyFacingMode.MOVEMENT,
 		        angle_offset: 0,
 		        turn_speed_scale: 0.65,
 		        spin_speed: 0
