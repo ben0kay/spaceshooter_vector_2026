@@ -214,6 +214,8 @@ function sc_projectile_active_update(_projectile, _data)
     _projectile.x += lengthdir_x(_data.movement.speed, _data.direction);
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
     _projectile.draw_angle = _data.direction;
+	if (variable_struct_exists(_data.visual, "trail_script"))
+    _data.visual.trail_script(_projectile, _data);
     _data.life.remaining--;
 
     if (_data.life.remaining > 0) return;
