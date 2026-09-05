@@ -107,7 +107,7 @@ function sc_weapon_register_shard_rocket()
             },
 
             detonation: {
-                scale: 1,
+                scale: 1.15,
 
                 damage: {
                     amount: 18,
