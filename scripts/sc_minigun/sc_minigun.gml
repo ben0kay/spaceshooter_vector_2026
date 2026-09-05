@@ -20,7 +20,7 @@ function sc_weapon_register_minigun()
 
             projectile: {
                 scale: 1,
-                speed: 30,
+                speed: 37,
                 life: 120
             },
 

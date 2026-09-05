@@ -12,7 +12,7 @@ function sc_weapon_register_shard_pulse()
 
             projectile: {
                 scale: 1,
-                speed: 19,
+                speed: 24,
                 life: 150
             },
 
