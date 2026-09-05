@@ -50,6 +50,16 @@ function sc_enemy_register_rebel_gunship()
             idle_script: sc_enemy_movement_wander,
             chase_script: sc_enemy_movement_flyby,
             combat_script: sc_enemy_movement_flyby,
+			
+			runtime: {
+		        flyby: {
+		            active: false,
+		            destination_x: 0,
+		            destination_y: 0,
+		            side: 0,
+		            next_run_tick: 0
+		        }
+			},
 
             facing: {
                 default_mode: EnemyFacingMode.MOVEMENT,

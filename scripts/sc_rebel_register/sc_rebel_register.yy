@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_register",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_register",
+  "parent":{
+    "name":"rebel",
+    "path":"folders/scripts/enemy/factions/rebel.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

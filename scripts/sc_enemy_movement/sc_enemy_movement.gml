@@ -40,11 +40,13 @@ function sc_enemy_flyby_run_select(_enemy)
     if (!instance_exists(_target)) return false;
 
     var _movement = _data.movement;
-    var _runtime = _movement.flyby;
+    var _runtime = _movement.behaviour_runtime.flyby;
     var _flyby = _data.movement_controller.flyby;
     var _toward = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
 
-    if (_flyby.alternate_side)
+    if (_runtime.side == 0)
+        _runtime.side = choose(-1, 1);
+    else if (_flyby.alternate_side)
         _runtime.side *= -1;
     else
         _runtime.side = choose(-1, 1);
@@ -64,7 +66,7 @@ function sc_enemy_movement_flyby(_enemy)
 {
     var _data = _enemy.enemy;
     var _movement = _data.movement;
-    var _runtime = _movement.flyby;
+    var _runtime = _movement.behaviour_runtime.flyby;
     var _flyby = _data.movement_controller.flyby;
 
     if (!instance_exists(_data.target_id)) return;
@@ -75,9 +77,8 @@ function sc_enemy_movement_flyby(_enemy)
 
     var _dx = _runtime.destination_x - _enemy.x;
     var _dy = _runtime.destination_y - _enemy.y;
-    var _distance_sq = _dx * _dx + _dy * _dy;
 
-    if (_distance_sq <= sqr(_flyby.arrival_radius))
+    if (_dx * _dx + _dy * _dy <= sqr(_flyby.arrival_radius))
     {
         _runtime.active = false;
         _runtime.next_run_tick = GAME_TICK + _flyby.turnaround_delay;

@@ -54,13 +54,11 @@ function sc_enemy_init(_enemy, _enemy_key)
 			    next_check_tick: GAME_TICK
 			},
 			
-			flyby: {
-			    active: false,
-			    destination_x: _enemy.x,
-			    destination_y: _enemy.y,
-			    side: choose(-1, 1),
-			    next_run_tick: GAME_TICK
-			}
+			behaviour_runtime: 
+				variable_struct_exists(_data.movement_controller, "runtime")
+			    ? variable_clone(_data.movement_controller.runtime)
+			    : {}
+			
         },
 
         collision: {

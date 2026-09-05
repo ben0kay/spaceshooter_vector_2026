@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_simulant_register",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_simulant_register",
+  "parent":{
+    "name":"simulant",
+    "path":"folders/scripts/enemy/factions/simulant.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
