@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_siegebreaker",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_siegebreaker",
+  "parent":{
+    "name":"enemies",
+    "path":"folders/scripts/enemy/factions/simulant/enemies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
