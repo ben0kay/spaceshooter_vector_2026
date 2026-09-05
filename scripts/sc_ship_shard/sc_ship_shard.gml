@@ -48,7 +48,7 @@ function sc_ship_register_shard()
 
             primary_slots: [
                 "weapon_shard_pulse",
-                "weapon_shard_minigun",
+                "weapon_minigun",
                 "weapon_shard_laser",
                 "weapon_shard_rocket"
             ],

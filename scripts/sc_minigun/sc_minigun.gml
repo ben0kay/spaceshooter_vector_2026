@@ -6,10 +6,10 @@ for the Shard's rapid light-kinetic test weapon.
 */
 
 /// @description Registers the reusable golden minigun visual template.
-function sc_projectile_register_shard_minigun()
+function sc_projectile_register_minigun()
 {
     return sc_projectile_register({
-        identity: { key: "projectile_shard_minigun", name: "Shard Minigun Round" },
+        identity: { key: "projectile_minigun", name: "Shard Minigun Round" },
         projectile_class: ProjectileClass.LIGHT,
         collision: { radius: 3 },
 
@@ -23,9 +23,9 @@ function sc_projectile_register_shard_minigun()
                 glow: make_colour_rgb(180, 85, 8)
             },
 
-            draw_script: sc_projectile_shard_minigun_draw,
-            impact_script: sc_projectile_shard_minigun_impact,
-            particles_register_script: sc_projectile_shard_minigun_particles_register,
+            draw_script: sc_projectile_minigun_draw,
+            impact_script: sc_projectile_minigun_impact,
+            particles_register_script: sc_projectile_minigun_particles_register,
 
             bake: {
                 canvas_size: 64,
@@ -37,16 +37,16 @@ function sc_projectile_register_shard_minigun()
 }
 
 /// @description Registers the Shard's rapid alternating minigun weapon.
-function sc_weapon_register_shard_minigun()
+function sc_weapon_register_minigun()
 {
     return sc_weapon_register({
-        identity: { key: "weapon_shard_minigun", name: "Shard Minigun" },
+        identity: { key: "weapon_minigun", name: "Shard Minigun" },
 		
 		resource: { type: ResourceType.BULLETS, cost: 1 },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
-            projectile_key: "projectile_shard_minigun",
+            projectile_key: "projectile_minigun",
 
             projectile: {
                 scale: 1,
@@ -87,7 +87,7 @@ function sc_weapon_register_shard_minigun()
 }
 
 /// @description Registers small golden kinetic impact particles.
-function sc_projectile_shard_minigun_particles_register()
+function sc_projectile_minigun_particles_register()
 {
     var _palette = {
         core: make_colour_rgb(255, 250, 205),
@@ -95,7 +95,7 @@ function sc_projectile_shard_minigun_particles_register()
         glow: make_colour_rgb(180, 85, 8)
     };
 
-    return sc_particles_projectile_impact_register("impact_shard_minigun", _palette, {
+    return sc_particles_projectile_impact_register("impact_minigun", _palette, {
         scale: 0.65,
         spark_amount: 4,
         fragment_amount: 2,
@@ -106,13 +106,13 @@ function sc_projectile_shard_minigun_particles_register()
 }
 
 /// @description Emits one scaled golden minigun impact.
-function sc_projectile_shard_minigun_impact(_x, _y, _direction, _target, _scale)
+function sc_projectile_minigun_impact(_x, _y, _direction, _target, _scale)
 {
-    return sc_particles_projectile_impact_emit("impact_shard_minigun", _x, _y, _direction, _scale);
+    return sc_particles_projectile_impact_emit("impact_minigun", _x, _y, _direction, _scale);
 }
 
 /// @description Draws one golden kinetic projectile frame for startup baking.
-function sc_projectile_shard_minigun_draw(_x, _y, _angle, _visual, _frame, _frame_count)
+function sc_projectile_minigun_draw(_x, _y, _angle, _visual, _frame, _frame_count)
 {
     var _p = _visual.palette;
     var _radius = _visual.radius;
