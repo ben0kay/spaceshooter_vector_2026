@@ -254,18 +254,20 @@ function sc_enemy_sim_dreadwing_body_draw(_x, _y, _radius, _angle, _visual)
     sc_enemy_sim_dreadwing_armour_draw(_x, _y, _radius, _angle, _visual, 0);
 }
 
-/// @description Draws the Dreadwing's permanent structure beneath its armour.
+/// @description Draws the permanent purple mechanical Dreadwing hull.
 function sc_enemy_sim_dreadwing_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Deep central flying-wing silhouette.
-    sc_visual_triangle(_x, _y, _radius, _angle, 0.94, 0, 0.08, -0.54, -0.73, 0, _p.hull_dark, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 0.94, 0, -0.73, 0, 0.08, 0.54, _p.hull_dark, false);
+    // ==================================================
+    // PERMANENT CRESCENT SILHOUETTE
+    // ==================================================
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.08, -0.54, -0.73, 0, _p.hull_dark, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, -0.73, 0, 0.08, 0.54, _p.hull_dark, false);
 
-    // Permanent swept wing structure.
     for (var _side = -1; _side <= 1; _side += 2)
     {
+        // Broad crescent wing.
         sc_visual_quad(_x, _y, _radius, _angle,
             0.57, 0.2 * _side,
             0.32, 0.91 * _side,
@@ -274,57 +276,94 @@ function sc_enemy_sim_dreadwing_hull_draw(_x, _y, _radius, _angle, _visual, _sta
             _p.hull_dark
         );
 
+        // Internal mechanical wing bed.
         sc_visual_quad(_x, _y, _radius, _angle,
-            0.45, 0.29 * _side,
+            0.45, 0.28 * _side,
             0.19, 0.79 * _side,
-            -0.14, 1.3 * _side,
-            -0.5, 0.5 * _side,
+            -0.14, 1.32 * _side,
+            -0.51, 0.5 * _side,
             _p.hull_mid
         );
 
-        // Exposed internal support ribs.
-        sc_visual_line(_x, _y, _radius, _angle, 0.39, 0.35 * _side, -0.47, 0.57 * _side, 7, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.36, 0.35 * _side, -0.44, 0.56 * _side, 2, _p.metal);
+        // Outer crescent blade structure.
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            0.32, 0.91 * _side,
+            -0.12, 1.55 * _side,
+            -0.31, 1.25 * _side,
+            _p.hull_dark, false
+        );
 
-        sc_visual_line(_x, _y, _radius, _angle, 0.22, 0.58 * _side, -0.38, 1.07 * _side, 6, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.2, 0.58 * _side, -0.36, 1.05 * _side, 2, _p.accent);
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            -0.12, 1.55 * _side,
+            -0.66, 0.53 * _side,
+            -0.48, 1.05 * _side,
+            _p.hull_dark, false
+        );
 
-        sc_visual_line(_x, _y, _radius, _angle, -0.2, 0.52 * _side, -0.54, 0.77 * _side, 5, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, -0.2, 0.52 * _side, -0.53, 0.76 * _side, 2, _p.energy);
+        // Structural ribs.
+        sc_visual_line(_x, _y, _radius, _angle, 0.38, 0.35 * _side, -0.48, 0.56 * _side, 7, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.36, 0.35 * _side, -0.46, 0.56 * _side, 2, _p.metal);
 
-        // Outer powered machine nodes.
+        sc_visual_line(_x, _y, _radius, _angle, 0.17, 0.62 * _side, -0.37, 1.11 * _side, 6, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.17, 0.62 * _side, -0.36, 1.1 * _side, 2, _p.outline);
+
+        sc_visual_line(_x, _y, _radius, _angle, -0.19, 0.5 * _side, -0.55, 0.78 * _side, 5, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.19, 0.5 * _side, -0.53, 0.77 * _side, 2, _p.metal);
+
+        // Permanent purple energy channels.
+        sc_visual_line(_x, _y, _radius, _angle, 0.26, 0.46 * _side, -0.08, 0.72 * _side, 7, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, 0.25, 0.46 * _side, -0.08, 0.72 * _side, 3, _p.accent);
+
+        sc_visual_line(_x, _y, _radius, _angle, -0.07, 0.93 * _side, -0.29, 1.14 * _side, 6, _p.void);
+        sc_visual_line(_x, _y, _radius, _angle, -0.07, 0.93 * _side, -0.29, 1.14 * _side, 2, _p.energy);
+
+        // Outer powered node.
         sc_visual_circle(_x, _y, _radius, _angle, -0.1, 1.21 * _side, 0.16, _p.void, false);
         sc_visual_circle(_x, _y, _radius, _angle, -0.1, 1.21 * _side, 0.16, _p.metal, true);
         sc_visual_circle(_x, _y, _radius, _angle, -0.1, 1.21 * _side, 0.09, _p.accent, true);
         sc_visual_circle(_x, _y, _radius, _angle, -0.1, 1.21 * _side, 0.04, _p.core, false);
 
-        // Inner reactor nodes.
+        // Inner powered node.
         sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0.63 * _side, 0.105, _p.void, false);
         sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0.63 * _side, 0.105, _p.metal, true);
         sc_visual_circle(_x, _y, _radius, _angle, -0.09, 0.63 * _side, 0.045, _p.energy, false);
 
-        // Permanent silhouette outlines.
-        sc_visual_line(_x, _y, _radius, _angle, 0.57, 0.2 * _side, 0.32, 0.91 * _side, 2, _p.metal);
-        sc_visual_line(_x, _y, _radius, _angle, 0.32, 0.91 * _side, -0.12, 1.55 * _side, 2, _p.metal);
+        // Crescent silhouette highlights.
+        sc_visual_line(_x, _y, _radius, _angle, 0.57, 0.2 * _side, 0.32, 0.91 * _side, 2, _p.outline);
+        sc_visual_line(_x, _y, _radius, _angle, 0.32, 0.91 * _side, -0.12, 1.55 * _side, 2, _p.energy);
         sc_visual_line(_x, _y, _radius, _angle, -0.12, 1.55 * _side, -0.66, 0.53 * _side, 2, _p.outline);
     }
 
-    // Dark underlying central spear.
+    // ==================================================
+    // CENTRAL HULL
+    // ==================================================
     sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.28, -0.23, -0.69, 0, _p.hull_dark, false);
     sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, -0.69, 0, 0.28, 0.23, _p.hull_dark, false);
 
-    // Central reactor socket.
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.92, 0, 0.21, -0.13, -0.5, 0, _p.hull_mid, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0.92, 0, -0.5, 0, 0.21, 0.13, _p.hull_mid, false);
+
+    // Permanent pointed purple nose.
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.63, -0.09, 0.77, 0, _p.hull_dark, false);
+    sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.77, 0, 0.63, 0.09, _p.hull_dark, false);
+
+    sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.63, -0.09, 2, _p.energy);
+    sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.63, 0.09, 2, _p.energy);
+
+    // Reactor socket remains part of the hull.
     sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.28, _p.void, false);
     sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.28, _p.metal, true);
     sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.21, _p.hull_light, true);
 
-    // Structural spine and exposed energy trench.
+    // Permanent central energy trench.
     sc_visual_line(_x, _y, _radius, _angle, -0.71, 0, 0.88, 0, 8, _p.void);
     sc_visual_line(_x, _y, _radius, _angle, -0.62, 0, 0.82, 0, 3, _p.metal);
     sc_visual_line(_x, _y, _radius, _angle, 0.09, 0, 0.61, 0, 5, _p.accent);
     sc_visual_line(_x, _y, _radius, _angle, 0.18, 0, 0.59, 0, 2, _p.energy);
 
-    // Turret attachment collars.
+    // ==================================================
+    // HARDPOINT COLLARS
+    // ==================================================
     var _mount_forward = [0.34, 0.57, 0.57, 0.34];
     var _mount_side = [-1.08, -0.37, 0.37, 1.08];
 
@@ -335,7 +374,9 @@ function sc_enemy_sim_dreadwing_hull_draw(_x, _y, _radius, _angle, _visual, _sta
         sc_visual_circle(_x, _y, _radius, _angle, _mount_forward[_i], _mount_side[_i], 0.065, _p.accent, true);
     }
 
-    // Rear engine housings.
+    // ==================================================
+    // ENGINE HOUSINGS
+    // ==================================================
     var _engine_side = [-1.05, -0.32, 0.32, 1.05];
 
     for (var _i = 0; _i < 4; _i++)
@@ -355,7 +396,9 @@ function sc_enemy_sim_dreadwing_hull_draw(_x, _y, _radius, _angle, _visual, _sta
         sc_visual_circle(_x, _y, _radius, _angle, -0.72, _engine_side[_i], 0.04 * _engine_scale, _p.core, false);
     }
 
-    // Progressive hull damage beneath the removed armour.
+    // ==================================================
+    // ACTUAL HULL DAMAGE
+    // ==================================================
     if (_stage >= 1)
     {
         sc_visual_line(_x, _y, _radius, _angle, 0.21, -0.41, -0.04, -0.66, 4, _p.void);
@@ -377,143 +420,194 @@ function sc_enemy_sim_dreadwing_hull_draw(_x, _y, _radius, _angle, _visual, _sta
     }
 }
 
-/// @description Draws removable Dreadwing armour over its permanent hull.
+/// @description Draws strictly subtractive silver armour over the Dreadwing hull.
 function sc_enemy_sim_dreadwing_armour_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
-    var _light = _stage == 0 ? _p.hull_light : (_stage == 1 ? _p.hull_mid : _p.hull_dark);
-    var _mid = _stage <= 1 ? _p.hull_mid : _p.hull_dark;
 
+    // Every later stage is a strict subset.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        // Curved outer blade armour.
+        // ==================================================
+        // FINAL INNER PLATES - STAGES 0, 1, 2, 3
+        // ==================================================
+        sc_visual_quad(_x, _y, _radius, _angle,
+            0.38, 0.3 * _side,
+            0.23, 0.43 * _side,
+            -0.04, 0.5 * _side,
+            -0.16, 0.37 * _side,
+            _p.metal
+        );
+
+        sc_visual_line(_x, _y, _radius, _angle,
+            0.38, 0.3 * _side,
+            0.23, 0.43 * _side,
+            1, _p.core
+        );
+
+        // ==================================================
+        // INNER WING AND SPEAR PLATES - STAGES 0, 1, 2
+        // ==================================================
         if (_stage <= 2)
         {
-            sc_visual_triangle(_x, _y, _radius, _angle,
-                0.32, 0.91 * _side,
-                -0.12, 1.55 * _side,
-                -0.29, 1.27 * _side,
-                _light, false
-            );
-
-            sc_visual_triangle(_x, _y, _radius, _angle,
-                -0.12, 1.55 * _side,
-                -0.66, 0.53 * _side,
-                -0.48, 1.05 * _side,
-                _p.hull_dark, false
-            );
-        }
-
-        // Main inner armour plate.
-        if (_stage <= 2)
-        {
             sc_visual_quad(_x, _y, _radius, _angle,
-                0.37, 0.34 * _side,
-                0.18, 0.7 * _side,
-                -0.11, 0.9 * _side,
-                -0.32, 0.48 * _side,
-                _light
-            );
-
-            sc_visual_line(_x, _y, _radius, _angle,
-                0.37, 0.34 * _side,
-                0.18, 0.7 * _side,
-                5, _p.void
-            );
-        }
-
-        // Outer-middle armour disappears below 50%.
-        if (_stage <= 1)
-        {
-            sc_visual_quad(_x, _y, _radius, _angle,
-                0.11, 0.76 * _side,
-                -0.09, 1.21 * _side,
-                -0.37, 0.92 * _side,
-                -0.28, 0.62 * _side,
-                _mid
-            );
-
-            sc_visual_line(_x, _y, _radius, _angle,
-                0.11, 0.76 * _side,
-                -0.09, 1.21 * _side,
-                5, _p.void
-            );
-        }
-
-        // Rear armour exists only while relatively healthy.
-        if (_stage == 0)
-        {
-            sc_visual_quad(_x, _y, _radius, _angle,
-                -0.31, 0.48 * _side,
-                -0.4, 0.91 * _side,
-                -0.61, 0.73 * _side,
-                -0.57, 0.35 * _side,
+                0.37, 0.52 * _side,
+                0.17, 0.75 * _side,
+                -0.09, 0.87 * _side,
+                -0.25, 0.64 * _side,
                 _p.hull_light
             );
 
             sc_visual_line(_x, _y, _radius, _angle,
-                -0.31, 0.48 * _side,
-                -0.4, 0.91 * _side,
-                5, _p.void
+                0.37, 0.52 * _side,
+                0.17, 0.75 * _side,
+                1, _p.metal
+            );
+
+            sc_visual_triangle(_x, _y, _radius, _angle,
+                0.85, 0.05 * _side,
+                0.34, 0.12 * _side,
+                0.14, 0.21 * _side,
+                _p.metal, false
+            );
+
+            sc_visual_line(_x, _y, _radius, _angle,
+                0.85, 0.05 * _side,
+                0.34, 0.12 * _side,
+                1, _p.core
             );
         }
 
-        // Armour-mounted energy conduits.
+        // ==================================================
+        // OUTER-MIDDLE PLATES - STAGES 0, 1
+        // ==================================================
         if (_stage <= 1)
         {
-            sc_visual_line(_x, _y, _radius, _angle, 0.23, 0.47 * _side, -0.1, 0.7 * _side, 7, _p.void);
-            sc_visual_line(_x, _y, _radius, _angle, 0.22, 0.47 * _side, -0.09, 0.7 * _side, 3, _p.accent);
+            sc_visual_quad(_x, _y, _radius, _angle,
+                0.13, 0.82 * _side,
+                -0.08, 1.19 * _side,
+                -0.34, 1.01 * _side,
+                -0.25, 0.74 * _side,
+                _p.metal
+            );
+
+            sc_visual_line(_x, _y, _radius, _angle,
+                0.13, 0.82 * _side,
+                -0.08, 1.19 * _side,
+                1, _p.core
+            );
+
+            sc_visual_quad(_x, _y, _radius, _angle,
+                -0.24, 0.53 * _side,
+                -0.36, 0.88 * _side,
+                -0.53, 0.73 * _side,
+                -0.49, 0.46 * _side,
+                _p.hull_light
+            );
+
+            sc_visual_line(_x, _y, _radius, _angle,
+                -0.36, 0.88 * _side,
+                -0.53, 0.73 * _side,
+                1, _p.metal
+            );
         }
 
+        // ==================================================
+        // OUTER BLADE ARMOUR - STAGE 0 ONLY
+        // ==================================================
         if (_stage == 0)
         {
-            sc_visual_line(_x, _y, _radius, _angle, -0.08, 0.94 * _side, -0.27, 1.13 * _side, 6, _p.void);
-            sc_visual_line(_x, _y, _radius, _angle, -0.08, 0.94 * _side, -0.27, 1.13 * _side, 2, _p.energy);
+            sc_visual_triangle(_x, _y, _radius, _angle,
+                0.3, 0.94 * _side,
+                -0.11, 1.48 * _side,
+                -0.28, 1.25 * _side,
+                _p.hull_light, false
+            );
+
+            sc_visual_line(_x, _y, _radius, _angle,
+                0.3, 0.94 * _side,
+                -0.11, 1.48 * _side,
+                2, _p.metal
+            );
+
+            sc_visual_quad(_x, _y, _radius, _angle,
+                -0.12, 1.2 * _side,
+                -0.27, 1.38 * _side,
+                -0.45, 1.02 * _side,
+                -0.34, 0.92 * _side,
+                _p.metal
+            );
         }
     }
 
-    // Central spear armour.
+    // ==================================================
+    // CENTRAL NOSE ARMOUR
+    // ==================================================
+
+    // Small nose cap survives through every armour stage.
+    sc_visual_triangle(_x, _y, _radius, _angle,
+        1, 0,
+        0.73, -0.07,
+        0.81, 0,
+        _p.metal, false
+    );
+
+    sc_visual_triangle(_x, _y, _radius, _angle,
+        1, 0,
+        0.81, 0,
+        0.73, 0.07,
+        _p.metal, false
+    );
+
+    sc_visual_line(_x, _y, _radius, _angle, 1, 0, 0.73, -0.07, 1, _p.core);
+    sc_visual_line(_x, _y, _radius, _angle, 1, 0, 0.73, 0.07, 1, _p.core);
+
+    // Main central armour survives through stage 2.
     if (_stage <= 2)
     {
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.28, -0.23, -0.69, 0, _mid, false);
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, -0.69, 0, 0.28, 0.23, _mid, false);
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            0.76, -0.08,
+            0.25, -0.2,
+            -0.45, -0.04,
+            _p.hull_light, false
+        );
 
-        sc_visual_triangle(_x, _y, _radius, _angle, 0.91, 0, 0.23, -0.12, -0.48, 0, _light, false);
-        sc_visual_triangle(_x, _y, _radius, _angle, 0.91, 0, -0.48, 0, 0.23, 0.12, _light, false);
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            0.76, 0.08,
+            -0.45, 0.04,
+            0.25, 0.2,
+            _p.hull_light, false
+        );
+
+        sc_visual_line(_x, _y, _radius, _angle, 0.76, -0.08, 0.25, -0.2, 1, _p.metal);
+        sc_visual_line(_x, _y, _radius, _angle, 0.76, 0.08, 0.25, 0.2, 1, _p.metal);
     }
 
-    // Pointed metallic nose survives until critical armour.
-    if (_stage <= 2)
-    {
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.63, -0.1, 0.77, 0, _p.metal, false);
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.77, 0, 0.63, 0.1, _p.metal, false);
-    }
-
+    // Rear central armour exists through stage 1.
     if (_stage <= 1)
     {
-        sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.28, -0.23, 2, _p.metal);
-        sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.28, 0.23, 2, _p.metal);
-        sc_visual_line(_x, _y, _radius, _angle, 0.28, -0.23, -0.69, 0, 1, _p.outline);
-        sc_visual_line(_x, _y, _radius, _angle, 0.28, 0.23, -0.69, 0, 1, _p.outline);
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            0.17, -0.19,
+            -0.14, -0.25,
+            -0.57, -0.07,
+            _p.metal, false
+        );
+
+        sc_visual_triangle(_x, _y, _radius, _angle,
+            0.17, 0.19,
+            -0.57, 0.07,
+            -0.14, 0.25,
+            _p.metal, false
+        );
     }
 
-    // Last broken armour fragments.
-    if (_stage == 3)
-{
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        0.37, -0.34,
-        0.18, -0.7,
-        -0.03, -0.61,
-        _p.hull_mid, false
-    );
-
-    sc_visual_triangle(_x, _y, _radius, _angle,
-        -0.31, 0.48,
-        -0.4, 0.76,
-        -0.53, 0.61,
-        _p.hull_mid, false
-    );
-}
+    // Reactor armour collar exists only at full armour.
+    if (_stage == 0)
+    {
+        sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.31, _p.void, true);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.31, _p.metal, true);
+        sc_visual_circle(_x, _y, _radius, _angle, -0.19, 0, 0.255, _p.hull_light, true);
+    }
 }
 
 /// @description Draws one independently rotating Dreadwing pulse cannon.
