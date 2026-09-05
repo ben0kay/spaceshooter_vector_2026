@@ -382,6 +382,31 @@ function sc_player_continuous_weapon_release(_player)
     return true;
 }
 
+/// @description Releases the player's currently active mining beam.
+function sc_player_mining_beam_release(_player)
+{
+    var _runtime = _player.combat.mining;
+    var _active = _runtime.active_delivery_id;
+
+    if (!instance_exists(_active))
+    {
+        _runtime.active_delivery_id = noone;
+        return false;
+    }
+
+    sc_beam_release(_active);
+    _runtime.active_delivery_id = noone;
+    return true;
+}
+
+/// @description Releases every continuously maintained player delivery.
+function sc_player_continuous_weapons_release(_player)
+{
+    var _primary = sc_player_continuous_weapon_release(_player);
+    var _mining = sc_player_mining_beam_release(_player);
+    return _primary || _mining;
+}
+
 /// @description Selects one temporary primary weapon using number keys 1-4.
 function sc_player_weapon_selection_update(_player)
 {
@@ -422,7 +447,9 @@ function sc_player_primary_weapon_update(_player)
 {
     var _runtime = _player.combat.primary;
 
-    if (!_player.combat.weapons_allowed || !global.input.action.fire_primary)
+    if (!_player.combat.weapons_allowed
+    || !global.input.action.fire_primary
+    || global.input.action.mine)
     {
         sc_player_continuous_weapon_release(_player);
         return false;
@@ -518,11 +545,71 @@ function sc_player_primary_weapon_update(_player)
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
     _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval / _fire_rate));
 
-    // Insert weapon audio and detached muzzle particles here.
     return true;
 }
 
-/// @description Updates normal player movement, weapon selection, boost and dash activation.
+/// @description Creates or maintains the player's held-MMB mining beam.
+function sc_player_mining_beam_update(_player)
+{
+    var _runtime = _player.combat.mining;
+
+    if (!_player.combat.weapons_allowed
+    || !global.input.action.mine
+    || !variable_struct_exists(_player.ship.loadout, "mining"))
+    {
+        sc_player_mining_beam_release(_player);
+        return false;
+    }
+
+    var _weapon_key = _player.ship.loadout.mining;
+    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+    var _angle = _player.draw_angle;
+    var _centre_forward = _weapon.firing.centre_forward * _player.ship.visual.radius;
+    var _muzzle_x = _player.x + lengthdir_x(_centre_forward, _angle);
+    var _muzzle_y = _player.y + lengthdir_y(_centre_forward, _angle);
+
+    if (instance_exists(_runtime.active_delivery_id))
+    {
+        if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+        {
+            sc_player_mining_beam_release(_player);
+            return false;
+        }
+
+        return sc_beam_sustain(
+            _runtime.active_delivery_id,
+            _muzzle_x,
+            _muzzle_y,
+            _angle
+        );
+    }
+
+    if (GAME_TICK < _runtime.next_fire_tick) return false;
+
+    if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+        return false;
+
+    var _beam = sc_weapon_fire(
+        _player,
+        _weapon_key,
+        _weapon.shot,
+        _muzzle_x,
+        _muzzle_y,
+        _angle,
+        _player.ship.stats.final.damage_multiplier
+    );
+
+    if (!instance_exists(_beam)) return false;
+
+    _runtime.active_delivery_id = _beam;
+    _runtime.next_fire_tick =
+        GAME_TICK
+        + max(1, round(_weapon.firing.interval));
+
+    return true;
+}
+
+/// @description Updates normal player movement, weapons, mining, boost and dash activation.
 function sc_player_update_active(_player)
 {
     sc_player_input_update(_player);
@@ -531,6 +618,7 @@ function sc_player_update_active(_player)
 
     if (sc_player_dash_input_update(_player))
     {
+        sc_player_continuous_weapons_release(_player);
         sc_player_update_dashing(_player);
         return;
     }
@@ -538,6 +626,7 @@ function sc_player_update_active(_player)
     sc_player_normal_movement_update(_player);
     sc_player_combat_permission_update(_player);
     sc_player_primary_weapon_update(_player);
+    sc_player_mining_beam_update(_player);
     sc_player_visual_update(_player);
 }
 
@@ -571,7 +660,7 @@ function sc_player_stagger_begin(_player, _effect)
     _player.movement.velocity_y *= _velocity_retained;
     _player.movement.boost.active = false;
 
-    sc_player_continuous_weapon_release(_player);
+    sc_player_continuous_weapons_release(_player);
     global.PlayerState = PlayerState.STUNNED;
     sc_player_combat_permission_update(_player);
 
@@ -789,7 +878,7 @@ function sc_player_die(_player, _packet)
     var _dash = _movement.dash;
     var _hardpoints = _player.ship.hardpoints.primary;
 
-    sc_player_continuous_weapon_release(_player);
+    sc_player_continuous_weapons_release(_player);
 
     _player.combat.weapons_allowed = false;
     _movement.boost.active = false;

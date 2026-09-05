@@ -37,7 +37,7 @@ function sc_inventory_toggle(_hud)
 
     if (global.PlayerState != PlayerState.ACTIVE) return false;
 
-    sc_player_continuous_weapon_release(_player);
+    sc_player_continuous_weapons_release(_player);
 
     _player.movement.input_x = 0;
     _player.movement.input_y = 0;
