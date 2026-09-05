@@ -52,7 +52,7 @@ function sc_enemy_register_sim_dreadwing()
 			asteroid_response: AsteroidResponse.AVOID,
 		    idle_script: sc_enemy_movement_hold,
 		    chase_script: sc_enemy_movement_chase,
-		    combat_script: sc_enemy_movement_hold,
+		    combat_script: sc_enemy_movement_hold_line_of_sight,
 
 		    facing: {
 		        default_mode: EnemyFacingMode.TARGET,
