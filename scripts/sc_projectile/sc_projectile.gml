@@ -399,6 +399,7 @@ function sc_projectile_entity_collision(_projectile, _target)
     instance_destroy(_projectile);
     return true;
 }
+
 /// @description Draws one active projectile or fading shield ricochet.
 function sc_projectile_draw(_projectile)
 {
@@ -410,6 +411,33 @@ function sc_projectile_draw(_projectile)
     {
         _scale = _data.runtime.ricochet.scale;
         _alpha = _data.runtime.ricochet.alpha;
+    }
+
+    // Optional thin energy trail behind projectile.
+    if (_data.state == ProjectileState.ACTIVE && variable_struct_exists(_data.visual, "trail_line"))
+    {
+        var _trail = _data.visual.trail_line;
+
+        if (_trail.enabled)
+        {
+            var _p = _data.visual.palette;
+            var _rear = _data.visual.length * 0.42 * _scale;
+            var _start_x = _projectile.x - lengthdir_x(_rear, _data.direction);
+            var _start_y = _projectile.y - lengthdir_y(_rear, _data.direction);
+            var _end_x = _start_x - lengthdir_x(_trail.length * _scale, _data.direction);
+            var _end_y = _start_y - lengthdir_y(_trail.length * _scale, _data.direction);
+
+            draw_set_colour(_p.glow);
+            draw_set_alpha(_trail.glow_alpha * _alpha);
+            draw_line_width(_start_x, _start_y, _end_x, _end_y, _trail.glow_width * _scale);
+
+            draw_set_colour(_p.energy);
+            draw_set_alpha(_trail.alpha * _alpha);
+            draw_line_width(_start_x, _start_y, _end_x, _end_y, _trail.width * _scale);
+
+            draw_set_alpha(1);
+            draw_set_colour(c_white);
+        }
     }
 
     draw_sprite_ext(

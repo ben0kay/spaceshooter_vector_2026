@@ -65,6 +65,15 @@ function sc_projectile_register_shard_rocket()
 		    impact_script: sc_projectile_shard_rocket_impact,
 		    trail_script: sc_projectile_shard_rocket_trail,
 		    particles_register_script: sc_projectile_shard_rocket_particles_register,
+			
+			trail_line: {
+		        enabled: true,
+		        length: 52,
+		        width: 1,
+		        glow_width: 4,
+		        alpha: 0.75,
+		        glow_alpha: 0.16
+		    },
 
 		    bake: {
 		        canvas_size: 128,
