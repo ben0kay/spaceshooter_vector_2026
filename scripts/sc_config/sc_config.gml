@@ -48,6 +48,34 @@ function sc_config_init()
                 }
             },
 
+			enemy_damage: {
+			    hull_threshold: 0.5,
+			    footprint_scale: 0.68,
+			    interval_max: 18,
+			    interval_min: 3,
+			    puff_count_min: 1,
+			    puff_count_max: 3,
+
+			    radius_reference: 58,
+			    scale_min: 0.7,
+			    scale_max: 3.5,
+			    mass_scale: 0.12,
+
+			    size_min: 0.28,
+			    size_max: 0.62,
+			    growth: 0.018,
+			    size_wiggle: 0.045,
+
+			    speed_min: 0.15,
+			    speed_max: 0.7,
+			    speed_reduce: -0.012,
+
+			    life_min: 26,
+			    life_max: 38,
+			    life_min_severe: 38,
+			    life_max_severe: 58
+			},
+
             shield: {
                 radius_scale: 1.28,
                 field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,

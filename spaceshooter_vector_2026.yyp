@@ -84,6 +84,7 @@
     {"id":{"name":"r_boss_test","path":"rooms/r_boss_test/r_boss_test.yy",},},
     {"id":{"name":"r_combat_test","path":"rooms/r_combat_test/r_combat_test.yy",},},
     {"id":{"name":"r_menu_main","path":"rooms/r_menu_main/r_menu_main.yy",},},
+    {"id":{"name":"particles_enemy_damage","path":"scripts/particles_enemy_damage/particles_enemy_damage.yy",},},
     {"id":{"name":"particles_enemy_thruster","path":"scripts/particles_enemy_thruster/particles_enemy_thruster.yy",},},
     {"id":{"name":"particles_main","path":"scripts/particles_main/particles_main.yy",},},
     {"id":{"name":"particles_projectile_impact","path":"scripts/particles_projectile_impact/particles_projectile_impact.yy",},},

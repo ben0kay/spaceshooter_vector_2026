@@ -40,6 +40,12 @@ function sc_faction_register_simulant()
             glow: make_colour_rgb(106, 42, 224)
         },
 		
+		damage_fx: {
+		    emit_script: sc_particles_enemy_damage_smoke_emit,
+		    colour_light: make_colour_rgb(92, 78, 112),
+		    colour_dark: make_colour_rgb(18, 13, 25)
+		},
+		
 		doctrine: {
 		    alert: {
 		        chance: 0,
@@ -81,6 +87,12 @@ function sc_faction_register_rebel()
             core: make_colour_rgb(255, 222, 147),
             glow: make_colour_rgb(176, 59, 16)
         },
+		
+		damage_fx: {
+		    emit_script: sc_particles_enemy_damage_smoke_emit,
+		    colour_light: make_colour_rgb(105, 98, 86),
+		    colour_dark: make_colour_rgb(30, 25, 20)
+		},	
 		
 		doctrine: {
 		    alert: {
@@ -132,6 +144,28 @@ function sc_faction_palette_get(_faction)
     }
 
     return _data.palette;
+}
+
+/// @description Returns one faction's shared low-hull visual effect.
+function sc_faction_damage_fx_get(_faction)
+{
+    var _factions = global.data.factions;
+
+    if (_faction < 0 || _faction >= array_length(_factions))
+    {
+        show_debug_message("FACTION DAMAGE FX ERROR - invalid faction: " + string(_faction));
+        return undefined;
+    }
+
+    var _data = _factions[_faction];
+
+    if (!is_struct(_data) || !variable_struct_exists(_data, "damage_fx"))
+    {
+        show_debug_message("FACTION DAMAGE FX ERROR - effect unavailable: " + string(_faction));
+        return undefined;
+    }
+
+    return _data.damage_fx;
 }
 
 /// @description Returns one registered faction's shared behaviour doctrine.

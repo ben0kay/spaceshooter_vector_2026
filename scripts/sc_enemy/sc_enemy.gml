@@ -112,6 +112,7 @@ function sc_enemy_init(_enemy, _enemy_key)
         core_sprite: is_struct(_cache) ? _cache.core : -1,
         thrust_sprite: is_struct(_cache) ? _cache.thrust : -1,
         shield_sprite: is_struct(_cache) ? _cache.shield : -1,
+		damage_fx: sc_faction_damage_fx_get(_runtime.identity.faction),
         shield_hit_alpha: 0,
         core_angle: 0,
         core_alpha: 1,
@@ -288,7 +289,62 @@ function sc_enemy_hardpoint_update(_enemy)
     }
 }
 
-/// @description Updates visual-only enemy animation, shield feedback and thruster effects.
+/// @description Emits faction-specific visual damage across the enemy hull.
+function sc_enemy_damage_visual_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _defence = _data.defence;
+    var _visual = _data.visual;
+    var _runtime = _visual.runtime;
+    var _config = global.config.visual.enemy_damage;
+    var _hull_ratio = _defence.hull.current / max(1, _defence.hull.maximum);
+
+    if (_hull_ratio >= _config.hull_threshold) return false;
+
+    var _severity = clamp(
+        (_config.hull_threshold - _hull_ratio) / _config.hull_threshold,
+        0,
+        1
+    );
+
+    var _interval = max(1, round(lerp(_config.interval_max, _config.interval_min, _severity)));
+
+    if (((GAME_TICK + real(_enemy.id)) mod _interval) != 0)
+        return false;
+
+    var _collision = _enemy.entity.collision;
+    var _footprint = _config.footprint_scale;
+    var _scale = clamp(
+        (_visual.radius / _config.radius_reference)
+        * (1 + max(0, _visual.visual_mass - 1) * _config.mass_scale),
+        _config.scale_min,
+        _config.scale_max
+    );
+
+    var _count = round(lerp(_config.puff_count_min, _config.puff_count_max, _severity));
+
+    for (var _i = 0; _i < _count; _i++)
+    {
+        var _point_radius = sqrt(random(1));
+        var _point_angle = random(360);
+        var _forward = dcos(_point_angle) * _point_radius * _collision.radius_forward * _footprint;
+        var _side = dsin(_point_angle) * _point_radius * _collision.radius_side * _footprint;
+
+        var _x = _enemy.x
+            + lengthdir_x(_forward, _enemy.draw_angle)
+            + lengthdir_x(_side, _enemy.draw_angle + 90);
+
+        var _y = _enemy.y
+            + lengthdir_y(_forward, _enemy.draw_angle)
+            + lengthdir_y(_side, _enemy.draw_angle + 90);
+
+        _runtime.damage_fx.emit_script(_x, _y, _scale, _severity, _runtime.damage_fx);
+    }
+
+    return true;
+}
+
+/// @description Updates shared visual animation, damage effects and registered thrusters.
 function sc_enemy_visual_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -301,6 +357,8 @@ function sc_enemy_visual_update(_enemy)
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
     _visual.runtime.shield_hit_alpha = max(0, _visual.runtime.shield_hit_alpha - 0.06);
+
+    sc_enemy_damage_visual_update(_enemy);
 
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
     var _target_power = _speed_max > 0 ? clamp(_speed / _speed_max, 0, 1) : 0;
