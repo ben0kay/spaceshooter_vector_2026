@@ -119,13 +119,26 @@ function sc_enemy_attack_line_of_sight_required(_attack)
         && _attack.conditions.line_of_sight;
 }
 
-/// @description Requires a clear three-line corridor between enemy and target.
+/// @description Returns the current combat target without replacing the strategic player target.
+function sc_enemy_attack_target_get(_enemy)
+{
+    if (sc_enemy_asteroid_destroy_active(_enemy))
+        return _enemy.enemy.movement.obstacle.target_id;
+
+    return _enemy.enemy.target_id;
+}
+
+/// @description Requires a clear three-line corridor between enemy and its current attack target.
 function sc_enemy_attack_line_of_sight_clear(_enemy)
 {
-    if (global.level.asteroids_alive <= 0) return true;
-
-    var _target = _enemy.enemy.target_id;
+    var _target = sc_enemy_attack_target_get(_enemy);
     if (!instance_exists(_target)) return false;
+
+    // The cached asteroid is itself the intended obstruction target.
+    if (sc_enemy_asteroid_destroy_active(_enemy))
+        return true;
+
+    if (global.level.asteroids_alive <= 0) return true;
 
     var _target_collision = _target.entity.collision;
     var _width = min(
@@ -177,15 +190,20 @@ function sc_enemy_attack_is_committed_beam(_attack)
     return _weapon.delivery.type == AttackDelivery.BEAM;
 }
 
-/// @description Returns whether one hardpoint is aimed close enough to its target.
+/// @description Returns whether one hardpoint is aimed close enough to its current attack target.
 function sc_enemy_attack_hardpoint_aligned(_enemy, _attack, _hardpoint_index)
 {
-    if (!instance_exists(_enemy.enemy.target_id)) return false;
+    var _target = sc_enemy_attack_target_get(_enemy);
+    if (!instance_exists(_target)) return false;
 
     var _transform = { x: 0, y: 0, direction: 0 };
-    sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform);
+    sc_enemy_hardpoint_attack_transform(
+        _enemy,
+        _attack,
+        _hardpoint_index,
+        _transform
+    );
 
-    var _target = _enemy.enemy.target_id;
     var _target_direction = point_direction(
         _transform.x,
         _transform.y,
@@ -241,25 +259,34 @@ function sc_enemy_attack_can_use(_enemy, _attack)
 {
     var _data = _enemy.enemy;
     var _defence = _data.defence;
-    var _distance_sq = _data.target_distance_sq;
+    var _target = sc_enemy_attack_target_get(_enemy);
+    var _destroying_asteroid = sc_enemy_asteroid_destroy_active(_enemy);
 
-    if (!instance_exists(_data.target_id)) return false;
+    if (!instance_exists(_target)) return false;
+
+    var _dx = _target.x - _enemy.x;
+    var _dy = _target.y - _enemy.y;
+    var _distance_sq = _dx * _dx + _dy * _dy;
 
     if (variable_struct_exists(_attack, "conditions"))
     {
         var _conditions = _attack.conditions;
 
-        if (variable_struct_exists(_conditions, "range_min")
-        && _distance_sq < sqr(_conditions.range_min))
-            return false;
+        // Obstacle destruction ignores normal player-combat range restrictions.
+        if (!_destroying_asteroid)
+        {
+            if (variable_struct_exists(_conditions, "range_min")
+            && _distance_sq < sqr(_conditions.range_min))
+                return false;
 
-        if (variable_struct_exists(_conditions, "range_max")
-        && _distance_sq > sqr(_conditions.range_max))
-            return false;
+            if (variable_struct_exists(_conditions, "range_max")
+            && _distance_sq > sqr(_conditions.range_max))
+                return false;
 
-        if (sc_enemy_attack_line_of_sight_required(_attack)
-        && !sc_enemy_attack_line_of_sight_clear(_enemy))
-            return false;
+            if (sc_enemy_attack_line_of_sight_required(_attack)
+            && !sc_enemy_attack_line_of_sight_clear(_enemy))
+                return false;
+        }
 
         var _shield_ratio = _defence.shield.maximum > 0
             ? _defence.shield.current / _defence.shield.maximum
@@ -360,6 +387,7 @@ function sc_enemy_attack_select(_enemy)
 function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform)
 {
     var _data = _enemy.enemy;
+    var _target = sc_enemy_attack_target_get(_enemy);
     var _hardpoint = _data.hardpoints[_hardpoint_index];
     var _radius = _data.visual.radius;
     var _mount_angle = _hardpoint.runtime.aim_angle;
@@ -377,8 +405,12 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
         + lengthdir_y(_side, _enemy.draw_angle + 90)
         - lengthdir_y(_recoil, _mount_angle);
 
-    _transform.x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward * _radius, _mount_angle);
-    _transform.y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward * _radius, _mount_angle);
+    _transform.x = _mount_x
+        + lengthdir_x(_hardpoint.muzzle_forward * _radius, _mount_angle);
+
+    _transform.y = _mount_y
+        + lengthdir_y(_hardpoint.muzzle_forward * _radius, _mount_angle);
+
     _transform.direction = _mount_angle;
 
     if (_hardpoint.rotation.mode == HardpointRotation.FIXED)
@@ -386,12 +418,24 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
         switch (_attack.aim.mode)
         {
             case AimMode.TARGET:
-                _transform.direction = point_direction(_transform.x, _transform.y, _data.target_id.x, _data.target_id.y);
+                if (instance_exists(_target))
+                    _transform.direction = point_direction(
+                        _transform.x,
+                        _transform.y,
+                        _target.x,
+                        _target.y
+                    );
             break;
 
             case AimMode.TARGET_LEAD:
                 // Target-leading solution goes here later.
-                _transform.direction = point_direction(_transform.x, _transform.y, _data.target_id.x, _data.target_id.y);
+                if (instance_exists(_target))
+                    _transform.direction = point_direction(
+                        _transform.x,
+                        _transform.y,
+                        _target.x,
+                        _target.y
+                    );
             break;
 
             case AimMode.WORLD:

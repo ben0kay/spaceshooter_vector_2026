@@ -256,13 +256,14 @@ function sc_enemy_perception_update(_enemy)
     }
 }
 
-/// @description Updates enemy hardpoint aiming, aim locks and recoil runtime.
+/// @description Updates enemy hardpoint aiming, temporary obstacle targeting, aim locks and recoil.
 function sc_enemy_hardpoint_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _visual = _data.visual;
     var _hardpoints = _data.hardpoints;
-    var _has_target = instance_exists(_data.target_id);
+    var _target = sc_enemy_attack_target_get(_enemy);
+    var _has_target = instance_exists(_target);
 
     for (var _i = 0; _i < array_length(_hardpoints); _i++)
     {
@@ -279,22 +280,44 @@ function sc_enemy_hardpoint_update(_enemy)
             {
                 var _forward = _hardpoint.forward * _visual.radius;
                 var _side = _hardpoint.side * _visual.radius;
-                var _mount_x = _enemy.x + lengthdir_x(_forward, _enemy.draw_angle) + lengthdir_x(_side, _enemy.draw_angle + 90);
-                var _mount_y = _enemy.y + lengthdir_y(_forward, _enemy.draw_angle) + lengthdir_y(_side, _enemy.draw_angle + 90);
-                var _target_angle = point_direction(_mount_x, _mount_y, _data.target_id.x, _data.target_id.y);
+
+                var _mount_x = _enemy.x
+                    + lengthdir_x(_forward, _enemy.draw_angle)
+                    + lengthdir_x(_side, _enemy.draw_angle + 90);
+
+                var _mount_y = _enemy.y
+                    + lengthdir_y(_forward, _enemy.draw_angle)
+                    + lengthdir_y(_side, _enemy.draw_angle + 90);
+
+                var _target_angle = point_direction(
+                    _mount_x,
+                    _mount_y,
+                    _target.x,
+                    _target.y
+                );
+
                 var _arc_half = _rotation.arc * 0.5;
 
                 _desired_angle = _rotation.arc >= 360
                     ? _target_angle
-                    : _base_angle + clamp(angle_difference(_target_angle, _base_angle), -_arc_half, _arc_half);
+                    : _base_angle + clamp(
+                        angle_difference(_target_angle, _base_angle),
+                        -_arc_half,
+                        _arc_half
+                    );
             }
-            else if (_rotation.mode == HardpointRotation.FIXED || _rotation.return_to_rest)
+            else if (_rotation.mode == HardpointRotation.FIXED
+            || _rotation.return_to_rest)
                 _desired_angle = _base_angle;
 
             if (_rotation.mode == HardpointRotation.FIXED)
                 _runtime.aim_angle = _base_angle;
             else
-                _runtime.aim_angle += clamp(angle_difference(_desired_angle, _runtime.aim_angle), -_rotation.turn_speed, _rotation.turn_speed);
+                _runtime.aim_angle += clamp(
+                    angle_difference(_desired_angle, _runtime.aim_angle),
+                    -_rotation.turn_speed,
+                    _rotation.turn_speed
+                );
         }
 
         if (_runtime.recoil > 0.01)

@@ -123,7 +123,46 @@ function sc_enemy_asteroid_overlap_resolve(_enemy)
     return true;
 }
 
-/// @description Modifies movement using registered asteroid behaviour and protects drifting ships.
+/// @description Returns whether an enemy is currently committed to destroying a blocking asteroid.
+function sc_enemy_asteroid_destroy_active(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.movement.obstacle;
+
+    return _data.movement_controller.asteroid_response == AsteroidResponse.DESTROY
+        && _runtime.active
+        && instance_exists(_runtime.target_id);
+}
+
+/// @description Stops and turns an enemy toward its blocking asteroid.
+function sc_enemy_asteroid_destroy_hold(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.movement.obstacle;
+    var _movement = _data.movement;
+    var _command = _movement.command;
+    var _target = _runtime.target_id;
+
+    if (!instance_exists(_target)) return false;
+
+    sc_enemy_asteroid_stop(_enemy);
+
+    // Heavy controlled braking while preparing to fire.
+    _movement.velocity_x *= 0.55;
+    _movement.velocity_y *= 0.55;
+
+    _command.facing_mode = EnemyFacingMode.COMMAND;
+    _command.face_direction = point_direction(
+        _enemy.x,
+        _enemy.y,
+        _target.x,
+        _target.y
+    );
+
+    return true;
+}
+
+/// @description Applies registered avoidance, stopping or destruction behaviour around asteroids.
 function sc_enemy_asteroid_response_apply(_enemy)
 {
     var _data = _enemy.enemy;
@@ -135,9 +174,26 @@ function sc_enemy_asteroid_response_apply(_enemy)
     if (_response == AsteroidResponse.IGNORE
     || global.level.asteroids_alive <= 0)
     {
+        if (_runtime.active && _response == AsteroidResponse.DESTROY)
+            sc_enemy_attack_cancel(_enemy);
+
         _runtime.active = false;
         _runtime.target_id = noone;
         return;
+    }
+
+    // DESTROY commits to the cached asteroid until it no longer exists.
+    if (_response == AsteroidResponse.DESTROY && _runtime.active)
+    {
+        if (instance_exists(_runtime.target_id))
+        {
+            sc_enemy_asteroid_destroy_hold(_enemy);
+            return;
+        }
+
+        sc_enemy_attack_cancel(_enemy);
+        _runtime.active = false;
+        _runtime.target_id = noone;
     }
 
     var _speed = point_distance(
@@ -146,7 +202,7 @@ function sc_enemy_asteroid_response_apply(_enemy)
         _movement.velocity_y
     );
 
-    // Completely stationary enemies require no obstacle work.
+    // Stationary ships with no destruction target require no obstacle work.
     if (!_command.active && _speed <= 0.01)
     {
         _runtime.active = false;
@@ -172,7 +228,7 @@ function sc_enemy_asteroid_response_apply(_enemy)
     _runtime.next_check_tick = GAME_TICK
         + max(1, round(_config.check_interval * _lazy));
 
-    // Rare recovery for rotation, residual drift or externally applied movement.
+    // Rare overlap recovery remains shared by all solid asteroid responses.
     if (sc_enemy_asteroid_overlap_resolve(_enemy))
     {
         _runtime.active = false;
@@ -189,10 +245,13 @@ function sc_enemy_asteroid_response_apply(_enemy)
         + _config.look_ahead_base
         + _speed * _config.look_ahead_speed;
 
-    // Active propulsion follows its command. Residual drift follows velocity.
     var _desired_direction = _command.active
         ? _command.direction
-        : point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
+        : point_direction(
+            0, 0,
+            _movement.velocity_x,
+            _movement.velocity_y
+        );
 
     var _asteroid = sc_enemy_asteroid_route_probe(
         _enemy,
@@ -211,13 +270,18 @@ function sc_enemy_asteroid_response_apply(_enemy)
     _runtime.active = true;
     _runtime.target_id = _asteroid;
 
-    // A ship that is only drifting should stop before impact rather than
-    // suddenly applying propulsion and steering around the obstacle.
+    // Drifting ships stop rather than suddenly gaining steering propulsion.
     if (!_command.active)
     {
         _movement.velocity_x = 0;
         _movement.velocity_y = 0;
-        _runtime.active = false;
+
+        if (_response != AsteroidResponse.DESTROY)
+        {
+            _runtime.active = false;
+            _runtime.target_id = noone;
+        }
+
         return;
     }
 
@@ -233,8 +297,12 @@ function sc_enemy_asteroid_response_apply(_enemy)
         break;
 
         case AsteroidResponse.STOP:
-        case AsteroidResponse.DESTROY:
             sc_enemy_asteroid_stop(_enemy);
+        break;
+
+        case AsteroidResponse.DESTROY:
+            sc_enemy_attack_cancel(_enemy);
+            sc_enemy_asteroid_destroy_hold(_enemy);
         break;
     }
 }

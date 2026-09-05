@@ -9,7 +9,7 @@ Weapon modules own projectile scale, speed, lifespan, homing, damage,
 explosion scale and explosion damage.
 */
 
-/// @description Registers the reusable baked Simulant rocket projectile.
+/// @description Registers the reusable wide Simulant rocket projectile.
 function sc_projectile_register_simulant_rocket()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
@@ -22,12 +22,18 @@ function sc_projectile_register_simulant_rocket()
 
         projectile_motion: ProjectileMotion.ROCKET,
         projectile_class: ProjectileClass.HEAVY,
-        collision: { radius: 7 },
+
+        collision: {
+            radius: 9
+        },
 
         detonation: {
             area: {
                 shape: AttackAreaShape.CIRCLE,
-                geometry: { radius: 72 },
+
+                geometry: {
+                    radius: 72
+                },
 
                 behaviour: {
                     duration: 18,
@@ -66,8 +72,8 @@ function sc_projectile_register_simulant_rocket()
         },
 
         visual: {
-            radius: 7,
-            length: 30,
+            radius: 10,
+            length: 36,
             palette: _palette,
 
             draw_script: sc_projectile_simulant_rocket_draw,
@@ -76,9 +82,9 @@ function sc_projectile_register_simulant_rocket()
 
             trail: {
                 enabled: true,
-                length: 62,
-                width: 1.75,
-                glow_width: 6,
+                length: 64,
+                width: 2.5,
+                glow_width: 8,
                 alpha: 0.78,
                 glow_alpha: 0.2
             },
@@ -119,132 +125,351 @@ function sc_projectile_simulant_rocket_impact(_x, _y, _direction, _target, _scal
     );
 }
 
-/// @description Draws one animated Simulant rocket frame for startup baking.
+/// @description Draws a broad segmented Simulant assault rocket.
 function sc_projectile_simulant_rocket_draw(_x, _y, _angle, _visual, _frame, _frame_count)
 {
     var _p = _visual.palette;
-    var _radius = _visual.radius;
+    var _r = _visual.radius;
     var _length = _visual.length;
     var _phase = (_frame / _frame_count) * pi * 2;
-    var _pulse = 0.84 + sin(_phase) * 0.16;
-    var _flame = 0.78 + sin(_phase + 0.8) * 0.22;
-    var _nose_x = _x + lengthdir_x(_length * 0.58, _angle);
-    var _nose_y = _y + lengthdir_y(_length * 0.58, _angle);
-    var _rear_x = _x - lengthdir_x(_length * 0.42, _angle);
-    var _rear_y = _y - lengthdir_y(_length * 0.42, _angle);
-    var _tail_x = _rear_x - lengthdir_x(_length * 0.72 * _flame, _angle);
-    var _tail_y = _rear_y - lengthdir_y(_length * 0.72 * _flame, _angle);
+    var _pulse = 0.86 + sin(_phase) * 0.14;
+    var _flame = 0.84 + sin(_phase + 0.8) * 0.16;
 
-    // Broad violet exhaust glow.
-    draw_set_alpha(0.18);
-    draw_set_colour(_p.glow);
-    draw_triangle(
-        _rear_x + lengthdir_x(_radius * 1.7, _angle + 90),
-        _rear_y + lengthdir_y(_radius * 1.7, _angle + 90),
-        _tail_x,
-        _tail_y,
-        _rear_x - lengthdir_x(_radius * 1.7, _angle + 90),
-        _rear_y - lengthdir_y(_radius * 1.7, _angle + 90),
-        false
+    var _nose = 0.62;
+    var _nose_mid = 0.34;
+    var _body_front = 0.13;
+    var _body_rear = -0.34;
+    var _engine_rear = -0.52;
+
+    // ==================================================
+    // TWIN EXHAUST FLAMES
+    // ==================================================
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        var _nozzle_side = _r * 0.43 * _side;
+
+        var _nozzle_x = _x
+            + lengthdir_x(_length * _engine_rear, _angle)
+            + lengthdir_x(_nozzle_side, _angle + 90);
+
+        var _nozzle_y = _y
+            + lengthdir_y(_length * _engine_rear, _angle)
+            + lengthdir_y(_nozzle_side, _angle + 90);
+
+        var _flame_x = _x
+            + lengthdir_x(-_length * (0.84 + 0.12 * _flame), _angle)
+            + lengthdir_x(_nozzle_side, _angle + 90);
+
+        var _flame_y = _y
+            + lengthdir_y(-_length * (0.84 + 0.12 * _flame), _angle)
+            + lengthdir_y(_nozzle_side, _angle + 90);
+
+        draw_set_alpha(0.22);
+        draw_set_colour(_p.glow);
+        draw_line_width(
+            _nozzle_x,
+            _nozzle_y,
+            _flame_x,
+            _flame_y,
+            _r * 0.75
+        );
+
+        draw_set_alpha(0.75);
+        draw_set_colour(_p.energy);
+        draw_line_width(
+            _nozzle_x,
+            _nozzle_y,
+            _flame_x,
+            _flame_y,
+            _r * 0.34
+        );
+
+        draw_set_alpha(1);
+        draw_set_colour(_p.core);
+        draw_line_width(
+            _nozzle_x,
+            _nozzle_y,
+            lerp(_nozzle_x, _flame_x, 0.58),
+            lerp(_nozzle_y, _flame_y, 0.58),
+            max(2, _r * 0.13)
+        );
+    }
+
+    // ==================================================
+    // LARGE REAR STABILIZER FINS
+    // ==================================================
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_triangle(
+            _x, _y, _length, _angle,
+            -0.11, 0.2 * _side,
+            -0.47, 0.28 * _side,
+            -0.31, 0.5 * _side,
+            _p.void, false
+        );
+
+        sc_visual_triangle(
+            _x, _y, _length, _angle,
+            -0.13, 0.21 * _side,
+            -0.42, 0.27 * _side,
+            -0.3, 0.45 * _side,
+            _p.hull_mid, false
+        );
+
+        sc_visual_line(
+            _x, _y, _length, _angle,
+            -0.14, 0.22 * _side,
+            -0.3, 0.42 * _side,
+            2, _p.energy
+        );
+
+        sc_visual_line(
+            _x, _y, _length, _angle,
+            -0.3, 0.42 * _side,
+            -0.42, 0.27 * _side,
+            2, _p.outline
+        );
+    }
+
+    // ==================================================
+    // ENGINE HOUSING
+    // ==================================================
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        -0.22, -0.25,
+        _engine_rear, -0.24,
+        _engine_rear, 0.24,
+        -0.22, 0.25,
+        _p.void
     );
 
-    // Filled energy flame.
-    draw_set_alpha(0.72);
-    draw_set_colour(_p.accent);
-    draw_triangle(
-        _rear_x + lengthdir_x(_radius * 0.9, _angle + 90),
-        _rear_y + lengthdir_y(_radius * 0.9, _angle + 90),
-        _tail_x,
-        _tail_y,
-        _rear_x - lengthdir_x(_radius * 0.9, _angle + 90),
-        _rear_y - lengthdir_y(_radius * 0.9, _angle + 90),
-        false
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        -0.2, -0.2,
+        -0.48, -0.19,
+        -0.48, 0.19,
+        -0.2, 0.2,
+        _p.hull_light
     );
 
-    draw_set_alpha(1);
-    draw_set_colour(_p.core);
-    draw_line_width(_rear_x, _rear_y, _tail_x, _tail_y, max(2, _radius * 0.35));
-
-    // Rear stabilizing fins.
-    draw_set_colour(_p.hull_light);
-    draw_triangle(
-        _rear_x,
-        _rear_y,
-        _rear_x - lengthdir_x(_radius * 1.45, _angle + 90),
-        _rear_y - lengthdir_y(_radius * 1.45, _angle + 90),
-        _x + lengthdir_x(_radius * 0.3, _angle + 90),
-        _y + lengthdir_y(_radius * 0.3, _angle + 90),
-        false
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        -0.22, -0.23,
+        -0.22, 0.23,
+        3, _p.metal
     );
 
-    draw_triangle(
-        _rear_x,
-        _rear_y,
-        _x - lengthdir_x(_radius * 0.3, _angle + 90),
-        _y - lengthdir_y(_radius * 0.3, _angle + 90),
-        _rear_x + lengthdir_x(_radius * 1.45, _angle + 90),
-        _rear_y + lengthdir_y(_radius * 1.45, _angle + 90),
-        false
+    // Twin engine nozzles.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_circle(
+            _x, _y, _length, _angle,
+            -0.5, 0.12 * _side,
+            0.085, _p.void, false
+        );
+
+        sc_visual_circle(
+            _x, _y, _length, _angle,
+            -0.5, 0.12 * _side,
+            0.065, _p.metal, true
+        );
+
+        sc_visual_circle(
+            _x, _y, _length, _angle,
+            -0.5, 0.12 * _side,
+            0.032 * _pulse, _p.core, false
+        );
+    }
+
+    // ==================================================
+    // BROAD CENTRAL BODY
+    // ==================================================
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        _body_front, -0.22,
+        _body_rear, -0.24,
+        _body_rear, 0.24,
+        _body_front, 0.22,
+        _p.void
     );
 
-    // Main armoured rocket body.
-    draw_set_colour(_p.void);
-    draw_triangle(
-        _nose_x,
-        _nose_y,
-        _rear_x + lengthdir_x(_radius * 1.05, _angle + 90),
-        _rear_y + lengthdir_y(_radius * 1.05, _angle + 90),
-        _rear_x - lengthdir_x(_radius * 1.05, _angle + 90),
-        _rear_y - lengthdir_y(_radius * 1.05, _angle + 90),
-        false
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        0.1, -0.18,
+        -0.31, -0.19,
+        -0.31, 0.19,
+        0.1, 0.18,
+        _p.hull_mid
     );
 
-    draw_set_colour(_p.hull_mid);
-    draw_triangle(
-        _nose_x - lengthdir_x(_radius * 0.4, _angle),
-        _nose_y - lengthdir_y(_radius * 0.4, _angle),
-        _rear_x + lengthdir_x(_radius * 0.78, _angle + 90),
-        _rear_y + lengthdir_y(_radius * 0.78, _angle + 90),
-        _rear_x - lengthdir_x(_radius * 0.78, _angle + 90),
-        _rear_y - lengthdir_y(_radius * 0.78, _angle + 90),
-        false
+    // Layered side armour.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_quad(
+            _x, _y, _length, _angle,
+            0.08, 0.17 * _side,
+            -0.08, 0.22 * _side,
+            -0.3, 0.19 * _side,
+            -0.18, 0.13 * _side,
+            _p.hull_light
+        );
+
+        sc_visual_line(
+            _x, _y, _length, _angle,
+            0.06, 0.17 * _side,
+            -0.27, 0.18 * _side,
+            2, _p.metal
+        );
+    }
+
+    // Mechanical containment collars.
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        -0.13, -0.22,
+        -0.13, 0.22,
+        4, _p.metal
     );
 
-    // Metallic central spine.
-    draw_set_colour(_p.metal);
-    draw_line_width(_rear_x, _rear_y, _nose_x, _nose_y, 3);
-
-    // Animated containment rings.
-    var _ring_offset_1 = -_length * 0.14;
-    var _ring_offset_2 = _length * 0.1;
-
-    draw_set_colour(_p.accent);
-    draw_circle(
-        _x + lengthdir_x(_ring_offset_1, _angle),
-        _y + lengthdir_y(_ring_offset_1, _angle),
-        _radius * (0.58 + _pulse * 0.08),
-        true
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        0.07, -0.19,
+        0.07, 0.19,
+        3, _p.accent
     );
 
-    draw_set_colour(_p.energy);
-    draw_circle(
-        _x + lengthdir_x(_ring_offset_2, _angle),
-        _y + lengthdir_y(_ring_offset_2, _angle),
-        _radius * (0.48 + _pulse * 0.06),
-        true
+    // Central reactor channel.
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        -0.31, 0,
+        0.15, 0,
+        9, _p.void
     );
 
-    // Bright warhead.
-    draw_set_alpha(0.3);
-    draw_set_colour(_p.glow);
-    draw_circle(_nose_x, _nose_y, _radius * 0.95 * _pulse, false);
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        -0.27, 0,
+        0.14, 0,
+        4, _p.accent
+    );
 
-    draw_set_alpha(1);
-    draw_set_colour(_p.energy);
-    draw_circle(_nose_x, _nose_y, _radius * 0.42 * _pulse, false);
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        -0.2, 0,
+        0.12, 0,
+        2, _p.core
+    );
 
-    draw_set_colour(_p.core);
-    draw_circle(_nose_x, _nose_y, max(1.5, _radius * 0.18), false);
+    // ==================================================
+    // FORWARD CONTROL FINS
+    // ==================================================
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_triangle(
+            _x, _y, _length, _angle,
+            0.18, 0.16 * _side,
+            -0.02, 0.2 * _side,
+            0.08, 0.37 * _side,
+            _p.void, false
+        );
+
+        sc_visual_triangle(
+            _x, _y, _length, _angle,
+            0.16, 0.16 * _side,
+            0, 0.19 * _side,
+            0.08, 0.33 * _side,
+            _p.hull_light, false
+        );
+
+        sc_visual_line(
+            _x, _y, _length, _angle,
+            0.14, 0.17 * _side,
+            0.08, 0.31 * _side,
+            2, _p.energy
+        );
+    }
+
+    // ==================================================
+    // SEGMENTED ARMOURED WARHEAD
+    // ==================================================
+    sc_visual_triangle(
+        _x, _y, _length, _angle,
+        _nose, 0,
+        _body_front, -0.21,
+        _body_front, 0.21,
+        _p.void, false
+    );
+
+    sc_visual_triangle(
+        _x, _y, _length, _angle,
+        0.57, 0,
+        0.15, -0.17,
+        0.15, 0.17,
+        _p.hull_dark, false
+    );
+
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        0.5, -0.065,
+        0.35, -0.135,
+        0.35, 0.135,
+        0.5, 0.065,
+        _p.hull_light
+    );
+
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        0.36, -0.13,
+        _nose_mid, -0.165,
+        _nose_mid, 0.165,
+        0.36, 0.13,
+        _p.metal
+    );
+
+    sc_visual_quad(
+        _x, _y, _length, _angle,
+        0.27, -0.16,
+        0.16, -0.19,
+        0.16, 0.19,
+        0.27, 0.16,
+        _p.hull_light
+    );
+
+    // Violet gaps between warhead segments.
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        0.36, -0.13,
+        0.36, 0.13,
+        2, _p.energy
+    );
+
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        0.27, -0.16,
+        0.27, 0.16,
+        2, _p.accent
+    );
+
+    sc_visual_line(
+        _x, _y, _length, _angle,
+        0.17, -0.18,
+        0.17, 0.18,
+        2, _p.energy
+    );
+
+    // Bright pointed guidance tip.
+    sc_visual_circle(
+        _x, _y, _length, _angle,
+        0.57, 0,
+        0.045 * _pulse,
+        _p.energy, false
+    );
+
+    sc_visual_circle(
+        _x, _y, _length, _angle,
+        0.59, 0,
+        0.02,
+        _p.core, false
+    );
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
