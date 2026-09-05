@@ -32,6 +32,66 @@ function sc_enemy_movement_hold_line_of_sight(_enemy)
     sc_enemy_movement_chase(_enemy);
 }
 
+/// @description Selects a cached attack line passing beside and beyond the target.
+function sc_enemy_flyby_run_select(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _target = _data.target_id;
+    if (!instance_exists(_target)) return false;
+
+    var _movement = _data.movement;
+    var _runtime = _movement.flyby;
+    var _flyby = _data.movement_controller.flyby;
+    var _toward = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+
+    if (_flyby.alternate_side)
+        _runtime.side *= -1;
+    else
+        _runtime.side = choose(-1, 1);
+
+    var _offset = random_range(_flyby.offset_min, _flyby.offset_max) * _runtime.side;
+    var _pass_x = _target.x + lengthdir_x(_offset, _toward + 90);
+    var _pass_y = _target.y + lengthdir_y(_offset, _toward + 90);
+
+    _runtime.destination_x = _pass_x + lengthdir_x(_flyby.exit_distance, _toward);
+    _runtime.destination_y = _pass_y + lengthdir_y(_flyby.exit_distance, _toward);
+    _runtime.active = true;
+    return true;
+}
+
+/// @description Performs repeated cached straight attack runs past the target.
+function sc_enemy_movement_flyby(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _movement = _data.movement;
+    var _runtime = _movement.flyby;
+    var _flyby = _data.movement_controller.flyby;
+
+    if (!instance_exists(_data.target_id)) return;
+    if (GAME_TICK < _runtime.next_run_tick) return;
+
+    if (!_runtime.active && !sc_enemy_flyby_run_select(_enemy))
+        return;
+
+    var _dx = _runtime.destination_x - _enemy.x;
+    var _dy = _runtime.destination_y - _enemy.y;
+    var _distance_sq = _dx * _dx + _dy * _dy;
+
+    if (_distance_sq <= sqr(_flyby.arrival_radius))
+    {
+        _runtime.active = false;
+        _runtime.next_run_tick = GAME_TICK + _flyby.turnaround_delay;
+        return;
+    }
+
+    var _command = _movement.command;
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.face_direction = _command.direction;
+    _command.facing_mode = EnemyFacingMode.MOVEMENT;
+    _command.speed_scale = _flyby.speed_scale;
+}
 
 /// @description Commands direct movement toward the current target.
 function sc_enemy_movement_chase(_enemy)

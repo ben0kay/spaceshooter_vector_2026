@@ -52,6 +52,14 @@ function sc_enemy_init(_enemy, _enemy_key)
 			    direction: 0,
 			    side: 0,
 			    next_check_tick: GAME_TICK
+			},
+			
+			flyby: {
+			    active: false,
+			    destination_x: _enemy.x,
+			    destination_y: _enemy.y,
+			    side: choose(-1, 1),
+			    next_run_tick: GAME_TICK
 			}
         },
 
@@ -364,8 +372,6 @@ function sc_enemy_separation_resolve(_enemy, _other)
 
     return true;
 }
-
-
 
 /// @description Draws the complete enemy assembly with shared slow visual floating motion.
 function sc_enemy_draw(_enemy)

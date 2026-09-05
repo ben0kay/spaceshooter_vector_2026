@@ -70,3 +70,25 @@ function sc_faction_register_simulant()
         }
     });
 }
+
+/// @description Registers the Rebel faction and battered industrial visual language.
+function sc_faction_register_rebel()
+{
+    return sc_faction_register(Faction.REBEL, {
+        identity: { name: "Rebel" },
+
+        palette: {
+            void: make_colour_rgb(15, 12, 10),
+            hull_dark: make_colour_rgb(43, 38, 32),
+            hull_mid: make_colour_rgb(91, 78, 61),
+            hull_light: make_colour_rgb(151, 132, 99),
+            metal: make_colour_rgb(184, 166, 128),
+
+            outline: make_colour_rgb(211, 184, 132),
+            accent: make_colour_rgb(202, 105, 35),
+            energy: make_colour_rgb(255, 151, 49),
+            core: make_colour_rgb(255, 222, 147),
+            glow: make_colour_rgb(176, 59, 16)
+        }
+    });
+}

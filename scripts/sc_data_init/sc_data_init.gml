@@ -14,6 +14,7 @@ function sc_data_init()
 
     if (!sc_item_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
+	if (!sc_projectiles_shared_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
     if (!sc_plyr_register_all()) return false;
 

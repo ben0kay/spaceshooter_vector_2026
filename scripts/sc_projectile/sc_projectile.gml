@@ -95,6 +95,13 @@ function sc_projectile_create(_projectile_key, _source, _delivery, _x, _y, _dire
 }
 
 /// @description Finds the nearest valid opposing entity for a homing launch.
+/// @description Registers projectiles shared across players and enemy factions.
+function sc_projectiles_shared_register_all()
+{
+    if (!sc_projectile_register_minigun()) return false;
+    return true;
+}
+
 function sc_projectile_target_find(_projectile, _range)
 {
     var _data = _projectile.projectile;
@@ -130,7 +137,6 @@ function sc_projectile_target_find(_projectile, _range)
     ds_list_destroy(_list);
     return _target;
 }
-
 
 /// @description Updates weapon-supplied projectile guidance.
 function sc_projectile_homing_update(_projectile)

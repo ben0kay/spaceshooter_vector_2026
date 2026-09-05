@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_gunship",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_gunship",
+  "parent":{
+    "name":"enemies",
+    "path":"folders/scripts/enemy/factions/rebel/enemies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

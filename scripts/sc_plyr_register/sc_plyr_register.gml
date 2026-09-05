@@ -16,7 +16,6 @@ function sc_shard_register_all()
     if (!sc_projectile_register_shard_pulse()) return false;
     if (!sc_weapon_register_shard_pulse()) return false;
 
-    if (!sc_projectile_register_minigun()) return false;
     if (!sc_weapon_register_minigun()) return false;
 
     if (!sc_weapon_register_shard_laser()) return false;

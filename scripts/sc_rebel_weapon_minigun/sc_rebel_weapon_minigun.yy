@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_rebel_wealon_minigun",
+  "%Name":"sc_rebel_weapon_minigun",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_rebel_wealon_minigun",
+  "name":"sc_rebel_weapon_minigun",
   "parent":{
     "name":"weapons",
     "path":"folders/scripts/enemy/factions/rebel/weapons.yy",
