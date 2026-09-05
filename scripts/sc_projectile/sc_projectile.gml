@@ -35,12 +35,13 @@ function sc_projectile_init(_projectile, _create)
     }
 
     _projectile.projectile = {
-        key: _create.key,
-        state: ProjectileState.ACTIVE,
-        projectile_class: _data.projectile_class,
-        source: _create.source,
-        direction: _create.direction,
-        scale: _scale,
+	    key: _create.key,
+	    state: ProjectileState.ACTIVE,
+	    projectile_class: _data.projectile_class,
+	    projectile_type: _data.projectile_type,
+	    source: _create.source,
+	    direction: _create.direction,
+	    scale: _scale,
 
         movement: {
             speed: max(0, _launch.speed)
@@ -406,60 +407,179 @@ function sc_projectile_entity_collision(_projectile, _target)
     return true;
 }
 
-/// @description Draws one active projectile or fading shield ricochet.
+/// @description Draws a projectile with optional type motion and baked trail.
 function sc_projectile_draw(_projectile)
 {
     var _data = _projectile.projectile;
+    var _visual = _data.visual;
     var _scale = _data.scale;
     var _alpha = 1;
 
+    var _draw_x = _projectile.x;
+    var _draw_y = _projectile.y;
+    var _draw_angle = _projectile.draw_angle;
+
+
+    // ==================================================
+    // RICOCHET
+    // ==================================================
     if (_data.state == ProjectileState.RICOCHET)
     {
         _scale = _data.runtime.ricochet.scale;
         _alpha = _data.runtime.ricochet.alpha;
     }
 
-    if (_data.state == ProjectileState.ACTIVE
-    && variable_struct_exists(_data.visual, "trail"))
+
+    // ==================================================
+    // PROJECTILE-TYPE VISUAL MOTION
+    // ==================================================
+    if (_data.state == ProjectileState.ACTIVE)
     {
-        var _trail = _data.visual.trail;
+        switch (_data.projectile_type)
+        {
+            case ProjectileType.ROCKET:
+            {
+                var _config =
+                    global.config.visual.projectile_motion.rocket;
+
+                var _actual_radius =
+                    max(1, _visual.radius * _scale);
+
+                var _speed_factor =
+                    _data.movement.speed
+                    / max(0.01, _config.reference_speed);
+
+                var _size_factor =
+                    _config.reference_radius
+                    / _actual_radius;
+
+                var _influence =
+                    clamp(
+                        _speed_factor * _size_factor,
+                        _config.influence_min,
+                        _config.influence_max
+                    );
+
+                var _phase =
+                    GAME_TICK
+                    * _config.frequency
+                    * _influence
+                    + real(_projectile.id) * 0.731;
+
+                var _wave = sin(_phase);
+
+                var _offset =
+                    _wave
+                    * _config.amount
+                    * _influence;
+
+                _draw_x +=
+                    lengthdir_x(
+                        _offset,
+                        _data.direction + 90
+                    );
+
+                _draw_y +=
+                    lengthdir_y(
+                        _offset,
+                        _data.direction + 90
+                    );
+
+                _draw_angle +=
+                    _wave
+                    * _config.angle
+                    * _influence;
+            }
+            break;
+        }
+    }
+
+
+    // ==================================================
+    // OPTIONAL GENERIC BAKED TRAIL
+    // ==================================================
+    if (_data.state == ProjectileState.ACTIVE
+    && variable_struct_exists(_visual, "trail"))
+    {
+        var _trail = _visual.trail;
 
         if (_trail.enabled)
         {
-            var _cache = sc_projectile_trail_cache_get();
-            var _palette = _data.visual.palette;
-            var _rear = _data.visual.length * 0.42 * _scale;
-            var _trail_x = _projectile.x - lengthdir_x(_rear, _data.direction);
-            var _trail_y = _projectile.y - lengthdir_y(_rear, _data.direction);
-            var _length_scale = (_trail.length * _scale) / _cache.width;
-            var _glow_scale = (_trail.glow_width * _scale) / _cache.height;
-            var _width_scale = (_trail.width * _scale) / _cache.height;
+            var _cache =
+                sc_projectile_trail_cache_get();
+
+            var _palette = _visual.palette;
+
+            var _rear =
+                _visual.length
+                * 0.42
+                * _scale;
+
+            var _trail_x =
+                _draw_x
+                - lengthdir_x(
+                    _rear,
+                    _draw_angle
+                );
+
+            var _trail_y =
+                _draw_y
+                - lengthdir_y(
+                    _rear,
+                    _draw_angle
+                );
+
+            var _length_scale =
+                (_trail.length * _scale)
+                / _cache.width;
+
+            var _glow_scale =
+                (_trail.glow_width * _scale)
+                / _cache.height;
+
+            var _width_scale =
+                (_trail.width * _scale)
+                / _cache.height;
 
             draw_sprite_ext(
-                _cache.sprite, 0,
-                _trail_x, _trail_y,
-                _length_scale, _glow_scale,
-                _data.direction,
+                _cache.sprite,
+                0,
+                _trail_x,
+                _trail_y,
+                _length_scale,
+                _glow_scale,
+                _draw_angle,
                 _palette.glow,
                 _trail.glow_alpha * _alpha
             );
 
             draw_sprite_ext(
-                _cache.sprite, 0,
-                _trail_x, _trail_y,
-                _length_scale, _width_scale,
-                _data.direction,
+                _cache.sprite,
+                0,
+                _trail_x,
+                _trail_y,
+                _length_scale,
+                _width_scale,
+                _draw_angle,
                 _palette.energy,
                 _trail.alpha * _alpha
             );
         }
     }
 
+
+    // ==================================================
+    // PROJECTILE
+    // ==================================================
     draw_sprite_ext(
-        sc_projectile_sprite_get(_projectile), 0,
-        _projectile.x, _projectile.y,
-        _scale, _scale,
-        _projectile.draw_angle,
-        c_white, _alpha
+        sc_projectile_sprite_get(_projectile),
+        0,
+        _draw_x,
+        _draw_y,
+        _scale,
+        _scale,
+        _draw_angle,
+        c_white,
+        _alpha
     );
 }

@@ -55,6 +55,7 @@ function sc_projectile_register_shard_pulse()
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_pulse", name: "Shard Pulse" },
+		projectile_type: ProjectileType.ENERGY_BOLT,
         projectile_class: ProjectileClass.REGULAR,
         collision: { radius: 5 },
 

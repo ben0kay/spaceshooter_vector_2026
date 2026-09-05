@@ -6,7 +6,7 @@
   "name":"particles_main",
   "parent":{
     "name":"particles",
-    "path":"folders/scripts/particles.yy",
+    "path":"folders/scripts/effects/particles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

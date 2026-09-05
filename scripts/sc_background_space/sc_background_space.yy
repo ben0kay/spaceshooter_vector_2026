@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_background_space",
   "parent":{
-    "name":"scripts",
-    "path":"folders/scripts.yy",
+    "name":"effects",
+    "path":"folders/scripts/effects.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
