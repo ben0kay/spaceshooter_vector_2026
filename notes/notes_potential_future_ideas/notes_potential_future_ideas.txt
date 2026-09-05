@@ -1,0 +1,587 @@
+The safest approach is:
+
+Add fields now only when nearly every entity will eventually use them.
+Use optional structs for specialised mechanics.
+Use callbacks for genuinely different behaviour.
+Use enums for stable categories, not individual behaviours.
+My strongest recommendations to add early
+Location	Suggested field	Purpose
+Enemy identity	tags: []	Flexible filtering such as "organic", "mechanical", "drone", "capital", "boss_add" without creating endless enums.
+Enemy stats	mass	Gameplay mass for knockback, collision impulse and gravitational effects. Keep separate from visual_mass.
+Enemy identity	threat_value	Encounter generation, target prioritisation and difficulty estimates.
+Enemy reward	drop_table_key	Future items, ore, components and rare drops without embedding drop logic in every enemy.
+Enemy combat	status_resistance	Resistance to disruption, burn, corrosion and stagger.
+Player stats	pickup_radius	Cargo/ore magnet range, independently upgradeable.
+Player stats	sensor_range	Detection, HUD markers, missile warnings and navigation information.
+Projectiles	Optional interaction struct	Piercing, interception, destructibility, ricochet and obstacle behaviour.
+Attacks	telegraph.priority	Prevents minor telegraphs from visually overpowering major attacks.
+Factions	Feedback language	Shared alert colour, targeting colour, warning sound family and engine/damage effects.
+
+Of these, I would only implement mass, threat_value, tags, and perhaps drop_table_key immediately. Everything else can wait until its mechanic arrives.
+
+Enemy definition ideas
+Identity and classification
+
+You already have faction, role, class and rank. Possible additions:
+
+description
+tags
+threat_value
+codex_key
+portrait_key
+display_health_bar
+display_name
+is_unique
+counts_for_encounter_clear
+counts_for_boss_progress
+spawn_group_type
+death_event_key
+
+threat_value would be particularly valuable. A Twin Fighter might cost 2 threat, Dreadwing 10, and a capital ship 35. Sector generation could then request “approximately 20 threat” instead of manually counting ships.
+
+Avoid adding more role enums such as Scout, Interceptor, Artillery and Bomber unless gameplay systems truly query them. Those are better as tags:
+
+tags: ["fighter", "interceptor", "short_range"]
+Stats and survivability
+
+Potential fields:
+
+mass
+contact_damage
+contact_knockback
+knockback_resistance
+stagger_resistance
+status_resistance
+shield_recharge_delay
+shield_recharge_rate
+armour_regeneration
+hull_regeneration
+critical_hull_ratio
+collision_damage_multiplier
+environment_damage_multiplier
+healing_received_multiplier
+
+I would use this shape eventually:
+
+physics: {
+    mass: 1.5,
+    knockback_resistance: 0.25,
+    contact_damage: 0
+}
+
+Do not reuse visual_mass for this. visual_mass controls how substantial thrust should look; gameplay mass controls forces.
+
+Targeting
+
+Useful future targeting data:
+
+target_priority_script
+target_switch_cooldown
+target_memory_duration
+preferred_target_role
+retaliation_weight
+protect_target_id
+ignore_decoys
+can_target_projectiles
+can_target_asteroids
+sensor_range_multiplier
+minimum_target_visibility
+
+This will eventually let support ships protect allies, automated turrets engage missiles, and bosses prefer specific targets without modifying generic enemy logic.
+
+Awareness and investigation
+
+You already have good callback-based foundations. Future optional fields could include:
+
+hearing_range
+weapon_signature_sensitivity
+investigation_uncertainty
+search_pattern_script
+memory_decay
+can_be_ambushed
+shares_last_known_position
+alert_response_delay
+alert_response_script
+maximum_alert_hops
+
+The most interesting is investigation_uncertainty: enemies should investigate a small area around where they believe the player was, rather than knowing the exact coordinate.
+
+Movement
+
+Your callback arrangement is better than creating an enormous movement enum. Useful common tuning fields:
+
+arrival_radius
+braking_distance
+reverse_speed_multiplier
+strafe_speed_multiplier
+rotation_inertia
+avoidance_priority
+formation_spacing
+formation_response
+leash_range
+path_recalculation_interval
+stuck_detection_duration
+unstuck_script
+edge_avoidance
+movement_noise
+movement_phase_offset
+
+Optional movement callbacks later:
+
+combat_entry_script
+combat_exit_script
+retreat_script
+flee_script
+formation_script
+obstacle_script
+disabled_script
+
+Faction character can be expressed using tuning plus callbacks:
+
+Corporation: tight formations, low movement noise, coordinated retreats.
+Rebels: loose formations, larger movement noise, unpredictable flybys.
+Simulants: precise spacing, calculated strafes, synchronized direction changes.
+Aliens: swarm steering and local neighbour reactions.
+Automated: fixed patrol routes and rigid engagement rules.
+Fleeing
+
+Possible doctrine fields:
+
+flee: {
+    chance: 0.4,
+    trigger_layer: DefenceLayer.HULL,
+    trigger_ratio: 0.3,
+    destination_script: sc_enemy_flee_rebel,
+    can_return: false,
+    recovery_ratio: 0.6,
+    escort_request: false
+}
+
+Other useful possibilities:
+
+Flee when leader dies.
+Flee when isolated.
+Flee when weapons are disabled.
+Flee toward a capital ship.
+Surrender instead of fleeing.
+Jettison cargo while fleeing.
+Become more aggressive when escape is blocked.
+
+Don’t add these individually to every ship. Keep faction defaults and permit optional per-enemy overrides later.
+
+Hardpoint ideas
+
+Your hardpoints already support independent rotation and firing groups. Future optional hardpoint data:
+
+health
+armour
+destroyable
+targetable
+disabled_at_hull_ratio
+priority
+rotation_acceleration
+rotation_deceleration
+blind_arc
+minimum_range
+weapon_scale
+recoil_strength
+recoil_recovery
+heat_glow
+charge_lights
+damage_draw_script
+destroyed_draw_script
+destruction_effect_script
+
+Hardpoint destruction would be excellent for bosses, but it is not an early requirement. Your current group system is already suitable for it later.
+
+A generic charge-light placeholder could eventually be:
+
+feedback: {
+    charge_draw_script: undefined,
+    charge_colour: undefined,
+    charge_segments: 0
+}
+
+When undefined, there is no cost beyond a lightweight check during telegraphing.
+
+Attack-controller ideas
+
+You already have selection, conditions, aiming, firing and telegraphs. Strong additions for advanced enemies:
+
+priority
+exclusive
+interruptible
+interrupt_script
+maximum_uses
+initial_cooldown
+shared_cooldown_group
+health_phase_min
+health_phase_max
+requires_target_visible_duration
+minimum_safe_distance
+movement_permission
+movement_speed_scale
+turn_speed_scale
+recovery_duration
+failure_cooldown
+anti_repeat_weight
+combo_next_attack
+telegraph.priority
+
+Particularly valuable:
+
+Shared cooldown groups
+
+Prevents several extremely strong weapons from becoming available simultaneously.
+
+cooldown_group: "heavy_weapon"
+Anti-repeat weighting
+
+Reduces repetition without requiring strictly sequential attacks:
+
+repeat_weight_scale: 0.25
+Attack movement control
+
+Eventually allows Dreadwing pulse fire while moving but beam fire while stationary:
+
+movement: {
+    allowed: false,
+    speed_scale: 0,
+    rotation_allowed: true
+}
+
+You correctly held off because it was getting complex. Add it when you return to multi-attack movement, not now.
+
+Weapon ideas
+
+Weapons should describe the actual delivery package, while attack controllers describe how enemies use it.
+
+Useful weapon fields:
+
+resource_type
+resource_cost
+heat_generated
+recoil_force
+owner_impulse
+camera_impulse
+muzzle_flash_scale
+sound_variants
+pitch_range
+impact_sound
+friendly_fire
+damage_falloff
+critical_chance
+critical_multiplier
+status buildup
+shield disruption
+armour penetration
+hull penetration
+
+Player-upgrade-related fields:
+
+upgrade_family
+upgrade_level
+modifier_slots
+compatible_ammo
+base_value
+rarity
+inventory_size
+description
+
+I would not implement critical hits automatically. Your combat is visually readable and deterministic; random critical damage could make bullet-hell balancing feel inconsistent.
+
+Projectile ideas
+
+Your projectile templates are reusable and weapons already own launch scale, speed, lifetime and damage. Optional projectile features could sit inside small capability structs.
+
+Movement
+Acceleration
+Deceleration
+Drag
+Sinusoidal movement
+Spiral movement
+Delayed homing
+Homing strength ramp
+Maximum turn angle
+Orbit-before-launch
+Return-to-owner
+Split-on-time
+Split-on-death
+Collision and interaction
+interaction: {
+    pierce_count: 0,
+    bounce_count: 0,
+    destructible: false,
+    interception_health: 0,
+    hits_asteroids: true,
+    hits_projectiles: false
+}
+
+Possible fields:
+
+pierce_count
+bounce_count
+hit_cooldown
+maximum_targets
+arming_delay
+proximity_radius
+destructible
+interception_health
+interception_class
+friendly_fire
+hits_asteroids
+sticks_to_target
+detonate_on_expiry
+detonate_on_interception
+
+Destructible rockets are a strong future boss mechanic: the player can shoot down large missiles while ordinary bullets remain non-interactable.
+
+Visual feedback
+danger_level
+offscreen_indicator
+trail_intensity
+trail_colour_override
+pulse_speed
+warning_sound_range
+screen_edge_warning
+shadow/ground marker
+impact_scale
+death_effect_script
+
+danger_level could determine whether the HUD bothers warning the player. A tiny minigun round should not generate the same warning as a boss rocket.
+
+Damage-system ideas
+
+You already have damage type, effect, defence layers and extraction. Possible future additions:
+
+Damage direction
+Hit position
+Knockback
+Shield bypass
+Armour penetration
+Minimum damage
+Maximum targets
+Friendly-fire permission
+Status buildup rather than random proc chance
+Source weapon key
+Source attack key
+Was-critical flag
+Environmental/source category
+Interior-system damage multiplier
+
+The most valuable improvement would be carrying hit position and direction through the damage result:
+
+impact: {
+    x: _hit_x,
+    y: _hit_y,
+    direction: _direction
+}
+
+That enables directional sparks, debris, armour fragments, camera impulse and future internal-room damage without re-deriving the collision location.
+
+For status effects, buildup bars are generally fairer than random activation:
+
+Electric attacks accumulate disruption.
+Thermal attacks accumulate burn.
+Corrosive attacks accumulate corrosion.
+Threshold reached → effect triggers.
+
+That is a later balance feature, though.
+
+Faction definition ideas
+
+Your palette, damage FX and doctrine arrangement is good. Possible shared faction data:
+
+feedback: {
+    alert_colour: ...,
+    target_colour: ...,
+    telegraph_colour: ...,
+    shield_colour: ...,
+    warning_sound: noone
+}
+
+Doctrine ideas:
+
+Default accuracy
+Target-leading quality
+Formation tightness
+Ally separation
+Alert delay
+Maximum alert hops
+Flee destination script
+Aggression persistence
+Asteroid response preference
+Friendly-fire tolerance
+Damaged-ally response
+Leader-following tendency
+Focus-fire tendency
+Retreat regroup tendency
+Reinforcement request chance
+Taunt/combat-message family
+
+Avoid putting numerical ship stats such as speed or armour into faction doctrine. Those belong to the ship. Doctrine should answer how the faction thinks.
+
+Player-ship ideas
+
+You already have strong resources, movement, collision, systems, hardpoints and loadout foundations.
+
+Useful future universal stats:
+
+mass
+pickup_radius
+pickup_speed
+sensor_range
+radar_resolution
+lock_on_speed
+maximum_locks
+repair_rate
+repair_resource_cost
+heat_capacity
+heat_dissipation
+signature
+cargo_mass_multiplier
+weapon_heat_multiplier
+system_damage_multiplier
+shield_restart_delay
+emergency_power_capacity
+
+The best early additions would be:
+
+utility: {
+    pickup_radius: 140,
+    sensor_range: 1200,
+    signature: 1
+}
+
+signature can later influence how quickly enemies detect the player, missile locking, silent-running systems and investigation.
+
+Internal systems
+
+Your dormant systems foundation is enough. Eventually each system may need:
+
+current_integrity
+maximum_integrity
+repair_priority
+repair_cost
+power_requested
+power_received
+disabled_threshold
+critical_threshold
+effect_script
+
+Do not add crew, oxygen circulation, fire propagation and room simulation until you actively build the interior mode.
+
+Rewards and pickups
+
+Potential reward data:
+
+credits
+drop_table_key
+experience only if progression needs it
+reputation
+salvage_multiplier
+guaranteed_drops
+rare_drop_bonus
+pickup_scatter
+pickup_velocity
+owner_lock_duration
+
+For your game, I would favour reputation and salvage over enemy levels or XP.
+
+Example:
+
+reward: {
+    credits: 55,
+    drop_table_key: "rebel_standard",
+    salvage_multiplier: 1
+}
+Feedback ideas
+Target acquisition beam
+
+Your red beam idea is good, but I would avoid showing it permanently. Use it as a brief acquisition event:
+
+Thin translucent line joins enemy and player.
+Four red targeting corners appear around the player.
+Corners rotate and contract.
+Line disappears once the target is locked.
+A small persistent bracket remains only for dangerous homing attacks.
+
+This reads as “you are being targeted,” rather than looking like a damaging laser.
+
+It could be generic:
+
+sc_feedback_target_lock(
+    _source,
+    _target,
+    _colour,
+    _duration,
+    _danger
+);
+Other high-value feedback
+Brief armour fragments peel away when an armour stage is lost.
+Different impact sounds for shield, armour and hull.
+One strong engine sputter when an enemy reaches critical hull.
+Hardpoints flash a frame before projectile release.
+Rockets emit a subtle launch shock ring.
+Heavy projectiles distort or brighten nearby particles.
+A very short freeze-frame on boss component destruction.
+Enemy death sound pitch based on mass.
+Kill confirmation tick near the crosshair.
+Credits travel toward the HUD as small light streaks.
+Offscreen elite/boss direction markers.
+Threat arrows brighten when an attack is facing the player.
+Near-miss sound when a dangerous projectile passes close.
+Shield-break ring distinct from an explosion.
+Armour-break metallic burst.
+Hull breach puff followed by persistent smoke.
+Low enemy hull causes unstable lights or intermittent thrusters.
+Damaged hardpoints spark locally.
+Fleeing enemies get an engine flare and altered trail.
+Alerted enemies briefly display a clean faction-coloured ring.
+Investigating enemies show a small scanning sweep.
+Enemies receiving an ally alert briefly turn a marker toward its source.
+Boss attack telegraphs dim irrelevant effects nearby for readability.
+Boss phase transition temporarily suppresses ordinary bullets.
+Important attacks receive a unique audio cue before their visual telegraph.
+Player damage direction briefly highlights the appropriate shield edge.
+Cargo pickup shows the resource name only for rare or new materials.
+Mining yield multiplier causes visibly richer fragment bursts.
+Destructible rockets receive a small health pip or pulsing core.
+Enemy reinforcements produce a radar contact warning before appearing.
+Flyby enemies get a screen-edge approach trail before entering view.
+Capital ships cast a subtle ambient glow or screen-space presence effect.
+Feedback priority system
+
+Eventually classify feedback into three rough priorities:
+
+Minor: ordinary bullets, basic pickups.
+Major: rockets, armour breaks, elite deaths.
+Critical: beam lock, boss attacks, player hull breach.
+
+This prevents the screen from becoming equally noisy for every event. It does not necessarily need an enum yet; a simple numeric priority is more flexible.
+
+Things I would deliberately not add yet
+Enemy levels.
+Large resistance tables on every ship.
+Individual hardpoint health.
+Full formation systems.
+Crew simulation.
+Interior room damage calculations.
+Procedural loot affixes.
+Dozens of additional movement enums.
+A unique callback slot for every hypothetical event.
+Boss phase scripting inside ordinary enemy definitions.
+Full faction diplomacy rules before multiple factions coexist naturally.
+An enum for every attack or ship subtype.
+
+Your present structure is healthy. The next universally useful additions I would personally choose are:
+
+Gameplay mass.
+Enemy threat_value.
+Flexible identity tags.
+Reward drop_table_key.
+Damage hit position/direction.
+Faction-level feedback colours.
+Projectile danger_level when missile warnings begin.
+
+Those seven additions open a lot of future gameplay without forcing unfinished mechanics to run or adding substantial per-step overhead.
