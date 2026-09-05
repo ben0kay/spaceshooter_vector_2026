@@ -137,6 +137,7 @@
     {"id":{"name":"sc_plyr_dash","path":"scripts/sc_plyr_dash/sc_plyr_dash.yy",},},
     {"id":{"name":"sc_plyr_draw","path":"scripts/sc_plyr_draw/sc_plyr_draw.yy",},},
     {"id":{"name":"sc_plyr_functions","path":"scripts/sc_plyr_functions/sc_plyr_functions.yy",},},
+    {"id":{"name":"sc_plyr_mining_beam","path":"scripts/sc_plyr_mining_beam/sc_plyr_mining_beam.yy",},},
     {"id":{"name":"sc_plyr_register","path":"scripts/sc_plyr_register/sc_plyr_register.yy",},},
     {"id":{"name":"sc_plyr_ship_bake","path":"scripts/sc_plyr_ship_bake/sc_plyr_ship_bake.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},

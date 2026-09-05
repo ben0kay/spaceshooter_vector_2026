@@ -245,6 +245,7 @@ function sc_input_init()
             move_down: vk_down,
 
             fire_primary: mb_left,
+            mine: mb_middle,
             fire_secondary: mb_right,
             inventory: ord("E"),
             dash: vk_shift,
@@ -253,9 +254,8 @@ function sc_input_init()
             weapon_2: ord("2"),
             weapon_3: ord("3"),
             weapon_4: ord("4"),
-			
-			fullscreen: vk_f11,
-					
+
+            fullscreen: vk_f11
         },
 
         action: {
@@ -265,11 +265,11 @@ function sc_input_init()
             move_down: false,
 
             fire_primary: false,
+            mine: false,
             fire_secondary: false,
             ui_select_pressed: false,
-			
-			fullscreen_pressed: false,
 
+            fullscreen_pressed: false,
             inventory_pressed: false,
             dash_held: false,
             dash_pressed: false,
@@ -289,8 +289,8 @@ function sc_input_update()
 {
     var _binding = global.input.binding;
     var _action = global.input.action;
-	
-	_action.fullscreen_pressed = keyboard_check_pressed(_binding.fullscreen);
+
+    _action.fullscreen_pressed = keyboard_check_pressed(_binding.fullscreen);
 
     _action.move_left = keyboard_check(_binding.move_left);
     _action.move_right = keyboard_check(_binding.move_right);
@@ -298,6 +298,7 @@ function sc_input_update()
     _action.move_down = keyboard_check(_binding.move_down);
 
     _action.fire_primary = mouse_check_button(_binding.fire_primary);
+    _action.mine = mouse_check_button(_binding.mine);
     _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
     _action.ui_select_pressed = mouse_check_button_pressed(mb_left);
 

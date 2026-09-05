@@ -54,7 +54,8 @@ function sc_ship_register_shard()
                 "weapon_shard_rocket"
             ],
 
-            secondary: undefined
+            mining: "weapon_shard_mining_beam",
+			secondary: undefined
         }
     });
 }

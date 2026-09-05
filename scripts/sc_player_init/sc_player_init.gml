@@ -145,16 +145,21 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.combat = {
-        weapons_allowed: true,
+    weapons_allowed: true,
 
-        primary: {
-            hardpoint_cursor: 0,
-            next_fire_tick: 0,
-            active_delivery_id: noone
-        }
+    primary: {
+        hardpoint_cursor: 0,
+        next_fire_tick: 0,
+        active_delivery_id: noone
+    },
 
-        // MMB special and RMB frontal shield runtime go here later.
-    };
+    mining: {
+        next_fire_tick: 0,
+        active_delivery_id: noone
+    }
+
+    // RMB frontal shield runtime goes here later.
+};
 
     _player.aim = {
         world_x: _player.x,

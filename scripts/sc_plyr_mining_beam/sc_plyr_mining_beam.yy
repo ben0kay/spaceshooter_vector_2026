@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_mining_beam",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_mining_beam",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/scripts/player/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
