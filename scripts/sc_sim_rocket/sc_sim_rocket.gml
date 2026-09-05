@@ -19,7 +19,7 @@ function sc_projectile_register_simulant_rocket()
             key: "projectile_simulant_rocket",
             name: "Simulant Rocket"
         },
-		projectile_type: ProjectileType.ROCKET,
+		projectile_motion: ProjectileMotion.ROCKET,
         projectile_class: ProjectileClass.HEAVY,
         collision: { radius: 8 },
 

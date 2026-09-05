@@ -3,7 +3,7 @@ function sc_projectile_register_minigun()
 {
     return sc_projectile_register({
         identity: { key: "projectile_minigun", name: "Minigun Round" },
-		projectile_type: ProjectileType.BALLISTIC,
+		projectile_motion: ProjectileMotion.BALLISTIC,
         projectile_class: ProjectileClass.LIGHT,
         collision: { radius: 3 },
 

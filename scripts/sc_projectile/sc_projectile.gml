@@ -38,7 +38,7 @@ function sc_projectile_init(_projectile, _create)
 	    key: _create.key,
 	    state: ProjectileState.ACTIVE,
 	    projectile_class: _data.projectile_class,
-	    projectile_type: _data.projectile_type,
+	    projectile_motion: _data.projectile_motion,
 	    source: _create.source,
 	    direction: _create.direction,
 	    scale: _scale,
@@ -435,9 +435,9 @@ function sc_projectile_draw(_projectile)
     // ==================================================
     if (_data.state == ProjectileState.ACTIVE)
     {
-        switch (_data.projectile_type)
+        switch (_data.projectile_motion)
         {
-            case ProjectileType.ROCKET:
+            case ProjectileMotion.ROCKET:
             {
                 var _config =
                     global.config.visual.projectile_motion.rocket;

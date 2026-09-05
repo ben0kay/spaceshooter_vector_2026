@@ -39,14 +39,7 @@ enum HardpointRotation { FIXED, TARGET }
 //==================================================
 // PROJECTILES
 //==================================================
-enum ProjectileType
-{
-    BALLISTIC,
-    ENERGY_BOLT,
-    ROCKET,
-    PLASMA_ORB,
-    MINE
-}
+enum ProjectileMotion { STANDARD, ROCKET, CURVE, STATIONARY }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
 enum ProjectileState { ACTIVE, RICOCHET }
 //==================================================
