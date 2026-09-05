@@ -1,4 +1,53 @@
 
+/// @description Registers the standard non-homing Simulant rocket launcher.
+function sc_weapon_register_simulant_rocket()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_simulant_rocket",
+            name: "Simulant Rocket Launcher"
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_simulant_rocket",
+
+            projectile: {
+                scale: 1,
+                speed: 13,
+                life: 210
+            },
+
+            damage: {
+                amount: 6,
+                type: DamageType.EXPLOSIVE,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: {
+                homing: 0
+            },
+
+            detonation: {
+                scale: 0.8,
+
+                damage: {
+                    amount: 12,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.STAGGER,
+                    knockback_force: 2.5
+                }
+            }
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.5,
+            pitch_range: 0.06
+        }
+    });
+}
+
 /// @description Registers the Dreadnaught's large homing rocket weapon.
 function sc_weapon_register_simulant_dreadnaught_rocket()
 {

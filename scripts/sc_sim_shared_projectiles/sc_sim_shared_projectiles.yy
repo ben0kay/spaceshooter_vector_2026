@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_shared_projectiles",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_shared_projectiles",
+  "parent":{
+    "name":"projectiles",
+    "path":"folders/scripts/enemy/factions/simulant/projectiles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

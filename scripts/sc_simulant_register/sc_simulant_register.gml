@@ -22,6 +22,7 @@ function sc_enemy_faction_simulant_weapons_register()
 {
     if (!sc_weapon_register_simulant_pulse()) return false;
     if (!sc_weapon_register_simulant_thin_beam()) return false;
+	if (!sc_weapon_register_simulant_rocket()) return false;
     if (!sc_weapon_register_simulant_dreadnaught_rocket()) return false;
     return true;
 }

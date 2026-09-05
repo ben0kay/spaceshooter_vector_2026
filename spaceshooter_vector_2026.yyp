@@ -162,6 +162,7 @@
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
     {"id":{"name":"sc_sim_rocket_weapon","path":"scripts/sc_sim_rocket_weapon/sc_sim_rocket_weapon.yy",},},
     {"id":{"name":"sc_sim_rocket","path":"scripts/sc_sim_rocket/sc_sim_rocket.yy",},},
+    {"id":{"name":"sc_sim_shared_projectiles","path":"scripts/sc_sim_shared_projectiles/sc_sim_shared_projectiles.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_simulant_beam","path":"scripts/sc_simulant_beam/sc_simulant_beam.yy",},},

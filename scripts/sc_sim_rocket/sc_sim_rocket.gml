@@ -19,22 +19,23 @@ function sc_projectile_register_simulant_rocket()
             key: "projectile_simulant_rocket",
             name: "Simulant Rocket"
         },
-		projectile_motion: ProjectileMotion.ROCKET,
+
+        projectile_motion: ProjectileMotion.ROCKET,
         projectile_class: ProjectileClass.HEAVY,
-        collision: { radius: 8 },
+        collision: { radius: 7 },
 
         detonation: {
             area: {
                 shape: AttackAreaShape.CIRCLE,
-                geometry: { radius: 94 },
+                geometry: { radius: 72 },
 
                 behaviour: {
-                    duration: 22,
+                    duration: 18,
                     tick_interval: 0,
                     hit_once: true,
                     max_targets: 0,
                     falloff_minimum: 0.2,
-                    falloff_exponent: 1.35
+                    falloff_exponent: 1.25
                 },
 
                 visual: {
@@ -42,22 +43,22 @@ function sc_projectile_register_simulant_rocket()
                     draw_script: sc_attack_area_simulant_rocket_explosion_draw,
 
                     shockwave: {
-                        radius_scale: 1.35,
-                        expansion_response: 0.17,
-                        fade_speed: 0.04,
-                        thickness: 5,
+                        radius_scale: 1.3,
+                        expansion_response: 0.18,
+                        fade_speed: 0.045,
+                        thickness: 4,
                         colour: _palette.energy,
 
                         particles_enabled: true,
                         particle_interval: 1,
-                        particle_min_radius: 10,
+                        particle_min_radius: 8,
 
                         smoke_enabled: true,
-                        smoke_amount_max: 5,
+                        smoke_amount_max: 4,
                         smoke_colour: make_colour_rgb(60, 38, 78),
 
                         fragments_enabled: true,
-                        fragment_chance: 0.55,
+                        fragment_chance: 0.48,
                         fragment_colour: _palette.energy
                     }
                 }
@@ -65,12 +66,22 @@ function sc_projectile_register_simulant_rocket()
         },
 
         visual: {
-            radius: 8,
-            length: 34,
+            radius: 7,
+            length: 30,
             palette: _palette,
+
             draw_script: sc_projectile_simulant_rocket_draw,
             impact_script: sc_projectile_simulant_rocket_impact,
             particles_register_script: sc_projectile_simulant_rocket_particles_register,
+
+            trail: {
+                enabled: true,
+                length: 62,
+                width: 1.75,
+                glow_width: 6,
+                alpha: 0.78,
+                glow_alpha: 0.2
+            },
 
             bake: {
                 canvas_size: 128,
