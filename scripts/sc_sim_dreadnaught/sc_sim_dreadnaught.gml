@@ -28,6 +28,12 @@ function sc_enemy_register_sim_dreadnaught()
 			ship_class: EnemyClass.CAPITAL,
 			rank: EnemyRank.BOSS
         },
+		
+		logic_controller: {
+		    init_script: sc_enemy_controller_boss_init,
+		    step_script: sc_enemy_controller_boss_step,
+		    damage_response_script: sc_enemy_controller_boss_damage_response
+		},
 
         reward: { credits: 2500 },
 

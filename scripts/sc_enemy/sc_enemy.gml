@@ -9,10 +9,21 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     var _data = variable_struct_get(global.data.enemies, _enemy_key);
     var _radius = _data.visual.radius;
+	
+	
+	var _logic_controller = {
+    init_script: sc_enemy_controller_standard_init,
+    step_script: sc_enemy_controller_standard_step,
+    damage_response_script: sc_enemy_controller_standard_damage_response
+	};
+
+	if (variable_struct_exists(_data, "logic_controller"))
+	    _logic_controller = _data.logic_controller;
 
     _enemy.enemy = {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
+		logic_controller: variable_clone(_logic_controller),
 		doctrine: variable_clone(sc_faction_doctrine_get(_data.identity.faction)),
 		reward: variable_clone(_data.reward),
         state: EnemyState.IDLE,
@@ -537,7 +548,7 @@ function sc_enemy_damage(_enemy, _packet)
     if (_result.dealt.shield > 0)
         _data.visual.runtime.shield_hit_alpha = 1;
 
-    if (_defence.hull.current < 0)
+    if (_defence.hull.current <= 0)
     {
         _defence.hull.current = 0;
         _data.state = EnemyState.DEAD;
