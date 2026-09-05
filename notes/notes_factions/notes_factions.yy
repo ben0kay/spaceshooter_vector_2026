@@ -1,7 +1,7 @@
 {
   "$GMNotes":"v1",
-  "%Name":"notes_faction_visuals",
-  "name":"notes_faction_visuals",
+  "%Name":"notes_factions",
+  "name":"notes_factions",
   "parent":{
     "name":"NOTES",
     "path":"folders/NOTES.yy",

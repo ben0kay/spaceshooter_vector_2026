@@ -54,7 +54,8 @@
   "resources":[
     {"id":{"name":"designing a new enemy","path":"notes/designing a new enemy/designing a new enemy.yy",},},
     {"id":{"name":"notes_code_preferences","path":"notes/notes_code_preferences/notes_code_preferences.yy",},},
-    {"id":{"name":"notes_faction_visuals","path":"notes/notes_faction_visuals/notes_faction_visuals.yy",},},
+    {"id":{"name":"notes_factions","path":"notes/notes_factions/notes_factions.yy",},},
+    {"id":{"name":"notes_game_planning","path":"notes/notes_game_planning/notes_game_planning.yy",},},
     {"id":{"name":"notes_immediate_todo","path":"notes/notes_immediate_todo/notes_immediate_todo.yy",},},
     {"id":{"name":"notes_ship_systems","path":"notes/notes_ship_systems/notes_ship_systems.yy",},},
     {"id":{"name":"o_asteroid_test_spawner","path":"objects/o_asteroid_test_spawner/o_asteroid_test_spawner.yy",},},

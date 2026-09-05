@@ -512,14 +512,14 @@ function sc_enemy_body_visual_draw(_enemy, _draw_x, _draw_y, _angle)
     );
 
     if (_data.defence.armour.current > 0)
-    {
-        draw_sprite_ext(
-            _layers.armour[_armour_stage], 0,
-            _draw_x, _draw_y,
-            1, 1, _angle,
-            c_white, 1
-        );
-    }
+	{
+	    draw_sprite_ext(
+	        _layers.armour[_armour_stage], 0,
+	        _draw_x, _draw_y,
+	        1, 1, _angle,
+	        c_white, 1
+	    );
+	}
 }
 
 /// @description Draws the complete enemy assembly with shared slow visual floating motion.

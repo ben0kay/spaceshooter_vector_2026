@@ -1,8 +1,93 @@
-Use sc_sim_twin_fighter.gml as the complete enemy implementation example.
+/*
+DESIGNING A NEW ENEMY - NEW CHAT HANDOFF
 
-Reuse existing registered weapons where suitable. If creating a new weapon:
-- Put weapon behaviour and numerical combat parameters in sc_simulant_weapons.gml.
-- Put the projectile registration, baked primitive drawing and projectile-specific particles in its dedicated projectile file.
-- Keep enemy-specific hardpoints, thrusters, visual components and attacks in the new enemy file.
-- Do not place faction-specific behaviour inside generic enemy, weapon, projectile or particle infrastructure.
-- Give complete vertically compact GML functions and preserve the current registration architecture.
+ALWAYS PROVIDE
+
+* This note and notes_code_preferences.
+* One existing enemy file closest to the desired ship.
+* sc_enemy.gml
+* sc_enemy_bake.gml
+* sc_enemy_register.gml
+* sc_faction_register.gml
+* The shared visual primitive/helper script.
+* A description or reference image of the new ship.
+
+FOR DAMAGED VISUAL LAYERS
+Provide sc_sim_dreadwing.gml as the main example.
+
+Ask for:
+
+* Permanent underlying hull drawing.
+* Removable armour drawing.
+* Four baked damage stages for hull and armour.
+* Intact appearance that matches the requested design.
+* Exposed machinery, breaches and conduits as armour disappears.
+* Appropriate death fragments.
+* Optional damage_layers enabled only for that enemy.
+
+FOR MOVEMENT OR UNIQUE BEHAVIOUR
+Also provide:
+
+* sc_enemy_movement.gml
+* sc_enemy_asteroid_interaction.gml
+* The closest enemy movement example.
+
+Explain whether it:
+
+* Chases, holds, orbits, strafes, wanders or performs flybys.
+* Faces the target, movement direction, a command direction or remains fixed.
+* Moves while attacking.
+* Avoids, ignores or destroys asteroids.
+* Uses investigation, alerts or fleeing.
+
+FOR WEAPONS AND ATTACKS
+Also provide:
+
+* sc_enemy_attack.gml
+* The reused weapon definition.
+* The reused projectile definition.
+* An existing attack-controller example.
+
+Explain:
+
+* Number and location of hardpoints.
+* Fixed or rotating turrets and permitted firing arcs.
+* Weapon used by each hardpoint group.
+* Firing order, interval, volley size and cooldown.
+* Range, line-of-sight and health conditions.
+* Telegraph, aim lock, accuracy and projectile pattern.
+
+ENEMY DESCRIPTION TO INCLUDE
+
+* Name and faction.
+* Role, class and rank.
+* Approximate size and silhouette.
+* Shield, armour, hull and movement expectations.
+* Number and placement of guns, rockets, beams and thrusters.
+* Core location and animation.
+* Intended combat purpose.
+* Reference image orientation; draw_angle 0 faces east.
+
+IMPORTANT RULES
+
+* Preserve the project’s existing struct names and architecture.
+* Reuse existing weapons/projectiles unless a genuinely new one is required.
+* Static primitive artwork must be baked.
+* Keep hardpoints, core, thrust, shield and effects separate.
+* Do not add per-enemy Step or Draw code.
+* Use shared callbacks for behaviour.
+* Do not edit GitHub; provide complete compact GML in chat.
+* Give exact file locations and full replacement functions.
+* Do not silently add missing-field fallbacks.
+
+MINIMUM QUICK HANDOFF
+For a straightforward enemy reusing existing systems, provide:
+
+1. Closest existing enemy .gml file.
+2. Dreadwing .gml for damage-layer reference.
+3. Enemy bake script.
+4. Enemy attack and movement scripts.
+5. Faction registration/palette script.
+6. Reused weapon/projectile files.
+7. Reference image and written behaviour description.
+   */

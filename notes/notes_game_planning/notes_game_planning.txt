@@ -1,0 +1,60 @@
+/*
+GAME PLANNING - VECTOR SPACE SHOOTER
+
+CURRENT DIRECTION
+
+Top-down vector space shooter with bullet-hell combat.
+Main progression travels right through increasingly dangerous sectors.
+Open sectors contain combat, asteroids, resources, POIs and minibosses.
+Main bosses use dedicated scrolling encounter rooms.
+Long-term theme: surviving, maintaining and upgrading one ship.
+
+COMPLETED FOUNDATION
+
+Boot, profiles, menu, ship selection and combat-test flow.
+Player movement, boost, dodge, fuel and energy consumption.
+Shield, armour and hull defence layers.
+Bullets, explosives, cargo capacity and credit rewards.
+Baked player ships, enemies, projectiles, asteroids, pickups and HUD.
+Generic weapons, projectiles, beams, rockets and attack areas.
+Weapon-owned damage, scale, speed, lifetime, homing and detonation.
+Projectile classes, shield ricochets, explosions and stagger.
+Enemy hardpoints, aiming arcs, telegraphs and attack controllers.
+Enemy chase, hold, orbit, wander, flyby foundation and separation.
+Enemy asteroid avoidance, line of sight and route-around behaviour.
+Enemy awareness, investigation and faction alert sharing.
+Screen culling and staggered enemy update scheduling.
+Enemy death rewards, HUD feedback and camera shake.
+Faction-scaled thrusters, low-hull smoke and optional damage layers.
+Asteroid variants, damage, ore drops and cargo pickup foundation.
+Boss-test room, scrolling background, escort wave and Dreadnaught.
+
+IMMEDIATE DIRECTION
+
+Finish testing Dreadwing armour/hull damage layers.
+Add layered visuals to other enemies gradually.
+Keep polishing combat feedback before greatly increasing enemy count.
+Keep standard sector enemies separate from future dedicated boss logic.
+
+FUTURE SYSTEMS
+
+Full inventory UI with item stacks, moving, dropping and cargo management.
+Mining beam with improved extraction and upgrade modifiers.
+Sector progression, asteroid fields, hazards, POIs and bases.
+Enemy flee behaviour, faction doctrine and configurable ally alerts.
+Patrols, clusters, reinforcements and faction-specific movement styles.
+More weapons, upgrades, projectile patterns and boss attack phases.
+Dedicated o_boss architecture with scripted phases and components.
+Navigation HUD, minimap dock, sector map and waypoint systems.
+Internal ship rooms and damageable engines, reactor, weapons and sensors.
+Repair, crafting, trading, ship upgrades and resource progression.
+Derelict stations and possible top-down drone exploration mode.
+
+DESIGN RULES
+
+Keep systems data-driven, reusable and performance-friendly.
+Bake static vector artwork; draw only dynamic gameplay elements.
+Add shared foundations before scaling to many ships or factions.
+Prefer callbacks for unique behaviour and enums for clear classifications.
+Avoid requiring every enemy to carry systems it will never use.
+*/

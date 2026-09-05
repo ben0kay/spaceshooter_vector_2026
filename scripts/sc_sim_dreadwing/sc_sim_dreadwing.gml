@@ -499,21 +499,21 @@ function sc_enemy_sim_dreadwing_armour_draw(_x, _y, _radius, _angle, _visual, _s
 
     // Last broken armour fragments.
     if (_stage == 3)
-    {
-        sc_visual_triangle(_x, _y, _radius, _angle,
-            0.34, -0.35,
-            0.12, -0.69,
-            -0.08, -0.53,
-            _p.hull_dark, false
-        );
+{
+    sc_visual_triangle(_x, _y, _radius, _angle,
+        0.37, -0.34,
+        0.18, -0.7,
+        -0.03, -0.61,
+        _p.hull_mid, false
+    );
 
-        sc_visual_triangle(_x, _y, _radius, _angle,
-            -0.29, 0.48,
-            -0.42, 0.82,
-            -0.56, 0.61,
-            _p.hull_dark, false
-        );
-    }
+    sc_visual_triangle(_x, _y, _radius, _angle,
+        -0.31, 0.48,
+        -0.4, 0.76,
+        -0.53, 0.61,
+        _p.hull_mid, false
+    );
+}
 }
 
 /// @description Draws one independently rotating Dreadwing pulse cannon.

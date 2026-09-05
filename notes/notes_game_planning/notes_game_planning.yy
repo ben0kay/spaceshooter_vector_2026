@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"v1",
+  "%Name":"notes_game_planning",
+  "name":"notes_game_planning",
+  "parent":{
+    "name":"NOTES",
+    "path":"folders/NOTES.yy",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}
