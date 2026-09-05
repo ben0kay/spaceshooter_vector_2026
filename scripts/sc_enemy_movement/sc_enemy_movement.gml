@@ -18,6 +18,19 @@ function sc_enemy_movement_hold(_enemy)
     // Future stationary behaviour can be added here.
 }
 
+/// @description Holds during combat but repositions when its target view is obstructed.
+function sc_enemy_movement_hold_line_of_sight(_enemy)
+{
+    var _data = _enemy.enemy;
+    if (!instance_exists(_data.target_id)) return;
+
+    // Remain stationary while the player is clearly visible.
+    if (sc_enemy_attack_line_of_sight_clear(_enemy)) return;
+
+    // Pursue the player; shared asteroid avoidance converts this
+    // into a route around whichever asteroid blocks the corridor.
+    sc_enemy_movement_chase(_enemy);
+}
 
 
 /// @description Commands direct movement toward the current target.
@@ -271,17 +284,69 @@ function sc_enemy_asteroid_avoid_direction_select(_enemy, _desired_direction, _l
     return true;
 }
 
-/// @description Modifies the current movement command using registered asteroid behaviour.
+/// @description Separates an enemy from an asteroid only when an overlap has already occurred.
+function sc_enemy_asteroid_overlap_resolve(_enemy)
+{
+    // Ensure the collision ellipse matches the latest hull rotation.
+    _enemy.image_angle = _enemy.draw_angle;
+
+    var _asteroid = instance_place(_enemy.x, _enemy.y, o_asteroid);
+    if (!instance_exists(_asteroid)) return false;
+
+    var _movement = _enemy.enemy.movement;
+    var _normal;
+
+    if (point_distance(_asteroid.x, _asteroid.y, _enemy.x, _enemy.y) > 0.01)
+        _normal = point_direction(_asteroid.x, _asteroid.y, _enemy.x, _enemy.y);
+    else if (abs(_movement.velocity_x) + abs(_movement.velocity_y) > 0.01)
+        _normal = point_direction(0, 0, -_movement.velocity_x, -_movement.velocity_y);
+    else
+        _normal = _enemy.draw_angle + 180;
+
+    // Exceptional recovery only; normally avoidance prevents reaching this point.
+    for (var _i = 0; _i < 128; _i++)
+    {
+        _enemy.x += lengthdir_x(2, _normal);
+        _enemy.y += lengthdir_y(2, _normal);
+
+        if (!place_meeting(_enemy.x, _enemy.y, o_asteroid))
+        {
+            _movement.velocity_x = 0;
+            _movement.velocity_y = 0;
+            return true;
+        }
+    }
+
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    return true;
+}
+
+/// @description Modifies movement using registered asteroid behaviour and protects drifting ships.
 function sc_enemy_asteroid_response_apply(_enemy)
 {
     var _data = _enemy.enemy;
     var _command = _data.movement.command;
-    var _runtime = _data.movement.obstacle;
+    var _movement = _data.movement;
+    var _runtime = _movement.obstacle;
     var _response = _data.movement_controller.asteroid_response;
 
     if (_response == AsteroidResponse.IGNORE
-    || global.level.asteroids_alive <= 0
-    || !_command.active)
+    || global.level.asteroids_alive <= 0)
+    {
+        _runtime.active = false;
+        _runtime.target_id = noone;
+        return;
+    }
+
+    var _speed = point_distance(
+        0, 0,
+        _movement.velocity_x,
+        _movement.velocity_y
+    );
+
+    // Completely stationary enemies require no obstacle work.
+    if (!_command.active && _speed <= 0.01)
     {
         _runtime.active = false;
         _runtime.target_id = noone;
@@ -292,9 +357,9 @@ function sc_enemy_asteroid_response_apply(_enemy)
     {
         if (!_runtime.active) return;
 
-        if (_response == AsteroidResponse.AVOID)
+        if (_command.active && _response == AsteroidResponse.AVOID)
             _command.direction = _runtime.direction;
-        else
+        else if (_command.active)
             sc_enemy_asteroid_stop(_enemy);
 
         return;
@@ -302,11 +367,17 @@ function sc_enemy_asteroid_response_apply(_enemy)
 
     var _config = global.config.enemy.asteroid;
     var _lazy = _data.optimization.lazy_factor;
-    var _speed = point_distance(
-        0, 0,
-        _data.movement.velocity_x,
-        _data.movement.velocity_y
-    );
+
+    _runtime.next_check_tick = GAME_TICK
+        + max(1, round(_config.check_interval * _lazy));
+
+    // Rare recovery for rotation, residual drift or externally applied movement.
+    if (sc_enemy_asteroid_overlap_resolve(_enemy))
+    {
+        _runtime.active = false;
+        _runtime.target_id = noone;
+        return;
+    }
 
     var _clearance = max(
         _data.collision.radius_forward,
@@ -317,15 +388,16 @@ function sc_enemy_asteroid_response_apply(_enemy)
         + _config.look_ahead_base
         + _speed * _config.look_ahead_speed;
 
-    var _desired_direction = _command.direction;
+    // Active propulsion follows its command. Residual drift follows velocity.
+    var _desired_direction = _command.active
+        ? _command.direction
+        : point_direction(0, 0, _movement.velocity_x, _movement.velocity_y);
+
     var _asteroid = sc_enemy_asteroid_route_probe(
         _enemy,
         _desired_direction,
         _look_ahead
     );
-
-    _runtime.next_check_tick = GAME_TICK
-        + max(1, round(_config.check_interval * _lazy));
 
     if (!instance_exists(_asteroid))
     {
@@ -337,6 +409,16 @@ function sc_enemy_asteroid_response_apply(_enemy)
 
     _runtime.active = true;
     _runtime.target_id = _asteroid;
+
+    // A ship that is only drifting should stop before impact rather than
+    // suddenly applying propulsion and steering around the obstacle.
+    if (!_command.active)
+    {
+        _movement.velocity_x = 0;
+        _movement.velocity_y = 0;
+        _runtime.active = false;
+        return;
+    }
 
     switch (_response)
     {
