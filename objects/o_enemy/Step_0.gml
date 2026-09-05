@@ -33,7 +33,8 @@ if (_hardpoint_due)
 
 var _state_before_movement = enemy.state;
 
-sc_enemy_movement_update(id);
+if (sc_enemy_movement_update(id))
+    exit;
 
 if (_state_before_movement == EnemyState.ATTACKING)
     sc_enemy_attack_update(id);

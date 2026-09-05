@@ -686,6 +686,21 @@ function sc_enemy_damage(_enemy, _packet)
     return _result;
 }
 
+/// @description Removes one enemy through the shared cleanup pathway.
+function sc_enemy_remove(_enemy, _reason)
+{
+    if (!instance_exists(_enemy)) return false;
+
+    var _data = _enemy.enemy;
+
+    _data.removal_reason = _reason;
+    _data.target_id = noone;
+
+    sc_enemy_attack_cancel(_enemy);
+    instance_destroy(_enemy);
+    return true;
+}
+
 /// @description Processes one enemy death and its final killing source.
 function sc_enemy_die(_enemy, _packet)
 {
@@ -697,8 +712,6 @@ function sc_enemy_die(_enemy, _packet)
     var _shake_config = global.config.visual.enemy_death;
     var _mass = _data.stats.final.mass;
 
-    sc_enemy_attack_cancel(_enemy);
-    _data.target_id = noone;
     _data.visual.death.script(_enemy);
 
     var _shake_magnitude = clamp(
@@ -734,6 +747,5 @@ function sc_enemy_die(_enemy, _packet)
     // Process registered on-death abilities here later.
     // Insert registered enemy death audio here later.
 
-    instance_destroy(_enemy);
-    return true;
+    return sc_enemy_remove(_enemy, EnemyRemovalReason.KILLED);
 }

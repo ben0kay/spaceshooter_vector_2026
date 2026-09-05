@@ -19,6 +19,7 @@ enum EnemyFacingMode { TARGET, MOVEMENT, COMMAND, FIXED, SPIN }
 enum EnemyRole { FIGHTER, CARGO, MINER, SUPPORT } 
 enum EnemyClass { LIGHT, STANDARD, HEAVY, CAPITAL } 
 enum EnemyRank { COMMON, ELITE, MINIBOSS, BOSS }
+enum EnemyRemovalReason { KILLED, ESCAPED, DESPAWNED }
 
 //==================================================
 // ATTACK CONTROLLER

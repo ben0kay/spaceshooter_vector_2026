@@ -481,6 +481,9 @@ function sc_enemy_movement_update(_enemy)
     sc_enemy_facing_update(_enemy);
     sc_enemy_movement_apply(_enemy);
 
-    if (_state == EnemyState.FLEEING)
-        sc_enemy_flee_exit_check(_enemy);
+    if (_state == EnemyState.FLEEING
+    && sc_enemy_flee_exit_check(_enemy))
+        return true;
+
+    return false;
 }

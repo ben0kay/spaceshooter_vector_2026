@@ -127,6 +127,5 @@ function sc_enemy_flee_exit_check(_enemy)
     && _enemy.y <= room_height + _padding)
         return false;
 
-    instance_destroy(_enemy);
-    return true;
+    return sc_enemy_remove(_enemy, EnemyRemovalReason.ESCAPED);
 }
