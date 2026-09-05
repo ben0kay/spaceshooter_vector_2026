@@ -34,11 +34,11 @@ function sc_particles_register_enemy_thrust()
 }
 
 /// @description Calculates shared enemy-thruster width and length factors.
-function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _length_config)
+function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _length_config)
 {
     var _config = global.config.visual.enemy_thrust;
     var _radius_factor = clamp(_ship_radius / _config.radius_reference, _config.radius_factor_min, _config.radius_factor_max);
-    var _mass_factor = clamp(_visual_mass, _config.visual_mass_min, _config.visual_mass_max);
+    var _mass_factor = clamp(_mass, _config.mass_min, _config.mass_max);
 
     return {
         width: _mount_scale * lerp(_config.width_base, _radius_factor, _config.width_radius_mix),
@@ -48,12 +48,12 @@ function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _vi
     };
 }
 
-/// @description Emits a faction-coloured ignition burst scaled by radius, visual mass and mount size.
-function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_scale, _ship_radius, _visual_mass, _palette)
+/// @description Emits a faction-coloured ignition burst scaled by radius, mass and mount size.
+function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_scale, _ship_radius, _mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
     var _config = global.config.visual.enemy_thrust.ignition;
-    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _config);
+    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _config);
     var _width = _scale.width;
     var _length = _scale.length;
     var _trail_count = clamp(ceil(_width * _config.trail_count_scale), _config.trail_count_min, _config.trail_count_max);
@@ -80,12 +80,12 @@ function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_s
     return true;
 }
 
-/// @description Emits continuous faction-coloured exhaust scaled by radius, visual mass and movement power.
-function sc_particles_enemy_thrust_emit(_x, _y, _direction, _power, _mount_scale, _ship_radius, _visual_mass, _palette)
+/// @description Emits continuous faction-coloured exhaust scaled by radius, mass and movement power.
+function sc_particles_enemy_thrust_emit(_x, _y, _direction, _power, _mount_scale, _ship_radius, _mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
     var _config = global.config.visual.enemy_thrust.trail;
-    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _visual_mass, _config);
+    var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _config);
     var _width = _scale.width;
     var _length = _scale.length;
     var _side_offset = random_range(-_config.side_spread, _config.side_spread) * _width;

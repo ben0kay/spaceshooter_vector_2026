@@ -48,6 +48,7 @@ function sc_enemy_stats_recalculate(_enemy)
     var _handling = _final.handling;
     var _range = _final.range;
 
+    _final.mass = max(0.1, _final.mass);
     _final.shield_max = max(0, _final.shield_max);
     _final.armour_max = max(0, _final.armour_max);
     _final.hull_max = max(1, _final.hull_max);

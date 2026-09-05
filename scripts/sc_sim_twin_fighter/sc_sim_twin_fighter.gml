@@ -8,7 +8,8 @@ function sc_enemy_register_twin_fighter()
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
 			ship_class: EnemyClass.STANDARD,
-			rank: EnemyRank.COMMON
+			rank: EnemyRank.COMMON,
+			threat_value: 5
         },
 
 		reward: { credits: 20 },
@@ -17,6 +18,7 @@ function sc_enemy_register_twin_fighter()
             shield_max: 50,
             armour_max: 200,
             hull_max: 60,
+			mass: 1.15,
 
             handling: {
                 speed_max: 5.5,
@@ -139,7 +141,6 @@ function sc_enemy_twin_fighter_visual_data()
 {
     return {
         radius: 58,
-		visual_mass: 1.15,
 		motion_strength: 3,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: -0.23, side: 0 },

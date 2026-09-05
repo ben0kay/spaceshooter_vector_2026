@@ -576,12 +576,19 @@ An enum for every attack or ship subtype.
 
 Your present structure is healthy. The next universally useful additions I would personally choose are:
 
-Gameplay mass.
-Enemy threat_value.
-Flexible identity tags.
-Reward drop_table_key.
-Damage hit position/direction.
-Faction-level feedback colours.
-Projectile danger_level when missile warnings begin.
+Gameplay mass
+Controls physical behaviour: knockback resistance, collision force, recoil push and future gravity effects. Separate from visual_mass, which only affects thruster appearance.
+Enemy threat_value
+A difficulty score used when generating encounters. For example, a sector with a 20-point budget could spawn ten 2-point fighters or two 10-point elites.
+Identity tags
+Flexible labels such as "mechanical", "drone" or "capital". Systems can filter enemies by tags without needing new enums or hardcoded checks.
+Reward drop_table_key
+Points to a reusable loot table defining possible item and resource drops. Multiple enemies can share one table while retaining different credit rewards.
+Damage hit position/direction
+Stores exactly where an attack landed and which direction it came from. Useful for correctly positioned sparks, debris, knockback, armour damage and directional indicators.
+Faction feedback colours
+Centralizes each faction’s alert, targeting, telegraph, shield and warning colours. All ships from that faction automatically share a consistent visual language.
+Projectile danger_level
+Tells feedback systems how seriously to present a projectile. Ordinary bullets might receive no warning, while rockets and boss attacks receive indicators, sounds or targeting brackets.
 
 Those seven additions open a lot of future gameplay without forcing unfinished mechanics to run or adding substantial per-step overhead.

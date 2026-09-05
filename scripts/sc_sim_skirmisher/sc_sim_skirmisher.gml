@@ -8,7 +8,8 @@ function sc_enemy_register_sim_skirmisher()
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
 			ship_class: EnemyClass.LIGHT,
-			rank: EnemyRank.COMMON
+			rank: EnemyRank.COMMON,
+			threat_value: 3
         },
 
 		reward: { credits: 5 },
@@ -17,6 +18,7 @@ function sc_enemy_register_sim_skirmisher()
             shield_max: 30,
             armour_max: 30,
             hull_max: 30,
+			mass: 0.8,
 
             handling: {
                 speed_max: 7,
@@ -146,7 +148,6 @@ function sc_enemy_sim_skirmisher_visual_data()
 {
     return {
         radius: 52,
-		visual_mass: 0.8,
 		motion_strength: 4,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: 0, side: 0 },

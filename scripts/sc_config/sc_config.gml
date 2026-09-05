@@ -18,7 +18,7 @@ function sc_config_init()
             enemy_thrust: {
                 active_power_min: 0.05, emit_power_min: 0.15, emit_interval: 3,
                 radius_reference: 52, radius_factor_min: 0.65, radius_factor_max: 2.5,
-                visual_mass_min: 0.5, visual_mass_max: 3,
+                mass_min: 0.5, mass_max: 3,
                 width_base: 0.8, width_radius_mix: 0.72,
 
                 ignition: {

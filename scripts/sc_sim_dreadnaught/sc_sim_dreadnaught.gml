@@ -26,7 +26,8 @@ function sc_enemy_register_sim_dreadnaught()
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
 			ship_class: EnemyClass.CAPITAL,
-			rank: EnemyRank.BOSS
+			rank: EnemyRank.BOSS,
+			threat_value: 500
         },
 		
 		awareness_controller: {
@@ -44,6 +45,7 @@ function sc_enemy_register_sim_dreadnaught()
             shield_max: 1800,
             armour_max: 4200,
             hull_max: 2200,
+			visual_mass: 5.5,
 
             handling: {
                 speed_max: 0.8,
@@ -411,7 +413,6 @@ function sc_enemy_sim_dreadnaught_visual_data()
 {
     return {
         radius: 250,
-        visual_mass: 5.5,
         motion_strength: 1,
         palette: sc_faction_palette_get(Faction.SIMULANT),
         core: { forward: 0, side: 0 },

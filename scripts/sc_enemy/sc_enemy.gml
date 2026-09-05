@@ -73,6 +73,12 @@ function sc_enemy_init(_enemy, _enemy_key)
 		    attempts: 0,
 		    next_attempt_tick: 0
 		},
+			
+		flee: {
+    attempts: 0,
+    next_attempt_tick: 0,
+    direction: 0
+},
 
 		awareness: {
 		    memory_until: 0,
@@ -315,9 +321,10 @@ function sc_enemy_damage_visual_update(_enemy)
 
     var _collision = _enemy.entity.collision;
     var _footprint = _config.footprint_scale;
+    var _mass = _data.stats.final.mass;
     var _scale = clamp(
         (_visual.radius / _config.radius_reference)
-        * (1 + max(0, _visual.visual_mass - 1) * _config.mass_scale),
+        * (1 + max(0, _mass - 1) * _config.mass_scale),
         _config.scale_min,
         _config.scale_max
     );
@@ -353,6 +360,7 @@ function sc_enemy_visual_update(_enemy)
     var _movement = _data.movement;
     var _thrusters = _data.thrusters;
     var _speed_max = _data.stats.final.handling.speed_max;
+    var _mass = _data.stats.final.mass;
     var _thrust_config = global.config.visual.enemy_thrust;
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
@@ -377,7 +385,7 @@ function sc_enemy_visual_update(_enemy)
 
         if (_active && !_runtime.active)
             _visual.thrust.ignition_script(_thruster_x, _thruster_y, _thruster_angle, _target_power,
-                _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
+                _thruster.scale, _visual.radius, _mass, _visual.palette);
 
         _runtime.active = _active;
         _runtime.power = lerp(_runtime.power, _target_power, _target_power > _runtime.power ? 0.22 : 0.12);
@@ -385,7 +393,7 @@ function sc_enemy_visual_update(_enemy)
         if (_runtime.power > _thrust_config.emit_power_min
         && ((GAME_TICK + _runtime.phase) mod _thrust_config.emit_interval) == 0)
             _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power,
-                _thruster.scale, _visual.radius, _visual.visual_mass, _visual.palette);
+                _thruster.scale, _visual.radius, _mass, _visual.palette);
     }
 }
 
@@ -657,8 +665,10 @@ function sc_enemy_damage(_enemy, _packet)
         sc_enemy_die(_enemy, _packet);
         return _result;
     }
-	sc_enemy_awareness_damage_try(_enemy, _packet);
+
+    sc_enemy_awareness_damage_try(_enemy, _packet);
     sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
+    sc_enemy_flee_try(_enemy, _result);
 
     if (_result.effect.type == DamageEffect.STAGGER
     && sc_damage_effect_triggered(_result.effect))
@@ -676,21 +686,21 @@ function sc_enemy_die(_enemy, _packet)
     var _death_y = _enemy.y;
     var _death_layer = _enemy.layer;
     var _shake_config = global.config.visual.enemy_death;
-    var _visual_mass = _data.visual.visual_mass;
+    var _mass = _data.stats.final.mass;
 
     sc_enemy_attack_cancel(_enemy);
     _data.target_id = noone;
     _data.visual.death.script(_enemy);
 
     var _shake_magnitude = clamp(
-        _shake_config.shake_base + _visual_mass * _shake_config.shake_per_mass,
+        _shake_config.shake_base + _mass * _shake_config.shake_per_mass,
         _shake_config.shake_min,
         _shake_config.shake_max
     );
 
     var _shake_time = min(
         _shake_config.time_max,
-        round(_shake_config.time_base + _visual_mass * _shake_config.time_per_mass)
+        round(_shake_config.time_base + _mass * _shake_config.time_per_mass)
     );
 
     sc_camera_shake_at(

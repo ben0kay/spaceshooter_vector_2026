@@ -57,12 +57,16 @@ function sc_faction_register_simulant()
 		    },
 
 		    flee: {
-		        chance: 0.05,
-		        trigger_layer: DefenceLayer.HULL,
-		        trigger_ratio: 0.1,
-		        sway_amount: 4,
-		        sway_speed: 0.025
-		    },
+		    chance: 0.05,
+		    trigger_layer: DefenceLayer.HULL,
+		    trigger_ratio: 0.1,
+		    max_attempts: 1,
+		    cooldown: 300,
+		    movement_script: sc_enemy_movement_flee_away,
+		    speed_scale: 1,
+		    sway_amount: 4,
+		    sway_speed: 0.025
+		}
 			
 		},
     });
@@ -105,12 +109,16 @@ function sc_faction_register_rebel()
 		    },
 
 		    flee: {
-		        chance: 0.4,
-		        trigger_layer: DefenceLayer.HULL,
-		        trigger_ratio: 0.3,
-		        sway_amount: 14,
-		        sway_speed: 0.04
-		    },
+    chance: 0.4,
+    trigger_layer: DefenceLayer.HULL,
+    trigger_ratio: 0.3,
+    max_attempts: 1,
+    cooldown: 300,
+    movement_script: sc_enemy_movement_flee_away,
+    speed_scale: 1,
+    sway_amount: 14,
+    sway_speed: 0.04
+}
 
 		},
     });

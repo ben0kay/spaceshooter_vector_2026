@@ -14,8 +14,9 @@ function sc_enemy_register_rebel_gunship()
             name: "Rebel Flyby Gunship",
             faction: Faction.REBEL,
 			role: EnemyRole.FIGHTER,
-			ship_class: EnemyClass.LIGHT,
-			rank: EnemyRank.COMMON
+			ship_class: EnemyClass.STANDARD,
+			rank: EnemyRank.COMMON,
+			threat_level: 3
         },
 
         reward: { credits: 55 },
@@ -24,6 +25,7 @@ function sc_enemy_register_rebel_gunship()
             shield_max: 0,
             armour_max: 280,
             hull_max: 130,
+			mass: 1.25 ,
 
             handling: {
                 speed_max: 7.2,
@@ -234,7 +236,6 @@ function sc_enemy_rebel_gunship_visual_data()
 {
     return {
         radius: 70,
-        visual_mass: 1.25,
         motion_strength: 2.2,
         palette: sc_faction_palette_get(Faction.REBEL),
         core: { forward: -0.48, side: 0 },

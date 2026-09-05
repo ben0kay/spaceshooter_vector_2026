@@ -16,7 +16,8 @@ function sc_enemy_register_sim_dreadwing()
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
 			ship_class: EnemyClass.HEAVY,
-			rank: EnemyRank.ELITE
+			rank: EnemyRank.ELITE,
+			threat_value: 15
         },
 			
 		reward: { credits: 125 },	
@@ -25,7 +26,8 @@ function sc_enemy_register_sim_dreadwing()
             shield_max: 180,
             armour_max: 600,
             hull_max: 250,
-
+			mass: 2,
+			
             handling: {
                 speed_max: 3,
                 acceleration: 0.12,
@@ -205,7 +207,6 @@ function sc_enemy_sim_dreadwing_visual_data()
 {
     return {
         radius: 88,
-		visual_mass: 2,
 		motion_strength: 2,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 		core: { forward: -0.19, side: 0 },

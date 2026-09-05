@@ -63,6 +63,20 @@ function sc_enemy_register(_data)
         return false;
     }
 
+    if (!variable_struct_exists(_data.identity, "threat_value")
+    || _data.identity.threat_value < 0)
+    {
+        show_debug_message("ENEMY REGISTRATION ERROR - invalid threat value: " + _key);
+        return false;
+    }
+
+    if (!variable_struct_exists(_data.stats_base, "mass")
+    || _data.stats_base.mass <= 0)
+    {
+        show_debug_message("ENEMY REGISTRATION ERROR - invalid mass: " + _key);
+        return false;
+    }
+
     var _range = _data.stats_base.range;
 
     if (_range.backaway > _range.combat
