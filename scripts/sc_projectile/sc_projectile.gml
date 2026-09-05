@@ -365,7 +365,6 @@ function sc_projectile_entity_collision(_projectile, _target)
         _impact_x = _shield_impact.x;
         _impact_y = _shield_impact.y;
 
-        // Place explosions and impact effects on the visible shield surface.
         _projectile.x = _impact_x;
         _projectile.y = _impact_y;
     }
@@ -380,6 +379,12 @@ function sc_projectile_entity_collision(_projectile, _target)
 
     if (is_struct(_result))
     {
+        sc_entity_knockback_apply(
+            _target,
+            _data.damage.knockback_force,
+            _data.direction
+        );
+
         if (_target.entity.faction == Faction.PLAYER && _class_config.camera_shake > 0)
             sc_camera_shake(_class_config.camera_shake, _class_config.shake_time);
 

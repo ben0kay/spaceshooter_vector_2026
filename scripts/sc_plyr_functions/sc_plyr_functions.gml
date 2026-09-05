@@ -56,6 +56,7 @@ function sc_player_input_update(_player)
     _movement.input_x /= _length;
     _movement.input_y /= _length;
 }
+
 /// @description Updates player mouse aiming and visual rotation.
 function sc_player_aim_update(_player)
 {
@@ -538,6 +539,19 @@ function sc_player_update_active(_player)
     sc_player_combat_permission_update(_player);
     sc_player_primary_weapon_update(_player);
     sc_player_visual_update(_player);
+}
+
+/// @description Applies directional force to the player using ship gameplay mass.
+function sc_player_knockback_apply(_player, _force, _direction)
+{
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _mass = _player.ship.stats.final.mass;
+    var _impulse = max(0, _force) / max(0.1, _mass);
+
+    _player.movement.velocity_x += lengthdir_x(_impulse, _direction);
+    _player.movement.velocity_y += lengthdir_y(_impulse, _direction);
+    return true;
 }
 
 /// @description Begins or extends a brief player movement and weapon disruption.

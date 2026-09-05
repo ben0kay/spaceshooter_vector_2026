@@ -5,6 +5,7 @@ function sc_ship_register_shard()
         identity: { key: "ship_shard", name: "Shard", description: "A fast silver-aqua interceptor with adaptive swept wings." },
 
         stats_base: {
+			mass: 1,
             hull_max: 75, armour_max: 25, shield_max: 40,
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
 

@@ -119,10 +119,11 @@ function sc_weapon_register_shard_rocket()
                 scale: 1.15,
 
                 damage: {
-                    amount: 18,
-                    type: DamageType.EXPLOSIVE,
-                    effect: DamageEffect.STAGGER
-                }
+				    amount: 18,
+				    type: DamageType.EXPLOSIVE,
+				    effect: DamageEffect.STAGGER,
+				    knockback_force: 4
+				}
             }
         },
 

@@ -105,7 +105,15 @@ function sc_enemy_init(_enemy, _enemy_key)
     _runtime.movement.orbit_direction = _orbit_direction == 0 ? choose(-1, 1) : sign(_orbit_direction);
     _runtime.movement.command.facing_mode = _runtime.movement_controller.facing.default_mode;
 
-    if (!sc_entity_init(_enemy, _runtime.identity.faction, sc_enemy_damage, _runtime.collision)) return false;
+    if (!sc_entity_init(
+	    _enemy,
+	    _runtime.identity.faction,
+	    sc_enemy_damage,
+	    _runtime.collision,
+	    true,
+	    sc_enemy_knockback_apply
+	))
+	    return false;
 
     _runtime.defence = {
         shield: { current: _final.shield_max, maximum: _final.shield_max },
@@ -395,6 +403,19 @@ function sc_enemy_visual_update(_enemy)
             _visual.thrust.particle_script(_thruster_x, _thruster_y, _thruster_angle, _runtime.power,
                 _thruster.scale, _visual.radius, _mass, _visual.palette);
     }
+}
+
+/// @description Applies directional force to an enemy using its gameplay mass.
+function sc_enemy_knockback_apply(_enemy, _force, _direction)
+{
+    var _data = _enemy.enemy;
+    if (_data.state == EnemyState.DEAD) return false;
+
+    var _impulse = max(0, _force) / max(0.1, _data.stats.final.mass);
+
+    _data.movement.velocity_x += lengthdir_x(_impulse, _direction);
+    _data.movement.velocity_y += lengthdir_y(_impulse, _direction);
+    return true;
 }
 
 /// @description Begins or extends a brief enemy movement and attack disruption.

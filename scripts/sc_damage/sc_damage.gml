@@ -22,6 +22,9 @@ function sc_damage_packet_create(_definition, _source)
     return {
         amount: max(0, _definition.amount),
         type: _definition.type,
+        knockback_force: variable_struct_exists(_definition, "knockback_force")
+            ? max(0, _definition.knockback_force)
+            : 0,
 
         effect: {
             type: _effect,

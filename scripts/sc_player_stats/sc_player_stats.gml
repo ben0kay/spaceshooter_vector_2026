@@ -34,6 +34,7 @@ function sc_player_stats_recalculate(_player)
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.modules);
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.local);
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.temporary);
+	_stats.final.mass = max(0.1, _stats.final.mass);
 
     _stats.dirty = false;
     return true;

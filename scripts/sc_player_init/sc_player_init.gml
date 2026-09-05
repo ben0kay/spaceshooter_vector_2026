@@ -53,8 +53,15 @@ function sc_player_init(_player, _ship_key)
     var _final = _player.ship.stats.final;
     _player.draw_angle = 0;
 
-    if (!sc_entity_init(_player, Faction.PLAYER, sc_player_damage, _player.ship.collision))
-        return false;
+    if (!sc_entity_init(
+	    _player,
+	    Faction.PLAYER,
+	    sc_player_damage,
+	    _player.ship.collision,
+	    true,
+	    sc_player_knockback_apply
+	))
+	    return false;
 
     _player.defence = {
         shield: {
