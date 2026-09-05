@@ -16,6 +16,10 @@ enum MainMenuAction { DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT }
 enum Faction { PLAYER, SIMULANT, REBEL, CORPORATION, ALIEN, AUTOMATED }
 enum EnemyState { IDLE, CHASING, ATTACKING, STUNNED, DEAD }
 enum EnemyFacingMode { TARGET, MOVEMENT, COMMAND, FIXED, SPIN }
+enum EnemyRole { FIGHTER, CARGO, MINER, SUPPORT } 
+enum EnemyClass { LIGHT, STANDARD, HEAVY, CAPITAL } 
+enum EnemyRank { COMMON, ELITE, MINIBOSS, BOSS }
+
 //==================================================
 // ATTACK CONTROLLER
 //==================================================

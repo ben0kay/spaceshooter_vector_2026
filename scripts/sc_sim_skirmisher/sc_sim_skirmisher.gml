@@ -5,7 +5,10 @@ function sc_enemy_register_sim_skirmisher()
         identity: {
             key: "enemy_sim_skirmisher",
             name: "Simulant Skirmisher",
-            faction: Faction.SIMULANT
+            faction: Faction.SIMULANT,
+			role: EnemyRole.FIGHTER,
+			class: EnemyClass.LIGHT,
+			rank: EnemyRank.COMMON
         },
 
 		reward: { credits: 5 },

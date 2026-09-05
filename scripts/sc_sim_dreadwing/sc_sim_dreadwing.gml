@@ -13,7 +13,10 @@ function sc_enemy_register_sim_dreadwing()
         identity: {
             key: "enemy_sim_dreadwing",
             name: "Simulant Dreadwing",
-            faction: Faction.SIMULANT
+            faction: Faction.SIMULANT,
+			role: EnemyRole.FIGHTER,
+			class: EnemyClass.HEAVY,
+			rank: EnemyRank.ELITE
         },
 			
 		reward: { credits: 125 },	

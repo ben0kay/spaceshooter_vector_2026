@@ -5,7 +5,10 @@ function sc_enemy_register_twin_fighter()
         identity: {
             key: "enemy_twin_fighter",
             name: "Twin Fighter",
-            faction: Faction.SIMULANT
+            faction: Faction.SIMULANT,
+			role: EnemyRole.FIGHTER,
+			class: EnemyClass.STANDARD,
+			rank: EnemyRank.COMMON
         },
 
 		reward: { credits: 20 },
