@@ -7,7 +7,7 @@ function sc_enemy_register_sim_skirmisher()
             name: "Simulant Skirmisher",
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
-			class: EnemyClass.LIGHT,
+			ship_class: EnemyClass.LIGHT,
 			rank: EnemyRank.COMMON
         },
 

@@ -7,7 +7,7 @@ function sc_enemy_register_twin_fighter()
             name: "Twin Fighter",
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
-			class: EnemyClass.STANDARD,
+			ship_class: EnemyClass.STANDARD,
 			rank: EnemyRank.COMMON
         },
 

@@ -44,7 +44,9 @@ function sc_faction_register_simulant()
 		    alert: {
 		        chance: 0,
 		        on_detection: false,
-		        on_damage: false
+		        on_damage: false,
+				max_attempts: 1,
+				cooldown: 300
 		    },
 
 		    flee: {
@@ -82,7 +84,9 @@ function sc_faction_register_rebel()
 		    alert: {
 		        chance: 0.3,
 		        on_detection: false,
-		        on_damage: true
+		        on_damage: true,
+				max_attempts: 1,
+				cooldown: 300
 		    },
 
 		    flee: {

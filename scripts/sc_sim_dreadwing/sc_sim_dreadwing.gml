@@ -15,7 +15,7 @@ function sc_enemy_register_sim_dreadwing()
             name: "Simulant Dreadwing",
             faction: Faction.SIMULANT,
 			role: EnemyRole.FIGHTER,
-			class: EnemyClass.HEAVY,
+			ship_class: EnemyClass.HEAVY,
 			rank: EnemyRank.ELITE
         },
 			
