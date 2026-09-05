@@ -24,7 +24,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         key: _enemy_key,
         identity: variable_clone(_data.identity),
 		logic_controller: variable_clone(_logic_controller),
-		doctrine: variable_clone(sc_faction_doctrine_get(_data.identity.faction)),
 		reward: variable_clone(_data.reward),
         state: EnemyState.IDLE,
         target_id: noone,
@@ -33,7 +32,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         defence: undefined,
 
         movement_controller: variable_clone(_data.movement_controller),
-		awareness_controller: variable_clone(_data.awareness_controller),
 
         movement: {
             velocity_x: 0,
@@ -80,24 +78,21 @@ function sc_enemy_init(_enemy, _enemy_key)
             blocks_player: _data.collision.blocks_player
         },
 			
-		alert: {
-		    attempts: 0,
-		    next_attempt_tick: 0
-		},
-
-		awareness: {
-		    memory_until: 0,
-		    last_known_x: _enemy.x,
-		    last_known_y: _enemy.y,
-		    arrived: false,
-		    search_until: 0
-		},
-
         visual: variable_clone(_data.visual),
         hardpoints: variable_clone(_data.hardpoints),
         thrusters: variable_clone(_data.thrusters),
         attack_controller: variable_clone(_data.attack_controller)
     };
+	
+	if (!_enemy.enemy.logic_controller.init_script(_enemy, _data))
+		{
+		    show_debug_message(
+		        "ENEMY INITIALIZATION ERROR - controller failed: "
+		        + _enemy_key
+		    );
+
+		    return false;
+		}
 
     if (!sc_enemy_stats_init(_enemy, _data.stats_base)) return false;
 
@@ -555,8 +550,11 @@ function sc_enemy_damage(_enemy, _packet)
         sc_enemy_die(_enemy, _packet);
         return _result;
     }
-	sc_enemy_awareness_damage_try(_enemy, _packet);
-    sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
+		_data.logic_controller.damage_response_script(
+	    _enemy,
+	    _packet,
+	    _result
+	);
 
     if (_result.effect.type == DamageEffect.STAGGER
     && sc_damage_effect_triggered(_result.effect))
