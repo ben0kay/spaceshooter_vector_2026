@@ -29,10 +29,13 @@ function sc_enemy_register_sim_dreadnaught()
 			rank: EnemyRank.BOSS
         },
 		
-		logic_controller: {
-		    init_script: sc_enemy_controller_boss_init,
-		    step_script: sc_enemy_controller_boss_step,
-		    damage_response_script: sc_enemy_controller_boss_damage_response
+		awareness_controller: {
+		    unseen_damage_script: sc_enemy_awareness_ignore,
+		    alert_receive_script: sc_enemy_awareness_ignore,
+		    duration: 0,
+		    arrival_radius: 0,
+		    search_duration: 0,
+		    speed_scale: 0
 		},
 
         reward: { credits: 2500 },
