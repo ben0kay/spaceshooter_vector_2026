@@ -58,12 +58,6 @@ function sc_faction_register_simulant()
 		        sway_speed: 0.025
 		    },
 			
-			investigate: {
-			    duration: 600,
-			    arrival_radius: 90,
-			    search_duration: 180,
-			    speed_scale: 0.65
-			},
 		},
     });
 }
@@ -105,13 +99,7 @@ function sc_faction_register_rebel()
 		        sway_amount: 14,
 		        sway_speed: 0.04
 		    },
-			
-			investigate: {
-			    duration: 420,
-			    arrival_radius: 75,
-			    search_duration: 90,
-			    speed_scale: 0.85
-			},
+
 		},
     });
 }

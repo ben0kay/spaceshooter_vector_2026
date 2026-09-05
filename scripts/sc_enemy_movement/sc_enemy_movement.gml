@@ -23,7 +23,7 @@ function sc_enemy_movement_investigate(_enemy)
 {
     var _data = _enemy.enemy;
     var _awareness = _data.awareness;
-    var _config = _data.doctrine.investigate;
+    var _controller = _data.awareness_controller;
     var _command = _data.movement.command;
 
     if (GAME_TICK >= _awareness.memory_until)
@@ -46,10 +46,10 @@ function sc_enemy_movement_investigate(_enemy)
     var _dx = _awareness.last_known_x - _enemy.x;
     var _dy = _awareness.last_known_y - _enemy.y;
 
-    if (_dx * _dx + _dy * _dy <= sqr(_config.arrival_radius))
+    if (_dx * _dx + _dy * _dy <= sqr(_controller.arrival_radius))
     {
         _awareness.arrived = true;
-        _awareness.search_until = GAME_TICK + max(1, round(_config.search_duration));
+        _awareness.search_until = GAME_TICK + max(1, round(_controller.search_duration));
         return;
     }
 
@@ -58,7 +58,7 @@ function sc_enemy_movement_investigate(_enemy)
     _command.direction = point_direction(0, 0, _dx, _dy);
     _command.face_direction = _command.direction;
     _command.facing_mode = EnemyFacingMode.MOVEMENT;
-    _command.speed_scale = clamp(_config.speed_scale, 0, 1);
+    _command.speed_scale = clamp(_controller.speed_scale, 0, 1);
 }
 
 /// @description Holds during combat but repositions when its target view is obstructed.

@@ -94,6 +94,15 @@ function sc_enemy_register_rebel_gunship()
                 alternate_side: true
             }
         },
+			
+		awareness_controller: {
+		    unseen_damage_script: sc_enemy_awareness_investigate,
+		    alert_receive_script: sc_enemy_awareness_investigate,
+		    duration: 600,
+		    arrival_radius: 90,
+		    search_duration: 180,
+		    speed_scale: 0.65
+		},
 
         visual: sc_enemy_rebel_gunship_visual_data(),
 

@@ -22,6 +22,7 @@ function sc_enemy_init(_enemy, _enemy_key)
         defence: undefined,
 
         movement_controller: variable_clone(_data.movement_controller),
+		awareness_controller: variable_clone(_data.awareness_controller),
 
         movement: {
             velocity_x: 0,
@@ -182,8 +183,23 @@ function sc_enemy_investigate_begin(_enemy, _x, _y, _duration)
     return true;
 }
 
-/// @description Records a player attack and investigates it when the attacker is outside detection.
-function sc_enemy_investigate_damage_try(_enemy, _packet)
+/// @description Explicitly ignores one unconfirmed threat position.
+function sc_enemy_awareness_ignore(_enemy, _x, _y, _duration_override)
+{
+    return false;
+}
+
+/// @description Uses this ship's controller to investigate an unconfirmed position.
+function sc_enemy_awareness_investigate(_enemy, _x, _y, _duration_override)
+{
+    var _controller = _enemy.enemy.awareness_controller;
+    var _duration = _duration_override > 0 ? _duration_override : _controller.duration;
+
+    return sc_enemy_investigate_begin(_enemy, _x, _y, _duration);
+}
+
+/// @description Passes an unseen player attack into this ship's awareness callback.
+function sc_enemy_awareness_damage_try(_enemy, _packet)
 {
     var _data = _enemy.enemy;
     var _source = _packet.source;
@@ -202,24 +218,26 @@ function sc_enemy_investigate_damage_try(_enemy, _packet)
     || _distance_sq <= _data.stats.final.range.detection_sq)
         return false;
 
-    return sc_enemy_investigate_begin(
+    return _data.awareness_controller.unseen_damage_script(
         _enemy,
         _attacker.x,
         _attacker.y,
-        _data.doctrine.investigate.duration
+        0
     );
 }
 
-/// @description Gives one idle ally an unconfirmed position to investigate.
+/// @description Passes allied threat information into this ship's awareness callback.
 function sc_enemy_alert_receive(_enemy, _x, _y)
 {
     if (!_enemy.initialized || _enemy.enemy.state != EnemyState.IDLE) return false;
 
-    return sc_enemy_investigate_begin(
+    var _data = _enemy.enemy;
+
+    return _data.awareness_controller.alert_receive_script(
         _enemy,
         _x,
         _y,
-        _enemy.enemy.doctrine.alert.memory_duration
+        _data.doctrine.alert.memory_duration
     );
 }
 
@@ -697,7 +715,7 @@ function sc_enemy_damage(_enemy, _packet)
         sc_enemy_die(_enemy, _packet);
         return _result;
     }
-	sc_enemy_investigate_damage_try(_enemy, _packet);
+	sc_enemy_awareness_damage_try(_enemy, _packet);
     sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
 
     if (_result.effect.type == DamageEffect.STAGGER
