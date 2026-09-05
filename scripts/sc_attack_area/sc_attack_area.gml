@@ -364,12 +364,9 @@ function sc_attack_area_damage_apply(_area)
         if (!sc_attack_area_target_inside(_area, _target)) continue;
 
         var _packet = sc_attack_area_damage_packet_get(_area, _target);
-        var _result = _target.entity.damage_script(_target, _packet);
-
-        if (!is_struct(_result)) continue;
-
         var _knockback_direction = _data.direction;
 
+        // Read target position before damage because damage may destroy it.
         if (_data.shape == AttackAreaShape.CIRCLE)
         {
             var _dx = _target.x - _area.x;
@@ -378,6 +375,9 @@ function sc_attack_area_damage_apply(_area)
             if (abs(_dx) + abs(_dy) > 0.001)
                 _knockback_direction = point_direction(0, 0, _dx, _dy);
         }
+
+        var _result = _target.entity.damage_script(_target, _packet);
+        if (!is_struct(_result)) continue;
 
         sc_entity_knockback_apply(
             _target,

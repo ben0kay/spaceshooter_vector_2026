@@ -8,6 +8,18 @@ function sc_config_init()
                 forward_amount: 1.2, forward_speed: 0.012
             },
 			
+			projectile_motion: {
+		    rocket: {
+		        reference_speed: 16,
+		        reference_radius: 8,
+		        amount: 1.6,
+		        frequency: 0.16,
+		        angle: 1.4,
+		        influence_min: 0.3,
+		        influence_max: 1.35
+		    }
+		},
+			
 			enemy_death: {
 		    shake_base: 3.5, shake_per_mass: 1.5,
 		    shake_min: 3.5, shake_max: 8,

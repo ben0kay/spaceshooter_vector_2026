@@ -353,6 +353,7 @@ function sc_projectile_entity_collision(_projectile, _target)
     if (_target == _data.source.owner_id) return false;
     if (_target.entity.faction == _data.source.faction) return false;
 
+    var _target_faction = _target.entity.faction;
     var _result = _target.entity.damage_script(_target, _data.damage);
     var _class_config = sc_projectile_class_config_get(_data.projectile_class);
     var _impact_x = _projectile.x;
@@ -385,7 +386,7 @@ function sc_projectile_entity_collision(_projectile, _target)
             _data.direction
         );
 
-        if (_target.entity.faction == Faction.PLAYER && _class_config.camera_shake > 0)
+        if (_target_faction == Faction.PLAYER && _class_config.camera_shake > 0)
             sc_camera_shake(_class_config.camera_shake, _class_config.shake_time);
 
         var _can_ricochet =
@@ -418,30 +419,39 @@ function sc_projectile_draw(_projectile)
         _alpha = _data.runtime.ricochet.alpha;
     }
 
-    // Optional thin energy trail behind projectile.
-    if (_data.state == ProjectileState.ACTIVE && variable_struct_exists(_data.visual, "trail_line"))
+    if (_data.state == ProjectileState.ACTIVE
+    && variable_struct_exists(_data.visual, "trail"))
     {
-        var _trail = _data.visual.trail_line;
+        var _trail = _data.visual.trail;
 
         if (_trail.enabled)
         {
-            var _p = _data.visual.palette;
+            var _cache = sc_projectile_trail_cache_get();
+            var _palette = _data.visual.palette;
             var _rear = _data.visual.length * 0.42 * _scale;
-            var _start_x = _projectile.x - lengthdir_x(_rear, _data.direction);
-            var _start_y = _projectile.y - lengthdir_y(_rear, _data.direction);
-            var _end_x = _start_x - lengthdir_x(_trail.length * _scale, _data.direction);
-            var _end_y = _start_y - lengthdir_y(_trail.length * _scale, _data.direction);
+            var _trail_x = _projectile.x - lengthdir_x(_rear, _data.direction);
+            var _trail_y = _projectile.y - lengthdir_y(_rear, _data.direction);
+            var _length_scale = (_trail.length * _scale) / _cache.width;
+            var _glow_scale = (_trail.glow_width * _scale) / _cache.height;
+            var _width_scale = (_trail.width * _scale) / _cache.height;
 
-            draw_set_colour(_p.glow);
-            draw_set_alpha(_trail.glow_alpha * _alpha);
-            draw_line_width(_start_x, _start_y, _end_x, _end_y, _trail.glow_width * _scale);
+            draw_sprite_ext(
+                _cache.sprite, 0,
+                _trail_x, _trail_y,
+                _length_scale, _glow_scale,
+                _data.direction,
+                _palette.glow,
+                _trail.glow_alpha * _alpha
+            );
 
-            draw_set_colour(_p.energy);
-            draw_set_alpha(_trail.alpha * _alpha);
-            draw_line_width(_start_x, _start_y, _end_x, _end_y, _trail.width * _scale);
-
-            draw_set_alpha(1);
-            draw_set_colour(c_white);
+            draw_sprite_ext(
+                _cache.sprite, 0,
+                _trail_x, _trail_y,
+                _length_scale, _width_scale,
+                _data.direction,
+                _palette.energy,
+                _trail.alpha * _alpha
+            );
         }
     }
 
