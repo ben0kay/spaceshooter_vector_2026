@@ -13,6 +13,7 @@ function sc_projectile_register_simulant_pulse()
             radius: 6,
             length: 24,
             palette: _palette,
+			sprite: s_sim_pulse,
             draw_script: sc_projectile_simulant_pulse_draw,
             impact_script: sc_projectile_simulant_pulse_impact,
             particles_register_script: sc_projectile_simulant_pulse_particles_register,
