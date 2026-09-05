@@ -450,8 +450,8 @@ function sc_enemy_separation_resolve(_enemy, _other)
     if (_overlap <= 0) return false;
 
     var _config = global.config.enemy.separation;
-    var _mass_enemy = _enemy.entity.collision.radius_forward * _enemy.entity.collision.radius_side;
-    var _mass_other = _other.entity.collision.radius_forward * _other.entity.collision.radius_side;
+    var _mass_enemy = _enemy.enemy.stats.final.mass;
+	var _mass_other = _other.enemy.stats.final.mass;
     var _mass_total = max(1, _mass_enemy + _mass_other);
     var _weight_enemy = _mass_other / _mass_total;
     var _weight_other = _mass_enemy / _mass_total;
@@ -665,6 +665,15 @@ function sc_enemy_damage(_enemy, _packet)
         sc_enemy_die(_enemy, _packet);
         return _result;
     }
+	
+	if (_data.state == EnemyState.FLEEING)
+		{
+		    if (_result.effect.type == DamageEffect.STAGGER
+		    && sc_damage_effect_triggered(_result.effect))
+		        sc_enemy_stagger_begin(_enemy, _result.effect);
+
+		    return _result;
+		}
 
     sc_enemy_awareness_damage_try(_enemy, _packet);
     sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);

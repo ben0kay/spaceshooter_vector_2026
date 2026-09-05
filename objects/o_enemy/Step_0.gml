@@ -19,6 +19,7 @@ if (!instance_exists(global.player_id))
     _perception_due = true;
 
 if (enemy.state != EnemyState.STUNNED
+&& enemy.state != EnemyState.FLEEING
 && enemy.state != EnemyState.DEAD
 && _perception_due)
     sc_enemy_perception_update(id);

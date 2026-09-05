@@ -45,7 +45,7 @@ function sc_enemy_register_sim_dreadnaught()
             shield_max: 1800,
             armour_max: 4200,
             hull_max: 2200,
-			visual_mass: 5.5,
+			mass: 5.5,
 
             handling: {
                 speed_max: 0.8,

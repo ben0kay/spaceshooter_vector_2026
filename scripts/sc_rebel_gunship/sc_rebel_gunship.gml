@@ -16,7 +16,7 @@ function sc_enemy_register_rebel_gunship()
 			role: EnemyRole.FIGHTER,
 			ship_class: EnemyClass.STANDARD,
 			rank: EnemyRank.COMMON,
-			threat_level: 3
+			threat_value: 3
         },
 
         reward: { credits: 55 },

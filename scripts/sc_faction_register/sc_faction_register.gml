@@ -109,9 +109,9 @@ function sc_faction_register_rebel()
 		    },
 
 		    flee: {
-    chance: 0.4,
+    chance: 1,
     trigger_layer: DefenceLayer.HULL,
-    trigger_ratio: 0.3,
+    trigger_ratio: 0.9,
     max_attempts: 1,
     cooldown: 300,
     movement_script: sc_enemy_movement_flee_away,
