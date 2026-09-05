@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_projectile",
+  "%Name":"projectiles_shared",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_projectile",
+  "name":"projectiles_shared",
   "parent":{
     "name":"projectile",
     "path":"folders/scripts/projectile.yy",
