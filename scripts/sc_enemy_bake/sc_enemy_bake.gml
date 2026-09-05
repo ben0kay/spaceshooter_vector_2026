@@ -13,21 +13,51 @@ function sc_enemy_visual_cache_init()
         var _visual = _data.visual;
         var _hardpoint_count = array_length(_data.hardpoints);
         var _fragment_count = array_length(_visual.death.draw_scripts);
+        var _damage_cache = undefined;
+
+        if (variable_struct_exists(_visual, "damage_layers") && _visual.damage_layers.enabled)
+        {
+            var _stage_count = _visual.damage_layers.damage_stages;
+
+            _damage_cache = {
+                hull: array_create(_stage_count, -1),
+                armour: array_create(_stage_count, -1)
+            };
+
+            for (var _stage = 0; _stage < _stage_count; _stage++)
+            {
+                _damage_cache.hull[_stage] = sc_enemy_visual_component_bake(
+                    _key, _data, "damage_hull", _stage, _visual.bake.body_canvas_size
+                );
+
+                _damage_cache.armour[_stage] = sc_enemy_visual_component_bake(
+                    _key, _data, "damage_armour", _stage, _visual.bake.body_canvas_size
+                );
+            }
+        }
 
         var _cache = {
-            body: sc_enemy_visual_component_bake(_key, _data, "body", -1, _visual.bake.body_canvas_size),
+            body: is_struct(_damage_cache)
+                ? -1
+                : sc_enemy_visual_component_bake(_key, _data, "body", -1, _visual.bake.body_canvas_size),
+
+            damage_layers: _damage_cache,
             core: sc_enemy_visual_component_bake(_key, _data, "core", -1, _visual.bake.core_canvas_size),
             thrust: sc_enemy_visual_component_bake(_key, _data, "thrust", -1, _visual.bake.thrust_canvas_size),
-            shield: sc_enemy_visual_component_bake(_key, _data, "shield", -1,  _visual.bake.body_canvas_size),
+            shield: sc_enemy_visual_component_bake(_key, _data, "shield", -1, _visual.bake.body_canvas_size),
             hardpoints: array_create(_hardpoint_count, -1),
             fragments: array_create(_fragment_count, -1)
         };
 
         for (var _h = 0; _h < _hardpoint_count; _h++)
-            _cache.hardpoints[_h] = sc_enemy_visual_component_bake(_key, _data, "hardpoint", _h, _visual.bake.hardpoint_canvas_size);
+            _cache.hardpoints[_h] = sc_enemy_visual_component_bake(
+                _key, _data, "hardpoint", _h, _visual.bake.hardpoint_canvas_size
+            );
 
         for (var _f = 0; _f < _fragment_count; _f++)
-            _cache.fragments[_f] = sc_enemy_visual_component_bake(_key, _data, "fragment", _f, _visual.bake.fragment_canvas_size);
+            _cache.fragments[_f] = sc_enemy_visual_component_bake(
+                _key, _data, "fragment", _f, _visual.bake.fragment_canvas_size
+            );
 
         variable_struct_set(global.enemy_visual_cache, _key, _cache);
         show_debug_message("ENEMY VISUAL CACHE BAKED - " + _key);
@@ -68,6 +98,18 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
             _visual.draw.body(_centre, _centre, _visual.radius, 0, _visual);
         break;
 
+        case "damage_hull":
+            _visual.damage_layers.hull_draw_script(
+                _centre, _centre, _visual.radius, 0, _visual, _component_index
+            );
+        break;
+
+        case "damage_armour":
+            _visual.damage_layers.armour_draw_script(
+                _centre, _centre, _visual.radius, 0, _visual, _component_index
+            );
+        break;
+
         case "core":
             _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual, 1);
         break;
@@ -97,7 +139,11 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
     draw_set_colour(c_white);
     surface_reset_target();
 
-    var _sprite = sprite_create_from_surface(_surface, 0, 0, _canvas_size, _canvas_size, false, false, _centre, _centre);
+    var _sprite = sprite_create_from_surface(
+        _surface, 0, 0, _canvas_size, _canvas_size,
+        false, false, _centre, _centre
+    );
+
     surface_free(_surface);
 
     if (!sprite_exists(_sprite))
@@ -133,6 +179,18 @@ function sc_enemy_visual_cache_destroy()
         if (sprite_exists(_cache.core)) sprite_delete(_cache.core);
         if (sprite_exists(_cache.thrust)) sprite_delete(_cache.thrust);
         if (sprite_exists(_cache.shield)) sprite_delete(_cache.shield);
+
+        if (is_struct(_cache.damage_layers))
+        {
+            for (var _stage = 0; _stage < array_length(_cache.damage_layers.hull); _stage++)
+            {
+                if (sprite_exists(_cache.damage_layers.hull[_stage]))
+                    sprite_delete(_cache.damage_layers.hull[_stage]);
+
+                if (sprite_exists(_cache.damage_layers.armour[_stage]))
+                    sprite_delete(_cache.damage_layers.armour[_stage]);
+            }
+        }
 
         for (var _h = 0; _h < array_length(_cache.hardpoints); _h++)
             if (sprite_exists(_cache.hardpoints[_h])) sprite_delete(_cache.hardpoints[_h]);

@@ -109,6 +109,7 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     _runtime.visual.runtime = {
         body_sprite: is_struct(_cache) ? _cache.body : -1,
+		damage_layers: is_struct(_cache) ? _cache.damage_layers : undefined,
         core_sprite: is_struct(_cache) ? _cache.core : -1,
         thrust_sprite: is_struct(_cache) ? _cache.thrust : -1,
         shield_sprite: is_struct(_cache) ? _cache.shield : -1,
@@ -464,6 +465,63 @@ function sc_enemy_separation_resolve(_enemy, _other)
     return true;
 }
 
+/// @description Returns one of four enemy visual damage stages.
+function sc_enemy_damage_visual_stage(_current, _maximum)
+{
+    var _ratio = _maximum > 0 ? _current / _maximum : 0;
+
+    if (_ratio > 0.75) return 0;
+    if (_ratio > 0.5) return 1;
+    if (_ratio > 0.25) return 2;
+    return 3;
+}
+
+/// @description Draws either optional damage layers or the original body.
+function sc_enemy_body_visual_draw(_enemy, _draw_x, _draw_y, _angle)
+{
+    var _data = _enemy.enemy;
+    var _visual = _data.visual;
+    var _runtime = _visual.runtime;
+    var _layers = _runtime.damage_layers;
+
+    if (!is_struct(_layers))
+    {
+        if (sprite_exists(_runtime.body_sprite))
+            draw_sprite_ext(_runtime.body_sprite, 0, _draw_x, _draw_y, 1, 1, _angle, c_white, 1);
+        else
+            _visual.draw.body(_draw_x, _draw_y, _visual.radius, _angle, _visual);
+
+        return;
+    }
+
+    var _hull_stage = sc_enemy_damage_visual_stage(
+        _data.defence.hull.current,
+        _data.defence.hull.maximum
+    );
+
+    var _armour_stage = sc_enemy_damage_visual_stage(
+        _data.defence.armour.current,
+        _data.defence.armour.maximum
+    );
+
+    draw_sprite_ext(
+        _layers.hull[_hull_stage], 0,
+        _draw_x, _draw_y,
+        1, 1, _angle,
+        c_white, 1
+    );
+
+    if (_data.defence.armour.current > 0)
+    {
+        draw_sprite_ext(
+            _layers.armour[_armour_stage], 0,
+            _draw_x, _draw_y,
+            1, 1, _angle,
+            c_white, 1
+        );
+    }
+}
+
 /// @description Draws the complete enemy assembly with shared slow visual floating motion.
 function sc_enemy_draw(_enemy)
 {
@@ -507,10 +565,7 @@ function sc_enemy_draw(_enemy)
             _visual.thrust.draw_script(_thruster_x, _thruster_y, _visual.radius * _thruster.scale, _thruster_angle, _visual, _power);
     }
 
-    if (sprite_exists(_runtime.body_sprite))
-        draw_sprite_ext(_runtime.body_sprite, 0, _draw_x, _draw_y, 1, 1, _angle, c_white, 1);
-    else
-        _visual.draw.body(_draw_x, _draw_y, _visual.radius, _angle, _visual);
+		sc_enemy_body_visual_draw(_enemy, _draw_x, _draw_y, _angle);
 
     var _core_x = _draw_x
         + lengthdir_x(_visual.core.forward * _visual.radius, _angle)

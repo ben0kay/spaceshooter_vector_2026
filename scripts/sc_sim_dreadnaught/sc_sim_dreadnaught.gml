@@ -69,6 +69,7 @@ function sc_enemy_register_sim_dreadnaught()
         },
 
         movement_controller: {
+			asteroid_response: AsteroidResponse.IGNORE,
 		    idle_script: sc_enemy_movement_swing,
 		    chase_script: sc_enemy_movement_swing,
 		    combat_script: sc_enemy_movement_swing,
