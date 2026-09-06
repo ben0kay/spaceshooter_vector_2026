@@ -1,26 +1,76 @@
-/// @description Emits one registered weapon delivery and returns its created instance.
+/// @description Resolves the correct gameplay layer for a weapon delivery.
+function sc_weapon_delivery_layer_get(_owner, _delivery_type)
+{
+    var _fallback = _owner.layer;
+    var _faction = _owner.entity.faction;
+    var _layer_name = "";
+
+    switch (_delivery_type)
+    {
+        case AttackDelivery.PROJECTILE:
+        case AttackDelivery.BEAM:
+            _layer_name = _faction == Faction.PLAYER
+                ? "Player_Projectile"
+                : "Enemy_Projectile";
+        break;
+
+        case AttackDelivery.AREA:
+            _layer_name = "Effects_Front";
+        break;
+    }
+
+    if (_layer_name != "")
+    {
+        var _layer_id = layer_get_id(_layer_name);
+
+        if (_layer_id != -1)
+            return _layer_id;
+    }
+
+    return _fallback;
+}
+
+/// @description Emits one registered weapon delivery on its correct gameplay layer.
 function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
 {
     var _delivery = _weapon.delivery;
+    var _layer = sc_weapon_delivery_layer_get(_owner, _delivery.type);
 
     switch (_delivery.type)
     {
         case AttackDelivery.PROJECTILE:
             return sc_projectile_create(
-                _delivery.projectile_key, _source, _delivery,
-                _x, _y, _direction, _owner.layer
+                _delivery.projectile_key,
+                _source,
+                _delivery,
+                _x,
+                _y,
+                _direction,
+                _layer
             );
 
         case AttackDelivery.AREA:
             return sc_attack_area_create(
-                _delivery.area, _source, _delivery.damage,
-                _x, _y, _direction, _owner.layer, _delivery.scale
+                _delivery.area,
+                _source,
+                _delivery.damage,
+                _x,
+                _y,
+                _direction,
+                _layer,
+                _delivery.scale
             );
 
         case AttackDelivery.BEAM:
             return sc_beam_create(
-                _delivery.beam, _source, _delivery.damage,
-                _x, _y, _direction, _owner.layer, _delivery.scale
+                _delivery.beam,
+                _source,
+                _delivery.damage,
+                _x,
+                _y,
+                _direction,
+                _layer,
+                _delivery.scale
             );
     }
 

@@ -76,6 +76,7 @@ function sc_projectile_register_simulant_seeker_core()
             draw_script: sc_projectile_simulant_seeker_core_draw,
             impact_script: sc_projectile_simulant_seeker_core_impact,
             particles_register_script: sc_projectile_simulant_seeker_core_particles_register,
+			trail_script: sc_projectile_simulant_seeker_core_trail,
 
             trail: {
                 enabled: true,
@@ -308,4 +309,106 @@ function sc_weapon_register_simulant_seeker_core()
             pitch_range: 0.04
         }
     });
+}
+
+/// @description Emits the Seeker Core's large lingering Simulant particle trail.
+function sc_projectile_simulant_seeker_core_trail(_projectile, _data)
+{
+    var _types = sc_particles_group_get("simulant");
+    if (!is_struct(_types)) return false;
+
+    var _system = global.particles.impact_system;
+    var _direction = _data.direction;
+    var _scale = _data.scale;
+
+    var _rear_distance = _data.visual.length * 0.45 * _scale;
+
+    var _x = _projectile.x
+        - lengthdir_x(_rear_distance, _direction);
+
+    var _y = _projectile.y
+        - lengthdir_y(_rear_distance, _direction);
+
+    // Large drifting violet energy plume.
+    part_type_direction(
+        _types.trail,
+        _direction + 160,
+        _direction + 200,
+        0,
+        0
+    );
+
+    part_type_speed(
+        _types.trail,
+        0.35,
+        1.15,
+        -0.015,
+        0.05
+    );
+
+    part_type_size(
+        _types.trail,
+        0.32 * _scale,
+        0.58 * _scale,
+        -0.008,
+        0.055
+    );
+
+    part_type_life(
+        _types.trail,
+        22,
+        38
+    );
+
+    part_particles_create(
+        _system,
+        _x,
+        _y,
+        _types.trail,
+        2
+    );
+
+    // Brighter concentrated inner wake.
+    if (((GAME_TICK + real(_projectile.id)) mod 2) == 0)
+    {
+        part_type_direction(
+            _types.trail,
+            _direction + 174,
+            _direction + 186,
+            0,
+            0
+        );
+
+        part_type_speed(
+            _types.trail,
+            0.2,
+            0.65,
+            -0.01,
+            0.02
+        );
+
+        part_type_size(
+            _types.trail,
+            0.16 * _scale,
+            0.3 * _scale,
+            -0.005,
+            0.025
+        );
+
+        part_type_life(
+            _types.trail,
+            16,
+            28
+        );
+
+        part_particles_create(
+            _system,
+            _x,
+            _y,
+            _types.trail,
+            1
+        );
+    }
+
+    return true;
 }
