@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_visual_effects",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_visual_effects",
+  "parent":{
+    "name":"effects",
+    "path":"folders/scripts/effects.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

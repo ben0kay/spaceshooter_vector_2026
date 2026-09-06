@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_mine",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_mine",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/scripts/PLAYER/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -17,14 +17,16 @@ function sc_weapon_delivery_layer_get(_owner, _delivery_type)
         case AttackDelivery.AREA:
             _layer_name = "Effects_Front";
         break;
+
+        case AttackDelivery.DEPLOYABLE:
+            _layer_name = "Effects_Back";
+        break;
     }
 
     if (_layer_name != "")
     {
         var _layer_id = layer_get_id(_layer_name);
-
-        if (_layer_id != -1)
-            return _layer_id;
+        if (_layer_id != -1) return _layer_id;
     }
 
     return _fallback;
@@ -43,9 +45,7 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
                 _delivery.projectile_key,
                 _source,
                 _delivery,
-                _x,
-                _y,
-                _direction,
+                _x, _y, _direction,
                 _layer
             );
 
@@ -54,9 +54,7 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
                 _delivery.area,
                 _source,
                 _delivery.damage,
-                _x,
-                _y,
-                _direction,
+                _x, _y, _direction,
                 _layer,
                 _delivery.scale
             );
@@ -66,11 +64,17 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
                 _delivery.beam,
                 _source,
                 _delivery.damage,
-                _x,
-                _y,
-                _direction,
+                _x, _y, _direction,
                 _layer,
                 _delivery.scale
+            );
+
+        case AttackDelivery.DEPLOYABLE:
+            return _delivery.create_script(
+                _delivery,
+                _source,
+                _x, _y, _direction,
+                _layer
             );
     }
 

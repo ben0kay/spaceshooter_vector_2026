@@ -51,7 +51,9 @@ function sc_ship_register_shard()
                 "weapon_shard_pulse",
                 "weapon_minigun",
                 "weapon_shard_laser",
-                "weapon_shard_rocket"
+                "weapon_shard_rocket",
+				    "weapon_shard_mine"
+
             ],
 
             mining: "weapon_shard_mining_beam",

@@ -290,6 +290,7 @@ function sc_input_init()
             weapon_2: ord("2"),
             weapon_3: ord("3"),
             weapon_4: ord("4"),
+			weapon_5: ord("5"),
 
             fullscreen: vk_f11
         },
@@ -316,7 +317,8 @@ function sc_input_init()
             weapon_1_pressed: false,
             weapon_2_pressed: false,
             weapon_3_pressed: false,
-            weapon_4_pressed: false
+            weapon_4_pressed: false,
+			weapon_5_pressed: false
         }
     };
 
@@ -352,4 +354,5 @@ function sc_input_update()
     _action.weapon_2_pressed = keyboard_check_pressed(_binding.weapon_2);
     _action.weapon_3_pressed = keyboard_check_pressed(_binding.weapon_3);
     _action.weapon_4_pressed = keyboard_check_pressed(_binding.weapon_4);
+    _action.weapon_5_pressed = keyboard_check_pressed(_binding.weapon_5);
 }

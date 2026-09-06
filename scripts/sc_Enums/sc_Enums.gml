@@ -27,7 +27,7 @@ enum EnemyRemovalReason { KILLED, ESCAPED, DESPAWNED }
 //==================================================
 enum AttackSelection { SEQUENTIAL, RANDOM, WEIGHTED }
 enum EnemyAttackPhase { IDLE, TELEGRAPH, ACTIVE, COOLDOWN }
-enum AttackDelivery { PROJECTILE, AREA, BEAM }
+enum AttackDelivery { PROJECTILE, AREA, BEAM, DEPLOYABLE }
 enum AttackAreaShape { CIRCLE, CAPSULE, CONE }
 enum AimMode { MOUNT, TARGET, TARGET_LEAD, WORLD }
 enum ShotPattern { SINGLE, SPREAD, RANDOM_CONE }

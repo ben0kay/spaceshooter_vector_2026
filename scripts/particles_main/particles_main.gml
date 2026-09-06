@@ -52,14 +52,18 @@ function sc_particles_register_projectile_content()
     return true;
 }
 
-/// @description Registers particle callbacks supplied by area and beam weapons.
+/// @description Registers particle callbacks supplied by weapon definitions.
 function sc_particles_register_weapon_content()
 {
     var _keys = variable_struct_get_names(global.data.weapons);
 
     for (var _i = 0; _i < array_length(_keys); _i++)
     {
-        var _weapon = variable_struct_get(global.data.weapons, _keys[_i]);
+        var _weapon = variable_struct_get(
+            global.data.weapons,
+            _keys[_i]
+        );
+
         var _delivery = _weapon.delivery;
         var _visual;
 
@@ -73,12 +77,22 @@ function sc_particles_register_weapon_content()
                 _visual = _delivery.beam.visual;
             break;
 
+            case AttackDelivery.DEPLOYABLE:
+                _visual = _delivery.visual;
+            break;
+
             default:
                 continue;
         }
 
-        if (!variable_struct_exists(_visual, "particles_register_script")) continue;
-        if (!_visual.particles_register_script()) return false;
+        if (!variable_struct_exists(
+            _visual,
+            "particles_register_script"
+        ))
+            continue;
+
+        if (!_visual.particles_register_script())
+            return false;
     }
 
     return true;

@@ -430,28 +430,35 @@ function sc_player_continuous_weapons_release(_player)
     return _primary || _mining;
 }
 
-/// @description Selects one temporary primary weapon using number keys 1-4.
+/// @description Selects one temporary primary weapon using number keys 1-5.
 function sc_player_weapon_selection_update(_player)
 {
-   var _input = global.input.action;
-	var _slot = -1;
+    var _input = global.input.action;
+    var _slot = -1;
 
-	if (_input.weapon_1_pressed) _slot = 0;
-	else if (_input.weapon_2_pressed) _slot = 1;
-	else if (_input.weapon_3_pressed) _slot = 2;
-	else if (_input.weapon_4_pressed) _slot = 3;
+    if (_input.weapon_1_pressed) _slot = 0;
+    else if (_input.weapon_2_pressed) _slot = 1;
+    else if (_input.weapon_3_pressed) _slot = 2;
+    else if (_input.weapon_4_pressed) _slot = 3;
+    else if (_input.weapon_5_pressed) _slot = 4;
 
     if (_slot < 0) return false;
 
     var _loadout = _player.ship.loadout;
-    var _weapon_key = _loadout.primary_slots[_slot];
 
-    if (is_undefined(_weapon_key))
+    if (_slot >= array_length(_loadout.primary_slots)
+    || is_undefined(_loadout.primary_slots[_slot]))
     {
-        show_debug_message("PLAYER WEAPON SLOT " + string(_slot + 1) + " IS EMPTY");
+        show_debug_message(
+            "PLAYER WEAPON SLOT "
+            + string(_slot + 1)
+            + " IS EMPTY"
+        );
+
         return false;
     }
 
+    var _weapon_key = _loadout.primary_slots[_slot];
     if (_slot == _loadout.primary_slot) return false;
 
     sc_player_continuous_weapon_release(_player);
@@ -461,7 +468,14 @@ function sc_player_weapon_selection_update(_player)
     _player.combat.primary.hardpoint_cursor = 0;
     _player.combat.primary.next_fire_tick = GAME_TICK;
 
-    show_debug_message("PLAYER WEAPON SELECTED - " + variable_struct_get(global.data.weapons, _weapon_key).identity.name);
+    show_debug_message(
+        "PLAYER WEAPON SELECTED - "
+        + variable_struct_get(
+            global.data.weapons,
+            _weapon_key
+        ).identity.name
+    );
+
     return true;
 }
 

@@ -22,6 +22,7 @@ function sc_shard_register_all()
 
     if (!sc_projectile_register_shard_rocket()) return false;
     if (!sc_weapon_register_shard_rocket()) return false;
+	    if (!sc_weapon_register_shard_mine()) return false;
 	
 	if (!sc_weapon_register_shard_mining_beam()) return false;
 
