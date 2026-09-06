@@ -187,6 +187,11 @@ function sc_config_init()
 
         enemy: {
 			
+			rear_damage: {
+			    arc: 40,
+			    multiplier: 1.25
+			},
+			
 			flee: {
 			    class_chance_multiplier: [1, 0.6, 0.25, 0],
 			    field_repair_armour_min: 0.1,
