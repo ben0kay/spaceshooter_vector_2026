@@ -470,7 +470,7 @@ function sc_enemy_movement_update(_enemy)
         break;
 
         case EnemyState.FLEEING:
-            _data.doctrine.flee.movement_script(_enemy);
+            _data.flee.movement_script(_enemy, _data.flee.option);
         break;
     }
 
@@ -481,9 +481,8 @@ function sc_enemy_movement_update(_enemy)
     sc_enemy_facing_update(_enemy);
     sc_enemy_movement_apply(_enemy);
 
-    if (_state == EnemyState.FLEEING
-    && sc_enemy_flee_exit_check(_enemy))
-        return true;
+    if (_state == EnemyState.FLEEING)
+        return sc_enemy_flee_arrival_update(_enemy);
 
     return false;
 }

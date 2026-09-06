@@ -57,16 +57,25 @@ function sc_faction_register_simulant()
 		    },
 
 		    flee: {
-		    chance: 0.05,
-		    trigger_layer: DefenceLayer.HULL,
-		    trigger_ratio: 0.1,
-		    max_attempts: 1,
-		    cooldown: 300,
-		    movement_script: sc_enemy_movement_flee_away,
-		    speed_scale: 1,
-		    sway_amount: 4,
-		    sway_speed: 0.025
-		}
+    chance: 0.05,
+    trigger_layer: DefenceLayer.HULL,
+    trigger_ratio: 0.1,
+    max_attempts: 1,
+    cooldown: 300,
+    speed_scale: 1,
+    sway_amount: 4,
+    sway_speed: 0.025,
+
+    targets: [
+        {
+            key: "leave_map",
+            weight: 100,
+            target_script: sc_enemy_flee_target_map,
+            movement_script: sc_enemy_movement_flee_away,
+            arrival_script: sc_enemy_flee_arrive_map
+        }
+    ]
+}
 			
 		},
     });
@@ -123,16 +132,34 @@ function sc_faction_register_corporation()
 		    },
 
 		    flee: {
-		    chance: 0.3,
-		    trigger_layer: DefenceLayer.HULL,
-		    trigger_ratio: 0.6,
-		    max_attempts: 2,
-		    cooldown: 300,
-		    movement_script: sc_enemy_movement_flee_away,
-		    speed_scale: 1,
-		    sway_amount: 5,
-		    sway_speed: 0.025
-		}
+    chance: 0.3,
+    trigger_layer: DefenceLayer.HULL,
+    trigger_ratio: 0.6,
+    max_attempts: 2,
+    cooldown: 300,
+    speed_scale: 1,
+    sway_amount: 5,
+    sway_speed: 0.025,
+
+    targets: [
+        {
+            key: "larger_ally",
+            weight: 60,
+            range: 2400,
+            arrival_margin: 96,
+            target_script: sc_enemy_flee_target_larger_ally,
+            movement_script: sc_enemy_movement_flee_toward_ally,
+            arrival_script: sc_enemy_flee_arrive_shelter
+        },
+        {
+            key: "leave_map",
+            weight: 40,
+            target_script: sc_enemy_flee_target_map,
+            movement_script: sc_enemy_movement_flee_away,
+            arrival_script: sc_enemy_flee_arrive_map
+        }
+    ]
+}
 			
 		},
     });
@@ -211,10 +238,28 @@ function sc_faction_register_rebel()
     trigger_ratio: 0.9,
     max_attempts: 1,
     cooldown: 300,
-    movement_script: sc_enemy_movement_flee_away,
     speed_scale: 1,
     sway_amount: 14,
-    sway_speed: 0.04
+    sway_speed: 0.04,
+
+    targets: [
+        {
+            key: "larger_ally",
+            weight: 5,
+            range: 1600,
+            arrival_margin: 128,
+            target_script: sc_enemy_flee_target_larger_ally,
+            movement_script: sc_enemy_movement_flee_toward_ally,
+            arrival_script: sc_enemy_flee_arrive_shelter
+        },
+        {
+            key: "leave_map",
+            weight: 95,
+            target_script: sc_enemy_flee_target_map,
+            movement_script: sc_enemy_movement_flee_away,
+            arrival_script: sc_enemy_flee_arrive_map
+        }
+    ]
 }
 
 		},
