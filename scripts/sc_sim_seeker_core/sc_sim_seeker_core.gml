@@ -25,8 +25,8 @@ function sc_projectile_register_simulant_seeker_core()
         },
 
 		defence: {
-		    armour: 35,
-		    hull: 45,
+		    armour: 15,
+		    hull: 15,
 		    detonate_on_destroy: true
 		},
 
