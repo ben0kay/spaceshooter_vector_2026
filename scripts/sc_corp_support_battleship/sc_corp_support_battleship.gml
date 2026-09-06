@@ -245,8 +245,8 @@ function sc_enemy_register_corporation_support_battleship()
                     action_script: sc_enemy_utility_action_repair,
                     draw_script: sc_enemy_utility_repair_beam_draw,
 
-                    acquire_range: 1400,
-                    release_range: 1550,
+                    acquire_range: 640,
+                    release_range: 768,
                     retarget_interval: 30,
                     action_interval: 6,
                     aim_tolerance: 5,

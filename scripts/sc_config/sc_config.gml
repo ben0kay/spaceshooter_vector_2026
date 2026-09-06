@@ -120,6 +120,30 @@ function sc_config_init()
 		    }
 		},
 
+		sector: {
+            world_seed: 8122026,
+            edge_spawn_padding: 640,
+
+            asteroid_fields: {
+                amount_min: 5,
+                amount_max: 8,
+                radius_min: 1100,
+                radius_max: 2200,
+                asteroids_min: 16,
+                asteroids_max: 32,
+                centre_padding: 2800,
+                centre_separation: 4400,
+                spawn_clear_radius: 2200
+            },
+
+            boundary: {
+                centre_y: 420,
+                spacing: 1800,
+                radius: 760,
+                asteroids_per_cluster: 12
+            }
+        },
+
         projectile: {
             classes: [
                 {

@@ -26,13 +26,21 @@ global.level = {
     ship_selector: noone,
     selected_ship_key: undefined,
     enemies_alive: 0,
-	asteroids_alive: 0,
+    asteroids_alive: 0,
     initialized: false
 };
 
 var _room_name = string_lower(room_get_name(room));
-var _camera_object = string_pos("boss", _room_name) > 0 ? o_camera_boss : o_camera;
-var _camera = instance_create_layer(room_width * 0.5, room_height * 0.5, "Instances", _camera_object);
+var _camera_object = string_pos("boss", _room_name) > 0
+    ? o_camera_boss
+    : o_camera;
+
+var _camera = instance_create_layer(
+    room_width * 0.5,
+    room_height * 0.5,
+    "Instances",
+    _camera_object
+);
 
 if (!instance_exists(_camera))
 {
@@ -43,7 +51,12 @@ if (!instance_exists(_camera))
 
 global.level.camera = _camera;
 
-var _hud = instance_create_layer(0, 0, "Instances", o_hud_level);
+var _hud = instance_create_layer(
+    0,
+    0,
+    "Instances",
+    o_hud_level
+);
 
 if (!instance_exists(_hud))
 {
@@ -54,10 +67,39 @@ if (!instance_exists(_hud))
 
 global.level.hud = _hud;
 
-var _selector = instance_create_layer(0, 0, "Instances", o_ship_select, {
-    spawn_x: room_width * 0.5,
-    spawn_y: room_height * 0.5
-});
+var _campaign_player = sc_sector_campaign_active()
+    && instance_exists(o_player);
+
+if (_campaign_player)
+{
+    var _player = instance_find(o_player, 0);
+
+    global.player_id = _player;
+    global.level.player = _player;
+    global.level.selected_ship_key = _player.ship.key;
+    global.level.initialized = true;
+
+    global.PlayerState = PlayerState.ACTIVE;
+    global.LevelState = LevelState.PLAYING;
+
+    show_debug_message(
+        "LEVEL READY - CAMPAIGN SHIP RESTORED - "
+        + _player.ship.key
+    );
+
+    exit;
+}
+
+var _selector = instance_create_layer(
+    0,
+    0,
+    "Instances",
+    o_ship_select,
+    {
+        spawn_x: room_width * 0.5,
+        spawn_y: room_height * 0.5
+    }
+);
 
 if (!instance_exists(_selector))
 {

@@ -7,14 +7,14 @@ function sc_menu_main()
 
         buttons: [
             { label: "COMBAT TEST", action: MainMenuAction.DEPLOY, enabled: true },
-            { label: "HANGAR", action: MainMenuAction.HANGAR, enabled: false },
+            { label: "CAMPAIGN", action: MainMenuAction.HANGAR, enabled: true },
             { label: "OPTIONS", action: MainMenuAction.OPTIONS, enabled: false },
             { label: "CHANGE PROFILE", action: MainMenuAction.CHANGE_PROFILE, enabled: true },
             { label: "EXIT", action: MainMenuAction.EXIT, enabled: true }
         ]
     };
 
-    _menu.action_execute = method(_menu, function(_action)
+        _menu.action_execute = method(_menu, function(_action)
     {
         switch (_action)
         {
@@ -22,6 +22,15 @@ function sc_menu_main()
                 global.GameState = GameState.PLAYING;
                 global.LevelState = LevelState.INITIALIZING;
                 room_goto(r_combat_test);
+            break;
+
+            case MainMenuAction.HANGAR:
+                sc_sector_campaign_begin();
+
+                global.GameState = GameState.PLAYING;
+                global.LevelState = LevelState.INITIALIZING;
+
+                room_goto(r_sector);
             break;
 
             case MainMenuAction.CHANGE_PROFILE:
@@ -34,7 +43,7 @@ function sc_menu_main()
                 game_end();
             break;
 
-            // Future Hangar and Options actions go here.
+            // Future Options action goes here.
         }
     });
 
