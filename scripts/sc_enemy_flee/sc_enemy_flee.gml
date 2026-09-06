@@ -49,10 +49,11 @@ function sc_enemy_flee_target_map(_enemy, _option)
     return true;
 }
 
-/// @description Configures a flee target using the nearest larger same-faction ship.
+/// @description Configures a flee target using a preferred protector or nearest larger allied ship.
 function sc_enemy_flee_target_larger_ally(_enemy, _option)
 {
     var _data = _enemy.enemy;
+    var _has_preference = variable_struct_exists(_option, "preferred_role");
     var _list = ds_list_create();
 
     collision_circle_list(
@@ -61,7 +62,9 @@ function sc_enemy_flee_target_larger_ally(_enemy, _option)
     );
 
     var _target = noone;
+    var _preferred_target = noone;
     var _best_distance_sq = _option.range * _option.range;
+    var _preferred_distance_sq = _best_distance_sq;
 
     for (var _i = 0; _i < ds_list_size(_list); _i++)
     {
@@ -81,13 +84,27 @@ function sc_enemy_flee_target_larger_ally(_enemy, _option)
             _candidate.x, _candidate.y
         );
 
-        if (_distance_sq >= _best_distance_sq) continue;
+        if (_distance_sq < _best_distance_sq)
+        {
+            _best_distance_sq = _distance_sq;
+            _target = _candidate;
+        }
 
-        _best_distance_sq = _distance_sq;
-        _target = _candidate;
+        if (_has_preference
+        && _candidate_data.identity.role == _option.preferred_role
+        && _candidate_data.identity.ship_class == _option.preferred_class
+        && _distance_sq < _preferred_distance_sq)
+        {
+            _preferred_distance_sq = _distance_sq;
+            _preferred_target = _candidate;
+        }
     }
 
     ds_list_destroy(_list);
+
+    if (instance_exists(_preferred_target))
+        _target = _preferred_target;
+
     if (!instance_exists(_target)) return false;
 
     _data.flee.target_id = _target;
@@ -189,9 +206,11 @@ function sc_enemy_flee_try(_enemy, _result)
 
     var _config = _data.doctrine.flee;
     var _runtime = _data.flee;
+    var _class_multiplier = global.config.enemy.flee.class_chance_multiplier[_data.identity.ship_class];
+    var _chance = clamp(_config.chance * _class_multiplier, 0, 1);
 
     if (_config.max_attempts <= 0
-    || _config.chance <= 0
+    || _chance <= 0
     || _runtime.attempts >= _config.max_attempts
     || GAME_TICK < _runtime.next_attempt_tick)
         return false;
@@ -207,7 +226,7 @@ function sc_enemy_flee_try(_enemy, _result)
     _runtime.attempts++;
     _runtime.next_attempt_tick = GAME_TICK + max(0, round(_config.cooldown));
 
-    if (random(1) >= clamp(_config.chance, 0, 1))
+    if (random(1) >= _chance)
         return false;
 
     return sc_enemy_flee_begin(_enemy);

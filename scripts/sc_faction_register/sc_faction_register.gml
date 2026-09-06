@@ -147,6 +147,8 @@ function sc_faction_register_corporation()
             weight: 60,
             range: 2400,
             arrival_margin: 96,
+			preferred_role: EnemyRole.SUPPORT,
+			preferred_class: EnemyClass.HEAVY,
             target_script: sc_enemy_flee_target_larger_ally,
             movement_script: sc_enemy_movement_flee_toward_ally,
             arrival_script: sc_enemy_flee_arrive_shelter

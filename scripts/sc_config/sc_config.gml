@@ -169,6 +169,11 @@ function sc_config_init()
         },
 
         enemy: {
+			
+			flee: {
+		        class_chance_multiplier: [1, 0.6, 0.25, 0]
+		    },
+			
             separation: {
                 strength: 0.14,
                 maximum_push: 0.8,
