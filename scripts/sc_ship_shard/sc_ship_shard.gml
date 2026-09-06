@@ -117,21 +117,20 @@ function sc_ship_shard_visual_data()
     particle_script: sc_particles_shard_shield_focus,
     particle_interval: 2,
 
-    arc_segments: 24,
-    arc_layers: 3,
-    arc_spacing: 3,
+    arc_segments: 32,
+    arc_layers: 4,
+    arc_spacing: 2,
     arc_thickness: 2,
 
-    radius_forward_scale: 1.55,
-    radius_side_scale: 1.55,
+    radius_forward_scale: 1.28,
+    radius_side_scale: 1.28,
 
-    field_alpha: 0.14,
-    arc_alpha: 0.88,
-    inner_alpha: 0.38,
-    endpoint_alpha: 0.7,
+    field_alpha: 0.28,
+    arc_alpha: 0.9,
+    inner_alpha: 0.22,
 
-    pulse_speed: 0.12,
-    pulse_amount: 0.12
+    pulse_speed: 0.1,
+    pulse_amount: 0.06
 },
 
         draw: {
@@ -897,28 +896,64 @@ function sc_particles_register_shard()
     part_type_orientation(_dash, 180, 180, 0, 0, true);
     part_type_blend(_dash, true);
 
-    // Energy motes flow from the hull toward the reinforced nose.
-    part_type_sprite(
-        _focus,
-        s_particle_exposion_star,
-        false,
-        false,
-        false
-    );
+    // Bright energy motes flow from the hull into the focused shield.
+part_type_sprite(
+    _focus,
+    s_particle_exposion_star,
+    false,
+    false,
+    false
+);
 
-    part_type_colour3(
-        _focus,
-        make_colour_rgb(10, 100, 220),
-        make_colour_rgb(30, 230, 255),
-        c_white
-    );
+part_type_colour3(
+    _focus,
+    make_colour_rgb(20, 100, 220),
+    make_colour_rgb(30, 230, 255),
+    c_white
+);
 
-    part_type_alpha3(_focus, 0, 0.85, 0);
-    part_type_size(_focus, 0.035, 0.075, 0.002, 0.015);
-    part_type_speed(_focus, 2.8, 5.2, 0.04, 0);
-    part_type_life(_focus, 10, 18);
-    part_type_orientation(_focus, -12, 12, 0, 5, true);
-    part_type_blend(_focus, true);
+part_type_alpha3(
+    _focus,
+    0.15,
+    0.95,
+    0
+);
+
+part_type_size(
+    _focus,
+    0.055,
+    0.12,
+    -0.002,
+    0.02
+);
+
+part_type_speed(
+    _focus,
+    3.5,
+    6,
+    0.02,
+    0
+);
+
+part_type_life(
+    _focus,
+    10,
+    17
+);
+
+part_type_orientation(
+    _focus,
+    -10,
+    10,
+    0,
+    5,
+    true
+);
+
+part_type_blend(
+    _focus,
+    true
+);
 
     return sc_particles_group_register(
         "shard",
@@ -995,7 +1030,7 @@ function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting
     return true;
 }
 
-/// @description Sends Shard energy motes toward the focused shield.
+/// @description Sends bright Shard energy motes into the frontal shield.
 function sc_particles_shard_shield_focus(_player)
 {
     if (!sc_optimization_circle_visible(
@@ -1011,56 +1046,62 @@ function sc_particles_shard_shield_focus(_player)
 
     var _angle = _player.draw_angle;
     var _radius = _player.ship.visual.radius;
-    var _side = choose(-1, 1);
 
-    var _x = _player.x
-        + lengthdir_x(
-            random_range(-0.45, 0.25) * _radius,
-            _angle
-        )
-        + lengthdir_x(
-            random_range(0.18, 0.48)
-            * _radius
-            * _side,
-            _angle + 90
+    for (var _i = 0; _i < 2; ++_i)
+    {
+        var _side = _i == 0 ? -1 : 1;
+
+        var _x = _player.x
+            + lengthdir_x(
+                random_range(-0.35, 0.18)
+                    * _radius,
+                _angle
+            )
+            + lengthdir_x(
+                random_range(0.18, 0.42)
+                    * _radius
+                    * _side,
+                _angle + 90
+            );
+
+        var _y = _player.y
+            + lengthdir_y(
+                random_range(-0.35, 0.18)
+                    * _radius,
+                _angle
+            )
+            + lengthdir_y(
+                random_range(0.18, 0.42)
+                    * _radius
+                    * _side,
+                _angle + 90
+            );
+
+        part_type_direction(
+            _types.focus,
+            _angle - 5,
+            _angle + 5,
+            0,
+            0
         );
 
-    var _y = _player.y
-        + lengthdir_y(
-            random_range(-0.45, 0.25) * _radius,
-            _angle
-        )
-        + lengthdir_y(
-            random_range(0.18, 0.48)
-            * _radius
-            * _side,
-            _angle + 90
+        part_type_orientation(
+            _types.focus,
+            _angle,
+            _angle,
+            0,
+            4,
+            true
         );
 
-    part_type_direction(
-        _types.focus,
-        _angle - 8,
-        _angle + 8,
-        0,
-        0
-    );
-
-    part_type_orientation(
-        _types.focus,
-        _angle,
-        _angle,
-        0,
-        4,
-        true
-    );
-
-    part_particles_create(
-        global.particles.system,
-        _x,
-        _y,
-        _types.focus,
-        1
-    );
+        part_particles_create(
+            global.particles.system,
+            _x,
+            _y,
+            _types.focus,
+            1
+        );
+    }
 
     return true;
 }

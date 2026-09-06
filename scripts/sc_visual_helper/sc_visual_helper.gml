@@ -178,7 +178,7 @@ function sc_visual_shield_sprite_draw(_sprite, _x, _y, _angle, _palette, _charge
     }
 }
 
-/// @description Draws one upgradeable frontal elliptical shield arc.
+/// @description Draws one translucent frontal section of an elliptical shield.
 function sc_visual_shield_focus_draw(
     _x,
     _y,
@@ -203,17 +203,186 @@ function sc_visual_shield_focus_draw(
         + sin(GAME_TICK * _config.pulse_speed)
         * _config.pulse_amount;
 
-    var _alpha = clamp(
+    var _field_alpha = clamp(
+        _config.field_alpha
+        * lerp(0.5, 1, _charge_ratio)
+        * _pulse
+        + _hit_alpha * 0.18,
+        0,
+        0.7
+    ) * _draw_alpha;
+
+    var _edge_alpha = clamp(
         _config.arc_alpha
-        * lerp(0.45, 1, _charge_ratio)
-        * _pulse,
+        * lerp(0.6, 1, _charge_ratio)
+        * _pulse
+        + _hit_alpha * 0.45,
         0,
         1
     ) * _draw_alpha;
 
-    gpu_set_blendmode(bm_add);
+    // The fan centre sits on the chord behind the curved front edge.
+    var _chord_forward = dcos(_half_arc)
+        * _forward;
 
-    // Soft layered arcs create the concentrated forward field.
+    var _centre_x = _x
+        + lengthdir_x(
+            _chord_forward,
+            _angle
+        );
+
+    var _centre_y = _y
+        + lengthdir_y(
+            _chord_forward,
+            _angle
+        );
+
+    // Soft translucent front portion of the normal shield ellipse.
+    gpu_set_blendmode(bm_normal);
+
+    draw_primitive_begin(pr_trianglefan);
+
+    draw_vertex_colour(
+        _centre_x,
+        _centre_y,
+        _palette.glow,
+        _field_alpha * 0.4
+    );
+
+    for (var _i = 0;
+    _i <= _config.arc_segments;
+    ++_i)
+    {
+        var _progress = _i
+            / _config.arc_segments;
+
+        var _local_angle = lerp(
+            -_half_arc,
+            _half_arc,
+            _progress
+        );
+
+        var _local_forward =
+            dcos(_local_angle)
+            * _forward;
+
+        var _local_side =
+            dsin(_local_angle)
+            * _side;
+
+        var _point_x = _x
+            + lengthdir_x(
+                _local_forward,
+                _angle
+            )
+            + lengthdir_x(
+                _local_side,
+                _angle + 90
+            );
+
+        var _point_y = _y
+            + lengthdir_y(
+                _local_forward,
+                _angle
+            )
+            + lengthdir_y(
+                _local_side,
+                _angle + 90
+            );
+
+        draw_vertex_colour(
+            _point_x,
+            _point_y,
+            _palette.energy,
+            _field_alpha
+        );
+    }
+
+    draw_primitive_end();
+
+    // A smaller inner field gives the shield some depth.
+    var _inner_forward = _forward * 0.91;
+    var _inner_side = _side * 0.91;
+
+    var _inner_chord = dcos(_half_arc)
+        * _inner_forward;
+
+    var _inner_centre_x = _x
+        + lengthdir_x(
+            _inner_chord,
+            _angle
+        );
+
+    var _inner_centre_y = _y
+        + lengthdir_y(
+            _inner_chord,
+            _angle
+        );
+
+    gpu_set_blendmode(bm_add);
+    draw_primitive_begin(pr_trianglefan);
+
+    draw_vertex_colour(
+        _inner_centre_x,
+        _inner_centre_y,
+        _palette.glow,
+        0
+    );
+
+    for (var _i = 0;
+    _i <= _config.arc_segments;
+    ++_i)
+    {
+        var _progress = _i
+            / _config.arc_segments;
+
+        var _local_angle = lerp(
+            -_half_arc,
+            _half_arc,
+            _progress
+        );
+
+        var _local_forward =
+            dcos(_local_angle)
+            * _inner_forward;
+
+        var _local_side =
+            dsin(_local_angle)
+            * _inner_side;
+
+        var _point_x = _x
+            + lengthdir_x(
+                _local_forward,
+                _angle
+            )
+            + lengthdir_x(
+                _local_side,
+                _angle + 90
+            );
+
+        var _point_y = _y
+            + lengthdir_y(
+                _local_forward,
+                _angle
+            )
+            + lengthdir_y(
+                _local_side,
+                _angle + 90
+            );
+
+        draw_vertex_colour(
+            _point_x,
+            _point_y,
+            _palette.core,
+            _config.inner_alpha
+                * _draw_alpha
+                * _pulse
+        );
+    }
+
+    draw_primitive_end();
+
+    // Layered curved edge with a soft glow underneath.
     for (var _layer = _config.arc_layers - 1;
     _layer >= 0;
     --_layer)
@@ -224,7 +393,7 @@ function sc_visual_shield_focus_draw(
         var _layer_side = _side
             + _layer * _config.arc_spacing;
 
-        var _layer_alpha = _alpha
+        var _layer_alpha = _edge_alpha
             / (_layer + 1);
 
         var _previous_x = 0;
@@ -274,6 +443,7 @@ function sc_visual_shield_focus_draw(
             if (_i > 0)
             {
                 draw_set_alpha(_layer_alpha);
+
                 draw_set_colour(
                     _layer == 0
                         ? _palette.core
@@ -285,7 +455,9 @@ function sc_visual_shield_focus_draw(
                     _previous_y,
                     _point_x,
                     _point_y,
-                    _config.arc_thickness
+                    _layer == 0
+                        ? _config.arc_thickness
+                        : _config.arc_thickness + 1
                 );
             }
 
@@ -294,75 +466,7 @@ function sc_visual_shield_focus_draw(
         }
     }
 
-    // Draw the two edge projectors toward the arc endpoints.
-    for (var _edge = -1;
-    _edge <= 1;
-    _edge += 2)
-    {
-        var _edge_angle = _half_arc * _edge;
-
-        var _edge_forward =
-            dcos(_edge_angle)
-            * _forward;
-
-        var _edge_side =
-            dsin(_edge_angle)
-            * _side;
-
-        var _edge_x = _x
-            + lengthdir_x(_edge_forward, _angle)
-            + lengthdir_x(_edge_side, _angle + 90);
-
-        var _edge_y = _y
-            + lengthdir_y(_edge_forward, _angle)
-            + lengthdir_y(_edge_side, _angle + 90);
-
-        var _projector_x = _x
-            + lengthdir_x(
-                _collision.radius_forward * 0.84,
-                _angle
-            )
-            + lengthdir_x(
-                _collision.radius_side * 0.38 * _edge,
-                _angle + 90
-            );
-
-        var _projector_y = _y
-            + lengthdir_y(
-                _collision.radius_forward * 0.84,
-                _angle
-            )
-            + lengthdir_y(
-                _collision.radius_side * 0.38 * _edge,
-                _angle + 90
-            );
-
-        draw_set_alpha(
-            _config.endpoint_alpha
-            * _draw_alpha
-        );
-
-        draw_set_colour(_palette.energy);
-
-        draw_line_width(
-            _projector_x,
-            _projector_y,
-            _edge_x,
-            _edge_y,
-            1
-        );
-
-        draw_set_colour(_palette.core);
-
-        draw_circle(
-            _edge_x,
-            _edge_y,
-            2.5,
-            false
-        );
-    }
-
-    // A frontal glow makes the protected region feel denser.
+    // Concentrated glow directly at the nose of the shield.
     var _nose_x = _x
         + lengthdir_x(_forward, _angle);
 
@@ -371,24 +475,24 @@ function sc_visual_shield_focus_draw(
 
     draw_set_alpha(
         (
-            _config.field_alpha
-            + _hit_alpha * 0.35
+            0.16
+            + _hit_alpha * 0.5
         ) * _draw_alpha
     );
 
-    draw_set_colour(_palette.glow);
+    draw_set_colour(_palette.energy);
 
     draw_circle(
         _nose_x,
         _nose_y,
-        max(8, _collision.radius_side * 0.42),
+        7 + _hit_alpha * 4,
         false
     );
 
     draw_set_alpha(
         (
-            _config.inner_alpha
-            + _hit_alpha * 0.6
+            0.5
+            + _hit_alpha * 0.5
         ) * _draw_alpha
     );
 
@@ -397,7 +501,7 @@ function sc_visual_shield_focus_draw(
     draw_circle(
         _nose_x,
         _nose_y,
-        max(3, _collision.radius_side * 0.13),
+        2.5 + _hit_alpha * 1.5,
         false
     );
 
