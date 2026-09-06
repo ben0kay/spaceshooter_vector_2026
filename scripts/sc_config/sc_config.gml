@@ -135,13 +135,6 @@ function sc_config_init()
                 centre_separation: 4400,
                 spawn_clear_radius: 2200
             },
-
-            boundary: {
-                centre_y: 420,
-                spacing: 1800,
-                radius: 760,
-                asteroids_per_cluster: 12
-            }
         },
 
         projectile: {

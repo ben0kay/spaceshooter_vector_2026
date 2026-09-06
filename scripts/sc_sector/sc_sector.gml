@@ -119,38 +119,6 @@ function sc_sector_asteroid_fields_spawn(_layer)
     return array_length(_centres);
 }
 
-/// @description Generates the visible asteroid line along one outer world edge.
-function sc_sector_boundary_spawn(_top, _layer)
-{
-    var _config = global.config.sector.boundary;
-    var _y = _top
-        ? _config.centre_y
-        : room_height - _config.centre_y;
-
-    var _cluster_count = ceil(room_width / _config.spacing);
-
-    for (var _i = 0; _i <= _cluster_count; _i++)
-    {
-        var _x = min(
-            room_width - 200,
-            max(200, _i * _config.spacing)
-        );
-
-        _x += random_range(
-            -_config.spacing * 0.18,
-            _config.spacing * 0.18
-        );
-
-        sc_asteroid_test_field_spawn(
-            _x,
-            _y,
-            _config.radius,
-            _config.asteroids_per_cluster,
-            _layer
-        );
-    }
-}
-
 /// @description Places a carried player at the correct sector entrance.
 function sc_sector_player_entry_apply(_player)
 {
@@ -235,11 +203,6 @@ function sc_sector_room_create()
     random_set_seed(_sector_seed);
 
     sc_sector_asteroid_fields_spawn(_layer);
-
-    if (_sector.y == -1)
-        sc_sector_boundary_spawn(true, _layer);
-    else if (_sector.y == 1)
-        sc_sector_boundary_spawn(false, _layer);
 
     random_set_seed(_previous_seed);
 
