@@ -10,7 +10,7 @@ function sc_ship_register_shard()
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
 			
 			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
-			shield_focus_arc: 90, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
+			shield_focus_arc: 130, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
 
             energy_max: 500, energy_regeneration: 0.2, energy_recharge_delay: 45,
             fuel_max: 1000, fuel_regeneration: 0,
@@ -115,22 +115,24 @@ function sc_ship_shard_visual_data()
 		
 		shield_focus: {
     particle_script: sc_particles_shard_shield_focus,
-    particle_interval: 2,
+    particle_interval: 1,
 
-    arc_segments: 32,
-    arc_layers: 4,
-    arc_spacing: 2,
-    arc_thickness: 2,
+    arc_segments: 36,
+    radius_forward_scale: 1.7,
+    radius_side_scale: 2.35,
+    offset_forward_scale: 0.32,
+    crescent_depth: 0.42,
 
-    radius_forward_scale: 1.28,
-    radius_side_scale: 1.28,
+    field_alpha: 0.3,
+    outer_glow_width: 7,
+    outer_width: 3,
+    inner_width: 2,
+    outer_alpha: 0.42,
+    edge_alpha: 0.95,
+    inner_alpha: 0.5,
 
-    field_alpha: 0.28,
-    arc_alpha: 0.9,
-    inner_alpha: 0.22,
-
-    pulse_speed: 0.1,
-    pulse_amount: 0.06
+    pulse_speed: 0.09,
+    pulse_amount: 0.05
 },
 
         draw: {
@@ -1030,77 +1032,36 @@ function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting
     return true;
 }
 
-/// @description Sends bright Shard energy motes into the frontal shield.
+/// @description Emits energetic streaks from the Shard's focused shield rim.
 function sc_particles_shard_shield_focus(_player)
 {
-    if (!sc_optimization_circle_visible(
-        _player.x,
-        _player.y,
-        _player.ship.visual.radius * 2,
-        48
-    ))
-        return true;
+    var _visual = _player.ship.visual;
+    var _config = _visual.shield_focus;
+    var _collision = _player.ship.collision;
+
+    if (!sc_optimization_circle_visible(_player.x, _player.y, _collision.radius_side * _config.radius_side_scale, 64)) return true;
 
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
     var _angle = _player.draw_angle;
-    var _radius = _player.ship.visual.radius;
+    var _half = _player.ship.stats.final.shield_focus_arc * 0.5;
+    var _forward = _collision.radius_forward * _config.radius_forward_scale;
+    var _side = _collision.radius_side * _config.radius_side_scale;
+    var _offset = _collision.radius_forward * _config.offset_forward_scale;
 
     for (var _i = 0; _i < 2; ++_i)
     {
-        var _side = _i == 0 ? -1 : 1;
+        var _local_angle = random_range(-_half, _half);
+        var _local_forward = _offset + dcos(_local_angle) * _forward;
+        var _local_side = dsin(_local_angle) * _side;
+        var _x = _player.x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
+        var _y = _player.y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
+        var _direction = _angle + _local_angle;
 
-        var _x = _player.x
-            + lengthdir_x(
-                random_range(-0.35, 0.18)
-                    * _radius,
-                _angle
-            )
-            + lengthdir_x(
-                random_range(0.18, 0.42)
-                    * _radius
-                    * _side,
-                _angle + 90
-            );
-
-        var _y = _player.y
-            + lengthdir_y(
-                random_range(-0.35, 0.18)
-                    * _radius,
-                _angle
-            )
-            + lengthdir_y(
-                random_range(0.18, 0.42)
-                    * _radius
-                    * _side,
-                _angle + 90
-            );
-
-        part_type_direction(
-            _types.focus,
-            _angle - 5,
-            _angle + 5,
-            0,
-            0
-        );
-
-        part_type_orientation(
-            _types.focus,
-            _angle,
-            _angle,
-            0,
-            4,
-            true
-        );
-
-        part_particles_create(
-            global.particles.system,
-            _x,
-            _y,
-            _types.focus,
-            1
-        );
+        part_type_direction(_types.focus, _direction - 8, _direction + 8, 0, 0);
+        part_type_orientation(_types.focus, _direction, _direction, 0, 5, true);
+        part_particles_create(global.particles.system, _x, _y, _types.focus, 1);
     }
 
     return true;

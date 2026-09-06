@@ -178,332 +178,126 @@ function sc_visual_shield_sprite_draw(_sprite, _x, _y, _angle, _palette, _charge
     }
 }
 
-/// @description Draws one translucent frontal section of an elliptical shield.
-function sc_visual_shield_focus_draw(
-    _x,
-    _y,
-    _angle,
-    _collision,
-    _arc,
-    _palette,
-    _charge_ratio,
-    _hit_alpha,
-    _draw_alpha,
-    _config
-)
+/// @description Draws one broad translucent crescent shield.
+function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette, _charge_ratio, _hit_alpha, _draw_alpha, _config)
 {
-    var _half_arc = clamp(_arc * 0.5, 1, 179);
-    var _forward = _collision.radius_forward
-        * _config.radius_forward_scale;
+    var _half = clamp(_arc * 0.5, 1, 175);
+    var _forward = _collision.radius_forward * _config.radius_forward_scale;
+    var _side = _collision.radius_side * _config.radius_side_scale;
+    var _offset = _collision.radius_forward * _config.offset_forward_scale;
+    var _pulse = 1 + sin(GAME_TICK * _config.pulse_speed) * _config.pulse_amount;
+    var _field_alpha = clamp(_config.field_alpha * lerp(0.5, 1, _charge_ratio) * _pulse + _hit_alpha * 0.18, 0, 0.72) * _draw_alpha;
+    var _edge_alpha = clamp(_config.edge_alpha * lerp(0.65, 1, _charge_ratio) * _pulse + _hit_alpha * 0.45, 0, 1) * _draw_alpha;
 
-    var _side = _collision.radius_side
-        * _config.radius_side_scale;
-
-    var _pulse = 1
-        + sin(GAME_TICK * _config.pulse_speed)
-        * _config.pulse_amount;
-
-    var _field_alpha = clamp(
-        _config.field_alpha
-        * lerp(0.5, 1, _charge_ratio)
-        * _pulse
-        + _hit_alpha * 0.18,
-        0,
-        0.7
-    ) * _draw_alpha;
-
-    var _edge_alpha = clamp(
-        _config.arc_alpha
-        * lerp(0.6, 1, _charge_ratio)
-        * _pulse
-        + _hit_alpha * 0.45,
-        0,
-        1
-    ) * _draw_alpha;
-
-    // The fan centre sits on the chord behind the curved front edge.
-    var _chord_forward = dcos(_half_arc)
-        * _forward;
-
-    var _centre_x = _x
-        + lengthdir_x(
-            _chord_forward,
-            _angle
-        );
-
-    var _centre_y = _y
-        + lengthdir_y(
-            _chord_forward,
-            _angle
-        );
-
-    // Soft translucent front portion of the normal shield ellipse.
+    // Transparent energy between the convex outer and concave inner curves.
     gpu_set_blendmode(bm_normal);
+    draw_primitive_begin(pr_trianglestrip);
 
-    draw_primitive_begin(pr_trianglefan);
-
-    draw_vertex_colour(
-        _centre_x,
-        _centre_y,
-        _palette.glow,
-        _field_alpha * 0.4
-    );
-
-    for (var _i = 0;
-    _i <= _config.arc_segments;
-    ++_i)
+    for (var _i = 0; _i <= _config.arc_segments; ++_i)
     {
-        var _progress = _i
-            / _config.arc_segments;
+        var _progress = _i / _config.arc_segments;
+        var _local_angle = lerp(-_half, _half, _progress);
+        var _thickness = power(sin(_progress * pi), 0.7) * _forward * _config.crescent_depth;
+        var _outer_forward = _offset + dcos(_local_angle) * _forward;
+        var _outer_side = dsin(_local_angle) * _side;
+        var _inner_forward = _outer_forward - _thickness;
 
-        var _local_angle = lerp(
-            -_half_arc,
-            _half_arc,
-            _progress
-        );
+        var _outer_x = _x + lengthdir_x(_outer_forward, _angle) + lengthdir_x(_outer_side, _angle + 90);
+        var _outer_y = _y + lengthdir_y(_outer_forward, _angle) + lengthdir_y(_outer_side, _angle + 90);
+        var _inner_x = _x + lengthdir_x(_inner_forward, _angle) + lengthdir_x(_outer_side, _angle + 90);
+        var _inner_y = _y + lengthdir_y(_inner_forward, _angle) + lengthdir_y(_outer_side, _angle + 90);
 
-        var _local_forward =
-            dcos(_local_angle)
-            * _forward;
-
-        var _local_side =
-            dsin(_local_angle)
-            * _side;
-
-        var _point_x = _x
-            + lengthdir_x(
-                _local_forward,
-                _angle
-            )
-            + lengthdir_x(
-                _local_side,
-                _angle + 90
-            );
-
-        var _point_y = _y
-            + lengthdir_y(
-                _local_forward,
-                _angle
-            )
-            + lengthdir_y(
-                _local_side,
-                _angle + 90
-            );
-
-        draw_vertex_colour(
-            _point_x,
-            _point_y,
-            _palette.energy,
-            _field_alpha
-        );
+        draw_vertex_colour(_outer_x, _outer_y, _palette.energy, _field_alpha);
+        draw_vertex_colour(_inner_x, _inner_y, _palette.glow, _field_alpha * 0.42);
     }
 
     draw_primitive_end();
-
-    // A smaller inner field gives the shield some depth.
-    var _inner_forward = _forward * 0.91;
-    var _inner_side = _side * 0.91;
-
-    var _inner_chord = dcos(_half_arc)
-        * _inner_forward;
-
-    var _inner_centre_x = _x
-        + lengthdir_x(
-            _inner_chord,
-            _angle
-        );
-
-    var _inner_centre_y = _y
-        + lengthdir_y(
-            _inner_chord,
-            _angle
-        );
-
     gpu_set_blendmode(bm_add);
-    draw_primitive_begin(pr_trianglefan);
 
-    draw_vertex_colour(
-        _inner_centre_x,
-        _inner_centre_y,
-        _palette.glow,
-        0
-    );
+    // Broad glow beneath the outer collision-facing rim.
+    var _previous_x = 0;
+    var _previous_y = 0;
 
-    for (var _i = 0;
-    _i <= _config.arc_segments;
-    ++_i)
+    for (var _i = 0; _i <= _config.arc_segments; ++_i)
     {
-        var _progress = _i
-            / _config.arc_segments;
+        var _progress = _i / _config.arc_segments;
+        var _local_angle = lerp(-_half, _half, _progress);
+        var _local_forward = _offset + dcos(_local_angle) * _forward;
+        var _local_side = dsin(_local_angle) * _side;
+        var _point_x = _x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
+        var _point_y = _y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
 
-        var _local_angle = lerp(
-            -_half_arc,
-            _half_arc,
-            _progress
-        );
-
-        var _local_forward =
-            dcos(_local_angle)
-            * _inner_forward;
-
-        var _local_side =
-            dsin(_local_angle)
-            * _inner_side;
-
-        var _point_x = _x
-            + lengthdir_x(
-                _local_forward,
-                _angle
-            )
-            + lengthdir_x(
-                _local_side,
-                _angle + 90
-            );
-
-        var _point_y = _y
-            + lengthdir_y(
-                _local_forward,
-                _angle
-            )
-            + lengthdir_y(
-                _local_side,
-                _angle + 90
-            );
-
-        draw_vertex_colour(
-            _point_x,
-            _point_y,
-            _palette.core,
-            _config.inner_alpha
-                * _draw_alpha
-                * _pulse
-        );
-    }
-
-    draw_primitive_end();
-
-    // Layered curved edge with a soft glow underneath.
-    for (var _layer = _config.arc_layers - 1;
-    _layer >= 0;
-    --_layer)
-    {
-        var _layer_forward = _forward
-            + _layer * _config.arc_spacing;
-
-        var _layer_side = _side
-            + _layer * _config.arc_spacing;
-
-        var _layer_alpha = _edge_alpha
-            / (_layer + 1);
-
-        var _previous_x = 0;
-        var _previous_y = 0;
-
-        for (var _i = 0;
-        _i <= _config.arc_segments;
-        ++_i)
+        if (_i > 0)
         {
-            var _progress = _i
-                / _config.arc_segments;
-
-            var _local_angle = lerp(
-                -_half_arc,
-                _half_arc,
-                _progress
-            );
-
-            var _local_forward =
-                dcos(_local_angle)
-                * _layer_forward;
-
-            var _local_side =
-                dsin(_local_angle)
-                * _layer_side;
-
-            var _point_x = _x
-                + lengthdir_x(
-                    _local_forward,
-                    _angle
-                )
-                + lengthdir_x(
-                    _local_side,
-                    _angle + 90
-                );
-
-            var _point_y = _y
-                + lengthdir_y(
-                    _local_forward,
-                    _angle
-                )
-                + lengthdir_y(
-                    _local_side,
-                    _angle + 90
-                );
-
-            if (_i > 0)
-            {
-                draw_set_alpha(_layer_alpha);
-
-                draw_set_colour(
-                    _layer == 0
-                        ? _palette.core
-                        : _palette.energy
-                );
-
-                draw_line_width(
-                    _previous_x,
-                    _previous_y,
-                    _point_x,
-                    _point_y,
-                    _layer == 0
-                        ? _config.arc_thickness
-                        : _config.arc_thickness + 1
-                );
-            }
-
-            _previous_x = _point_x;
-            _previous_y = _point_y;
+            draw_set_alpha(_config.outer_alpha * _draw_alpha);
+            draw_set_colour(_palette.glow);
+            draw_line_width(_previous_x, _previous_y, _point_x, _point_y, _config.outer_glow_width);
         }
+
+        _previous_x = _point_x;
+        _previous_y = _point_y;
     }
 
-    // Concentrated glow directly at the nose of the shield.
-    var _nose_x = _x
-        + lengthdir_x(_forward, _angle);
+    // Sharp white-aqua outer rim.
+    _previous_x = 0;
+    _previous_y = 0;
 
-    var _nose_y = _y
-        + lengthdir_y(_forward, _angle);
+    for (var _i = 0; _i <= _config.arc_segments; ++_i)
+    {
+        var _progress = _i / _config.arc_segments;
+        var _local_angle = lerp(-_half, _half, _progress);
+        var _local_forward = _offset + dcos(_local_angle) * _forward;
+        var _local_side = dsin(_local_angle) * _side;
+        var _point_x = _x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
+        var _point_y = _y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
 
-    draw_set_alpha(
-        (
-            0.16
-            + _hit_alpha * 0.5
-        ) * _draw_alpha
-    );
+        if (_i > 0)
+        {
+            draw_set_alpha(_edge_alpha);
+            draw_set_colour(_palette.core);
+            draw_line_width(_previous_x, _previous_y, _point_x, _point_y, _config.outer_width);
+        }
 
+        _previous_x = _point_x;
+        _previous_y = _point_y;
+    }
+
+    // Concave inner rim gives the field its crescent silhouette.
+    _previous_x = 0;
+    _previous_y = 0;
+
+    for (var _i = 0; _i <= _config.arc_segments; ++_i)
+    {
+        var _progress = _i / _config.arc_segments;
+        var _local_angle = lerp(-_half, _half, _progress);
+        var _thickness = power(sin(_progress * pi), 0.7) * _forward * _config.crescent_depth;
+        var _local_forward = _offset + dcos(_local_angle) * _forward - _thickness;
+        var _local_side = dsin(_local_angle) * _side;
+        var _point_x = _x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
+        var _point_y = _y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
+
+        if (_i > 0)
+        {
+            draw_set_alpha(_config.inner_alpha * _draw_alpha * _pulse);
+            draw_set_colour(_palette.energy);
+            draw_line_width(_previous_x, _previous_y, _point_x, _point_y, _config.inner_width);
+        }
+
+        _previous_x = _point_x;
+        _previous_y = _point_y;
+    }
+
+    // Concentrated impact-facing glow at the centre of the field.
+    var _nose_x = _x + lengthdir_x(_offset + _forward, _angle);
+    var _nose_y = _y + lengthdir_y(_offset + _forward, _angle);
+
+    draw_set_alpha((0.2 + _hit_alpha * 0.5) * _draw_alpha);
     draw_set_colour(_palette.energy);
+    draw_circle(_nose_x, _nose_y, 9 + _hit_alpha * 5, false);
 
-    draw_circle(
-        _nose_x,
-        _nose_y,
-        7 + _hit_alpha * 4,
-        false
-    );
-
-    draw_set_alpha(
-        (
-            0.5
-            + _hit_alpha * 0.5
-        ) * _draw_alpha
-    );
-
+    draw_set_alpha((0.7 + _hit_alpha * 0.3) * _draw_alpha);
     draw_set_colour(_palette.core);
-
-    draw_circle(
-        _nose_x,
-        _nose_y,
-        2.5 + _hit_alpha * 1.5,
-        false
-    );
+    draw_circle(_nose_x, _nose_y, 3 + _hit_alpha * 2, false);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);

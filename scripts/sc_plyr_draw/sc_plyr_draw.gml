@@ -77,9 +77,6 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
 
     var _focus_active = _player.combat.shield_focus.active;
 
-    if (_focus_active && sprite_exists(_cache.focus))
-        draw_sprite_ext(_cache.focus, 0, _draw_x, _draw_y, 1, 1, _angle, c_white, _alpha);
-
     if (_draw_shield && _player.defence.shield.current > 0)
     {
         var _shield_ratio = _player.defence.shield.current / _player.defence.shield.maximum;
