@@ -43,6 +43,13 @@ enum HardpointRotation { FIXED, TARGET }
 enum ProjectileMotion { STANDARD, ROCKET, CURVE, STATIONARY }
 enum ProjectileClass { LIGHT, REGULAR, HEAVY }
 enum ProjectileState { ACTIVE, RICOCHET }
+enum MineState
+{
+    ARMING,
+    ARMED,
+    TRIGGERED,
+    DETONATED
+}
 //==================================================
 // DAMAGE / DEFENCE
 //==================================================

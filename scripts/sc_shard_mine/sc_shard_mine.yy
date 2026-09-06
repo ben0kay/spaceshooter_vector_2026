@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_plyr_mine",
+  "%Name":"sc_shard_mine",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_plyr_mine",
+  "name":"sc_shard_mine",
   "parent":{
     "name":"weapons",
     "path":"folders/scripts/PLAYER/weapons.yy",
