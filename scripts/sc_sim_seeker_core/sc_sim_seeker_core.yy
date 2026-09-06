@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_seeker_core",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_seeker_core",
+  "parent":{
+    "name":"projectiles",
+    "path":"folders/scripts/ENEMY/factions/simulant/projectiles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

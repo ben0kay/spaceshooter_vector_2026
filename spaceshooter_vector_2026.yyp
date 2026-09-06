@@ -165,6 +165,7 @@
     {"id":{"name":"sc_sim_pulse","path":"scripts/sc_sim_pulse/sc_sim_pulse.yy",},},
     {"id":{"name":"sc_sim_rocket_weapon","path":"scripts/sc_sim_rocket_weapon/sc_sim_rocket_weapon.yy",},},
     {"id":{"name":"sc_sim_rocket","path":"scripts/sc_sim_rocket/sc_sim_rocket.yy",},},
+    {"id":{"name":"sc_sim_seeker_core","path":"scripts/sc_sim_seeker_core/sc_sim_seeker_core.yy",},},
     {"id":{"name":"sc_sim_shared_projectiles","path":"scripts/sc_sim_shared_projectiles/sc_sim_shared_projectiles.yy",},},
     {"id":{"name":"sc_sim_siegebreaker","path":"scripts/sc_sim_siegebreaker/sc_sim_siegebreaker.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
