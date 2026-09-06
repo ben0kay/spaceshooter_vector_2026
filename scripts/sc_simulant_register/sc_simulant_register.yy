@@ -6,7 +6,7 @@
   "name":"sc_simulant_register",
   "parent":{
     "name":"simulant",
-    "path":"folders/scripts/enemy/factions/simulant.yy",
+    "path":"folders/scripts/ENEMY/factions/simulant.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -6,7 +6,7 @@
   "name":"sc_rebel_register",
   "parent":{
     "name":"rebel",
-    "path":"folders/scripts/enemy/factions/rebel.yy",
+    "path":"folders/scripts/ENEMY/factions/rebel.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

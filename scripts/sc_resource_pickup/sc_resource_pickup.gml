@@ -39,7 +39,8 @@ function sc_resource_pickup_init(_pickup, _create)
         velocity_y: _create.velocity_y,
         variant: irandom(3),
         phase: random(360),
-        spin_speed: random_range(-0.9, 0.9)
+        spin_speed: random_range(-0.9, 0.9),
+		full_feedback_tick: 0
     };
 
     _pickup.initialized = true;
@@ -93,6 +94,22 @@ function sc_resource_pickup_update(_pickup)
         }
 
         _data.amount = _result.remaining;
+		
+		if (_result.accepted <= 0
+			&& GAME_TICK >= _data.full_feedback_tick)
+			{
+			    sc_world_feedback_create(
+			        _player.x,
+			        _player.y - 48,
+			        _player.layer,
+			        "CARGO FULL",
+			        make_colour_rgb(255, 110, 80),
+			        0.75
+			    );
+
+			    _data.full_feedback_tick =
+			        GAME_TICK + 90;
+			}
 
         if (_data.amount <= 0)
             instance_destroy(_pickup);

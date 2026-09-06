@@ -6,7 +6,7 @@
   "name":"sc_sim_siegebreaker",
   "parent":{
     "name":"enemies",
-    "path":"folders/scripts/enemy/factions/simulant/enemies.yy",
+    "path":"folders/scripts/ENEMY/factions/simulant/enemies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

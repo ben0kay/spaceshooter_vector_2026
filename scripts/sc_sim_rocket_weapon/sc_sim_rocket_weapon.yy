@@ -6,7 +6,7 @@
   "name":"sc_sim_rocket_weapon",
   "parent":{
     "name":"weapons",
-    "path":"folders/scripts/enemy/factions/simulant/weapons.yy",
+    "path":"folders/scripts/ENEMY/factions/simulant/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

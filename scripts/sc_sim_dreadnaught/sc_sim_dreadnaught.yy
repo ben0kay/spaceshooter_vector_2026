@@ -6,7 +6,7 @@
   "name":"sc_sim_dreadnaught",
   "parent":{
     "name":"bosses",
-    "path":"folders/scripts/enemy/factions/simulant/bosses.yy",
+    "path":"folders/scripts/ENEMY/factions/simulant/bosses.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

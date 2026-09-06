@@ -1,49 +1,90 @@
 /*
 RESOURCE PICKUP VISUALS
 
-Four reusable ore-fragment shapes are recoloured using each item's
-registered colour palette, then baked into cached sprites at startup.
+Ore pickups are drawn as small clusters of angular mineral chunks.
+They are recoloured per resource and baked into cached sprites.
 */
 
-/// @description Returns normalized polygon points for one ore-fragment shape.
+/// @description Returns normalized points for one angular rock shape.
 function sc_resource_pickup_shape_points(_variant)
 {
-    switch (_variant)
+    switch (_variant mod 4)
     {
         case 0:
             return [
-                -0.88,-0.22, -0.51,-0.72, 0.08,-0.87,
-                 0.69,-0.55,  0.91, 0.03, 0.52, 0.72,
-                -0.18, 0.86, -0.81, 0.43
+                -0.92, 0.18,
+                -0.70,-0.55,
+                -0.15,-0.91,
+                 0.48,-0.72,
+                 0.91,-0.13,
+                 0.68, 0.58,
+                 0.12, 0.88,
+                -0.57, 0.71
             ];
 
         case 1:
             return [
-                -0.91,-0.08, -0.58,-0.68, 0.03,-0.73,
-                 0.44,-0.91,  0.83,-0.41, 0.72, 0.22,
-                 0.31, 0.82, -0.47, 0.69
+                -0.88,-0.18,
+                -0.42,-0.82,
+                 0.25,-0.91,
+                 0.82,-0.47,
+                 0.92, 0.23,
+                 0.39, 0.82,
+                -0.34, 0.73,
+                -0.79, 0.42
             ];
 
         case 2:
             return [
-                -0.74,-0.57, -0.09,-0.91, 0.61,-0.67,
-                 0.89,-0.13,  0.63, 0.53, 0.12, 0.87,
-                -0.51, 0.66, -0.93, 0.08
+                -0.91,-0.37,
+                -0.28,-0.88,
+                 0.38,-0.72,
+                 0.87,-0.18,
+                 0.71, 0.56,
+                 0.08, 0.91,
+                -0.58, 0.68
             ];
 
         case 3:
             return [
-                -0.83,-0.38, -0.31,-0.79, 0.17,-0.58,
-                 0.59,-0.86,  0.48,-0.31, 0.91, 0.18,
-                 0.47, 0.76, -0.16, 0.91, -0.72, 0.51
+                -0.82, 0.34,
+                -0.66,-0.46,
+                -0.10,-0.89,
+                 0.55,-0.69,
+                 0.91,-0.02,
+                 0.52, 0.73,
+                -0.21, 0.84
             ];
     }
 
     return [];
 }
 
-/// @description Draws one filled irregular ore polygon.
-function sc_resource_pickup_polygon_draw(_x, _y, _radius, _points, _colour)
+/// @description Returns a rotated local X coordinate.
+function sc_resource_pickup_point_x(_x, _local_x, _local_y, _angle)
+{
+    return _x
+        + lengthdir_x(_local_x, _angle)
+        + lengthdir_x(_local_y, _angle + 90);
+}
+
+/// @description Returns a rotated local Y coordinate.
+function sc_resource_pickup_point_y(_y, _local_x, _local_y, _angle)
+{
+    return _y
+        + lengthdir_y(_local_x, _angle)
+        + lengthdir_y(_local_y, _angle + 90);
+}
+
+/// @description Draws one rotated, irregular polygon.
+function sc_resource_pickup_polygon_draw(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _points,
+    _colour
+)
 {
     var _count = array_length(_points) div 2;
 
@@ -53,10 +94,22 @@ function sc_resource_pickup_polygon_draw(_x, _y, _radius, _points, _colour)
     for (var _i = 0; _i <= _count; _i++)
     {
         var _index = (_i mod _count) * 2;
+        var _local_x = _points[_index] * _radius;
+        var _local_y = _points[_index + 1] * _radius;
 
         draw_vertex_colour(
-            _x + _points[_index] * _radius,
-            _y + _points[_index + 1] * _radius,
+            sc_resource_pickup_point_x(
+                _x,
+                _local_x,
+                _local_y,
+                _angle
+            ),
+            sc_resource_pickup_point_y(
+                _y,
+                _local_x,
+                _local_y,
+                _angle
+            ),
             _colour,
             1
         );
@@ -65,8 +118,15 @@ function sc_resource_pickup_polygon_draw(_x, _y, _radius, _points, _colour)
     draw_primitive_end();
 }
 
-/// @description Draws one ore-fragment outline.
-function sc_resource_pickup_outline_draw(_x, _y, _radius, _points, _colour)
+/// @description Draws the outline of one rotated rock.
+function sc_resource_pickup_outline_draw(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _points,
+    _colour
+)
 {
     var _count = array_length(_points) div 2;
 
@@ -78,78 +138,207 @@ function sc_resource_pickup_outline_draw(_x, _y, _radius, _points, _colour)
         var _index_a = _i * 2;
         var _index_b = _next * 2;
 
+        var _ax = _points[_index_a] * _radius;
+        var _ay = _points[_index_a + 1] * _radius;
+        var _bx = _points[_index_b] * _radius;
+        var _by = _points[_index_b + 1] * _radius;
+
         draw_line_width(
-            _x + _points[_index_a] * _radius,
-            _y + _points[_index_a + 1] * _radius,
-            _x + _points[_index_b] * _radius,
-            _y + _points[_index_b + 1] * _radius,
-            2
+            sc_resource_pickup_point_x(_x, _ax, _ay, _angle),
+            sc_resource_pickup_point_y(_y, _ax, _ay, _angle),
+            sc_resource_pickup_point_x(_x, _bx, _by, _angle),
+            sc_resource_pickup_point_y(_y, _bx, _by, _angle),
+            1
         );
     }
 }
 
-/// @description Draws one complete coloured ore fragment for startup baking.
-function sc_resource_pickup_primitive_draw(_x, _y, _radius, _variant, _visual)
+/// @description Draws one individual angular mineral chunk.
+function sc_resource_pickup_rock_draw(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _shape,
+    _visual
+)
 {
-    var _points = sc_resource_pickup_shape_points(_variant);
-    var _dark = merge_colour(_visual.colour, c_black, 0.72);
-    var _mid = merge_colour(_visual.colour, c_black, 0.38);
-    var _light = merge_colour(_visual.colour, c_white, 0.34);
+    var _points = sc_resource_pickup_shape_points(_shape);
 
-    // Baked mineral glow.
+    var _shadow =
+        merge_colour(_visual.colour, c_black, 0.82);
+
+    var _body =
+        merge_colour(_visual.colour, c_black, 0.54);
+
+    var _surface =
+        merge_colour(_visual.colour, c_white, 0.10);
+
+    var _edge =
+        merge_colour(_visual.colour, c_white, 0.42);
+
+    // Dark lower rock body.
+    sc_resource_pickup_polygon_draw(
+        _x,
+        _y + _radius * 0.13,
+        _radius,
+        _angle,
+        _points,
+        _shadow
+    );
+
+    // Raised upper surface.
+    sc_resource_pickup_polygon_draw(
+        _x,
+        _y,
+        _radius * 0.91,
+        _angle,
+        _points,
+        _body
+    );
+
+    // Irregular bright upper facet.
+    var _ax = sc_resource_pickup_point_x(
+        _x,
+        -_radius * 0.56,
+        -_radius * 0.25,
+        _angle
+    );
+
+    var _ay = sc_resource_pickup_point_y(
+        _y,
+        -_radius * 0.56,
+        -_radius * 0.25,
+        _angle
+    );
+
+    var _bx = sc_resource_pickup_point_x(
+        _x,
+        -_radius * 0.10,
+        -_radius * 0.66,
+        _angle
+    );
+
+    var _by = sc_resource_pickup_point_y(
+        _y,
+        -_radius * 0.10,
+        -_radius * 0.66,
+        _angle
+    );
+
+    var _cx = sc_resource_pickup_point_x(
+        _x,
+         _radius * 0.48,
+        -_radius * 0.28,
+        _angle
+    );
+
+    var _cy = sc_resource_pickup_point_y(
+        _y,
+         _radius * 0.48,
+        -_radius * 0.28,
+        _angle
+    );
+
+    draw_set_colour(_surface);
+    draw_set_alpha(0.92);
+    draw_triangle(_ax, _ay, _bx, _by, _cx, _cy, false);
+
+    // Mineral seam.
+    draw_set_colour(_visual.glow);
+    draw_set_alpha(0.45);
+
+    draw_line_width(
+        _ax,
+        _ay,
+        _x + lengthdir_x(_radius * 0.18, _angle),
+        _y + lengthdir_y(_radius * 0.18, _angle),
+        2
+    );
+
+    draw_set_alpha(1);
+
+    sc_resource_pickup_outline_draw(
+        _x,
+        _y,
+        _radius * 0.91,
+        _angle,
+        _points,
+        _edge
+    );
+}
+
+/// @description Draws one clustered ore pickup for startup baking.
+function sc_resource_pickup_primitive_draw(
+    _x,
+    _y,
+    _radius,
+    _variant,
+    _visual
+)
+{
+    // Soft mineral glow behind the complete cluster.
     gpu_set_blendmode(bm_add);
 
     draw_set_colour(_visual.glow);
-    draw_set_alpha(0.12);
-    draw_circle(_x, _y, _radius * 1.9, false);
+    draw_set_alpha(0.09);
+    draw_circle(_x, _y, _radius * 2.05, false);
 
-    draw_set_alpha(0.24);
-    draw_circle(_x, _y, _radius * 1.35, false);
+    draw_set_alpha(0.16);
+    draw_circle(_x, _y, _radius * 1.55, false);
 
     gpu_set_blendmode(bm_normal);
-
-    // Asteroid-like fragment body.
     draw_set_alpha(1);
-    sc_resource_pickup_polygon_draw(_x, _y, _radius, _points, _dark);
-    sc_resource_pickup_polygon_draw(_x, _y, _radius * 0.78, _points, _mid);
-    sc_resource_pickup_outline_draw(_x, _y, _radius, _points, _light);
 
-    // Mineral seams.
-    draw_set_colour(_visual.glow);
-    draw_set_alpha(0.42);
-    draw_line_width(
-        _x - _radius * 0.58, _y + _radius * 0.18,
-        _x - _radius * 0.10, _y - _radius * 0.04,
-        4
+    var _flip = (_variant mod 2 == 0) ? 1 : -1;
+    var _turn = _variant * 17;
+
+    // Rear/top chunk.
+    sc_resource_pickup_rock_draw(
+        _x + _radius * 0.04 * _flip,
+        _y - _radius * 0.48,
+        _radius * 0.72,
+        _turn - 6,
+        _variant,
+        _visual
     );
 
-    draw_line_width(
-        _x - _radius * 0.10, _y - _radius * 0.04,
-        _x + _radius * 0.46, _y - _radius * 0.31,
-        4
+    // Rear side chunks.
+    sc_resource_pickup_rock_draw(
+        _x - _radius * 0.50,
+        _y - _radius * 0.05,
+        _radius * 0.57,
+        _turn - 22,
+        _variant + 1,
+        _visual
     );
 
-    draw_set_colour(_visual.colour);
-    draw_set_alpha(1);
-    draw_line_width(
-        _x - _radius * 0.58, _y + _radius * 0.18,
-        _x - _radius * 0.10, _y - _radius * 0.04,
-        2
+    sc_resource_pickup_rock_draw(
+        _x + _radius * 0.50,
+        _y - _radius * 0.02,
+        _radius * 0.55,
+        _turn + 19,
+        _variant + 2,
+        _visual
     );
 
-    draw_line_width(
-        _x - _radius * 0.10, _y - _radius * 0.04,
-        _x + _radius * 0.46, _y - _radius * 0.31,
-        2
+    // Front chunks overlap the rear chunks.
+    sc_resource_pickup_rock_draw(
+        _x - _radius * 0.31,
+        _y + _radius * 0.42,
+        _radius * 0.62,
+        _turn + 8,
+        _variant + 3,
+        _visual
     );
 
-    // Small reflective facet.
-    draw_set_colour(_light);
-    draw_set_alpha(0.82);
-    draw_line_width(
-        _x - _radius * 0.38, _y - _radius * 0.42,
-        _x + _radius * 0.10, _y - _radius * 0.58,
-        2
+    sc_resource_pickup_rock_draw(
+        _x + _radius * 0.34,
+        _y + _radius * 0.41,
+        _radius * 0.59,
+        _turn - 13,
+        _variant + 1,
+        _visual
     );
 
     draw_set_alpha(1);

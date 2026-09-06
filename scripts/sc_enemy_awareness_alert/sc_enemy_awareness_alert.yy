@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_enemy_awareness_alert",
   "parent":{
-    "name":"enemy",
-    "path":"folders/scripts/enemy.yy",
+    "name":"ENEMY",
+    "path":"folders/scripts/ENEMY.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

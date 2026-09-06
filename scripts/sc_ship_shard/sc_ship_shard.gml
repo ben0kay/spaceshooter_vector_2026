@@ -16,7 +16,7 @@ function sc_ship_register_shard()
             bullets_max: 1500, explosives_max: 100,
             cargo_capacity: 100,
 
-            speed_max: 10, acceleration: 0.6, deceleration: 0.7, turn_speed: 10,
+            speed_max: 10, acceleration: 0.5, deceleration: 0.6, turn_speed: 10,
             directional_speed_min: 0.72, directional_thrust_min: 0.28,
             damage_multiplier: 1, fire_rate_multiplier: 1,
 

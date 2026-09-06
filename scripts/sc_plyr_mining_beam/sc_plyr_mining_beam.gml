@@ -70,46 +70,84 @@ function sc_weapon_register_shard_mining_beam()
     });
 }
 
-/// @description Registers small yellow mining-contact sparks.
+/// @description Registers visible mining sparks and soft contact motes.
 function sc_shard_mining_beam_particles_register()
 {
     var _spark = sc_particles_type_create();
+    var _mote = sc_particles_type_create();
 
-    if (!part_type_exists(_spark))
+    if (!part_type_exists(_spark) || !part_type_exists(_mote))
     {
         show_debug_message("MINING BEAM PARTICLE ERROR - type creation failed");
         return false;
     }
 
-    part_type_sprite(_spark, s_blur, false, false, false);
-    part_type_size(_spark, 0.035, 0.075, -0.003, 0.01);
-    part_type_colour3(
+
+    // ==================================================
+    // ELONGATED CUTTING SPARK
+    // ==================================================
+    part_type_sprite(
         _spark,
-        make_colour_rgb(255, 250, 190),
-        make_colour_rgb(255, 190, 30),
-        make_colour_rgb(135, 70, 0)
+        s_particle_trail_white_beam,
+        false,
+        false,
+        false
     );
 
-    part_type_alpha3(_spark, 1, 0.72, 0);
-    part_type_speed(_spark, 0.8, 2.4, -0.05, 0);
+    part_type_size(_spark, 0.06, 0.12, -0.004, 0.015);
+    part_type_scale(_spark, 1, 0.45);
+    part_type_colour3(
+        _spark,
+        make_colour_rgb(255, 255, 220),
+        make_colour_rgb(255, 195, 35),
+        make_colour_rgb(130, 70, 0)
+    );
+
+    part_type_alpha3(_spark, 1, 0.8, 0);
+    part_type_speed(_spark, 1.4, 4, -0.08, 0);
     part_type_direction(_spark, 0, 359, 0, 0);
-    part_type_life(_spark, 10, 20);
+    part_type_orientation(_spark, -8, 8, 0, 4, true);
+    part_type_life(_spark, 10, 18);
     part_type_blend(_spark, true);
 
+
+    // ==================================================
+    // SOFT CONTACT MOTE
+    // ==================================================
+    part_type_sprite(
+        _mote,
+        s_blur,
+        false,
+        false,
+        false
+    );
+
+    part_type_size(_mote, 0.11, 0.2, 0.005, 0.025);
+    part_type_colour3(
+        _mote,
+        make_colour_rgb(255, 245, 170),
+        make_colour_rgb(255, 170, 25),
+        make_colour_rgb(120, 60, 0)
+    );
+
+    part_type_alpha3(_mote, 0.85, 0.52, 0);
+    part_type_speed(_mote, 0.3, 1.3, -0.025, 0);
+    part_type_direction(_mote, 0, 359, 0, 0);
+    part_type_life(_mote, 14, 25);
+    part_type_blend(_mote, true);
+
     return sc_particles_group_register("beam_shard_mining", {
-        spark: _spark
+        spark: _spark,
+        mote: _mote
     });
 }
 
-/// @description Emits material-coloured mining sparks where the beam contacts something.
+/// @description Emits visible material-coloured particles at the mining contact point.
 function sc_shard_mining_beam_particles_emit(_area, _data)
 {
     var _runtime = _data.runtime;
 
     if (_runtime.hit_length >= _runtime.growth_length - 0.5)
-        return false;
-
-    if (((GAME_TICK + real(_area.id)) mod 2) != 0)
         return false;
 
     var _particles = sc_particles_group_get("beam_shard_mining");
@@ -118,8 +156,12 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
     var _distance = _data.geometry.length;
     var _x = _area.x + lengthdir_x(_distance, _data.direction);
     var _y = _area.y + lengthdir_y(_distance, _data.direction);
-    var _direction = _data.direction + 180 + random_range(-65, 65);
+    var _direction = _data.direction + 180 + random_range(-70, 70);
     var _asteroid = collision_circle(_x, _y, 14, o_asteroid, false, true);
+
+    var _core = make_colour_rgb(255, 255, 220);
+    var _colour = make_colour_rgb(255, 195, 35);
+    var _glow = make_colour_rgb(130, 70, 0);
 
     if (instance_exists(_asteroid))
     {
@@ -128,27 +170,36 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
             _asteroid.asteroid.item_key
         );
 
-        part_type_colour3(
-            _particles.spark,
-            c_white,
-            _item.visual.colour,
-            _item.visual.glow
-        );
+        _colour = _item.visual.colour;
+        _glow = _item.visual.glow;
     }
-    else
-    {
-        part_type_colour3(
-            _particles.spark,
-            make_colour_rgb(255, 250, 190),
-            make_colour_rgb(255, 190, 30),
-            make_colour_rgb(135, 70, 0)
-        );
-    }
+
+    part_type_colour3(
+        _particles.spark,
+        _core,
+        _colour,
+        _glow
+    );
+
+    part_type_colour3(
+        _particles.mote,
+        _core,
+        _colour,
+        _glow
+    );
 
     part_type_direction(
         _particles.spark,
-        _direction - 18,
-        _direction + 18,
+        _direction - 22,
+        _direction + 22,
+        0,
+        0
+    );
+
+    part_type_direction(
+        _particles.mote,
+        _direction - 55,
+        _direction + 55,
         0,
         0
     );
@@ -160,6 +211,17 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
         _particles.spark,
         irandom_range(1, 2)
     );
+
+    if (((GAME_TICK + real(_area.id)) mod 2) == 0)
+    {
+        part_particles_create(
+            global.particles.impact_system,
+            _x,
+            _y,
+            _particles.mote,
+            1
+        );
+    }
 
     return true;
 }

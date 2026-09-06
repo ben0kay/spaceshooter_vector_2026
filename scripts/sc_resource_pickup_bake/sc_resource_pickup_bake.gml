@@ -20,7 +20,7 @@ function sc_resource_pickup_visual_bake(_definition, _variant)
     sc_resource_pickup_primitive_draw(
         _centre,
         _centre,
-        12,
+        14,
         _variant,
         _definition.visual
     );
@@ -29,10 +29,14 @@ function sc_resource_pickup_visual_bake(_definition, _variant)
 
     var _sprite = sprite_create_from_surface(
         _surface,
-        0, 0,
-        _canvas, _canvas,
-        false, false,
-        _centre, _centre
+        0,
+        0,
+        _canvas,
+        _canvas,
+        false,
+        false,
+        _centre,
+        _centre
     );
 
     surface_free(_surface);

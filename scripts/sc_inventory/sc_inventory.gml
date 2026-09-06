@@ -261,7 +261,7 @@ function sc_inventory_draw(_hud)
     draw_set_valign(fa_top);
 }
 
-/// @description Draws player cargo stacks, selection and capacity information.
+/// @description Draws cargo slots and selected-item information.
 function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
 {
     var _player = global.player_id;
@@ -275,59 +275,198 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.text);
-    draw_text(_origin_x + _grid.x, _origin_y + _grid.y - 34, "CARGO HOLD");
+
+    draw_text(
+        _origin_x + _grid.x,
+        _origin_y + _grid.y - 34,
+        "CARGO HOLD"
+    );
 
     for (var _i = 0; _i < array_length(_inventory.slots); _i++)
     {
         var _column = _i mod _grid.columns;
         var _row = floor(_i / _grid.columns);
-        var _slot_x = _origin_x + _grid.x + _column * (_grid.slot_size + _grid.gap);
-        var _slot_y = _origin_y + _grid.y + _row * (_grid.slot_size + _grid.gap);
+
+        var _slot_x =
+            _origin_x
+            + _grid.x
+            + _column * (_grid.slot_size + _grid.gap);
+
+        var _slot_y =
+            _origin_y
+            + _grid.y
+            + _row * (_grid.slot_size + _grid.gap);
+
         var _item = _inventory.slots[_i];
 
         if (_i == _runtime.selected_slot)
         {
             draw_set_colour(_palette.accent);
             draw_set_alpha(0.18);
-            draw_rectangle(_slot_x + 2, _slot_y + 2, _slot_x + _grid.slot_size - 2, _slot_y + _grid.slot_size - 2, false);
+
+            draw_rectangle(
+                _slot_x + 2,
+                _slot_y + 2,
+                _slot_x + _grid.slot_size - 2,
+                _slot_y + _grid.slot_size - 2,
+                false
+            );
 
             draw_set_alpha(1);
-            draw_rectangle(_slot_x, _slot_y, _slot_x + _grid.slot_size, _slot_y + _grid.slot_size, true);
+
+            draw_rectangle(
+                _slot_x,
+                _slot_y,
+                _slot_x + _grid.slot_size,
+                _slot_y + _grid.slot_size,
+                true
+            );
         }
 
         if (is_undefined(_item)) continue;
 
-        // Item sprites and registered item colours plug in here later.
-        draw_set_colour(_palette.energy);
-        draw_set_alpha(0.8);
-        draw_circle(_slot_x + _grid.slot_size * 0.5, _slot_y + _grid.slot_size * 0.45, 10, false);
+        var _sprite =
+            sc_resource_pickup_visual_cache_get(
+                _item.key,
+                _i mod 4
+            );
+
+        if (sprite_exists(_sprite))
+        {
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _slot_x + _grid.slot_size * 0.5,
+                _slot_y + _grid.slot_size * 0.45,
+                1.20,
+                1.20,
+                0,
+                c_white,
+                1
+            );
+        }
 
         draw_set_halign(fa_right);
         draw_set_colour(_palette.core);
-        draw_text(_slot_x + _grid.slot_size - 5, _slot_y + _grid.slot_size - 9, string(_item.amount));
+
+        draw_text(
+            _slot_x + _grid.slot_size - 5,
+            _slot_y + _grid.slot_size - 9,
+            string(_item.amount)
+        );
     }
 
-    var _selected = _inventory.slots[_runtime.selected_slot];
+    var _selected =
+        _inventory.slots[_runtime.selected_slot];
+
     var _info_x = _origin_x + _info.x;
     var _info_y = _origin_y + _info.y;
 
     draw_set_halign(fa_left);
     draw_set_colour(_palette.core);
-    draw_text(_info_x + 18, _info_y + 27, is_undefined(_selected) ? "EMPTY CARGO SLOT" : string_upper(_selected.name));
 
-    draw_set_colour(_palette.muted);
-    draw_text(_info_x + 18, _info_y + 78, is_undefined(_selected)
-        ? "Select a stored item to inspect it."
-        : "Item information and actions will appear here.");
+    draw_text(
+        _info_x + 18,
+        _info_y + 27,
+        is_undefined(_selected)
+            ? "EMPTY CARGO SLOT"
+            : string_upper(_selected.name)
+    );
+
+    if (is_undefined(_selected))
+    {
+        draw_set_colour(_palette.muted);
+
+        draw_text(
+            _info_x + 18,
+            _info_y + 78,
+            "Select a stored item to inspect it."
+        );
+    }
+    else
+    {
+        var _definition =
+            variable_struct_get(
+                global.data.items,
+                _selected.key
+            );
+
+        var _sprite =
+            sc_resource_pickup_visual_cache_get(
+                _selected.key,
+                _runtime.selected_slot mod 4
+            );
+
+        if (sprite_exists(_sprite))
+        {
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _info_x + _info.width * 0.5,
+                _info_y + 112,
+                2,
+                2,
+                0,
+                c_white,
+                1
+            );
+        }
+
+        draw_set_colour(_palette.text);
+
+        draw_text(
+            _info_x + 18,
+            _info_y + 188,
+            "QUANTITY  " + string(_selected.amount)
+        );
+
+        draw_text(
+            _info_x + 18,
+            _info_y + 214,
+            "UNIT MASS  " + string(_definition.cargo.weight)
+        );
+
+        draw_text(
+            _info_x + 18,
+            _info_y + 240,
+            "STACK LIMIT  " + string(_definition.cargo.stack_max)
+        );
+
+        draw_text(
+            _info_x + 18,
+            _info_y + 266,
+            "TOTAL MASS  "
+                + string(
+                    _selected.amount
+                    * _definition.cargo.weight
+                )
+        );
+    }
 
     var _cargo = _player.resources.cargo;
+
     draw_set_colour(_palette.text);
-    draw_text(_info_x + 18, _info_y + _info.height - 52,
-        "MASS  " + string(_cargo.weight) + " / " + string(_cargo.capacity));
+
+    draw_text(
+        _info_x + 18,
+        _info_y + _info.height - 52,
+        "MASS  "
+            + string(_cargo.weight)
+            + " / "
+            + string(_cargo.capacity)
+    );
 
     draw_set_colour(_palette.accent);
-    draw_text(_info_x + 18, _info_y + _info.height - 25,
-        "SLOTS  " + string(array_length(_inventory.slots)));
+
+    draw_text(
+        _info_x + 18,
+        _info_y + _info.height - 25,
+        "SLOTS  " + string(array_length(_inventory.slots))
+    );
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
 }
 
 /// @description Returns how many units of an item the player's cargo can accept.
