@@ -264,60 +264,175 @@ function sc_enemy_rebel_gunship_visual_data()
 }
 
 /// @description Draws the battered modular Rebel gunship hull.
-function sc_enemy_rebel_gunship_body_draw(_x, _y, _radius, _angle, _visual)
+function sc_enemy_rebel_gunship_body_draw(_x,_y,_r,_a,_v)
 {
-    var _p = _visual.palette;
+    var _p = _v.palette;
 
-    // Uneven industrial silhouette.
-    sc_visual_quad(_x,_y,_radius,_angle, 1.03,-0.22, 0.66,-0.58, -0.62,-0.68, -0.94,-0.28, _p.hull_dark);
-    sc_visual_quad(_x,_y,_radius,_angle, 1.03,0.22, 0.56,0.62, -0.69,0.57, -1.02,0.24, _p.hull_dark);
-    sc_visual_quad(_x,_y,_radius,_angle, 0.82,-0.31, 0.82,0.31, -0.91,0.31, -0.91,-0.31, _p.hull_mid);
+    // Long exposed structural chassis.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.91,-0.18,
+        -0.94,-0.2,
+        -1.03,0.2,
+        0.91,0.18,
+        _p.void
+    );
 
-    // Central raised armour and cockpit.
-    sc_visual_quad(_x,_y,_radius,_angle, 0.68,-0.24, 0.87,0, 0.68,0.24, -0.18,0.27, _p.hull_light);
-    sc_visual_quad(_x,_y,_radius,_angle, 0.55,-0.16, 0.76,0, 0.55,0.16, 0.08,0.18, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, 0.56,-0.12, 0.72,0, 2, _p.energy);
-    sc_visual_line(_x,_y,_radius,_angle, 0.72,0, 0.56,0.12, 2, _p.energy);
+    sc_visual_quad(_x,_y,_r,_a,
+        0.83,-0.12,
+        -0.9,-0.13,
+        -0.9,0.13,
+        0.83,0.12,
+        _p.steel_dark
+    );
 
-    // Asymmetric patchwork plates.
-    sc_visual_quad(_x,_y,_radius,_angle, 0.42,-0.51, -0.05,-0.58, -0.18,-0.28, 0.29,-0.25, _p.metal);
-    sc_visual_quad(_x,_y,_radius,_angle, 0.27,0.29, -0.28,0.27, -0.47,0.52, 0.15,0.55, _p.hull_light);
-    sc_visual_quad(_x,_y,_radius,_angle, -0.28,-0.27, -0.75,-0.31, -0.68,-0.57, -0.17,-0.59, _p.hull_mid);
-    sc_visual_quad(_x,_y,_radius,_angle, -0.46,0.25, -0.87,0.22, -0.76,0.48, -0.37,0.5, _p.metal);
-
-    // Plate seams and exposed framework.
-    sc_visual_line(_x,_y,_radius,_angle, 0.45,-0.56, 0.22,-0.27, 2, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.09,-0.57, -0.19,-0.28, 2, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, 0.13,0.54, -0.01,0.27, 2, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.48,0.49, -0.39,0.26, 2, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.83,-0.17, 0.5,-0.17, 3, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.83,0.17, 0.5,0.17, 3, _p.void);
-
-    // Orange conduits.
-    sc_visual_line(_x,_y,_radius,_angle, -0.72,-0.38, -0.09,-0.38, 5, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.7,-0.38, -0.1,-0.38, 2, _p.accent);
-    sc_visual_line(_x,_y,_radius,_angle, -0.61,0.37, 0.18,0.37, 5, _p.void);
-    sc_visual_line(_x,_y,_radius,_angle, -0.59,0.37, 0.16,0.37, 2, _p.energy);
-
-    // Hazard bars.
-    for (var _i = 0; _i < 4; _i++)
+    // Separate upper and lower wing frames.
+    for (var _side = -1; _side <= 1; _side += 2)
     {
-        var _f = -0.18 + _i * 0.12;
-        sc_visual_line(_x,_y,_radius,_angle, _f,-0.6, _f + 0.1,-0.46, 3, _p.energy);
+        sc_visual_quad(_x,_y,_r,_a,
+            0.43,0.18*_side,
+            0.08,0.3*_side,
+            -0.5,0.61*_side,
+            -0.72,0.51*_side,
+            _p.void
+        );
+
+        sc_rebel_visual_brace(_x,_y,_r,_a,0.25,0.2*_side,-0.55,0.53*_side,_p);
+        sc_rebel_visual_brace(_x,_y,_r,_a,-0.04,0.22*_side,-0.23,0.47*_side,_p);
     }
 
-    // Engine blocks.
-    for (var _side = -1; _side <= 1; _side++)
-    {
-        sc_visual_quad(_x,_y,_radius,_angle, -0.66,-0.12 + _side*0.27, -1.03,-0.11 + _side*0.31, -1.03,0.11 + _side*0.31, -0.66,0.12 + _side*0.27, _p.hull_dark);
-        sc_visual_line(_x,_y,_radius,_angle, -0.72,_side*0.3, -1.02,_side*0.31, 4, _p.energy);
-    }
+    // Uneven armour plates mounted onto the frames.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.37,-0.21,
+        0.04,-0.3,
+        -0.44,-0.56,
+        -0.65,-0.48,
+        _p.hull_light,_p
+    );
 
-    // Outer silhouette.
-    sc_visual_line(_x,_y,_radius,_angle, 1.03,-0.22, 0.66,-0.58, 2, _p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 0.66,-0.58, -0.62,-0.68, 2, _p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 1.03,0.22, 0.56,0.62, 2, _p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 0.56,0.62, -0.69,0.57, 2, _p.outline);
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.34,0.21,
+        -0.01,0.29,
+        -0.29,0.48,
+        -0.55,0.52,
+        _p.hull_mid,_p
+    );
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.3,0.48,
+        -0.55,0.52,
+        -0.75,0.42,
+        -0.51,0.34,
+        _p.steel_mid,_p
+    );
+
+    // Central fuselage remains visually separate from the wings.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        1.08,0,
+        0.64,-0.24,
+        -0.57,-0.25,
+        -0.78,-0.13,
+        _p.hull_mid,_p
+    );
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        1.08,0,
+        -0.78,0.13,
+        -0.57,0.25,
+        0.64,0.24,
+        _p.paint,_p
+    );
+
+    // Raised central armour spine.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.77,-0.11,
+        -0.46,-0.13,
+        -0.58,0,
+        0.93,0,
+        _p.hull_light,_p
+    );
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.93,0,
+        -0.58,0,
+        -0.46,0.13,
+        0.77,0.11,
+        _p.hull_mid,_p
+    );
+
+    // Multi-pane industrial cockpit.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.82,-0.1,
+        0.55,-0.16,
+        0.38,-0.1,
+        0.68,-0.035,
+        _p.void
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.68,0.035,
+        0.38,0.1,
+        0.55,0.16,
+        0.82,0.1,
+        _p.void
+    );
+
+    sc_visual_line(_x,_y,_r,_a,0.61,-0.14,0.54,-0.05,2,_p.steel_light);
+    sc_visual_line(_x,_y,_r,_a,0.54,0.05,0.61,0.14,2,_p.steel_light);
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.74,-0.055,0.84,-0.025,_p);
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.84,0.025,0.74,0.055,_p);
+
+    // Rear engine housing.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.59,-0.23,
+        -1.01,-0.25,
+        -1.08,-0.1,
+        -0.66,-0.08,
+        _p.steel_mid,_p
+    );
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.66,0.08,
+        -1.08,0.1,
+        -1.01,0.25,
+        -0.59,0.23,
+        _p.steel_dark,_p
+    );
+
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.84,-0.16,0.25,0.038,3,_p);
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.84,0.16,0.25,0.038,3,_p);
+
+    // Exposed plumbing gives the hull mechanical direction.
+    sc_rebel_visual_pipe(_x,_y,_r,_a,-0.73,-0.3,0.16,-0.27,4,_p);
+    sc_rebel_visual_pipe_hot(_x,_y,_r,_a,-0.63,0.3,0.26,0.27,4,_p);
+    sc_rebel_visual_pipe(_x,_y,_r,_a,-0.62,-0.37,-0.25,-0.49,3,_p);
+
+    // Recessed armour segmentation.
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.18,-0.21,0.08,-0.01,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.08,0.01,0.21,0.21,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.23,-0.22,-0.19,-0.02,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.19,0.02,-0.3,0.22,_p);
+
+    // Riveted construction.
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.04,-0.28,-0.48,-0.54,6,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,-0.02,0.28,-0.51,0.49,6,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.35,-0.2,-0.42,-0.23,7,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.35,0.2,-0.42,0.23,7,_p);
+
+    // Painted warnings and field repairs.
+    sc_rebel_visual_hazard_panel(_x,_y,_r,_a,-0.37,-0.42,0.28,0.1,_p);
+    sc_rebel_visual_patch_x(_x,_y,_r,_a,-0.19,0.39,0.065,_p);
+    sc_rebel_visual_chevrons(_x,_y,_r,_a,0.16,0.15,0.045,1,_p);
+
+    // Small asymmetric welded patch.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.16,-0.22,
+        -0.03,-0.23,
+        -0.08,-0.1,
+        0.12,-0.08,
+        _p.rust,_p
+    );
+
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.12,-0.2,-0.04,-0.2,3,_p);
 }
 
 /// @description Draws one fully rotating deck-mounted Rebel minigun.

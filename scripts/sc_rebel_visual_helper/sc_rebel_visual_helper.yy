@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_visual_helper",
+  "%Name":"sc_rebel_visual_helper",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_visual_helper",
+  "name":"sc_rebel_visual_helper",
   "parent":{
     "name":"VISUAL_HELPERS",
     "path":"folders/scripts/VISUAL_HELPERS.yy",

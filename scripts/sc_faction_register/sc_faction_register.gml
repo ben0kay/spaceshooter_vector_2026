@@ -204,18 +204,26 @@ function sc_faction_register_rebel()
     return sc_faction_register(Faction.REBEL, {
         identity: { name: "Rebel" },
 
-        palette: {
-            void: make_colour_rgb(15, 12, 10),
-            hull_dark: make_colour_rgb(43, 38, 32),
-            hull_mid: make_colour_rgb(91, 78, 61),
-            hull_light: make_colour_rgb(151, 132, 99),
-            metal: make_colour_rgb(184, 166, 128),
+                palette: {
+            void: make_colour_rgb(12, 12, 11),
+            hull_dark: make_colour_rgb(39, 37, 33),
+            hull_mid: make_colour_rgb(83, 76, 64),
+            hull_light: make_colour_rgb(151, 137, 110),
+            metal: make_colour_rgb(158, 153, 141),
 
-            outline: make_colour_rgb(211, 184, 132),
-            accent: make_colour_rgb(202, 105, 35),
-            energy: make_colour_rgb(255, 151, 49),
-            core: make_colour_rgb(255, 222, 147),
-            glow: make_colour_rgb(176, 59, 16)
+            outline: make_colour_rgb(27, 27, 25),
+            accent: make_colour_rgb(175, 78, 27),
+            energy: make_colour_rgb(255, 143, 38),
+            core: make_colour_rgb(255, 220, 146),
+            glow: make_colour_rgb(167, 53, 14),
+
+            steel_dark: make_colour_rgb(47, 48, 46),
+            steel_mid: make_colour_rgb(91, 91, 84),
+            steel_light: make_colour_rgb(184, 180, 165),
+            paint: make_colour_rgb(126, 105, 73),
+            warning: make_colour_rgb(207, 148, 29),
+            decal: make_colour_rgb(211, 207, 188),
+            rust: make_colour_rgb(111, 57, 31)
         },
 		
 		damage_fx: {
