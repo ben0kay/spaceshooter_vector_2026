@@ -30,7 +30,8 @@ function sc_weapon_register_shard_mining_beam()
                 effect: DamageEffect.NONE,
 
                 extraction: {
-                    efficiency: 1.25
+                    efficiency: 1.25,
+					yield_multiplier: 1.5
                 }
             },
 
@@ -100,7 +101,7 @@ function sc_shard_mining_beam_particles_register()
     });
 }
 
-/// @description Emits mining sparks only where the beam contacts something.
+/// @description Emits material-coloured mining sparks where the beam contacts something.
 function sc_shard_mining_beam_particles_emit(_area, _data)
 {
     var _runtime = _data.runtime;
@@ -118,6 +119,31 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
     var _x = _area.x + lengthdir_x(_distance, _data.direction);
     var _y = _area.y + lengthdir_y(_distance, _data.direction);
     var _direction = _data.direction + 180 + random_range(-65, 65);
+    var _asteroid = collision_circle(_x, _y, 14, o_asteroid, false, true);
+
+    if (instance_exists(_asteroid))
+    {
+        var _item = variable_struct_get(
+            global.data.items,
+            _asteroid.asteroid.item_key
+        );
+
+        part_type_colour3(
+            _particles.spark,
+            c_white,
+            _item.visual.colour,
+            _item.visual.glow
+        );
+    }
+    else
+    {
+        part_type_colour3(
+            _particles.spark,
+            make_colour_rgb(255, 250, 190),
+            make_colour_rgb(255, 190, 30),
+            make_colour_rgb(135, 70, 0)
+        );
+    }
 
     part_type_direction(
         _particles.spark,

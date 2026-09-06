@@ -6,7 +6,7 @@
   "name":"sc_ship_shard",
   "parent":{
     "name":"ships",
-    "path":"folders/scripts/player/ships.yy",
+    "path":"folders/scripts/PLAYER/ships.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

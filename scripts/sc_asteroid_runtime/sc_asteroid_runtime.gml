@@ -80,30 +80,66 @@ function sc_asteroid_init(_asteroid, _create)
     return true;
 }
 
-/// @description Returns the yield multiplier supplied by the damage source.
+/// @description Returns the yield multiplier supplied by the damage source and extraction method.
 function sc_asteroid_source_yield_multiplier_get(_packet)
 {
-    if (_packet.source.faction != Faction.PLAYER
-    || !instance_exists(_packet.source.owner_id))
-        return 1;
+    var _multiplier = 1;
 
-    return _packet.source.owner_id.ship.stats.final.resource_yield_multiplier;
+    if (_packet.source.faction == Faction.PLAYER
+    && instance_exists(_packet.source.owner_id))
+    {
+        _multiplier *=
+            _packet.source.owner_id.ship.stats.final.resource_yield_multiplier;
+    }
+
+    if (is_struct(_packet.extraction)
+    && variable_struct_exists(_packet.extraction, "yield_multiplier"))
+    {
+        _multiplier *= max(
+            0,
+            _packet.extraction.yield_multiplier
+        );
+    }
+
+    return _multiplier;
 }
 
-/// @description Converts accumulated extraction progress into world pickups.
-function sc_asteroid_yield_emit(_asteroid)
+/// @description Applies stochastic rounding to multiplied resource output.
+function sc_asteroid_yield_output_get(_amount, _multiplier)
+{
+    var _exact = max(0, _amount * _multiplier);
+    var _output = floor(_exact);
+
+    if (random(1) < frac(_exact))
+        _output++;
+
+    return _output;
+}
+
+/// @description Converts accumulated base extraction progress into multiplied world pickups.
+function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1)
 {
     var _yield = _asteroid.asteroid.yield;
-    var _amount = min(_yield.remaining, floor(_yield.progress));
+    var _base_amount = min(_yield.remaining, floor(_yield.progress));
 
-    if (_amount <= 0) return 0;
+    if (_base_amount <= 0) return 0;
 
-    _yield.progress -= _amount;
-    _yield.remaining -= _amount;
+    _yield.progress -= _base_amount;
+    _yield.remaining -= _base_amount;
 
-    while (_amount > 0)
+    var _output = sc_asteroid_yield_output_get(
+        _base_amount,
+        _yield_multiplier
+    );
+
+    var _remaining = _output;
+
+    while (_remaining > 0)
     {
-        var _chunk = min(_amount, irandom_range(1, 3));
+        var _chunk = min(
+            _remaining,
+            irandom_range(1, 3)
+        );
 
         sc_resource_pickup_spawn(
             _asteroid.x,
@@ -113,30 +149,35 @@ function sc_asteroid_yield_emit(_asteroid)
             _chunk
         );
 
-        _amount -= _chunk;
+        _remaining -= _chunk;
     }
 
-    return true;
+    return _output;
 }
 
-/// @description Adds extraction progress from one asteroid hit.
+/// @description Adds recoverable base extraction progress from one asteroid hit.
 function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
 {
     var _data = _asteroid.asteroid;
-    var _efficiency = global.config.asteroid.extraction.weapon_efficiency;
+    var _efficiency =
+        global.config.asteroid.extraction.weapon_efficiency;
 
     if (is_struct(_packet.extraction))
         _efficiency = max(0, _packet.extraction.efficiency);
 
-    var _source_multiplier = sc_asteroid_source_yield_multiplier_get(_packet);
-    var _damage_ratio = _damage / max(1, _data.health.maximum);
+    var _damage_ratio =
+        _damage
+        / max(1, _data.health.maximum);
 
-    _data.yield.progress += _damage_ratio
+    _data.yield.progress +=
+        _damage_ratio
         * _data.yield.total
-        * _efficiency
-        * _source_multiplier;
+        * _efficiency;
 
-    return sc_asteroid_yield_emit(_asteroid);
+    return sc_asteroid_yield_emit(
+        _asteroid,
+        sc_asteroid_source_yield_multiplier_get(_packet)
+    );
 }
 
 /// @description Releases the asteroid's final recoverable destruction yield.
@@ -144,11 +185,14 @@ function sc_asteroid_yield_destruction_release(_asteroid, _packet)
 {
     var _yield = _asteroid.asteroid.yield;
 
-    _yield.progress += _yield.remaining
-        * global.config.asteroid.extraction.destruction_efficiency
-        * sc_asteroid_source_yield_multiplier_get(_packet);
+    _yield.progress +=
+        _yield.remaining
+        * global.config.asteroid.extraction.destruction_efficiency;
 
-    return sc_asteroid_yield_emit(_asteroid);
+    return sc_asteroid_yield_emit(
+        _asteroid,
+        sc_asteroid_source_yield_multiplier_get(_packet)
+    );
 }
 
 /// @description Applies damage, enemy demolition power, resource release and damage stages.

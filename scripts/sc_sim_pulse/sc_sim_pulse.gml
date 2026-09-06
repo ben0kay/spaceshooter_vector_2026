@@ -10,8 +10,8 @@ function sc_projectile_register_simulant_pulse()
         collision: { radius: 6 },
 
         visual: {
-            radius: 6,
-            length: 24,
+            radius: 4,
+            length: 18,
             palette: _palette,
 			sprite: s_sim_pulse,
             draw_script: sc_projectile_simulant_pulse_draw,

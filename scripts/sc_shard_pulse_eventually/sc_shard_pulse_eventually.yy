@@ -6,7 +6,7 @@
   "name":"sc_shard_pulse_eventually",
   "parent":{
     "name":"projectiles",
-    "path":"folders/scripts/player/projectiles.yy",
+    "path":"folders/scripts/PLAYER/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

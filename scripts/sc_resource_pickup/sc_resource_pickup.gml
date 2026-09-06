@@ -68,7 +68,30 @@ function sc_resource_pickup_update(_pickup)
 
     if (_distance_squared <= sqr(_config.collect_range))
     {
-        var _result = sc_player_inventory_add(_player, _data.item_key, _data.amount);
+        var _result = sc_player_inventory_add(
+            _player,
+            _data.item_key,
+            _data.amount
+        );
+
+        if (_result.accepted > 0)
+        {
+            var _item = variable_struct_get(
+                global.data.items,
+                _data.item_key
+            );
+
+            sc_world_feedback_create(
+                _player.x + random_range(-20, 20),
+                _player.y - 36 + random_range(-8, 8),
+                _player.layer,
+                "+" + string(_result.accepted)
+                    + " " + string_upper(_item.identity.name),
+                _item.visual.colour,
+                0.75
+            );
+        }
+
         _data.amount = _result.remaining;
 
         if (_data.amount <= 0)
@@ -77,18 +100,48 @@ function sc_resource_pickup_update(_pickup)
         return;
     }
 
-    if (_distance_squared > sqr(_config.attraction_range)) return;
+    if (_distance_squared > sqr(_config.attraction_range))
+        return;
 
-    var _direction = point_direction(_pickup.x, _pickup.y, _player.x, _player.y);
-    _data.velocity_x += lengthdir_x(_config.attraction_strength, _direction);
-    _data.velocity_y += lengthdir_y(_config.attraction_strength, _direction);
+    var _direction = point_direction(
+        _pickup.x,
+        _pickup.y,
+        _player.x,
+        _player.y
+    );
 
-    var _speed = point_distance(0, 0, _data.velocity_x, _data.velocity_y);
+    _data.velocity_x +=
+        lengthdir_x(
+            _config.attraction_strength,
+            _direction
+        );
+
+    _data.velocity_y +=
+        lengthdir_y(
+            _config.attraction_strength,
+            _direction
+        );
+
+    var _speed = point_distance(
+        0,
+        0,
+        _data.velocity_x,
+        _data.velocity_y
+    );
 
     if (_speed > _config.attraction_speed_max)
     {
-        _data.velocity_x = lengthdir_x(_config.attraction_speed_max, _direction);
-        _data.velocity_y = lengthdir_y(_config.attraction_speed_max, _direction);
+        _data.velocity_x =
+            lengthdir_x(
+                _config.attraction_speed_max,
+                _direction
+            );
+
+        _data.velocity_y =
+            lengthdir_y(
+                _config.attraction_speed_max,
+                _direction
+            );
     }
 }
 

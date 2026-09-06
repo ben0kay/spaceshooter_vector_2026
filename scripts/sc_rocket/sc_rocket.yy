@@ -6,7 +6,7 @@
   "name":"sc_rocket",
   "parent":{
     "name":"weapons",
-    "path":"folders/scripts/player/weapons.yy",
+    "path":"folders/scripts/PLAYER/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

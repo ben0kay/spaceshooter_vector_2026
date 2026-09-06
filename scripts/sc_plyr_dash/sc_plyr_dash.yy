@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_plyr_dash",
   "parent":{
-    "name":"player",
-    "path":"folders/scripts/player.yy",
+    "name":"PLAYER",
+    "path":"folders/scripts/PLAYER.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
