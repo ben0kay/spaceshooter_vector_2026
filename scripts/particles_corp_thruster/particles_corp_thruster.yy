@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"particles_corp_thruster",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"particles_corp_thruster",
+  "parent":{
+    "name":"particles",
+    "path":"folders/scripts/effects/particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

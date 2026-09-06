@@ -18,13 +18,14 @@ function sc_particles_init()
     part_system_depth(_impact_system, -10);
 
     if (!sc_particles_register_attack_telegraph()
-		|| !sc_particles_register_enemy_thrust()
-		|| !sc_particles_register_enemy_damage()
-		|| !sc_particles_register_simulant()
-		|| !sc_particles_register_shard()
-		|| !sc_particles_register_shockwave()
-		|| !sc_particles_register_projectile_content()
-		|| !sc_particles_register_weapon_content())
+    || !sc_particles_register_enemy_thrust()
+    || !sc_particles_register_enemy_damage()
+    || !sc_particles_register_corporation_thrust()
+    || !sc_particles_register_simulant()
+    || !sc_particles_register_shard()
+    || !sc_particles_register_shockwave()
+    || !sc_particles_register_projectile_content()
+    || !sc_particles_register_weapon_content())
     {
         sc_particles_destroy();
         return false;

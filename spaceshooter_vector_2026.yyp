@@ -97,6 +97,7 @@
     {"id":{"name":"r_combat_test","path":"rooms/r_combat_test/r_combat_test.yy",},},
     {"id":{"name":"r_menu_main","path":"rooms/r_menu_main/r_menu_main.yy",},},
     {"id":{"name":"r_sector","path":"rooms/r_sector/r_sector.yy",},},
+    {"id":{"name":"particles_corp_thruster","path":"scripts/particles_corp_thruster/particles_corp_thruster.yy",},},
     {"id":{"name":"particles_enemy_damage","path":"scripts/particles_enemy_damage/particles_enemy_damage.yy",},},
     {"id":{"name":"particles_enemy_thruster","path":"scripts/particles_enemy_thruster/particles_enemy_thruster.yy",},},
     {"id":{"name":"particles_main","path":"scripts/particles_main/particles_main.yy",},},

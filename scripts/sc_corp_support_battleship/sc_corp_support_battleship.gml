@@ -292,8 +292,8 @@ function sc_enemy_corporation_support_battleship_visual_data()
 
         thrust: {
             draw_script: sc_enemy_corporation_thrust_draw,
-            ignition_script: sc_particles_enemy_thrust_ignition,
-            particle_script: sc_particles_enemy_thrust_emit
+            ignition_script: sc_particles_corporation_thrust_ignition,
+			particle_script: sc_particles_corporation_thrust_emit
         },
 
         bake: {
