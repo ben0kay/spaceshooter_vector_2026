@@ -59,7 +59,13 @@ function sc_faction_register_simulant()
 			engagement: {
                 chance: 1,
                 reject_cooldown: 300,
-                retaliation_script: sc_enemy_engagement_retaliate_default
+                retaliation_script: sc_enemy_engagement_retaliate_default,
+				
+				retarget: {
+                    script: sc_enemy_engagement_retarget_closer,
+                    interval: 40,
+                    distance_ratio: 0.65
+                }
             },
 
 		    flee: {
@@ -140,7 +146,13 @@ function sc_faction_register_corporation()
 			engagement: {
                 chance: 0.9,
                 reject_cooldown: 600,
-                retaliation_script: sc_enemy_engagement_retaliate_default
+                retaliation_script: sc_enemy_engagement_retaliate_default,
+				
+				retarget: {
+                    script: sc_enemy_engagement_retarget_closer,
+                    interval: 30,
+                    distance_ratio: 0.75
+                }
             },
 
 		    flee: {
@@ -257,7 +269,13 @@ function sc_faction_register_rebel()
 			engagement: {
                 chance: 0.7,
                 reject_cooldown: 600,
-                retaliation_script: sc_enemy_engagement_retaliate_default
+                retaliation_script: sc_enemy_engagement_retaliate_default,
+				
+				retarget: {
+                    script: sc_enemy_engagement_retarget_closer,
+                    interval: 45,
+                    distance_ratio: 0.7
+                }
             },
 
 		    flee: {

@@ -10,6 +10,13 @@ function sc_enemy_init(_enemy, _enemy_key)
     var _data = variable_struct_get(global.data.enemies, _enemy_key);
     var _radius = _data.visual.radius;
 	
+	var _doctrine = variable_clone(
+        sc_faction_doctrine_get(_data.identity.faction)
+    );
+
+    if (variable_struct_exists(_data,"retarget_script"))
+        _doctrine.engagement.retarget.script = _data.retarget_script;
+	
 var _rear_damage = variable_clone(global.config.enemy.rear_damage);
 
 if (variable_struct_exists(_data, "rear_damage"))
@@ -25,7 +32,7 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
     _enemy.enemy = {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
-		doctrine: variable_clone(sc_faction_doctrine_get(_data.identity.faction)),
+		doctrine: _doctrine,
 		reward: variable_clone(_data.reward),
         state: EnemyState.IDLE,
         target_id: noone,
@@ -680,6 +687,8 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
 {
     var _data = _enemy.enemy;
     if (_data.state == EnemyState.DEAD) return false;
+	
+	
 
     var _rear = _data.rear_damage;
     var _rear_angle = false;

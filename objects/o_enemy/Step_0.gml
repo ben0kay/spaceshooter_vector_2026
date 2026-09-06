@@ -28,6 +28,14 @@ if (enemy.state != EnemyState.STUNNED
 && _perception_due)
     sc_enemy_perception_update(id);
 
+var _retarget = enemy.doctrine.engagement.retarget;
+
+if (_optimization.render_active
+&& (enemy.state == EnemyState.CHASING || enemy.state == EnemyState.ATTACKING)
+&& !is_undefined(_retarget.script)
+&& sc_optimization_update_due(id,_retarget.interval,1))
+    _retarget.script(id);
+
 var _destroying_asteroid = sc_enemy_asteroid_destroy_active(id);
 
 var _hardpoint_due = _optimization.render_active

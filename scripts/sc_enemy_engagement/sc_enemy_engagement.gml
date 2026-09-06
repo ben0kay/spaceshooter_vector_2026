@@ -79,6 +79,16 @@ function sc_enemy_engagement_candidate_rejected(_enemy,_candidate)
     return false;
 }
 
+/// @description Removes one candidate from rejected-target memory.
+function sc_enemy_engagement_rejection_remove(_enemy,_candidate)
+{
+    var _rejected = _enemy.enemy.engagement.rejected;
+
+    for (var _i = array_length(_rejected)-1; _i >= 0; --_i)
+        if (_rejected[_i].target_id == _candidate)
+            array_delete(_rejected,_i,1);
+}
+
 /// @description Temporarily remembers one rejected engagement candidate.
 function sc_enemy_engagement_candidate_reject(_enemy,_candidate)
 {
@@ -120,10 +130,13 @@ function sc_enemy_engagement_candidate_consider(_enemy,_candidate,_range_sq,_cur
 }
 
 /// @description Finds the nearest eligible, non-rejected combat candidate.
-function sc_enemy_engagement_candidate_find(_enemy)
+function sc_enemy_engagement_candidate_find(_enemy,_range_sq = undefined)
 {
     var _data = _enemy.enemy;
-    var _range_sq = _data.stats.final.range.detection_sq;
+
+    if (is_undefined(_range_sq))
+        _range_sq = _data.stats.final.range.detection_sq;
+
     var _range = sqrt(_range_sq);
     var _target = noone;
     var _nearest_sq = _range_sq+1;
@@ -171,6 +184,7 @@ function sc_enemy_engagement_acquire(_enemy,_target,_alert)
     var _data = _enemy.enemy;
 
     sc_enemy_attack_cancel(_enemy);
+    sc_enemy_engagement_rejection_remove(_enemy,_target);
 
     _data.target_id = _target;
     _data.target_distance_sq = sc_point_distance_sq(
@@ -214,6 +228,45 @@ function sc_enemy_engagement_try(_enemy,_candidate)
     }
 
     return sc_enemy_engagement_acquire(_enemy,_candidate,true);
+}
+
+/// @description Switches to a meaningfully closer hostile inside combat range.
+function sc_enemy_engagement_retarget_closer(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _current = _data.target_id;
+
+    if (!sc_enemy_engagement_target_valid(_enemy,_current))
+        return false;
+
+    var _candidate = sc_enemy_engagement_candidate_find(
+        _enemy,
+        _data.stats.final.range.combat_sq
+    );
+
+    if (!instance_exists(_candidate)
+    || _candidate == _current)
+        return false;
+
+    var _current_distance_sq = sc_point_distance_sq(
+        _enemy.x,_enemy.y,
+        _current.x,_current.y
+    );
+
+    var _candidate_distance_sq = sc_point_distance_sq(
+        _enemy.x,_enemy.y,
+        _candidate.x,_candidate.y
+    );
+
+    var _ratio = clamp(
+        _data.doctrine.engagement.retarget.distance_ratio,
+               0,1
+    );
+
+    if (_candidate_distance_sq >= _current_distance_sq*sqr(_ratio))
+        return false;
+
+    return sc_enemy_engagement_acquire(_enemy,_candidate,false);
 }
 
 /// @description Default retaliation immediately commits to a valid attacker.
