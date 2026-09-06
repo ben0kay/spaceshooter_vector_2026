@@ -22,9 +22,6 @@ if ((enemy.state == EnemyState.CHASING || enemy.state == EnemyState.ATTACKING)
 && !instance_exists(enemy.target_id))
     _perception_due = true;
 
-if (!instance_exists(global.player_id))
-    _perception_due = true;
-
 if (enemy.state != EnemyState.STUNNED
 && enemy.state != EnemyState.FLEEING
 && enemy.state != EnemyState.DEAD

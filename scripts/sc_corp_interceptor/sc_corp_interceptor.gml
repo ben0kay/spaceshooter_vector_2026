@@ -128,8 +128,8 @@ function sc_enemy_register_corporation_interceptor()
         ],
 
         thrusters: [
-            { key: "engine_left", forward: -0.82, side: -0.3, angle: 180, scale: 0.82 },
-            { key: "engine_right", forward: -0.82, side: 0.3, angle: 180, scale: 0.82 }
+            {key:"engine_left",forward:-0.96,side:-0.23,angle:180,scale:0.82},
+            {key:"engine_right",forward:-0.96,side:0.23,angle:180,scale:0.82}
         ],
 
         attack_controller: {

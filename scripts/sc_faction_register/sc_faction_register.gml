@@ -56,6 +56,12 @@ function sc_faction_register_simulant()
 				memory_duration: 300
 		    },
 
+			engagement: {
+                chance: 1,
+                reject_cooldown: 300,
+                retaliation_script: sc_enemy_engagement_retaliate_default
+            },
+
 		    flee: {
     chance: 0.05,
     trigger_layer: DefenceLayer.HULL,
@@ -130,6 +136,12 @@ function sc_faction_register_corporation()
 				cooldown: 300,
 				memory_duration: 600
 		    },
+			
+			engagement: {
+                chance: 0.9,
+                reject_cooldown: 600,
+                retaliation_script: sc_enemy_engagement_retaliate_default
+            },
 
 		    flee: {
     chance: 0.9,
@@ -241,6 +253,12 @@ function sc_faction_register_rebel()
 				cooldown: 300,
 				memory_duration: 300
 		    },
+				
+			engagement: {
+                chance: 0.7,
+                reject_cooldown: 600,
+                retaliation_script: sc_enemy_engagement_retaliate_default
+            },
 
 		    flee: {
     chance: 1,

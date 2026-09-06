@@ -86,6 +86,10 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
 		    attempts: 0,
 		    next_attempt_tick: 0
 		},
+		
+		engagement: {
+            rejected: []
+        },
 			
 		flee: {
 		    attempts: 0,
@@ -185,79 +189,66 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
     return true;
 }
 
-/// @description Updates detection, investigation, combat and forget transitions.
+/// @description Acquires opportunistic targets and validates committed combat targets.
 function sc_enemy_perception_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _range = _data.stats.final.range;
     var _awareness = _data.awareness;
+    var _target = _data.target_id;
 
-    if (!instance_exists(global.player_id))
+    // A committed target prevents all general acquisition scans.
+    if (instance_exists(_target))
     {
-        sc_enemy_attack_cancel(_enemy);
-        _data.target_id = noone;
-        _data.state = EnemyState.IDLE;
-        _awareness.memory_until = 0;
+        if (!sc_enemy_engagement_target_valid(_enemy,_target))
+        {
+            sc_enemy_attack_cancel(_enemy);
+            _data.target_id = noone;
+            _data.target_distance_sq = 0;
+            _data.state = EnemyState.IDLE;
+            return;
+        }
+
+        _data.target_distance_sq = sc_point_distance_sq(
+            _enemy.x,_enemy.y,
+            _target.x,_target.y
+        );
+
+        if (_data.target_distance_sq <= _range.detection_sq)
+        {
+            _awareness.last_known_x = _target.x;
+            _awareness.last_known_y = _target.y;
+        }
+
+        if (_data.target_distance_sq > _range.forget_sq)
+        {
+            sc_enemy_attack_cancel(_enemy);
+            _data.target_id = noone;
+            _data.target_distance_sq = 0;
+            _data.state = EnemyState.IDLE;
+        }
+        else if (_data.target_distance_sq <= _range.combat_sq)
+            _data.state = EnemyState.ATTACKING;
+        else
+        {
+            if (_data.state == EnemyState.ATTACKING)
+                sc_enemy_attack_cancel(_enemy);
+
+            _data.state = EnemyState.CHASING;
+        }
+
         return;
     }
 
-    var _dx = global.player_id.x - _enemy.x;
-    var _dy = global.player_id.y - _enemy.y;
-    _data.target_distance_sq = _dx * _dx + _dy * _dy;
+    // Only uncommitted idle/investigating ships seek new targets.
+    if (_data.state != EnemyState.IDLE
+    && _data.state != EnemyState.INVESTIGATING)
+        return;
 
-    if (_data.target_distance_sq <= _range.detection_sq)
-    {
-        _awareness.last_known_x = global.player_id.x;
-        _awareness.last_known_y = global.player_id.y;
-    }
+    var _candidate = sc_enemy_engagement_candidate_find(_enemy);
+    if (!instance_exists(_candidate)) return;
 
-    switch (_data.state)
-    {
-        case EnemyState.IDLE:
-            if (_data.target_distance_sq <= _range.detection_sq)
-            {
-                _data.target_id = global.player_id;
-                _data.state = EnemyState.CHASING;
-                sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_detection);
-            }
-        break;
-
-        case EnemyState.INVESTIGATING:
-            if (_data.target_distance_sq <= _range.detection_sq)
-            {
-                _data.target_id = global.player_id;
-                _awareness.memory_until = 0;
-                _awareness.arrived = false;
-                _data.state = EnemyState.CHASING;
-                sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_detection);
-            }
-        break;
-
-        case EnemyState.CHASING:
-            if (_data.target_distance_sq > _range.forget_sq)
-            {
-                sc_enemy_attack_cancel(_enemy);
-                _data.target_id = noone;
-                _data.state = EnemyState.IDLE;
-            }
-            else if (_data.target_distance_sq <= _range.combat_sq)
-                _data.state = EnemyState.ATTACKING;
-        break;
-
-        case EnemyState.ATTACKING:
-            if (_data.target_distance_sq > _range.forget_sq)
-            {
-                sc_enemy_attack_cancel(_enemy);
-                _data.target_id = noone;
-                _data.state = EnemyState.IDLE;
-            }
-            else if (_data.target_distance_sq > _range.combat_sq)
-            {
-                sc_enemy_attack_cancel(_enemy);
-                _data.state = EnemyState.CHASING;
-            }
-        break;
-    }
+    sc_enemy_engagement_try(_enemy,_candidate);
 }
 
 /// @description Updates enemy hardpoint aiming, temporary obstacle targeting, aim locks and recoil.
@@ -751,9 +742,10 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
         return _result;
     }
 
-    sc_enemy_awareness_damage_try(_enemy, _packet);
-    sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
-    sc_enemy_flee_try(_enemy, _result);
+    sc_enemy_engagement_retaliation_try(_enemy,_packet);
+    sc_enemy_awareness_damage_try(_enemy,_packet);
+    sc_enemy_alert_try(_enemy,_data.doctrine.alert.on_damage);
+    sc_enemy_flee_try(_enemy,_result);
 
     if (_result.effect.type == DamageEffect.STAGGER
     && sc_damage_effect_triggered(_result.effect))

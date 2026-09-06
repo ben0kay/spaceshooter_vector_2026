@@ -2,7 +2,8 @@
 function sc_data_init()
 {
     global.data = {
-        factions: array_create(Faction.AUTOMATED + 1, undefined),
+        factions: array_create(Faction.AUTOMATED+1,undefined),
+        faction_hostility: [],
         ships: {},
         enemies: {},
         weapons: {},
@@ -12,9 +13,10 @@ function sc_data_init()
         asteroids: {}
     };
 
+    if (!sc_faction_hostility_init()) return false;
     if (!sc_item_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
-	if (!sc_projectiles_shared_register_all()) return false;
+    if (!sc_projectiles_shared_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
     if (!sc_plyr_register_all()) return false;
 
