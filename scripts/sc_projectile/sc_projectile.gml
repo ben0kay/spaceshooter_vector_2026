@@ -11,80 +11,84 @@ function sc_projectile_init(_projectile, _create)
     var _delivery = _create.delivery;
     var _launch = _delivery.projectile;
     var _scale = max(0.01, _launch.scale);
+    var _life = max(1, round(_launch.life));
     var _collision = variable_clone(_data.collision);
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
 
+    var _has_trail = variable_struct_exists(_visual, "trail");
+    var _has_trail_script = variable_struct_exists(_visual, "trail_script");
+
     _collision.radius *= _scale;
 
     _visual.runtime = {
         cache: _cache,
+        trail_cache: _has_trail ? sc_projectile_trail_cache_get() : undefined,
         phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0,
         hit_alpha: 0
     };
 
     var _detonation = undefined;
 
-	if (variable_struct_exists(_data, "detonation"))
-	{
-	    _detonation = {
-	        area: variable_clone(_data.detonation.area),
-	        scale: _delivery.detonation.scale,
-	        damage: variable_clone(_delivery.detonation.damage),
+    if (variable_struct_exists(_data, "detonation"))
+    {
+        _detonation = {
+            area: variable_clone(_data.detonation.area),
+            scale: _delivery.detonation.scale,
+            damage: variable_clone(_delivery.detonation.damage),
 
-	        emissions: variable_struct_exists(_data.detonation, "emissions")
-	            ? variable_clone(_data.detonation.emissions)
-	            : []
-	    };
-	}
+            emissions: variable_struct_exists(_data.detonation, "emissions")
+                ? variable_clone(_data.detonation.emissions)
+                : []
+        };
+    }
 
     var _defence = undefined;
 
-	if (variable_struct_exists(_data, "defence"))
-	{
-	    var _armour = max(0, _data.defence.armour);
-	    var _hull = max(1, _data.defence.hull);
-	    var _health_bar = sc_health_bar_create(false);
+    if (variable_struct_exists(_data, "defence"))
+    {
+        var _armour = max(0, _data.defence.armour);
+        var _hull = max(1, _data.defence.hull);
+        var _health_bar = sc_health_bar_create(false);
 
-	    _health_bar.damaged_duration = 90;
-	    _health_bar.width = 38;
-	    _health_bar.height = 3;
-	    _health_bar.gap = 1;
-	    _health_bar.offset_y = 6;
+        _health_bar.damaged_duration = 90;
+        _health_bar.width = 38;
+        _health_bar.height = 3;
+        _health_bar.gap = 1;
+        _health_bar.offset_y = 6;
 
-	    _defence = {
-	        shield: {
-	            current: 0,
-	            maximum: 0
-	        },
+        _defence = {
+            shield: {
+                current: 0,
+                maximum: 0
+            },
 
-	        armour: {
-	            current: _armour,
-	            maximum: _armour
-	        },
+            armour: {
+                current: _armour,
+                maximum: _armour
+            },
 
-	        hull: {
-	            current: _hull,
-	            maximum: _hull
-	        },
+            hull: {
+                current: _hull,
+                maximum: _hull
+            },
 
-	        health_bar: _health_bar,
+            health_bar: _health_bar,
 
-	        detonate_on_destroy: variable_struct_exists(
-	            _data.defence,
-	            "detonate_on_destroy"
-	        )
-	            ? _data.defence.detonate_on_destroy
-	            : false
-	    };
-	}
+            detonate_on_destroy: variable_struct_exists(_data.defence, "detonate_on_destroy")
+                ? _data.defence.detonate_on_destroy
+                : false
+        };
+    }
 
     _projectile.projectile = {
         key: _create.key,
         state: ProjectileState.ACTIVE,
         projectile_class: _data.projectile_class,
         projectile_motion: _data.projectile_motion,
+        class_config: sc_projectile_class_config_get(_data.projectile_class),
+
         source: _create.source,
         direction: _create.direction,
         scale: _scale,
@@ -95,8 +99,8 @@ function sc_projectile_init(_projectile, _create)
         },
 
         life: {
-            remaining: max(1, round(_launch.life)),
-            maximum: max(1, round(_launch.life))
+            remaining: _life,
+            maximum: _life
         },
 
         guidance: variable_clone(_delivery.guidance),
@@ -111,12 +115,14 @@ function sc_projectile_init(_projectile, _create)
             next_target_tick: GAME_TICK,
             detonated: false,
             destroyed: false,
-            ricochet: undefined
+            ricochet: undefined,
+            has_trail: _has_trail,
+            has_trail_script: _has_trail_script
         }
     };
 
-	_projectile.draw_angle = _create.direction;
-	
+    _projectile.draw_angle = _create.direction;
+
     if (is_struct(_defence))
     {
         sc_entity_init(
@@ -177,7 +183,7 @@ function sc_projectile_target_find(_projectile, _range)
     var _data = _projectile.projectile;
     var _list = ds_list_create();
 
-    collision_circle_list(
+    var _count = collision_circle_list(
         _projectile.x, _projectile.y, _range,
         o_entity, false, true, _list, false
     );
@@ -185,7 +191,7 @@ function sc_projectile_target_find(_projectile, _range)
     var _target = noone;
     var _best_distance_sq = _range * _range;
 
-    for (var _i = 0; _i < ds_list_size(_list); _i++)
+    for (var _i = 0; _i < _count; ++_i)
     {
         var _candidate = _list[| _i];
 
@@ -287,8 +293,10 @@ function sc_projectile_active_update(_projectile, _data)
     _projectile.x += lengthdir_x(_data.movement.speed, _data.direction);
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
     _projectile.draw_angle = _data.direction;
-	if (variable_struct_exists(_data.visual, "trail_script"))
-    _data.visual.trail_script(_projectile, _data);
+
+    if (_data.runtime.has_trail_script)
+        _data.visual.trail_script(_projectile, _data);
+
     _data.life.remaining--;
 
     if (_data.life.remaining > 0) return;
@@ -534,9 +542,7 @@ function sc_projectile_entity_collision(_projectile, _target)
         _impact
     );
 
-    var _class_config = sc_projectile_class_config_get(
-        _data.projectile_class
-    );
+    var _class_config = _data.class_config;
 
     var _impact_x = _projectile.x;
     var _impact_y = _projectile.y;
@@ -617,127 +623,59 @@ function sc_projectile_draw(_projectile)
     var _draw_y = _projectile.y;
     var _draw_angle = _projectile.draw_angle;
 
-
-    // ==================================================
-    // RICOCHET
-    // ==================================================
     if (_data.state == ProjectileState.RICOCHET)
     {
         _scale = _data.runtime.ricochet.scale;
         _alpha = _data.runtime.ricochet.alpha;
     }
 
-
-    // ==================================================
-    // PROJECTILE-TYPE VISUAL MOTION
-    // ==================================================
     if (_data.state == ProjectileState.ACTIVE)
     {
         switch (_data.projectile_motion)
         {
             case ProjectileMotion.ROCKET:
             {
-                var _config =
-                    global.config.visual.projectile_motion.rocket;
+                var _config = global.config.visual.projectile_motion.rocket;
+                var _actual_radius = max(1, _visual.radius * _scale);
+                var _speed_factor = _data.movement.speed / max(0.01, _config.reference_speed);
+                var _size_factor = _config.reference_radius / _actual_radius;
 
-                var _actual_radius =
-                    max(1, _visual.radius * _scale);
+                var _influence = clamp(
+                    _speed_factor * _size_factor,
+                    _config.influence_min,
+                    _config.influence_max
+                );
 
-                var _speed_factor =
-                    _data.movement.speed
-                    / max(0.01, _config.reference_speed);
-
-                var _size_factor =
-                    _config.reference_radius
-                    / _actual_radius;
-
-                var _influence =
-                    clamp(
-                        _speed_factor * _size_factor,
-                        _config.influence_min,
-                        _config.influence_max
-                    );
-
-                var _phase =
-                    GAME_TICK
-                    * _config.frequency
-                    * _influence
+                var _phase = GAME_TICK * _config.frequency * _influence
                     + real(_projectile.id) * 0.731;
 
                 var _wave = sin(_phase);
+                var _offset = _wave * _config.amount * _influence;
 
-                var _offset =
-                    _wave
-                    * _config.amount
-                    * _influence;
-
-                _draw_x +=
-                    lengthdir_x(
-                        _offset,
-                        _data.direction + 90
-                    );
-
-                _draw_y +=
-                    lengthdir_y(
-                        _offset,
-                        _data.direction + 90
-                    );
-
-                _draw_angle +=
-                    _wave
-                    * _config.angle
-                    * _influence;
+                _draw_x += lengthdir_x(_offset, _data.direction + 90);
+                _draw_y += lengthdir_y(_offset, _data.direction + 90);
+                _draw_angle += _wave * _config.angle * _influence;
             }
             break;
         }
     }
 
-
-    // ==================================================
-    // OPTIONAL GENERIC BAKED TRAIL
-    // ==================================================
-    if (_data.state == ProjectileState.ACTIVE
-    && variable_struct_exists(_visual, "trail"))
+    if (_data.state == ProjectileState.ACTIVE && _data.runtime.has_trail)
     {
         var _trail = _visual.trail;
 
         if (_trail.enabled)
         {
-            var _cache =
-                sc_projectile_trail_cache_get();
-
+            var _cache = _visual.runtime.trail_cache;
             var _palette = _visual.palette;
+            var _rear = _visual.length * 0.42 * _scale;
 
-            var _rear =
-                _visual.length
-                * 0.42
-                * _scale;
+            var _trail_x = _draw_x - lengthdir_x(_rear, _draw_angle);
+            var _trail_y = _draw_y - lengthdir_y(_rear, _draw_angle);
 
-            var _trail_x =
-                _draw_x
-                - lengthdir_x(
-                    _rear,
-                    _draw_angle
-                );
-
-            var _trail_y =
-                _draw_y
-                - lengthdir_y(
-                    _rear,
-                    _draw_angle
-                );
-
-            var _length_scale =
-                (_trail.length * _scale)
-                / _cache.width;
-
-            var _glow_scale =
-                (_trail.glow_width * _scale)
-                / _cache.height;
-
-            var _width_scale =
-                (_trail.width * _scale)
-                / _cache.height;
+            var _length_scale = (_trail.length * _scale) / _cache.width;
+            var _glow_scale = (_trail.glow_width * _scale) / _cache.height;
+            var _width_scale = (_trail.width * _scale) / _cache.height;
 
             draw_sprite_ext(
                 _cache.sprite,
@@ -765,10 +703,6 @@ function sc_projectile_draw(_projectile)
         }
     }
 
-
-    // ==================================================
-    // PROJECTILE
-    // ==================================================
     draw_sprite_ext(
         sc_projectile_sprite_get(_projectile),
         0,
@@ -780,16 +714,15 @@ function sc_projectile_draw(_projectile)
         c_white,
         _alpha
     );
-	
-	if (is_struct(_data.defence)
-		&& is_struct(_data.defence.health_bar))
-		{
-		    sc_health_bar_draw(
-		        _draw_x,
-		        _draw_y,
-		        _visual.radius * _scale,
-		        _data.defence,
-		        _data.defence.health_bar
-		    );
-		}
+
+    if (is_struct(_data.defence))
+    {
+        sc_health_bar_draw(
+            _draw_x,
+            _draw_y,
+            _visual.radius * _scale,
+            _data.defence,
+            _data.defence.health_bar
+        );
+    }
 }
