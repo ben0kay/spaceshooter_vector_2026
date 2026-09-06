@@ -162,6 +162,7 @@
     {"id":{"name":"sc_plyr_ship_bake","path":"scripts/sc_plyr_ship_bake/sc_plyr_ship_bake.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},
     {"id":{"name":"sc_projectile_bake","path":"scripts/sc_projectile_bake/sc_projectile_bake.yy",},},
+    {"id":{"name":"sc_projectile_dupe","path":"scripts/sc_projectile_dupe/sc_projectile_dupe.yy",},},
     {"id":{"name":"sc_projectile_emission","path":"scripts/sc_projectile_emission/sc_projectile_emission.yy",},},
     {"id":{"name":"sc_projectile","path":"scripts/sc_projectile/sc_projectile.yy",},},
     {"id":{"name":"sc_pulse","path":"scripts/sc_pulse/sc_pulse.yy",},},

@@ -114,25 +114,17 @@ function sc_ship_shard_visual_data()
         },
 		
 		shield_focus: {
-    particle_script: sc_particles_shard_shield_focus,
-    particle_interval: 1,
+    particle_script: sc_particles_shard_shield_focus, particle_interval: 1,
+    arc_segments: 36, radius_forward_scale: 1.35, radius_side_scale: 2.15,
+    offset_forward_scale: -0.12, crescent_depth: 0.4,
 
-    arc_segments: 36,
-    radius_forward_scale: 1.7,
-    radius_side_scale: 2.35,
-    offset_forward_scale: 0.32,
-    crescent_depth: 0.42,
+    field_alpha: 0.3, outer_glow_width: 7, outer_width: 3, inner_width: 2,
+    outer_alpha: 0.42, edge_alpha: 0.95, inner_alpha: 0.5,
+    pulse_speed: 0.09, pulse_amount: 0.05,
 
-    field_alpha: 0.3,
-    outer_glow_width: 7,
-    outer_width: 3,
-    inner_width: 2,
-    outer_alpha: 0.42,
-    edge_alpha: 0.95,
-    inner_alpha: 0.5,
-
-    pulse_speed: 0.09,
-    pulse_amount: 0.05
+    streak_amount: 13, streak_speed: 0.025, streak_travel: 22,
+    streak_length_min: 5, streak_length_max: 18,
+    streak_width: 2, streak_alpha: 0.75
 },
 
         draw: {
@@ -899,63 +891,14 @@ function sc_particles_register_shard()
     part_type_blend(_dash, true);
 
     // Bright energy motes flow from the hull into the focused shield.
-part_type_sprite(
-    _focus,
-    s_particle_exposion_star,
-    false,
-    false,
-    false
-);
-
-part_type_colour3(
-    _focus,
-    make_colour_rgb(20, 100, 220),
-    make_colour_rgb(30, 230, 255),
-    c_white
-);
-
-part_type_alpha3(
-    _focus,
-    0.15,
-    0.95,
-    0
-);
-
-part_type_size(
-    _focus,
-    0.055,
-    0.12,
-    -0.002,
-    0.02
-);
-
-part_type_speed(
-    _focus,
-    3.5,
-    6,
-    0.02,
-    0
-);
-
-part_type_life(
-    _focus,
-    10,
-    17
-);
-
-part_type_orientation(
-    _focus,
-    -10,
-    10,
-    0,
-    5,
-    true
-);
-
-part_type_blend(
-    _focus,
-    true
-);
+part_type_sprite(_focus, s_blur, false, false, false);
+part_type_colour3(_focus, c_white, make_colour_rgb(40, 235, 255), make_colour_rgb(0, 105, 230));
+part_type_alpha3(_focus, 0.95, 0.65, 0);
+part_type_size(_focus, 0.07, 0.14, -0.003, 0.025);
+part_type_speed(_focus, 1.2, 3.8, -0.035, 0);
+part_type_life(_focus, 12, 24);
+part_type_orientation(_focus, 0, 359, 0, 5, false);
+part_type_blend(_focus, true);
 
     return sc_particles_group_register(
         "shard",
@@ -1032,7 +975,7 @@ function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting
     return true;
 }
 
-/// @description Emits energetic streaks from the Shard's focused shield rim.
+/// @description Sheds bright energy specks outward from the focused shield.
 function sc_particles_shard_shield_focus(_player)
 {
     var _visual = _player.ship.visual;
@@ -1052,15 +995,13 @@ function sc_particles_shard_shield_focus(_player)
 
     for (var _i = 0; _i < 2; ++_i)
     {
-        var _local_angle = random_range(-_half, _half);
+        var _local_angle = random_range(-_half * 0.9, _half * 0.9);
         var _local_forward = _offset + dcos(_local_angle) * _forward;
         var _local_side = dsin(_local_angle) * _side;
         var _x = _player.x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
         var _y = _player.y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
-        var _direction = _angle + _local_angle;
 
-        part_type_direction(_types.focus, _direction - 8, _direction + 8, 0, 0);
-        part_type_orientation(_types.focus, _direction, _direction, 0, 5, true);
+        part_type_direction(_types.focus, _angle - 24, _angle + 24, 0, 0);
         part_particles_create(global.particles.system, _x, _y, _types.focus, 1);
     }
 

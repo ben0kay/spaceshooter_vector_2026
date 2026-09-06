@@ -178,7 +178,7 @@ function sc_visual_shield_sprite_draw(_sprite, _x, _y, _angle, _palette, _charge
     }
 }
 
-/// @description Draws one broad translucent crescent shield.
+/// @description Draws one close broad crescent shield with moving energy streaks.
 function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette, _charge_ratio, _hit_alpha, _draw_alpha, _config)
 {
     var _half = clamp(_arc * 0.5, 1, 175);
@@ -189,7 +189,35 @@ function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette,
     var _field_alpha = clamp(_config.field_alpha * lerp(0.5, 1, _charge_ratio) * _pulse + _hit_alpha * 0.18, 0, 0.72) * _draw_alpha;
     var _edge_alpha = clamp(_config.edge_alpha * lerp(0.65, 1, _charge_ratio) * _pulse + _hit_alpha * 0.45, 0, 1) * _draw_alpha;
 
-    // Transparent energy between the convex outer and concave inner curves.
+    // Animated horizontal energy streaks travelling out from the rim.
+    gpu_set_blendmode(bm_add);
+
+    for (var _i = 0; _i < _config.streak_amount; ++_i)
+    {
+        var _amount = _i / max(1, _config.streak_amount - 1);
+        var _local_angle = lerp(-_half * 0.92, _half * 0.92, _amount);
+        var _phase = frac(GAME_TICK * _config.streak_speed + _i * 0.317);
+        var _local_forward = _offset + dcos(_local_angle) * _forward;
+        var _local_side = dsin(_local_angle) * _side;
+        var _travel = _phase * _config.streak_travel;
+        var _length = lerp(_config.streak_length_min, _config.streak_length_max, 0.5 + sin(_i * 2.17) * 0.5);
+        var _alpha = sin(_phase * pi) * _config.streak_alpha * _draw_alpha;
+
+        var _rim_x = _x + lengthdir_x(_local_forward, _angle) + lengthdir_x(_local_side, _angle + 90);
+        var _rim_y = _y + lengthdir_y(_local_forward, _angle) + lengthdir_y(_local_side, _angle + 90);
+        var _start_x = _rim_x + lengthdir_x(_travel, _angle);
+        var _start_y = _rim_y + lengthdir_y(_travel, _angle);
+
+        draw_set_alpha(_alpha * 0.35);
+        draw_set_colour(_palette.glow);
+        draw_line_width(_start_x, _start_y, _start_x + lengthdir_x(_length + 5, _angle), _start_y + lengthdir_y(_length + 5, _angle), _config.streak_width + 2);
+
+        draw_set_alpha(_alpha);
+        draw_set_colour(_i mod 3 == 0 ? _palette.core : _palette.energy);
+        draw_line_width(_start_x, _start_y, _start_x + lengthdir_x(_length, _angle), _start_y + lengthdir_y(_length, _angle), _config.streak_width);
+    }
+
+    // Transparent energy between the outer and inner crescent curves.
     gpu_set_blendmode(bm_normal);
     draw_primitive_begin(pr_trianglestrip);
 
@@ -214,9 +242,8 @@ function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette,
     draw_primitive_end();
     gpu_set_blendmode(bm_add);
 
-    // Broad glow beneath the outer collision-facing rim.
-    var _previous_x = 0;
-    var _previous_y = 0;
+    // Wide outer glow.
+    var _previous_x = 0, _previous_y = 0;
 
     for (var _i = 0; _i <= _config.arc_segments; ++_i)
     {
@@ -238,7 +265,7 @@ function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette,
         _previous_y = _point_y;
     }
 
-    // Sharp white-aqua outer rim.
+    // Sharp outer edge.
     _previous_x = 0;
     _previous_y = 0;
 
@@ -262,7 +289,7 @@ function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette,
         _previous_y = _point_y;
     }
 
-    // Concave inner rim gives the field its crescent silhouette.
+    // Dimmer concave inner edge.
     _previous_x = 0;
     _previous_y = 0;
 
@@ -287,17 +314,16 @@ function sc_visual_shield_focus_draw(_x, _y, _angle, _collision, _arc, _palette,
         _previous_y = _point_y;
     }
 
-    // Concentrated impact-facing glow at the centre of the field.
     var _nose_x = _x + lengthdir_x(_offset + _forward, _angle);
     var _nose_y = _y + lengthdir_y(_offset + _forward, _angle);
 
-    draw_set_alpha((0.2 + _hit_alpha * 0.5) * _draw_alpha);
+    draw_set_alpha((0.18 + _hit_alpha * 0.5) * _draw_alpha);
     draw_set_colour(_palette.energy);
-    draw_circle(_nose_x, _nose_y, 9 + _hit_alpha * 5, false);
+    draw_circle(_nose_x, _nose_y, 8 + _hit_alpha * 5, false);
 
-    draw_set_alpha((0.7 + _hit_alpha * 0.3) * _draw_alpha);
+    draw_set_alpha((0.65 + _hit_alpha * 0.35) * _draw_alpha);
     draw_set_colour(_palette.core);
-    draw_circle(_nose_x, _nose_y, 3 + _hit_alpha * 2, false);
+    draw_circle(_nose_x, _nose_y, 2.5 + _hit_alpha * 2, false);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);

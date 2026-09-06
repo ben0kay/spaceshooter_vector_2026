@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_projectile_dupe",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_projectile_dupe",
+  "parent":{
+    "name":"PROJECTILE",
+    "path":"folders/scripts/PROJECTILE.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

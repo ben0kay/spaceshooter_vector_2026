@@ -870,6 +870,12 @@ function sc_player_visual_update(_player)
 
     _runtime.core_speed = lerp(_runtime.core_speed, _core_target_speed, _core.response);
     _runtime.core_angle = (_runtime.core_angle + _runtime.core_speed) mod 360;
+	
+	var _focus = _player.combat.shield_focus;
+
+if (_focus.active && GAME_TICK mod _visual.shield_focus.particle_interval == 0)
+    _visual.shield_focus.particle_script(_player);
+	
     _runtime.shield_hit_alpha = max(0, _runtime.shield_hit_alpha - 0.06);
 }
 
