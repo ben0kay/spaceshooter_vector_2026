@@ -75,15 +75,20 @@ function sc_enemy_init(_enemy, _enemy_key)
 		},
 			
 		flee: {
-    attempts: 0,
-    next_attempt_tick: 0,
-    direction: 0,
-    target_id: noone,
-    option: undefined,
-    movement_script: undefined,
-    arrival_script: undefined,
-    arrived: false
-},
+		    attempts: 0,
+		    next_attempt_tick: 0,
+		    used: false,
+		    direction: 0,
+		    target_id: noone,
+		    option: undefined,
+		    movement_script: undefined,
+		    arrival_script: undefined,
+		    arrived: false,
+		    sheltered: false,
+		    returning: false,
+		    return_x: 0,
+		    return_y: 0
+		},
 
 		awareness: {
 		    memory_until: 0,

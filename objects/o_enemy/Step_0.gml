@@ -3,6 +3,9 @@ if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_optimization_enemy_update(id);
 
+if (enemy.flee.sheltered)
+    sc_enemy_flee_recovery_update(id);
+
 var _updates = global.config.optimization.enemy_updates;
 var _optimization = enemy.optimization;
 var _perception_interval = enemy.state == EnemyState.IDLE

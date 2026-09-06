@@ -429,7 +429,12 @@ function sc_enemy_movement_update(_enemy)
     switch (_state)
     {
         case EnemyState.IDLE:
-            _controller.idle_script(_enemy);
+            if (_data.flee.sheltered)
+                sc_enemy_movement_flee_sheltered(_enemy);
+            else if (_data.flee.returning)
+                sc_enemy_movement_flee_return(_enemy);
+            else
+                _controller.idle_script(_enemy);
         break;
 
         case EnemyState.INVESTIGATING:

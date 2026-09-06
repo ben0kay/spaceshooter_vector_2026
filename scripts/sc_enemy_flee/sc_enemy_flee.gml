@@ -178,15 +178,16 @@ function sc_enemy_flee_fallback_map(_enemy)
     return sc_enemy_flee_target_map(_enemy, undefined);
 }
 
-/// @description Begins fleeing using one weighted faction target.
+/// @description Begins fleeing once using one weighted faction target.
 function sc_enemy_flee_begin(_enemy)
 {
     var _data = _enemy.enemy;
-    if (_data.state == EnemyState.DEAD || _data.state == EnemyState.FLEEING) return false;
+    if (_data.state == EnemyState.DEAD || _data.state == EnemyState.FLEEING || _data.flee.used) return false;
     if (!sc_enemy_flee_target_select(_enemy)) return false;
 
     sc_enemy_attack_cancel(_enemy);
 
+    _data.flee.used = true;
     _data.target_id = noone;
     _data.awareness.memory_until = 0;
     _data.awareness.arrived = false;
@@ -198,14 +199,15 @@ function sc_enemy_flee_begin(_enemy)
 function sc_enemy_flee_try(_enemy, _result)
 {
     var _data = _enemy.enemy;
+    var _runtime = _data.flee;
 
     if (_data.state == EnemyState.DEAD
     || _data.state == EnemyState.FLEEING
+    || _runtime.used
     || _data.identity.rank == EnemyRank.BOSS)
         return false;
 
     var _config = _data.doctrine.flee;
-    var _runtime = _data.flee;
     var _class_multiplier = global.config.enemy.flee.class_chance_multiplier[_data.identity.ship_class];
     var _chance = clamp(_config.chance * _class_multiplier, 0, 1);
 
@@ -291,6 +293,74 @@ function sc_enemy_movement_flee_toward_ally(_enemy, _option)
     _command.speed_scale = max(0, _data.doctrine.flee.speed_scale);
 }
 
+/// @description Begins an interruptible return to the enemy's original spawn point.
+function sc_enemy_flee_return_begin(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.flee;
+
+    _runtime.sheltered = false;
+    _runtime.returning = true;
+    _runtime.target_id = noone;
+    _runtime.return_x = _data.movement.spawn_x;
+    _runtime.return_y = _data.movement.spawn_y;
+    return true;
+}
+
+/// @description Holds beside a support ship while allowing normal combat awareness.
+function sc_enemy_movement_flee_sheltered(_enemy)
+{
+    sc_enemy_movement_flee_toward_ally(_enemy, _enemy.enemy.flee.option);
+}
+
+/// @description Returns a recovered enemy toward its original spawn point.
+function sc_enemy_movement_flee_return(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.flee;
+    var _command = _data.movement.command;
+    var _dx = _runtime.return_x - _enemy.x;
+    var _dy = _runtime.return_y - _enemy.y;
+    var _arrival_radius = max(_data.collision.radius_forward, _data.collision.radius_side)
+        + global.config.enemy.flee.return_arrival_margin;
+
+    if (_dx * _dx + _dy * _dy <= _arrival_radius * _arrival_radius)
+    {
+        _runtime.returning = false;
+        _runtime.arrived = false;
+        _runtime.option = undefined;
+        _runtime.movement_script = undefined;
+        _runtime.arrival_script = undefined;
+        _command.apply_friction = true;
+        return;
+    }
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.face_direction = _command.direction;
+    _command.facing_mode = EnemyFacingMode.MOVEMENT;
+    _command.speed_scale = max(0, _data.doctrine.flee.speed_scale);
+}
+
+/// @description Ends sheltering after full repair or loss of the support ship.
+function sc_enemy_flee_recovery_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.flee;
+    var _support = _runtime.target_id;
+    var _defence = _data.defence;
+
+    if (!instance_exists(_support) || _support.enemy.state == EnemyState.DEAD)
+        return sc_enemy_flee_return_begin(_enemy);
+
+    if (_defence.armour.current < _defence.armour.maximum
+    || _defence.hull.current < _defence.hull.maximum)
+        return false;
+
+    return sc_enemy_flee_return_begin(_enemy);
+}
+
 /// @description Removes a fleeing enemy after its entire footprint clears the room.
 function sc_enemy_flee_exit_check(_enemy)
 {
@@ -319,7 +389,7 @@ function sc_enemy_flee_arrive_map(_enemy, _option)
     return sc_enemy_flee_exit_check(_enemy);
 }
 
-/// @description Marks a fleeing ship as sheltered beside its larger ally.
+/// @description Shelters at support or receives emergency repairs from a larger ally.
 function sc_enemy_flee_arrive_shelter(_enemy, _option)
 {
     var _data = _enemy.enemy;
@@ -347,7 +417,30 @@ function sc_enemy_flee_arrive_shelter(_enemy, _option)
 
     _runtime.arrived = true;
 
-    // Add Corporation repair, regroup or combat-return behaviour here later.
+    var _identity = _target.enemy.identity;
+
+    if (_identity.role == EnemyRole.SUPPORT
+    && _identity.ship_class == EnemyClass.HEAVY)
+    {
+        _runtime.sheltered = true;
+        _data.target_id = noone;
+        _data.state = EnemyState.IDLE;
+        return false;
+    }
+
+    var _defence = _data.defence;
+    var _config = global.config.enemy.flee;
+
+    _defence.hull.current = _defence.hull.maximum;
+    _defence.armour.current = min(
+        _defence.armour.maximum,
+        _defence.armour.current + _defence.armour.maximum
+            * random_range(_config.field_repair_armour_min, _config.field_repair_armour_max)
+    );
+
+    _data.target_id = noone;
+    _data.state = EnemyState.IDLE;
+    sc_enemy_flee_return_begin(_enemy);
     return false;
 }
 
