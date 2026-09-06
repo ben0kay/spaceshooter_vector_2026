@@ -58,30 +58,42 @@ function sc_projectile_register_shard_rocket()
             }
         },
 
-        visual: {
-		    radius: 8,
-		    length: 34,
-		    palette: _palette,
-		    draw_script: sc_projectile_shard_rocket_draw,
-		    impact_script: sc_projectile_shard_rocket_impact,
-		    trail_script: sc_projectile_shard_rocket_trail,
-		    particles_register_script: sc_projectile_shard_rocket_particles_register,
-			
-			trail: {
-			    enabled: true,
-			    length: 72,
-			    width: 2,
-			    glow_width: 7,
-			    alpha: 0.8,
-			    glow_alpha: 0.18
-			},
+                visual: {
+            radius: 8,
+            length: 34,
+            palette: _palette,
+            draw_script: sc_projectile_shard_rocket_draw,
+            impact_script: sc_projectile_shard_rocket_impact,
+            trail_script: sc_projectile_particle_trail_emit,
+            particles_register_script: sc_projectile_shard_rocket_particles_register,
 
-		    bake: {
-		        canvas_size: 128,
-		        frames: 4,
-		        frame_speed: 2
-		    }
-		}
+            particle_trail: {
+                group: "trail_shard_rocket",
+                interval: 2,
+                amount: 1,
+                rear_scale: 0.46,
+                spread: 9,
+                size_min: 0.12,
+                size_max: 0.19,
+                size_growth: 0.006,
+                size_wiggle: 0
+            },
+
+            trail: {
+                enabled: true,
+                length: 72,
+                width: 2,
+                glow_width: 7,
+                alpha: 0.8,
+                glow_alpha: 0.18
+            },
+
+            bake: {
+                canvas_size: 128,
+                frames: 4,
+                frame_speed: 2
+            }
+        }
     });
 }
 
@@ -161,82 +173,29 @@ function sc_projectile_shard_rocket_particles_register()
             speed_max: 7
         }
     ))
-    {
         return false;
-    }
 
-    var _smoke = sc_particles_type_create();
-
-    if (!part_type_exists(_smoke))
-    {
-        show_debug_message(
-            "SHARD ROCKET PARTICLE ERROR - smoke creation failed"
-        );
-
-        return false;
-    }
-
-    part_type_sprite(
-        _smoke,
-        s_particle_firesmoke_trail_color,
-        false,
-        false,
-        false
-    );
-
-    part_type_colour2(
-        _smoke,
-        make_colour_rgb(145, 185, 195),
-        make_colour_rgb(45, 60, 65)
-    );
-
-    part_type_alpha3(
-        _smoke,
-        0.48,
-        0.28,
-        0
-    );
-
-    part_type_speed(
-        _smoke,
-        0.5,
-        1.4,
-        -0.025,
-        0
-    );
-
-    part_type_direction(
-        _smoke,
-        170,
-        190,
-        0,
-        0
-    );
-
-    part_type_orientation(
-        _smoke,
-        0,
-        359,
-        0,
-        2,
-        false
-    );
-
-    part_type_life(
-        _smoke,
-        14,
-        22
-    );
-
-    part_type_blend(
-        _smoke,
-        false
-    );
-
-    return sc_particles_group_register(
+    return sc_particles_projectile_trail_register(
         "trail_shard_rocket",
         {
-            smoke: _smoke
+            sprite: s_particle_firesmoke_trail_color,
+
+            colour_start: make_colour_rgb(145, 185, 195),
+            colour_middle: make_colour_rgb(82, 105, 112),
+            colour_end: make_colour_rgb(45, 60, 65),
+
+            alpha_start: 0.48,
+            alpha_middle: 0.28,
+
+            speed_min: 0.5,
+            speed_max: 1.4,
+            speed_reduce: -0.025,
+
+            life_min: 14,
+            life_max: 22,
+
+            rotation_speed: 2,
+            blend_additive: false
         }
     );
 }
@@ -453,61 +412,4 @@ function sc_attack_area_shard_rocket_explosion_draw(_area, _data)
     draw_set_alpha(_alpha * 0.9);
     draw_set_colour(c_white);
     draw_circle(_area.x, _area.y, _radius, true);
-}
-
-/// @description Emits a restrained smoke trail behind one Shard rocket.
-function sc_projectile_shard_rocket_trail(_projectile, _data)
-{
-    // One particle every two Steps, staggered between instances.
-    if (((GAME_TICK + real(_projectile.id)) mod 2) != 0)
-        return true;
-
-    var _types = sc_particles_group_get(
-        "trail_shard_rocket"
-    );
-
-    if (!is_struct(_types))
-        return false;
-
-    var _scale = _data.scale;
-    var _direction = _data.direction;
-    var _rear_distance =
-        _data.visual.length * 0.46 * _scale;
-
-    var _x =
-        _projectile.x
-        - lengthdir_x(_rear_distance, _direction);
-
-    var _y =
-        _projectile.y
-        - lengthdir_y(_rear_distance, _direction);
-
-    var _smoke_direction =
-        _direction + 180;
-
-    part_type_direction(
-        _types.smoke,
-        _smoke_direction - 9,
-        _smoke_direction + 9,
-        0,
-        0
-    );
-
-    part_type_size(
-        _types.smoke,
-        0.12 * _scale,
-        0.19 * _scale,
-        0.006 * _scale,
-        0
-    );
-
-    part_particles_create(
-        global.particles.system,
-        _x,
-        _y,
-        _types.smoke,
-        1
-    );
-
-    return true;
 }

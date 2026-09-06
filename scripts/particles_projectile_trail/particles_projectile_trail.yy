@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"particles_projectile_trail",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"particles_projectile_trail",
+  "parent":{
+    "name":"particles",
+    "path":"folders/scripts/effects/particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
