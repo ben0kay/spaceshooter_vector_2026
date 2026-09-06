@@ -234,7 +234,7 @@ function sc_enemy_register_sim_dreadwing()
 		                mode: AimMode.TARGET,
 		                angle_offset: 0,
 		                inaccuracy: 0,
-		                fire_tolerance: 180
+		                fire_tolerance: 360
 		            },
 
 		            shot: {
@@ -254,8 +254,8 @@ function sc_enemy_register_sim_dreadwing()
 
 		            firing: {
 		                order: HardpointFireOrder.ALL,
-		                interval: 1,
-		                volley_max: 1,
+		                interval: 30,
+		                volley_max: 2,
 		                cooldown: 290
 		            }
 		        }

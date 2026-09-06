@@ -276,9 +276,9 @@ function sc_weapon_register_simulant_seeker_core()
             projectile_key: "projectile_simulant_seeker_core",
 
             projectile: {
-                scale: 1.3,
-                speed: 7.5,
-                life: 280
+                scale: 1.2,
+                speed: 12,
+                life: 250
             },
 
             damage: {
