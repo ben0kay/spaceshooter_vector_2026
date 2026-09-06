@@ -5,7 +5,7 @@ If multiple adjacent functions in the same .gml file need replacing, give me one
 I prefer vertically compressed code (check some functions in the project for examples)
 I need you to give me code by pasting in chat. NEVER update the github yourself
 I dont like when u put like 1 little thing on its own line unless necessary.
-I like ENUMS where appropriate. - I like these on 1 line too
+I like ENUMS where appropriate. - I like these on 1 line too. Or recently we are using script callbacks for things where it fits better than an ENUM.
 I like you giving me full functions instead of inserting little snippets so i dont mess things up. unless the snippet is small then i will allow exceptions. but not if too many snippets in same function
 I highly prefer OPTIMIZATION/PERFORMANCE where appropriate. 
 I like using structs to group similar named variables together. 

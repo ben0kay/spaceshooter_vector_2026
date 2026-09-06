@@ -72,6 +72,103 @@ function sc_faction_register_simulant()
     });
 }
 
+/// @description Registers the Corporation faction with standard and elite military palettes.
+function sc_faction_register_corporation()
+{
+    return sc_faction_register(Faction.CORPORATION, {
+        identity: { name: "Corp Syndicate" },
+
+        palette: {
+            void: make_colour_rgb(9, 13, 20),
+            hull_dark: make_colour_rgb(38, 47, 59),
+            hull_mid: make_colour_rgb(100, 112, 126),
+            hull_light: make_colour_rgb(190, 198, 207),
+            metal: make_colour_rgb(225, 230, 235),
+
+            outline: make_colour_rgb(65, 77, 92),
+            accent: make_colour_rgb(35, 94, 214),
+            energy: make_colour_rgb(52, 132, 255),
+            core: make_colour_rgb(202, 229, 255),
+            glow: make_colour_rgb(18, 82, 224)
+        },
+
+        palette_elite: {
+            void: make_colour_rgb(4, 7, 12),
+            hull_dark: make_colour_rgb(15, 22, 31),
+            hull_mid: make_colour_rgb(39, 49, 62),
+            hull_light: make_colour_rgb(100, 111, 124),
+            metal: make_colour_rgb(174, 183, 193),
+
+            outline: make_colour_rgb(62, 76, 94),
+            accent: make_colour_rgb(29, 78, 190),
+            energy: make_colour_rgb(47, 119, 255),
+            core: make_colour_rgb(210, 233, 255),
+            glow: make_colour_rgb(13, 62, 204)
+        },
+
+        damage_fx: {
+            emit_script: sc_particles_enemy_damage_smoke_emit,
+            colour_light: make_colour_rgb(74, 87, 103),
+            colour_dark: make_colour_rgb(12, 18, 26)
+        },
+		
+		doctrine: {
+		    alert: {
+		        chance: 0.7,
+		        on_detection: true,
+		        on_damage: true,
+				max_attempts: 3,
+				cooldown: 300,
+				memory_duration: 600
+		    },
+
+		    flee: {
+		    chance: 0.3,
+		    trigger_layer: DefenceLayer.HULL,
+		    trigger_ratio: 0.6,
+		    max_attempts: 2,
+		    cooldown: 300,
+		    movement_script: sc_enemy_movement_flee_away,
+		    speed_scale: 1,
+		    sway_amount: 5,
+		    sway_speed: 0.025
+		}
+			
+		},
+    });
+}
+
+/// @description Returns one registered faction's optional elite palette.
+function sc_faction_palette_elite_get(_faction)
+{
+    var _factions = global.data.factions;
+
+    if (_faction < 0 || _faction >= array_length(_factions))
+    {
+        show_debug_message(
+            "FACTION ELITE PALETTE ERROR - invalid faction: "
+            + string(_faction)
+        );
+
+        return undefined;
+    }
+
+    var _data = _factions[_faction];
+
+    if (!is_struct(_data)
+    || !variable_struct_exists(_data, "palette_elite"))
+    {
+        show_debug_message(
+            "FACTION ELITE PALETTE ERROR - palette unavailable: "
+            + string(_faction)
+        );
+
+        return undefined;
+    }
+
+    return _data.palette_elite;
+}
+
 /// @description Registers the Rebel faction and battered industrial visual language.
 function sc_faction_register_rebel()
 {
