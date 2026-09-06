@@ -132,7 +132,7 @@ function sc_faction_register_corporation()
 		    },
 
 		    flee: {
-    chance: 0.3,
+    chance: 0.9,
     trigger_layer: DefenceLayer.HULL,
     trigger_ratio: 0.6,
     max_attempts: 2,
@@ -144,8 +144,8 @@ function sc_faction_register_corporation()
     targets: [
         {
             key: "larger_ally",
-            weight: 60,
-            range: 2400,
+            weight: 100,
+            range: 8192,
             arrival_margin: 96,
 			preferred_role: EnemyRole.SUPPORT,
 			preferred_class: EnemyClass.HEAVY,
@@ -155,7 +155,7 @@ function sc_faction_register_corporation()
         },
         {
             key: "leave_map",
-            weight: 40,
+            weight: 0,
             target_script: sc_enemy_flee_target_map,
             movement_script: sc_enemy_movement_flee_away,
             arrival_script: sc_enemy_flee_arrive_map

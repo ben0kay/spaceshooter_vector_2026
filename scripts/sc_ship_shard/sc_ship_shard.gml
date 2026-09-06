@@ -6,19 +6,19 @@ function sc_ship_register_shard()
 
         stats_base: {
 			mass: 1,
-            hull_max: 75, armour_max: 25, shield_max: 40,
+            hull_max: 100, armour_max: 100, shield_max: 100,
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
 
             energy_max: 500, energy_regeneration: 0.2, energy_recharge_delay: 45,
             fuel_max: 1000, fuel_regeneration: 0,
             fuel_movement_cost: 0.015, fuel_boost_cost: 0.06, fuel_dash_cost: 8,
 
-            bullets_max: 1500, explosives_max: 100,
+            bullets_max: 1500, explosives_max: 200,
             cargo_capacity: 100,
 
             speed_max: 10, acceleration: 0.5, deceleration: 0.6, turn_speed: 10,
             directional_speed_min: 0.72, directional_thrust_min: 0.28,
-            damage_multiplier: 1, fire_rate_multiplier: 1,
+            damage_multiplier: 1.2, fire_rate_multiplier: 1,
 
             boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
             dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,

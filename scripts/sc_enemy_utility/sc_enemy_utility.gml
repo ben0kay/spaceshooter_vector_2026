@@ -218,11 +218,11 @@ function sc_enemy_utility_update(_enemy)
     {
         var _channel = _controller.channels[_c];
         var _runtime = _channel.runtime;
-        _target = _channel.target_script(_enemy, _channel);
+        var _target = _runtime.target_id;
 
         if (_disabled)
         {
-            if (instance_exists(_target))
+            if (_runtime.active)
                 sc_enemy_utility_target_clear(_channel);
 
             continue;
@@ -236,16 +236,16 @@ function sc_enemy_utility_update(_enemy)
         }
 
         if (!instance_exists(_target)
-			&& GAME_TICK >= _runtime.next_target_tick)
-			{
-			    _target = _channel.target_script(_enemy, _channel);
-			    _runtime.target_id = _target;
-			    _runtime.active = instance_exists(_target);
+        && GAME_TICK >= _runtime.next_target_tick)
+        {
+            _target = _channel.target_script(_enemy, _channel);
+            _runtime.target_id = _target;
+            _runtime.active = instance_exists(_target);
 
-			    if (!instance_exists(_target))
-			        _runtime.next_target_tick = GAME_TICK
-			            + max(1, round(_channel.retarget_interval));
-			}
+            if (!instance_exists(_target))
+                _runtime.next_target_tick = GAME_TICK
+                    + max(1, round(_channel.retarget_interval));
+        }
 
         sc_enemy_utility_hardpoint_aim_update(_enemy, _channel);
 
@@ -255,7 +255,8 @@ function sc_enemy_utility_update(_enemy)
             continue;
 
         _channel.action_script(_enemy, _channel, _runtime.target_id);
-        _runtime.next_action_tick = GAME_TICK + max(1, round(_channel.action_interval));
+        _runtime.next_action_tick = GAME_TICK
+            + max(1, round(_channel.action_interval));
     }
 
     return true;

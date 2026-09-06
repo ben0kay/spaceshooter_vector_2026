@@ -10,7 +10,7 @@ function sc_enemy_register_corporation_support_battleship()
 {
     return sc_enemy_register({
         identity: {
-            key: "enemy_corporation_support_battleship",
+            key: "e_corp_support_battleship",
             name: "Corp Support Battleship",
             faction: Faction.CORPORATION,
             role: EnemyRole.SUPPORT,
@@ -40,7 +40,7 @@ function sc_enemy_register_corporation_support_battleship()
             range: {
                 detection: 1800,
                 combat: 1450,
-                backaway: 450,
+                backaway: 384,
                 forget: 2300,
                 wander: 0,
                 alert_share: 2200
@@ -183,7 +183,7 @@ function sc_enemy_register_corporation_support_battleship()
                     aim: {
                         mode: AimMode.TARGET,
                         angle_offset: 0,
-                        inaccuracy: 2,
+                        inaccuracy: 3,
                         fire_tolerance: 9
                     },
 
@@ -227,7 +227,7 @@ function sc_enemy_register_corporation_support_battleship()
                     firing: {
                         order: HardpointFireOrder.SEQUENTIAL,
                         interval: 12,
-                        volley_max: 6,
+                        volley_max: 3,
                         cooldown: 210
                     }
                 }
