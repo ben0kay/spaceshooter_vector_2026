@@ -236,7 +236,7 @@ function sc_attack_area_point_segment_distance_sq(_px, _py, _x1, _y1, _x2, _y2)
     return sc_point_distance_sq(_px, _py, _nearest_x, _nearest_y);
 }
 
-/// @description Collects possible entities using one inexpensive native broad-phase query.
+/// @description Collects possible entities and interceptable projectiles.
 function sc_attack_area_candidates_get(_area)
 {
     var _data = _area.attack_area;
@@ -252,6 +252,13 @@ function sc_attack_area_candidates_get(_area)
                 o_entity, false, true,
                 _list, false
             );
+
+            collision_circle_list(
+                _area.x, _area.y,
+                _geometry.radius,
+                o_interceptable_projectile, false, true,
+                _list, false
+            );
         break;
 
         case AttackAreaShape.CAPSULE:
@@ -259,12 +266,20 @@ function sc_attack_area_candidates_get(_area)
             var _end_y = _area.y + lengthdir_y(_geometry.length, _data.direction);
             var _radius = _geometry.radius;
 
+            var _x1 = min(_area.x, _end_x) - _radius;
+            var _y1 = min(_area.y, _end_y) - _radius;
+            var _x2 = max(_area.x, _end_x) + _radius;
+            var _y2 = max(_area.y, _end_y) + _radius;
+
             collision_rectangle_list(
-                min(_area.x, _end_x) - _radius,
-                min(_area.y, _end_y) - _radius,
-                max(_area.x, _end_x) + _radius,
-                max(_area.y, _end_y) + _radius,
+                _x1, _y1, _x2, _y2,
                 o_entity, false, true,
+                _list, false
+            );
+
+            collision_rectangle_list(
+                _x1, _y1, _x2, _y2,
+                o_interceptable_projectile, false, true,
                 _list, false
             );
         break;
@@ -274,6 +289,13 @@ function sc_attack_area_candidates_get(_area)
                 _area.x, _area.y,
                 _geometry.range,
                 o_entity, false, true,
+                _list, false
+            );
+
+            collision_circle_list(
+                _area.x, _area.y,
+                _geometry.range,
+                o_interceptable_projectile, false, true,
                 _list, false
             );
         break;

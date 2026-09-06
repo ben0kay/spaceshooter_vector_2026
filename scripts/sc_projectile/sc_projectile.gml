@@ -1,4 +1,4 @@
-/// @description Initializes a reusable projectile template using weapon-owned launch data.
+/// @description Initializes a reusable projectile with optional armour and hull.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -20,7 +20,8 @@ function sc_projectile_init(_projectile, _create)
 
     _visual.runtime = {
         cache: _cache,
-        phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0
+        phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0,
+        hit_alpha: 0
     };
 
     var _detonation = undefined;
@@ -31,6 +32,23 @@ function sc_projectile_init(_projectile, _create)
             area: variable_clone(_data.detonation.area),
             scale: _delivery.detonation.scale,
             damage: variable_clone(_delivery.detonation.damage)
+        };
+    }
+
+    var _defence = undefined;
+
+    if (variable_struct_exists(_data, "defence"))
+    {
+        var _armour = max(0, _data.defence.armour);
+        var _hull = max(1, _data.defence.hull);
+
+        _defence = {
+            armour: { current: _armour, maximum: _armour },
+            hull: { current: _hull, maximum: _hull },
+
+            detonate_on_destroy: variable_struct_exists(_data.defence, "detonate_on_destroy")
+                ? _data.defence.detonate_on_destroy
+                : false
         };
     }
 
@@ -57,15 +75,31 @@ function sc_projectile_init(_projectile, _create)
         damage: sc_damage_packet_create(_delivery.damage, _create.source),
         collision: _collision,
         visual: _visual,
+        defence: _defence,
         detonation: _detonation,
 
         runtime: {
             target_id: noone,
             next_target_tick: GAME_TICK,
             detonated: false,
+            destroyed: false,
             ricochet: undefined
         }
     };
+
+    if (is_struct(_defence))
+    {
+        sc_entity_init(
+            _projectile,
+            _create.source.faction,
+            sc_projectile_damage,
+            {
+                radius_forward: _collision.radius,
+                radius_side: _collision.radius
+            },
+            false
+        );
+    }
 
     _projectile.mask_index = s_collision_circle;
 
@@ -83,10 +117,15 @@ function sc_projectile_class_config_get(_class)
     return global.config.projectile.classes[_class];
 }
 
-/// @description Creates one projectile using its weapon's launch parameters.
+/// @description Creates a regular or interceptable projectile from its definition.
 function sc_projectile_create(_projectile_key, _source, _delivery, _x, _y, _direction, _layer)
 {
-    return instance_create_layer(_x, _y, _layer, o_projectile, {
+    var _definition = variable_struct_get(global.data.projectiles, _projectile_key);
+    var _object = variable_struct_exists(_definition, "defence")
+        ? o_interceptable_projectile
+        : o_projectile;
+
+    return instance_create_layer(_x, _y, _layer, _object, {
         projectile_create: {
             key: _projectile_key,
             source: _source,
@@ -344,6 +383,92 @@ function sc_projectile_sprite_get(_projectile)
         : 0;
 
     return _cache.sprites[_frame];
+}
+
+/// @description Applies a damage packet to an interceptable projectile.
+function sc_projectile_damage(_projectile, _packet)
+{
+    if (!instance_exists(_projectile)) return false;
+
+    var _data = _projectile.projectile;
+    var _defence = _data.defence;
+
+    if (_data.state != ProjectileState.ACTIVE
+    || _data.runtime.destroyed
+    || !is_struct(_defence))
+        return false;
+
+    var _result = sc_damage_resolve(
+        _packet,
+        0,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0) return false;
+
+    _data.visual.runtime.hit_alpha = 1;
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        _data.runtime.destroyed = true;
+
+        if (_defence.detonate_on_destroy)
+            sc_projectile_detonate(_projectile);
+
+        _data.visual.impact_script(
+            _projectile.x,
+            _projectile.y,
+            _data.direction,
+            noone,
+            _data.scale
+        );
+
+        instance_destroy(_projectile);
+    }
+
+    return _result;
+}
+
+/// @description Resolves one projectile striking an opposing interceptable projectile.
+function sc_projectile_projectile_collision(_projectile, _target)
+{
+    if (!instance_exists(_projectile) || !instance_exists(_target)) return false;
+    if (!_projectile.initialized || !_target.initialized) return false;
+
+    var _data = _projectile.projectile;
+    var _target_data = _target.projectile;
+
+    if (_data.state != ProjectileState.ACTIVE) return false;
+    if (_target_data.state != ProjectileState.ACTIVE) return false;
+    if (!is_struct(_target_data.defence)) return false;
+    if (_target_data.runtime.destroyed) return false;
+    if (_data.source.faction == _target_data.source.faction) return false;
+
+    var _impact_x = _projectile.x;
+    var _impact_y = _projectile.y;
+    var _result = sc_projectile_damage(_target, _data.damage);
+
+    if (!is_struct(_result)) return false;
+
+    _data.visual.impact_script(
+        _impact_x,
+        _impact_y,
+        _data.direction,
+        _target,
+        _data.scale
+    );
+
+    sc_projectile_detonate(_projectile);
+
+    if (instance_exists(_projectile))
+        instance_destroy(_projectile);
+
+    return true;
 }
 
 /// @description Resolves one projectile collision against a damageable entity.

@@ -24,6 +24,12 @@ function sc_projectile_register_simulant_seeker_core()
             radius: 13
         },
 
+		defence: {
+		    armour: 35,
+		    hull: 45,
+		    detonate_on_destroy: true
+		},
+
         detonation: {
             area: {
                 shape: AttackAreaShape.CIRCLE,
@@ -46,25 +52,25 @@ function sc_projectile_register_simulant_seeker_core()
                     draw_script: sc_attack_area_simulant_seeker_core_draw,
 
                     shockwave: {
-                        radius_scale: 1.45,
-                        expansion_response: 0.16,
-                        fade_speed: 0.04,
-                        thickness: 5,
-                        colour: _palette.energy,
+					    radius_scale: 1.55,
+					    expansion_response: 0.14,
+					    fade_speed: 0.028,
+					    thickness: 6,
+					    colour: _palette.energy,
 
-                        particles_enabled: true,
-                        particle_interval: 1,
-                        particle_min_radius: 8,
+					    particles_enabled: true,
+					    particle_interval: 1,
+					    particle_min_radius: 5,
 
-                        smoke_enabled: true,
-                        smoke_amount_max: 4,
-                        smoke_colour: make_colour_rgb(52, 30, 74),
+					    smoke_enabled: true,
+					    smoke_amount_max: 7,
+					    smoke_colour: make_colour_rgb(105, 65, 145),
 
-                        fragments_enabled: true,
-                        fragment_chance: 0.55,
-                        fragment_colour: _palette.energy
-                    }
-                }
+					    fragments_enabled: true,
+					    fragment_chance: 0.7,
+					    fragment_colour: _palette.energy
+					}
+		        }
             }
         },
 

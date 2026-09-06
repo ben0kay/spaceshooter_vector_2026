@@ -75,6 +75,7 @@
     {"id":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},},
     {"id":{"name":"o_entity","path":"objects/o_entity/o_entity.yy",},},
     {"id":{"name":"o_hud_level","path":"objects/o_hud_level/o_hud_level.yy",},},
+    {"id":{"name":"o_interceptable_projectile","path":"objects/o_interceptable_projectile/o_interceptable_projectile.yy",},},
     {"id":{"name":"o_main_menu","path":"objects/o_main_menu/o_main_menu.yy",},},
     {"id":{"name":"o_player","path":"objects/o_player/o_player.yy",},},
     {"id":{"name":"o_projectile","path":"objects/o_projectile/o_projectile.yy",},},
