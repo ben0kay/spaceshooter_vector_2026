@@ -58,7 +58,7 @@ function sc_enemy_register_rebel_napalm_gunship()
 
             runtime: {
                 stalker: {
-                    side: choose(-1, 1),
+                    side: choose(-1,1),
                     next_switch_tick: 0
                 }
             },
@@ -125,8 +125,13 @@ function sc_enemy_register_rebel_napalm_gunship()
         ],
 
         thrusters: [
-            { key: "engine_left", forward: -0.82, side: -0.25, angle: 180, scale: 0.78 },
-            { key: "engine_right", forward: -0.82, side: 0.25, angle: 180, scale: 0.78 }
+            {
+                key: "engine_centre",
+                forward: -0.94,
+                side: 0,
+                angle: 180,
+                scale: 0.95
+            }
         ],
 
         attack_controller: {
@@ -218,121 +223,382 @@ function sc_enemy_rebel_napalm_gunship_visual_data()
     };
 }
 
-/// @description Draws the armoured hull, thin wings and exposed napalm tank.
+/// @description Draws the bulky tank-fed Rebel Napalm Gunship hull.
 function sc_enemy_rebel_napalm_gunship_body_draw(_x,_y,_r,_a,_v)
 {
     var _p=_v.palette;
 
-    // Long central hull.
-    sc_visual_triangle(_x,_y,_r,_a,1.15,0,0.42,-0.27,-0.9,-0.25,_p.hull_dark,false);
-    sc_visual_triangle(_x,_y,_r,_a,1.15,0,-0.9,0.25,0.42,0.27,_p.hull_mid,false);
+    // ==================================================
+    // DARK ENGINEERING UNDERFRAME
+    // ==================================================
 
-    // Genuinely thin wing spars.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.5,-0.3,
+        -0.78,-0.47,
+        -1.02,-0.26,
+        0.34,-0.18,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.5,0.3,
+        0.34,0.18,
+        -1.02,0.26,
+        -0.78,0.47,
+        _p.hull_dark
+    );
+
+    // Heavy central backbone.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.9,-0.13,
+        -1,-0.15,
+        -1,0.15,
+        0.9,0.13,
+        _p.void
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.82,-0.09,
+        -0.91,-0.1,
+        -0.91,0.1,
+        0.82,0.09,
+        _p.hull_mid
+    );
+
+    // ==================================================
+    // LARGE REAR NAPALM CANISTERS
+    // ==================================================
+
     for (var _side=-1; _side<=1; _side+=2)
     {
+        var _sy=0.38*_side;
+
+        // Main tank body.
         sc_visual_quad(_x,_y,_r,_a,
-            0.2,0.2*_side,
-            -0.18,0.58*_side,
-            -0.72,0.63*_side,
-            -0.48,0.52*_side,
-            _p.hull_dark
+            -0.18,_sy-0.15,
+            -0.83,_sy-0.15,
+            -0.83,_sy+0.15,
+            -0.18,_sy+0.15,
+            _p.metal
         );
 
+        // Rounded tank ends.
+        sc_visual_circle(_x,_y,_r,_a,-0.18,_sy,0.15,_p.hull_light,false);
+        sc_visual_circle(_x,_y,_r,_a,-0.83,_sy,0.15,_p.hull_mid,false);
+
+        // Dark lower grime strip.
+        sc_visual_line(_x,_y,_r,_a,-0.2,_sy+0.09,-0.8,_sy+0.09,5,_p.hull_dark);
+
+        // Tank securing bands.
+        sc_visual_line(_x,_y,_r,_a,-0.31,_sy-0.16,-0.31,_sy+0.16,5,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.31,_sy-0.15,-0.31,_sy+0.15,2,_p.outline);
+
+        sc_visual_line(_x,_y,_r,_a,-0.51,_sy-0.16,-0.51,_sy+0.16,5,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.51,_sy-0.15,-0.51,_sy+0.15,2,_p.outline);
+
+        sc_visual_line(_x,_y,_r,_a,-0.7,_sy-0.16,-0.7,_sy+0.16,5,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.7,_sy-0.15,-0.7,_sy+0.15,2,_p.outline);
+
+        // Rough hazard stripe plate.
         sc_visual_quad(_x,_y,_r,_a,
-            0.15,0.22*_side,
-            -0.2,0.52*_side,
-            -0.65,0.57*_side,
-            -0.46,0.49*_side,
+            -0.38,_sy-0.11,
+            -0.61,_sy-0.11,
+            -0.61,_sy-0.04,
+            -0.38,_sy-0.04,
+            _p.accent
+        );
+
+        sc_visual_line(_x,_y,_r,_a,-0.39,_sy-0.1,-0.45,_sy-0.04,2,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.47,_sy-0.1,-0.53,_sy-0.04,2,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.55,_sy-0.1,-0.61,_sy-0.04,2,_p.void);
+
+        // Heavy pipe from tank toward central manifold.
+        sc_visual_line(_x,_y,_r,_a,-0.69,_sy-0.17,-0.48,0.17*_side,8,_p.void);
+        sc_visual_line(_x,_y,_r,_a,-0.69,_sy-0.17,-0.48,0.17*_side,4,_p.metal);
+
+        sc_visual_circle(_x,_y,_r,_a,-0.49,0.17*_side,0.055,_p.hull_dark,false);
+        sc_visual_circle(_x,_y,_r,_a,-0.49,0.17*_side,0.035,_p.energy,false);
+    }
+
+    // ==================================================
+    // CENTRAL PRESSURE MANIFOLD / PIPE
+    // ==================================================
+
+    // Thick black backing makes the pipe obvious.
+    sc_visual_line(_x,_y,_r,_a,-0.88,0,0.5,0,15,_p.void);
+
+    // Main rusty metal pipe.
+    sc_visual_line(_x,_y,_r,_a,-0.86,0,0.5,0,10,_p.metal);
+
+    // Inner heated/feed pipe.
+    sc_visual_line(_x,_y,_r,_a,-0.82,0,0.48,0,4,_p.energy);
+
+    // Pipe coupling rings.
+    for (var _i=0; _i<5; ++_i)
+    {
+        var _f=-0.68+_i*0.25;
+
+        sc_visual_line(_x,_y,_r,_a,_f,-0.1,_f,0.1,5,_p.void);
+        sc_visual_line(_x,_y,_r,_a,_f,-0.08,_f,0.08,2,_p.outline);
+    }
+
+    // Large rear manifold.
+    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.18,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.14,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.14,_p.metal,true);
+
+    // ==================================================
+    // CENTRAL SINGLE ENGINE BLOCK
+    // ==================================================
+
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.7,-0.2,
+        -1.05,-0.19,
+        -1.09,0.19,
+        -0.7,0.2,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.74,-0.14,
+        -1,-0.13,
+        -1,0.13,
+        -0.74,0.14,
+        _p.hull_mid
+    );
+
+    sc_visual_line(_x,_y,_r,_a,-0.78,-0.15,-0.78,0.15,3,_p.outline);
+    sc_visual_line(_x,_y,_r,_a,-0.94,-0.13,-0.94,0.13,3,_p.metal);
+
+    // ==================================================
+    // WIDE SCRAP ARMOUR SHOULDERS
+    // ==================================================
+
+    for (var _side=-1; _side<=1; _side+=2)
+    {
+        // Main shoulder.
+        sc_visual_quad(_x,_y,_r,_a,
+            0.36,0.18*_side,
+            0.02,0.4*_side,
+            -0.46,0.52*_side,
+            -0.38,0.27*_side,
             _side<0?_p.hull_light:_p.hull_mid
         );
 
-        sc_visual_line(_x,_y,_r,_a,0.15,0.22*_side,-0.2,0.52*_side,2,_p.outline);
-        sc_visual_line(_x,_y,_r,_a,-0.2,0.52*_side,-0.65,0.57*_side,2,_p.energy);
+        // Rear scrap plate.
+        sc_visual_quad(_x,_y,_r,_a,
+            -0.08,0.4*_side,
+            -0.32,0.59*_side,
+            -0.62,0.58*_side,
+            -0.46,0.48*_side,
+            _p.hull_dark
+        );
+
+        // Small mismatched patch.
+        sc_visual_quad(_x,_y,_r,_a,
+            0.11,0.28*_side,
+            -0.08,0.41*_side,
+            -0.26,0.39*_side,
+            -0.1,0.29*_side,
+            _p.metal
+        );
+
+        // Exposed brace.
+        sc_visual_line(_x,_y,_r,_a,0.21,0.22*_side,-0.34,0.47*_side,5,_p.void);
+        sc_visual_line(_x,_y,_r,_a,0.21,0.22*_side,-0.34,0.47*_side,2,_p.outline);
+
+        // Hazard mark on one battered shoulder.
+        if (_side>0)
+        {
+            sc_visual_line(_x,_y,_r,_a,-0.15,0.42,-0.23,0.51,4,_p.accent);
+            sc_visual_line(_x,_y,_r,_a,-0.23,0.42,-0.31,0.51,4,_p.accent);
+        }
     }
 
-    // Raised forward armour.
-    sc_visual_triangle(_x,_y,_r,_a,1.12,0,0.5,-0.19,-0.1,-0.18,_p.hull_light,false);
-    sc_visual_triangle(_x,_y,_r,_a,1.12,0,-0.1,0.18,0.5,0.19,_p.metal,false);
+    // ==================================================
+    // BROAD WEDGE FORWARD HULL
+    // ==================================================
 
-    // Large exposed cylindrical napalm canister.
-    sc_visual_quad(_x,_y,_r,_a,-0.03,-0.19,-0.76,-0.19,-0.76,0.19,-0.03,0.19,_p.accent);
-    sc_visual_circle(_x,_y,_r,_a,-0.05,0,0.19,_p.energy,false);
-    sc_visual_circle(_x,_y,_r,_a,-0.74,0,0.19,_p.glow,false);
+    sc_visual_triangle(_x,_y,_r,_a,
+        1.12,0,
+        0.02,-0.39,
+        0.02,0.39,
+        _p.hull_dark,
+        false
+    );
 
-    // Canister securing straps.
-    for (var _i=0; _i<3; ++_i)
+    // Patchwork left half.
+    sc_visual_triangle(_x,_y,_r,_a,
+        1.08,0,
+        0.08,-0.34,
+        0.63,-0.19,
+        _p.hull_light,
+        false
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.63,-0.19,
+        0.08,-0.34,
+        -0.04,-0.19,
+        0.46,-0.1,
+        _p.metal
+    );
+
+    // Patchwork right half.
+    sc_visual_triangle(_x,_y,_r,_a,
+        1.08,0,
+        0.63,0.19,
+        0.08,0.34,
+        _p.hull_mid,
+        false
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.63,0.19,
+        0.46,0.1,
+        -0.04,0.19,
+        0.08,0.34,
+        _p.metal
+    );
+
+    // Angular side armour rails.
+    for (var _side=-1; _side<=1; _side+=2)
     {
-        var _forward=-0.17-_i*0.23;
-        sc_visual_line(_x,_y,_r,_a,_forward,-0.21,_forward,0.21,4,_p.void);
-        sc_visual_line(_x,_y,_r,_a,_forward,-0.2,_forward,0.2,2,_p.metal);
+        sc_visual_line(_x,_y,_r,_a,1.05,0.05*_side,0.08,0.32*_side,4,_p.void);
+        sc_visual_line(_x,_y,_r,_a,1.03,0.05*_side,0.1,0.31*_side,2,_p.outline);
     }
 
-    // Hazard bands.
-    for (var _i=0; _i<4; ++_i)
-    {
-        var _forward=-0.12-_i*0.13;
-        sc_visual_line(_x,_y,_r,_a,_forward,-0.16,_forward-0.1,0.16,3,_p.void);
-    }
+    // ==================================================
+    // DARK COCKPIT WINDOWS
+    // ==================================================
 
-    // Pipes leading toward the projector.
-    sc_visual_line(_x,_y,_r,_a,-0.62,-0.23,0.38,-0.23,6,_p.void);
-    sc_visual_line(_x,_y,_r,_a,-0.62,-0.23,0.38,-0.23,2,_p.metal);
-    sc_visual_line(_x,_y,_r,_a,-0.58,0.23,0.3,0.23,5,_p.void);
-    sc_visual_line(_x,_y,_r,_a,-0.58,0.23,0.3,0.23,2,_p.energy);
+    sc_visual_quad(_x,_y,_r,_a,
+        0.67,-0.18,
+        0.4,-0.24,
+        0.29,-0.15,
+        0.61,-0.09,
+        _p.void
+    );
 
-    // Rear engine blocks.
-    sc_visual_quad(_x,_y,_r,_a,-0.62,-0.35,-1.02,-0.31,-1.02,-0.12,-0.62,-0.16,_p.hull_dark);
-    sc_visual_quad(_x,_y,_r,_a,-0.62,0.16,-1.02,0.12,-1.02,0.31,-0.62,0.35,_p.hull_dark);
+    sc_visual_quad(_x,_y,_r,_a,
+        0.67,0.18,
+        0.61,0.09,
+        0.29,0.15,
+        0.4,0.24,
+        _p.void
+    );
 
-    // Cockpit and targeting slit.
-    sc_visual_quad(_x,_y,_r,_a,0.58,-0.13,0.9,-0.06,1.02,0,0.58,0,_p.void);
-    sc_visual_quad(_x,_y,_r,_a,0.58,0,1.02,0,0.9,0.06,0.58,0.13,_p.void);
-    sc_visual_line(_x,_y,_r,_a,0.64,0,0.96,0,3,_p.energy);
+    sc_visual_line(_x,_y,_r,_a,0.62,-0.13,0.37,-0.18,2,_p.energy);
+    sc_visual_line(_x,_y,_r,_a,0.62,0.13,0.37,0.18,2,_p.energy);
 
-    // Central projector mounting plate.
-    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.2,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.16,_p.metal,true);
+    // ==================================================
+    // FRONT PIPE / PROJECTOR FEED
+    // ==================================================
+
+    sc_visual_line(_x,_y,_r,_a,0.1,0,0.67,0,12,_p.void);
+    sc_visual_line(_x,_y,_r,_a,0.12,0,0.67,0,7,_p.metal);
+    sc_visual_line(_x,_y,_r,_a,0.14,0,0.65,0,3,_p.energy);
+
+    // Projector mounting plate.
+    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.22,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.metal,true);
+
+    // Mount braces.
+    sc_visual_line(_x,_y,_r,_a,0.27,-0.17,0.5,-0.17,3,_p.outline);
+    sc_visual_line(_x,_y,_r,_a,0.27,0.17,0.5,0.17,3,_p.outline);
 }
 
-/// @description Draws the limited-arc Rebel Napalm Projector.
+/// @description Draws the long limited-arc Rebel Napalm Projector.
 function sc_enemy_rebel_napalm_projector_draw(_x,_y,_r,_a,_v,_alpha)
 {
     var _p=_v.palette;
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.2,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.17,_p.hull_mid,false);
-    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.17,_p.metal,true);
+    // Heavy improvised swivel base.
+    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.21,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.175,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.1,0,0.175,_p.metal,true);
 
-    sc_visual_quad(_x,_y,_r,_a,-0.05,-0.14,0.34,-0.12,0.46,-0.08,0.46,0.08,_p.hull_dark);
-    sc_visual_quad(_x,_y,_r,_a,-0.05,-0.14,0.46,0.08,-0.05,0.14,-0.2,0,_p.hull_mid);
+    // Crude welded projector housing.
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.08,-0.15,
+        0.31,-0.13,
+        0.42,-0.09,
+        0.42,0.09,
+        _p.hull_dark
+    );
 
-    sc_visual_line(_x,_y,_r,_a,0.08,0,0.55,0,9,_p.void);
-    sc_visual_line(_x,_y,_r,_a,0.12,0,0.54,0,5,_p.metal);
-    sc_visual_circle(_x,_y,_r,_a,0.54,0,0.1,_p.energy,false);
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.08,-0.15,
+        0.42,0.09,
+        -0.08,0.15,
+        -0.2,0,
+        _p.hull_mid
+    );
+
+    // Long feed/barrel assembly.
+    sc_visual_line(_x,_y,_r,_a,0.03,0,0.58,0,13,_p.void);
+    sc_visual_line(_x,_y,_r,_a,0.07,0,0.57,0,8,_p.metal);
+    sc_visual_line(_x,_y,_r,_a,0.12,0,0.55,0,3,_p.energy);
+
+    // Barrel braces.
+    sc_visual_line(_x,_y,_r,_a,0.16,-0.1,0.16,0.1,3,_p.outline);
+    sc_visual_line(_x,_y,_r,_a,0.32,-0.09,0.32,0.09,3,_p.outline);
+
+    // Wide ugly flamethrower nozzle.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.48,-0.12,
+        0.62,-0.09,
+        0.62,0.09,
+        0.48,0.12,
+        _p.hull_dark
+    );
+
+    sc_visual_circle(_x,_y,_r,_a,0.61,0,0.1,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,0.61,0,0.1,_p.metal,true);
+    sc_visual_circle(_x,_y,_r,_a,0.585,0,0.052,_p.energy,false);
 
     draw_set_alpha(1);
 }
 
-/// @description Draws the Napalm Gunship's pressure valve core.
+/// @description Draws the Napalm Gunship's pressure manifold core.
 function sc_enemy_rebel_napalm_gunship_core_draw(_x,_y,_r,_a,_v,_alpha)
 {
     var _p=_v.palette;
 
-    draw_set_alpha(_alpha*0.25);
+    draw_set_alpha(_alpha*0.22);
     draw_set_colour(_p.glow);
-    draw_circle(_x,_y,_r*0.32,false);
+    draw_circle(_x,_y,_r*0.31,false);
 
     draw_set_alpha(_alpha);
     draw_set_colour(_p.void);
-    draw_circle(_x,_y,_r*0.23,false);
+    draw_circle(_x,_y,_r*0.22,false);
+
+    draw_set_colour(_p.hull_mid);
+    draw_circle(_x,_y,_r*0.18,false);
 
     draw_set_colour(_p.metal);
-    draw_circle(_x,_y,_r*0.23,true);
+    draw_circle(_x,_y,_r*0.22,true);
+
+    // Pressure-valve spokes.
+    for (var _i=0; _i<4; ++_i)
+    {
+        var _sa=_a+_i*90;
+
+        draw_line(
+            _x+lengthdir_x(_r*0.06,_sa),
+            _y+lengthdir_y(_r*0.06,_sa),
+            _x+lengthdir_x(_r*0.17,_sa),
+            _y+lengthdir_y(_r*0.17,_sa)
+        );
+    }
+
     draw_set_colour(_p.energy);
-    draw_circle(_x,_y,_r*0.1,false);
+    draw_circle(_x,_y,_r*0.09,false);
+
     draw_set_colour(_p.core);
-    draw_circle(_x,_y,_r*0.04,false);
+    draw_circle(_x,_y,_r*0.035,false);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
@@ -350,11 +616,55 @@ function sc_enemy_rebel_napalm_gunship_death(_enemy)
     var _r=_visual.radius;
     var _fragments=[];
 
-    array_push(_fragments,sc_death_fragment_data(_cache.fragments[0],_x+lengthdir_x(_r*0.48,_a),_y+lengthdir_y(_r*0.48,_a),_a+random_range(-10,10),random_range(2.5,4),_a,choose(-7,7),1));
-    array_push(_fragments,sc_death_fragment_data(_cache.fragments[1],_x+lengthdir_x(-_r*0.18,_a)+lengthdir_x(-_r*0.5,_a+90),_y+lengthdir_y(-_r*0.18,_a)+lengthdir_y(-_r*0.5,_a+90),_a-50,random_range(3,4.5),_a,-9,1));
-    array_push(_fragments,sc_death_fragment_data(_cache.fragments[2],_x+lengthdir_x(-_r*0.18,_a)+lengthdir_x(_r*0.5,_a+90),_y+lengthdir_y(-_r*0.18,_a)+lengthdir_y(_r*0.5,_a+90),_a+50,random_range(3,4.5),_a,9,1));
-    array_push(_fragments,sc_death_fragment_data(_cache.core,_x+lengthdir_x(-_r*0.38,_a),_y+lengthdir_y(-_r*0.38,_a),random(360),random_range(2,3),_a,choose(-11,11),0.9));
+    // Forward hull.
+    array_push(_fragments,sc_death_fragment_data(
+        _cache.fragments[0],
+        _x+lengthdir_x(_r*0.48,_a),
+        _y+lengthdir_y(_r*0.48,_a),
+        _a+random_range(-10,10),
+        random_range(2.5,4),
+        _a,
+        choose(-7,7),
+        1
+    ));
 
+    // Left tank / shoulder.
+    array_push(_fragments,sc_death_fragment_data(
+        _cache.fragments[1],
+        _x+lengthdir_x(-_r*0.38,_a)+lengthdir_x(-_r*0.38,_a+90),
+        _y+lengthdir_y(-_r*0.38,_a)+lengthdir_y(-_r*0.38,_a+90),
+        _a-35,
+        random_range(3,4.5),
+        _a,
+        -9,
+        1
+    ));
+
+    // Right tank / shoulder.
+    array_push(_fragments,sc_death_fragment_data(
+        _cache.fragments[2],
+        _x+lengthdir_x(-_r*0.38,_a)+lengthdir_x(_r*0.38,_a+90),
+        _y+lengthdir_y(-_r*0.38,_a)+lengthdir_y(_r*0.38,_a+90),
+        _a+35,
+        random_range(3,4.5),
+        _a,
+        9,
+        1
+    ));
+
+    // Pressure core.
+    array_push(_fragments,sc_death_fragment_data(
+        _cache.core,
+        _x+lengthdir_x(-_r*0.38,_a),
+        _y+lengthdir_y(-_r*0.38,_a),
+        random(360),
+        random_range(2,3),
+        _a,
+        choose(-11,11),
+        0.9
+    ));
+
+    // Hardpoint.
     for (var _i=0; _i<array_length(_data.hardpoints); ++_i)
     {
         var _hardpoint=_data.hardpoints[_i];
@@ -362,28 +672,104 @@ function sc_enemy_rebel_napalm_gunship_death(_enemy)
         var _hy=_y+lengthdir_y(_hardpoint.forward*_r,_a)+lengthdir_y(_hardpoint.side*_r,_a+90);
 
         array_push(_fragments,sc_death_fragment_data(
-            _cache.hardpoints[_i],_hx,_hy,random(360),
-            random_range(3,5),_a,random_range(-12,12),0.9
+            _cache.hardpoints[_i],
+            _hx,
+            _hy,
+            random(360),
+            random_range(3,5),
+            _a,
+            random_range(-12,12),
+            0.9
         ));
     }
 
-    sc_death_fragment_create(_x,_y,_fragments,_visual.palette.core,_visual.palette.glow,_r,44);
+    sc_death_fragment_create(
+        _x,
+        _y,
+        _fragments,
+        _visual.palette.core,
+        _visual.palette.glow,
+        _r,
+        44
+    );
+
     return true;
 }
 
+/// @description Draws the broken forward wedge of the Napalm Gunship.
 function sc_enemy_rebel_napalm_fragment_front_draw(_x,_y,_r,_a,_v)
 {
-    sc_visual_triangle(_x,_y,_r,_a,1.14,0,0.05,-0.25,0.05,0.25,_v.palette.hull_light,false);
-    sc_visual_line(_x,_y,_r,_a,1.14,0,0.05,-0.25,2,_v.palette.outline);
-    sc_visual_line(_x,_y,_r,_a,1.14,0,0.05,0.25,2,_v.palette.outline);
+    var _p=_v.palette;
+
+    sc_visual_triangle(_x,_y,_r,_a,1.1,0,0.05,-0.38,0.05,0.38,_p.hull_dark,false);
+    sc_visual_triangle(_x,_y,_r,_a,1.03,0,0.1,-0.31,0.55,-0.16,_p.hull_light,false);
+    sc_visual_triangle(_x,_y,_r,_a,1.03,0,0.55,0.16,0.1,0.31,_p.hull_mid,false);
+
+    sc_visual_line(_x,_y,_r,_a,0.15,0,0.85,0,7,_p.void);
+    sc_visual_line(_x,_y,_r,_a,0.18,0,0.83,0,3,_p.energy);
+
+    sc_visual_line(_x,_y,_r,_a,1.1,0,0.05,-0.38,2,_p.outline);
+    sc_visual_line(_x,_y,_r,_a,1.1,0,0.05,0.38,2,_p.outline);
 }
 
+/// @description Draws the broken left rear tank and shoulder.
 function sc_enemy_rebel_napalm_fragment_left_draw(_x,_y,_r,_a,_v)
 {
-    sc_visual_quad(_x,_y,_r,_a,0.2,-0.2,-0.18,-0.58,-0.72,-0.63,-0.48,-0.52,_v.palette.hull_mid);
+    var _p=_v.palette;
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.05,-0.25,
+        -0.12,-0.53,
+        -0.75,-0.54,
+        -0.68,-0.26,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.18,-0.31,
+        -0.78,-0.31,
+        -0.78,-0.57,
+        -0.18,-0.57,
+        _p.metal
+    );
+
+    sc_visual_circle(_x,_y,_r,_a,-0.2,-0.44,0.13,_p.hull_light,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.76,-0.44,0.13,_p.hull_mid,false);
+
+    sc_visual_line(_x,_y,_r,_a,-0.35,-0.58,-0.35,-0.3,4,_p.void);
+    sc_visual_line(_x,_y,_r,_a,-0.55,-0.58,-0.55,-0.3,2,_p.outline);
+
+    sc_visual_line(_x,_y,_r,_a,-0.57,-0.28,-0.35,-0.08,6,_p.void);
+    sc_visual_line(_x,_y,_r,_a,-0.57,-0.28,-0.35,-0.08,2,_p.metal);
 }
 
+/// @description Draws the broken right rear tank and shoulder.
 function sc_enemy_rebel_napalm_fragment_right_draw(_x,_y,_r,_a,_v)
 {
-    sc_visual_quad(_x,_y,_r,_a,0.2,0.2,-0.48,0.52,-0.72,0.63,-0.18,0.58,_v.palette.metal);
+    var _p=_v.palette;
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.05,0.25,
+        -0.68,0.26,
+        -0.75,0.54,
+        -0.12,0.53,
+        _p.hull_mid
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        -0.18,0.31,
+        -0.18,0.57,
+        -0.78,0.57,
+        -0.78,0.31,
+        _p.metal
+    );
+
+    sc_visual_circle(_x,_y,_r,_a,-0.2,0.44,0.13,_p.hull_light,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.76,0.44,0.13,_p.hull_dark,false);
+
+    sc_visual_line(_x,_y,_r,_a,-0.35,0.58,-0.35,0.3,4,_p.void);
+    sc_visual_line(_x,_y,_r,_a,-0.55,0.58,-0.55,0.3,2,_p.outline);
+
+    sc_visual_line(_x,_y,_r,_a,-0.57,0.28,-0.35,0.08,6,_p.void);
+    sc_visual_line(_x,_y,_r,_a,-0.57,0.28,-0.35,0.08,2,_p.energy);
 }
