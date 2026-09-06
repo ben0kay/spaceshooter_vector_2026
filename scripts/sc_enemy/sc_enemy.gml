@@ -101,7 +101,10 @@ function sc_enemy_init(_enemy, _enemy_key)
         visual: variable_clone(_data.visual),
         hardpoints: variable_clone(_data.hardpoints),
         thrusters: variable_clone(_data.thrusters),
-        attack_controller: variable_clone(_data.attack_controller)
+        attack_controller: variable_clone(_data.attack_controller),
+		utility_controller: variable_struct_exists(_data, "utility_controller")
+		    ? variable_clone(_data.utility_controller)
+		    : undefined
     };
 
     if (!sc_enemy_stats_init(_enemy, _data.stats_base)) return false;
@@ -158,8 +161,12 @@ function sc_enemy_init(_enemy, _enemy_key)
     for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
         _runtime.thrusters[_i].runtime = { active: false, power: 0, phase: irandom(359) };
 
-if (!sc_enemy_attack_controller_init(_enemy))
-        return false;
+	if (!sc_enemy_attack_controller_init(_enemy))
+	    return false;
+
+	if (is_struct(_runtime.utility_controller)
+	&& !sc_enemy_utility_controller_init(_enemy))
+	    return false;
 
     _enemy.initialized = true;
     global.level.enemies_alive++;
@@ -643,6 +650,9 @@ function sc_enemy_draw(_enemy)
         else
             _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
     }
+	
+	if (is_struct(_data.utility_controller))
+    sc_enemy_utility_draw(_enemy, _draw_x, _draw_y);
 
     sc_enemy_attack_telegraph_draw(_enemy, _draw_x, _draw_y);
 

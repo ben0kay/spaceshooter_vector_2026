@@ -45,6 +45,9 @@ var _hardpoint_due = _optimization.render_active
 if (_hardpoint_due)
     sc_enemy_hardpoint_update(id);
 
+if (is_struct(enemy.utility_controller))
+    sc_enemy_utility_update(id);
+
 var _state_before_movement = enemy.state;
 
 if (sc_enemy_movement_update(id))

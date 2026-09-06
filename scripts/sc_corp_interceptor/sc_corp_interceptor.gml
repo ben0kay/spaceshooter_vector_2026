@@ -110,7 +110,7 @@ function sc_enemy_register_corporation_interceptor()
 
         collision: {
             radius_forward_scale: 1.05,
-            radius_side_scale: 0.8,
+            radius_side_scale: 1,
             blocks_player: true
         },
 
@@ -219,82 +219,161 @@ function sc_enemy_corporation_interceptor_visual_data()
     };
 }
 
-/// @description Draws the clean swept Corporation Interceptor body.
+/// @description Draws the long narrow scissor-wing Corporation Interceptor.
 function sc_enemy_corporation_interceptor_body_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
 
-    // Dark manufactured underframe.
-    sc_visual_triangle(_x,_y,_radius,_angle, 1.14,0, -0.77,-0.68, -0.94,0,_p.hull_dark,false);
-    sc_visual_triangle(_x,_y,_radius,_angle, 1.14,0, -0.94,0, -0.77,0.68,_p.hull_dark,false);
+    // Long narrow manufactured underframe.
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.46,0, 0.34,-0.18, -0.94,-0.2,_p.hull_dark,false);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.46,0, -0.94,0.2, 0.34,0.18,_p.hull_dark,false);
 
-    // Swept interceptor wings.
+    // Thin swept scissor wings.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_quad(
-            _x,_y,_radius,_angle,
-            0.5,0.18*_side,
-            0.04,0.76*_side,
-            -0.78,0.66*_side,
-            -0.46,0.2*_side,
-            _p.hull_mid
-        );
-
-        sc_visual_quad(
-            _x,_y,_radius,_angle,
-            0.34,0.23*_side,
-            -0.02,0.61*_side,
-            -0.6,0.53*_side,
-            -0.35,0.25*_side,
-            _p.hull_light
-        );
-
-        // Recessed blue wing conduit.
-        sc_visual_line(_x,_y,_radius,_angle, 0.25,0.31*_side, -0.5,0.48*_side, 6,_p.void);
-        sc_visual_line(_x,_y,_radius,_angle, 0.24,0.31*_side, -0.49,0.48*_side, 2,_p.energy);
-
-        // Bright manufactured leading edge.
-        sc_visual_line(_x,_y,_radius,_angle, 0.5,0.18*_side, 0.04,0.76*_side, 2,_p.metal);
-        sc_visual_line(_x,_y,_radius,_angle, 0.04,0.76*_side, -0.78,0.66*_side, 2,_p.outline);
-    }
-
-    // Central silver fuselage.
-    sc_visual_quad(_x,_y,_radius,_angle, 1.14,0, 0.48,-0.25, -0.72,-0.2, -0.94,0,_p.hull_light);
-    sc_visual_quad(_x,_y,_radius,_angle, 1.14,0, -0.94,0, -0.72,0.2, 0.48,0.25,_p.metal);
-
-    // Raised nose armour.
-    sc_visual_triangle(_x,_y,_radius,_angle, 1.02,0, 0.31,-0.16, 0.31,0.16,_p.hull_light,false);
-    sc_visual_line(_x,_y,_radius,_angle, 1.08,0, 0.32,-0.16, 2,_p.metal);
-    sc_visual_line(_x,_y,_radius,_angle, 1.08,0, 0.32,0.16, 2,_p.outline);
-
-    // Blue cockpit and targeting strip.
-    sc_visual_quad(_x,_y,_radius,_angle, 0.62,-0.1, 0.83,0, 0.62,0.1, 0.17,0.12,_p.void);
-    sc_visual_quad(_x,_y,_radius,_angle, 0.62,-0.06, 0.75,0, 0.62,0.06, 0.28,0.07,_p.energy);
-    sc_visual_line(_x,_y,_radius,_angle, 0.88,0, 1.04,0, 2,_p.core);
-
-    // Central armour spine.
-    sc_visual_line(_x,_y,_radius,_angle, 0.1,0, -0.67,0, 7,_p.hull_mid);
-    sc_visual_line(_x,_y,_radius,_angle, 0.08,0, -0.65,0, 2,_p.outline);
-
-    // Twin engine housings.
-    for (var _side = -1; _side <= 1; _side += 2)
-    {
-        sc_visual_quad(
-            _x,_y,_radius,_angle,
-            -0.38,0.19*_side,
-            -0.77,0.2*_side,
-            -0.91,0.39*_side,
-            -0.42,0.39*_side,
+        // Long narrow dark wing silhouette.
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.18,0.17*_side,
+            -0.25,0.7*_side,
+            -0.55,0.65*_side,
+            -0.38,0.26*_side,
             _p.hull_dark
         );
 
-        sc_visual_line(_x,_y,_radius,_angle, -0.47,0.3*_side, -0.87,0.3*_side, 5,_p.energy);
-        sc_visual_line(_x,_y,_radius,_angle, -0.45,0.39*_side, -0.91,0.39*_side, 2,_p.metal);
+        // Silver upper blade.
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.12,0.19*_side,
+            -0.26,0.62*_side,
+            -0.48,0.58*_side,
+            -0.33,0.28*_side,
+            _p.hull_light
+        );
+
+        // Bright leading-edge strip.
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.1,0.2*_side,
+            -0.25,0.59*_side,
+            -0.37,0.57*_side,
+            -0.24,0.3*_side,
+            _p.metal
+        );
+
+        // Dark inner wing recess.
+        sc_visual_triangle(_x,_y,_radius,_angle,
+            -0.02,0.23*_side,
+            -0.25,0.52*_side,
+            -0.35,0.31*_side,
+            _p.hull_mid,false
+        );
+
+        // Small rear inner scissor blade.
+        sc_visual_triangle(_x,_y,_radius,_angle,
+            -0.31,0.23*_side,
+            -0.57,0.42*_side,
+            -0.7,0.27*_side,
+            _p.hull_dark,false
+        );
+
+        sc_visual_triangle(_x,_y,_radius,_angle,
+            -0.36,0.26*_side,
+            -0.55,0.37*_side,
+            -0.62,0.28*_side,
+            _p.hull_mid,false
+        );
+
+        // Thin blue powered trench.
+        sc_visual_line(_x,_y,_radius,_angle, -0.02,0.25*_side, -0.3,0.5*_side, 5,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle, -0.02,0.25*_side, -0.3,0.5*_side, 2,_p.energy);
+
+        // Small blue tip marking.
+        sc_visual_line(_x,_y,_radius,_angle, -0.29,0.56*_side, -0.4,0.57*_side, 2,_p.accent);
+
+        // Sharp neutral outer edge.
+        sc_visual_line(_x,_y,_radius,_angle, 0.18,0.17*_side, -0.25,0.7*_side, 2,_p.metal);
+        sc_visual_line(_x,_y,_radius,_angle, -0.25,0.7*_side, -0.55,0.65*_side, 1,_p.outline);
     }
 
-    // Precise outer silhouette.
-    sc_visual_line(_x,_y,_radius,_angle, 1.14,0, 0.5,-0.18, 2,_p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 1.14,0, 0.5,0.18, 2,_p.outline);
+    // Slim central silver fuselage.
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.46,0, 0.4,-0.145, -0.79,-0.14,_p.hull_light,false);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.46,0, -0.79,0.14, 0.4,0.145,_p.metal,false);
+
+    // Narrow dark centre spine.
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.45,-0.075,
+        -0.82,-0.09,
+        -0.82,0.09,
+        0.45,0.075,
+        _p.hull_mid
+    );
+
+    // Raised nose armour.
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.43,0, 0.7,-0.085, 0.7,0.085,_p.metal,false);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.3,0, 0.74,-0.05, 0.86,0,_p.hull_light,false);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.3,0, 0.86,0, 0.74,0.05,_p.hull_light,false);
+
+    // Long narrow blue cockpit.
+    sc_visual_quad(_x,_y,_radius,_angle, 0.78,-0.09, 1.05,-0.045, 1.13,0, 0.78,0,_p.void);
+    sc_visual_quad(_x,_y,_radius,_angle, 0.78,0, 1.13,0, 1.05,0.045, 0.78,0.09,_p.void);
+
+    sc_visual_quad(_x,_y,_radius,_angle, 0.8,-0.055, 1.01,-0.025, 1.07,0, 0.8,0,_p.energy);
+    sc_visual_quad(_x,_y,_radius,_angle, 0.8,0, 1.07,0, 1.01,0.025, 0.8,0.055,_p.accent);
+
+    // Cockpit divider.
+    sc_visual_line(_x,_y,_radius,_angle, 0.81,-0.065, 0.81,0.065, 2,_p.core);
+
+    // Forward targeting strip.
+    sc_visual_line(_x,_y,_radius,_angle, 1.13,0, 1.38,0, 4,_p.void);
+    sc_visual_line(_x,_y,_radius,_angle, 1.15,0, 1.37,0, 2,_p.energy);
+
+    // Existing rotating plasma turret mounting plate.
+    sc_visual_circle(_x,_y,_radius,_angle, 0.18,0,0.19,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle, 0.18,0,0.165,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_radius,_angle, 0.18,0,0.145,_p.metal,true);
+
+    // Rear reactor housing.
+    sc_visual_circle(_x,_y,_radius,_angle, -0.42,0,0.24,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle, -0.42,0,0.21,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_radius,_angle, -0.42,0,0.19,_p.metal,true);
+
+    // Twin compact rear engine nacelles.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_quad(_x,_y,_radius,_angle,
+            -0.45,0.14*_side,
+            -0.78,0.16*_side,
+            -0.98,0.3*_side,
+            -0.52,0.3*_side,
+            _p.hull_dark
+        );
+
+        sc_visual_quad(_x,_y,_radius,_angle,
+            -0.5,0.17*_side,
+            -0.79,0.18*_side,
+            -0.9,0.27*_side,
+            -0.55,0.27*_side,
+            _p.hull_light
+        );
+
+        sc_visual_line(_x,_y,_radius,_angle, -0.65,0.23*_side, -0.96,0.23*_side, 8,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle, -0.67,0.23*_side, -0.95,0.23*_side, 4,_p.energy);
+        sc_visual_circle(_x,_y,_radius,_angle, -0.96,0.23*_side,0.045,_p.core,false);
+    }
+
+    // Slim rear spine between engines.
+    sc_visual_triangle(_x,_y,_radius,_angle, -0.52,-0.075, -1,0, -0.52,0.075,_p.hull_dark,false);
+    sc_visual_line(_x,_y,_radius,_angle, -0.52,0, -0.91,0, 2,_p.accent);
+
+    // Small structural details.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_line(_x,_y,_radius,_angle, 0.5,0.12*_side, 0.25,0.14*_side, 1,_p.outline);
+        sc_visual_line(_x,_y,_radius,_angle, 0.02,0.13*_side, -0.24,0.14*_side, 1,_p.outline);
+        sc_visual_line(_x,_y,_radius,_angle, -0.49,0.12*_side, -0.71,0.12*_side, 2,_p.energy);
+    }
+
+    // Clean long outer nose edges.
+    sc_visual_line(_x,_y,_radius,_angle, 1.46,0, 0.4,-0.145, 2,_p.outline);
+    sc_visual_line(_x,_y,_radius,_angle, 1.46,0, 0.4,0.145, 2,_p.outline);
 }
 
 /// @description Draws the Interceptor's rotating single-shot plasma turret.
@@ -446,33 +525,70 @@ function sc_enemy_corporation_interceptor_death(_enemy)
     return true;
 }
 
-/// @description Draws the broken Interceptor nose fragment.
+/// @description Draws the broken long Interceptor nose fragment.
 function sc_enemy_corporation_interceptor_fragment_front_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
 
-    sc_visual_triangle(_x,_y,_radius,_angle, 1.08,0, 0.08,-0.27, 0.08,0.27,_p.hull_light,false);
-    sc_visual_line(_x,_y,_radius,_angle, 1.08,0, 0.08,-0.27, 2,_p.metal);
-    sc_visual_line(_x,_y,_radius,_angle, 1.08,0, 0.08,0.27, 2,_p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 0.84,0, 0.25,0, 2,_p.energy);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.4,0, 0.15,-0.16, 0.15,0.16,_p.hull_light,false);
+    sc_visual_triangle(_x,_y,_radius,_angle, 1.34,0, 0.55,-0.075, 0.55,0.075,_p.metal,false);
+
+    sc_visual_quad(_x,_y,_radius,_angle, 0.78,-0.08, 1.03,-0.04, 1.1,0, 0.78,0,_p.void);
+    sc_visual_quad(_x,_y,_radius,_angle, 0.78,0, 1.1,0, 1.03,0.04, 0.78,0.08,_p.energy);
+
+    sc_visual_line(_x,_y,_radius,_angle, 1.4,0, 0.15,-0.16, 2,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle, 1.4,0, 0.15,0.16, 2,_p.outline);
+    sc_visual_line(_x,_y,_radius,_angle, 1.13,0, 1.34,0, 2,_p.core);
 }
 
-/// @description Draws the broken Interceptor left wing fragment.
+/// @description Draws the broken thin left scissor-wing fragment.
 function sc_enemy_corporation_interceptor_fragment_left_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
 
-    sc_visual_triangle(_x,_y,_radius,_angle, 0.45,-0.18, 0,-0.76, -0.78,-0.66,_p.hull_mid,false);
-    sc_visual_line(_x,_y,_radius,_angle, 0.45,-0.18, 0,-0.76, 2,_p.metal);
-    sc_visual_line(_x,_y,_radius,_angle, 0.2,-0.32, -0.52,-0.54, 2,_p.energy);
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.16,-0.17,
+        -0.24,-0.7,
+        -0.54,-0.64,
+        -0.37,-0.26,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.1,-0.2,
+        -0.25,-0.61,
+        -0.47,-0.57,
+        -0.32,-0.29,
+        _p.hull_light
+    );
+
+    sc_visual_line(_x,_y,_radius,_angle, 0.16,-0.17, -0.24,-0.7, 2,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle, -0.24,-0.7, -0.54,-0.64, 1,_p.outline);
+    sc_visual_line(_x,_y,_radius,_angle, -0.03,-0.25, -0.3,-0.5, 2,_p.energy);
 }
 
-/// @description Draws the broken Interceptor right wing fragment.
+/// @description Draws the broken thin right scissor-wing fragment.
 function sc_enemy_corporation_interceptor_fragment_right_draw(_x, _y, _radius, _angle, _visual)
 {
     var _p = _visual.palette;
 
-    sc_visual_triangle(_x,_y,_radius,_angle, 0.45,0.18, -0.78,0.66, 0,0.76,_p.hull_light,false);
-    sc_visual_line(_x,_y,_radius,_angle, 0.45,0.18, 0,0.76, 2,_p.outline);
-    sc_visual_line(_x,_y,_radius,_angle, 0.2,0.32, -0.52,0.54, 2,_p.energy);
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.16,0.17,
+        -0.37,0.26,
+        -0.54,0.64,
+        -0.24,0.7,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.1,0.2,
+        -0.32,0.29,
+        -0.47,0.57,
+        -0.25,0.61,
+        _p.hull_light
+    );
+
+    sc_visual_line(_x,_y,_radius,_angle, 0.16,0.17, -0.24,0.7, 2,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle, -0.24,0.7, -0.54,0.64, 1,_p.outline);
+    sc_visual_line(_x,_y,_radius,_angle, -0.03,0.25, -0.3,0.5, 2,_p.energy);
 }
