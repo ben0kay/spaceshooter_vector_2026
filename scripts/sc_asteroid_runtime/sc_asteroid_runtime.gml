@@ -116,10 +116,12 @@ function sc_asteroid_yield_output_get(_amount, _multiplier)
     return _output;
 }
 
-/// @description Converts accumulated base extraction progress into multiplied world pickups.
-function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1)
+/// @description Converts accumulated extraction progress into outward world pickups.
+function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1, _launch_multiplier = 1)
 {
-    var _yield = _asteroid.asteroid.yield;
+    var _data = _asteroid.asteroid;
+    var _yield = _data.yield;
+    var _config = global.config.asteroid.pickup;
     var _base_amount = min(_yield.remaining, floor(_yield.progress));
 
     if (_base_amount <= 0) return 0;
@@ -136,17 +138,33 @@ function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1)
 
     while (_remaining > 0)
     {
-        var _chunk = min(
-            _remaining,
-            irandom_range(1, 3)
-        );
+        var _chunk = min(_remaining, irandom_range(1, 3));
+        var _direction = random(360);
+
+        // Begin outside the physical asteroid instead of beneath it.
+        var _spawn_distance =
+            _data.collision.radius
+            + _config.spawn_clearance
+            + random_range(0, 8);
+
+        var _spawn_x =
+            _asteroid.x
+            + lengthdir_x(_spawn_distance, _direction);
+
+        var _spawn_y =
+            _asteroid.y
+            + lengthdir_y(_spawn_distance, _direction);
 
         sc_resource_pickup_spawn(
-            _asteroid.x,
-            _asteroid.y,
+            _spawn_x,
+            _spawn_y,
             _asteroid.layer,
-            _asteroid.asteroid.item_key,
-            _chunk
+            _data.item_key,
+            _chunk,
+            {
+                direction: _direction + random_range(-12, 12),
+                speed_multiplier: _launch_multiplier
+            }
         );
 
         _remaining -= _chunk;
@@ -159,10 +177,11 @@ function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1)
 function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
 {
     var _data = _asteroid.asteroid;
-    var _efficiency =
-        global.config.asteroid.extraction.weapon_efficiency;
+    var _config = global.config.asteroid;
+    var _efficiency = _config.extraction.weapon_efficiency;
+    var _mining = is_struct(_packet.extraction);
 
-    if (is_struct(_packet.extraction))
+    if (_mining)
         _efficiency = max(0, _packet.extraction.efficiency);
 
     var _damage_ratio =
@@ -176,7 +195,10 @@ function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
 
     return sc_asteroid_yield_emit(
         _asteroid,
-        sc_asteroid_source_yield_multiplier_get(_packet)
+        sc_asteroid_source_yield_multiplier_get(_packet),
+        _mining
+            ? _config.pickup.mining_launch_multiplier
+            : 1
     );
 }
 

@@ -205,14 +205,25 @@ function sc_config_init()
 		    },
 
 		    pickup: {
-		        launch_speed_min: 1.2,
-		        launch_speed_max: 2.8,
-		        movement_decay: 0.96,
-		        attraction_range: 150,
-		        attraction_strength: 0.32,
-		        attraction_speed_max: 7,
-		        collect_range: 30
-		    }
+			    launch_speed_min: 1.8,
+			    launch_speed_max: 3.6,
+			    mining_launch_multiplier: 1.65,
+			    spawn_clearance: 14,
+
+			    movement_decay: 0.965,
+			    attraction_range: 150,
+			    attraction_strength: 0.32,
+			    attraction_speed_max: 7,
+			    collect_range: 30,
+
+			    merge_interval: 16,
+			    merge_range: 42,
+			    merge_amount_max: 999,
+
+			    scale_base: 0.86,
+			    scale_per_decade: 0.08,
+			    scale_max: 1.14
+			}
 		},
 			
 		player_collision: {
