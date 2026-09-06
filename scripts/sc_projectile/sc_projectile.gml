@@ -41,20 +41,44 @@ function sc_projectile_init(_projectile, _create)
 
     var _defence = undefined;
 
-    if (variable_struct_exists(_data, "defence"))
-    {
-        var _armour = max(0, _data.defence.armour);
-        var _hull = max(1, _data.defence.hull);
+	if (variable_struct_exists(_data, "defence"))
+	{
+	    var _armour = max(0, _data.defence.armour);
+	    var _hull = max(1, _data.defence.hull);
+	    var _health_bar = sc_health_bar_create(false);
 
-        _defence = {
-            armour: { current: _armour, maximum: _armour },
-            hull: { current: _hull, maximum: _hull },
+	    _health_bar.damaged_duration = 90;
+	    _health_bar.width = 38;
+	    _health_bar.height = 3;
+	    _health_bar.gap = 1;
+	    _health_bar.offset_y = 6;
 
-            detonate_on_destroy: variable_struct_exists(_data.defence, "detonate_on_destroy")
-                ? _data.defence.detonate_on_destroy
-                : false
-        };
-    }
+	    _defence = {
+	        shield: {
+	            current: 0,
+	            maximum: 0
+	        },
+
+	        armour: {
+	            current: _armour,
+	            maximum: _armour
+	        },
+
+	        hull: {
+	            current: _hull,
+	            maximum: _hull
+	        },
+
+	        health_bar: _health_bar,
+
+	        detonate_on_destroy: variable_struct_exists(
+	            _data.defence,
+	            "detonate_on_destroy"
+	        )
+	            ? _data.defence.detonate_on_destroy
+	            : false
+	    };
+	}
 
     _projectile.projectile = {
         key: _create.key,
