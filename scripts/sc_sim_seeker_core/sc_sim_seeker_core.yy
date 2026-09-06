@@ -6,7 +6,7 @@
   "name":"sc_sim_seeker_core",
   "parent":{
     "name":"projectiles",
-    "path":"folders/scripts/ENEMY/factions/simulant/projectiles.yy",
+    "path":"folders/scripts/ENEMY/factions/SIMULANT/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

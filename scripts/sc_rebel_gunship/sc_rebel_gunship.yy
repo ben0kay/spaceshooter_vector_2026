@@ -6,7 +6,7 @@
   "name":"sc_rebel_gunship",
   "parent":{
     "name":"enemies",
-    "path":"folders/scripts/ENEMY/factions/rebel/enemies.yy",
+    "path":"folders/scripts/ENEMY/factions/REBEL/enemies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

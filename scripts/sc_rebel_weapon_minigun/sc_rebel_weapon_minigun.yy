@@ -6,7 +6,7 @@
   "name":"sc_rebel_weapon_minigun",
   "parent":{
     "name":"weapons",
-    "path":"folders/scripts/ENEMY/factions/rebel/weapons.yy",
+    "path":"folders/scripts/ENEMY/factions/REBEL/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sim_visuals_shared",
   "parent":{
-    "name":"simulant",
-    "path":"folders/scripts/ENEMY/factions/simulant.yy",
+    "name":"SIMULANT",
+    "path":"folders/scripts/ENEMY/factions/SIMULANT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
