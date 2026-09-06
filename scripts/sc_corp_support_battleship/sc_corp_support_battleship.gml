@@ -64,12 +64,6 @@ function sc_enemy_register_corporation_support_battleship()
                 spin_speed: 0
             },
 
-            orbit: {
-                range: 0,
-                direction: 1,
-                radial_strength: 0,
-                direction_change_chance: 0
-            },
 
             strafe: {
                 amount: 0,

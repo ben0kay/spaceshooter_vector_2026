@@ -156,6 +156,67 @@ function sc_enemy_movement_pursue(_enemy)
     sc_enemy_movement_chase(_enemy);
 }
 
+/// @description Pursues the target using irregular changes in approach angle and speed.
+function sc_enemy_movement_erratic_skirmish(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _target = _data.target_id;
+    if (!instance_exists(_target)) return;
+
+    var _movement = _data.movement;
+    var _runtime = _movement.behaviour_runtime.erratic;
+    var _config = _data.movement_controller.erratic;
+
+    if (GAME_TICK >= _runtime.next_change_tick)
+    {
+        _runtime.angle_offset = random_range(_config.angle_min, _config.angle_max) * choose(-1, 1);
+        _runtime.speed_scale = random_range(_config.speed_min, _config.speed_max);
+        _runtime.next_change_tick = GAME_TICK + irandom_range(_config.change_min, _config.change_max);
+    }
+
+    var _toward = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+    var _command = _movement.command;
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = _toward + _runtime.angle_offset;
+    _command.speed_scale = _runtime.speed_scale;
+    _command.face_direction = _toward;
+    _command.facing_mode = EnemyFacingMode.TARGET;
+}
+
+/// @description Alternates between powered pursuit bursts and uncontrolled drifting.
+function sc_enemy_movement_burst_coast(_enemy)
+{
+    var _data = _enemy.enemy;
+    if (!instance_exists(_data.target_id)) return;
+
+    var _movement = _data.movement;
+    var _runtime = _movement.behaviour_runtime.burst_coast;
+    var _config = _data.movement_controller.burst_coast;
+    var _command = _movement.command;
+
+    if (GAME_TICK >= _runtime.next_phase_tick)
+    {
+        _runtime.bursting = !_runtime.bursting;
+        _runtime.next_phase_tick = GAME_TICK + (_runtime.bursting
+            ? irandom_range(_config.burst_min, _config.burst_max)
+            : irandom_range(_config.coast_min, _config.coast_max));
+    }
+
+    if (_runtime.bursting)
+    {
+        sc_enemy_movement_chase(_enemy);
+        _command.speed_scale = _config.speed_scale;
+        _command.facing_mode = EnemyFacingMode.MOVEMENT;
+        return;
+    }
+
+    _command.active = false;
+    _command.apply_friction = false;
+    _command.facing_mode = EnemyFacingMode.MOVEMENT;
+}
+
 /// @description Commands movement directly away from a target inside the emergency backaway range.
 function sc_enemy_movement_backaway(_enemy)
 {
@@ -184,16 +245,27 @@ function sc_enemy_movement_orbit(_enemy)
     var _orbit = _controller.orbit;
     var _movement = _data.movement;
     var _command = _movement.command;
+
+    if (_movement.orbit_direction == 0)
+        _movement.orbit_direction = _orbit.direction == 0
+            ? choose(-1, 1)
+            : sign(_orbit.direction);
+
+    if (_orbit.direction_change_chance > 0
+    && random(1) < _orbit.direction_change_chance)
+        _movement.orbit_direction *= -1;
+
     var _dx = _target.x - _enemy.x;
     var _dy = _target.y - _enemy.y;
     var _distance = max(1, point_distance(0, 0, _dx, _dy));
     var _toward = point_direction(0, 0, _dx, _dy);
-
-    if (_orbit.direction_change_chance > 0 && random(1) < _orbit.direction_change_chance)
-        _movement.orbit_direction *= -1;
-
     var _tangent = _toward + 90 * _movement.orbit_direction;
-    var _radial = clamp((_distance - _orbit.range) / max(1, _orbit.range), -1, 1) * _orbit.radial_strength;
+    var _radial = clamp(
+        (_distance - _orbit.range) / max(1, _orbit.range),
+        -1,
+        1
+    ) * _orbit.radial_strength;
+
     var _move_x = lengthdir_x(1, _tangent) + lengthdir_x(_radial, _toward);
     var _move_y = lengthdir_y(1, _tangent) + lengthdir_y(_radial, _toward);
 
@@ -203,7 +275,6 @@ function sc_enemy_movement_orbit(_enemy)
     _command.speed_scale = clamp(point_distance(0, 0, _move_x, _move_y), 0.25, 1);
     _command.face_direction = _toward;
 }
-
 /// @description Selects one unobstructed wander destination inside the registered spawn radius.
 function sc_enemy_wander_target_select(_enemy)
 {
@@ -300,7 +371,6 @@ function sc_enemy_movement_strafe_apply(_enemy)
     _command.direction = point_direction(0, 0, _move_x, _move_y);
     _command.speed_scale = clamp(point_distance(0, 0, _move_x, _move_y), 0, 1);
 }
-
 
 /// @description Updates hull rotation independently from movement and hardpoint rotation.
 function sc_enemy_facing_update(_enemy)

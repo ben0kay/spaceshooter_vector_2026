@@ -42,7 +42,7 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
             velocity_y: 0,
             spawn_x: _enemy.x,
             spawn_y: _enemy.y,
-            orbit_direction: 1,
+            orbit_direction: 0,
             strafe_phase: random(2 * pi),
 
             command: {
@@ -125,10 +125,8 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
     var _runtime = _enemy.enemy;
     var _final = _runtime.stats.final;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
-    var _orbit_direction = _runtime.movement_controller.orbit.direction;
 
     _enemy.draw_angle = 0;
-    _runtime.movement.orbit_direction = _orbit_direction == 0 ? choose(-1, 1) : sign(_orbit_direction);
     _runtime.movement.command.facing_mode = _runtime.movement_controller.facing.default_mode;
 
     if (!sc_entity_init(

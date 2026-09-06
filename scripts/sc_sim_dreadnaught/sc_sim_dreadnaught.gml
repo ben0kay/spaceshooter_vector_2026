@@ -92,12 +92,6 @@ function sc_enemy_register_sim_dreadnaught()
         response_distance: 55
     },
 
-    orbit: {
-        range: 0,
-        direction: 1,
-        radial_strength: 0,
-        direction_change_chance: 0
-    },
 
     strafe: {
         amount: 0,

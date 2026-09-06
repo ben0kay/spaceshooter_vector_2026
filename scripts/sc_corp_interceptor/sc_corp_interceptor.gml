@@ -74,13 +74,6 @@ function sc_enemy_register_corporation_interceptor()
                 spin_speed: 0
             },
 
-            orbit: {
-                range: 0,
-                direction: 0,
-                radial_strength: 0,
-                direction_change_chance: 0
-            },
-
             strafe: {
                 amount: 0,
                 speed: 0
