@@ -215,80 +215,242 @@ function sc_enemy_rebel_skirmisher_visual_data()
     };
 }
 
-/// @description Draws the narrow patchwork Rebel Scrap Skirmisher.
-function sc_enemy_rebel_skirmisher_body_draw(_x,_y,_radius,_angle,_visual)
+/// @description Draws the detailed patchwork Rebel Scrap Skirmisher.
+function sc_enemy_rebel_skirmisher_body_draw(_x,_y,_r,_a,_v)
 {
-    var _p = _visual.palette;
+    var _p=_v.palette;
 
-    // Skinny underlying frame.
-    sc_visual_triangle(_x,_y,_radius,_angle,1.32,0,-0.9,-0.21,-0.9,0.21,_p.hull_dark,false);
-    sc_visual_quad(_x,_y,_radius,_angle,0.58,-0.19,0.58,0.19,-0.82,0.2,-0.82,-0.2,_p.hull_mid);
+    // ==================================================
+    // EXPOSED CENTRAL FRAME
+    // ==================================================
 
-    // Thin swept salvaged wings.
+    sc_visual_quad(_x,_y,_r,_a,
+        0.98,-0.13,
+        -0.94,-0.16,
+        -1.06,0.16,
+        0.98,0.13,
+        _p.void
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.87,-0.085,
+        -0.91,-0.1,
+        -0.91,0.1,
+        0.87,0.085,
+        _p.steel_dark
+    );
+
+    // Structural rails.
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.76,-0.13,0.58,-0.11,_p);
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.76,0.13,0.58,0.11,_p);
+
+    // ==================================================
+    // SHORT AIRCRAFT-LIKE WINGS
+    // ==================================================
+
     for (var _side=-1; _side<=1; _side+=2)
     {
-        sc_visual_quad(_x,_y,_radius,_angle,
-            0.35,0.16*_side,
-            -0.18,0.55*_side,
-            -0.72,0.48*_side,
-            -0.46,0.18*_side,
-            _p.hull_dark
+        // Dark wing frame.
+        sc_visual_quad(_x,_y,_r,_a,
+            0.34,0.14*_side,
+            0.03,0.25*_side,
+            -0.3,0.48*_side,
+            -0.62,0.4*_side,
+            _p.void
         );
 
-        sc_visual_triangle(_x,_y,_radius,_angle,
-            0.25,0.18*_side,
-            -0.2,0.48*_side,
-            -0.55,0.43*_side,
-            _side<0?_p.hull_light:_p.hull_mid,
-            false
+        sc_rebel_visual_brace(_x,_y,_r,_a,0.27,0.15*_side,-0.49,0.38*_side,_p);
+
+        // Main salvaged wing plate.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            0.3,0.16*_side,
+            0.02,0.27*_side,
+            -0.28,0.44*_side,
+            -0.55,0.37*_side,
+            _side<0?_p.hull_light:_p.paint,
+            _p
         );
 
-        sc_visual_line(_x,_y,_radius,_angle,
-            0.3,0.17*_side,
-            -0.2,0.53*_side,
-            2,_p.outline
+        // Outer cap plate.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            -0.24,0.43*_side,
+            -0.42,0.51*_side,
+            -0.64,0.43*_side,
+            -0.53,0.34*_side,
+            _p.hull_dark,_p
         );
 
-        sc_visual_line(_x,_y,_radius,_angle,
-            -0.1,0.39*_side,
-            -0.48,0.42*_side,
-            2,_p.energy
+        // Small middle patch.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            0.02,0.26*_side,
+            -0.17,0.36*_side,
+            -0.31,0.32*_side,
+            -0.11,0.22*_side,
+            _p.steel_mid,_p
         );
+
+        // Vent in outer wing.
+        sc_rebel_visual_vent(_x,_y,_r,_a,-0.36,0.4*_side,0.15,0.026,3,_p);
+
+        if (_side<0)
+            sc_rebel_visual_hazard_panel(_x,_y,_r,_a,-0.39,-0.39,0.18,0.055,_p);
+        else
+            sc_rebel_visual_patch_x(_x,_y,_r,_a,-0.22,0.31,0.025,_p);
     }
 
-    // Raised narrow fuselage.
-    sc_visual_triangle(_x,_y,_radius,_angle,1.28,0,0.48,-0.14,-0.68,-0.15,_p.hull_light,false);
-    sc_visual_triangle(_x,_y,_radius,_angle,1.28,0,-0.68,0.15,0.48,0.14,_p.metal,false);
+    // ==================================================
+    // CENTRAL FUSELAGE PLATES
+    // ==================================================
 
-    // Mismatched hull patches.
-    sc_visual_quad(_x,_y,_radius,_angle,0.42,-0.14,0.11,-0.15,-0.05,-0.03,0.39,-0.03,_p.hull_mid);
-    sc_visual_quad(_x,_y,_radius,_angle,0.2,0.04,-0.22,0.04,-0.34,0.15,0.27,0.14,_p.hull_dark);
-    sc_visual_quad(_x,_y,_radius,_angle,-0.25,-0.14,-0.62,-0.15,-0.62,-0.04,-0.18,-0.04,_p.metal);
+    // Lower dark shape.
+    sc_visual_triangle(_x,_y,_r,_a,
+        1.24,0,
+        0.38,-0.19,
+        0.38,0.19,
+        _p.void,false
+    );
 
-    // Cockpit slit.
-    sc_visual_quad(_x,_y,_radius,_angle,0.72,-0.1,1.02,-0.04,1.1,0,0.72,0,_p.void);
-    sc_visual_quad(_x,_y,_radius,_angle,0.72,0,1.1,0,1.02,0.04,0.72,0.1,_p.void);
-    sc_visual_line(_x,_y,_radius,_angle,0.77,0,1.04,0,3,_p.energy);
+    // Left forward armour.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        1.2,0,
+        0.46,-0.16,
+        -0.26,-0.17,
+        0.17,-0.04,
+        _p.hull_light,_p
+    );
 
-    // Exposed pipes.
-    sc_visual_line(_x,_y,_radius,_angle,-0.57,-0.18,0.28,-0.18,3,_p.void);
-    sc_visual_line(_x,_y,_radius,_angle,-0.55,-0.18,0.25,-0.18,1,_p.accent);
-    sc_visual_line(_x,_y,_radius,_angle,-0.5,0.18,0.08,0.18,3,_p.void);
+    // Right forward armour.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        1.2,0,
+        0.17,0.04,
+        -0.26,0.17,
+        0.46,0.16,
+        _p.paint,_p
+    );
 
-    // Improvised engine housing.
-    sc_visual_quad(_x,_y,_radius,_angle,-0.56,-0.24,-1.05,-0.2,-1.05,0.2,-0.56,0.24,_p.hull_dark);
-    sc_visual_quad(_x,_y,_radius,_angle,-0.62,-0.17,-0.98,-0.14,-0.98,0.14,-0.62,0.17,_p.metal);
+    // Middle mismatched panels.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.37,-0.05,
+        -0.08,-0.16,
+        -0.36,-0.14,
+        0.05,-0.02,
+        _p.hull_mid,_p
+    );
 
-    for (var _i=0; _i<3; ++_i)
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.05,0.02,
+        -0.36,0.14,
+        -0.08,0.16,
+        0.37,0.05,
+        _p.steel_mid,_p
+    );
+
+    // ==================================================
+    // COCKPIT
+    // ==================================================
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.83,-0.085,
+        0.61,-0.13,
+        0.48,-0.075,
+        0.71,-0.025,
+        _p.void
+    );
+
+    sc_visual_quad(_x,_y,_r,_a,
+        0.71,0.025,
+        0.48,0.075,
+        0.61,0.13,
+        0.83,0.085,
+        _p.void
+    );
+
+    sc_visual_line(_x,_y,_r,_a,0.64,-0.11,0.58,-0.04,1,_p.steel_light);
+    sc_visual_line(_x,_y,_r,_a,0.58,0.04,0.64,0.11,1,_p.steel_light);
+
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.75,-0.043,0.86,-0.018,_p);
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.86,0.018,0.75,0.043,_p);
+
+    // ==================================================
+    // REAR ENGINE BLOCK
+    // ==================================================
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.5,-0.21,
+        -1.05,-0.18,
+        -1.09,0,
+        -0.58,0,
+        _p.steel_mid,_p
+    );
+
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.58,0,
+        -1.09,0,
+        -1.05,0.18,
+        -0.5,0.21,
+        _p.steel_dark,_p
+    );
+
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.79,-0.1,0.25,0.032,3,_p);
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.79,0.1,0.25,0.032,3,_p);
+
+    // Engine frame braces.
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.57,-0.18,-0.94,-0.15,_p);
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.57,0.18,-0.94,0.15,_p);
+
+    // ==================================================
+    // EXPOSED PIPEWORK
+    // ==================================================
+
+    sc_rebel_visual_pipe(_x,_y,_r,_a,-0.61,-0.2,0.25,-0.18,3,_p);
+    sc_rebel_visual_pipe_hot(_x,_y,_r,_a,-0.55,0.2,0.08,0.18,3,_p);
+
+    // Small crossover hose.
+    sc_rebel_visual_pipe(_x,_y,_r,_a,-0.36,-0.12,-0.22,0.12,2,_p);
+
+    // ==================================================
+    // PANEL DETAIL
+    // ==================================================
+
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.28,-0.15,0.16,-0.03,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.16,0.03,0.29,0.15,_p);
+
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.13,-0.15,-0.11,-0.02,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.11,0.02,-0.18,0.15,_p);
+
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.14,-0.16,-0.08,-0.16,4,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,-0.08,0.16,0.14,0.16,4,_p);
+
+    sc_rebel_visual_patch_x(_x,_y,_r,_a,-0.19,-0.07,0.022,_p);
+
+    sc_rebel_visual_chevrons(_x,_y,_r,_a,0.18,0.13,0.028,1,_p);
+
+    // ==================================================
+    // HARDPOINT BED DETAIL
+    // ==================================================
+
+    for (var _side=-1; _side<=1; _side+=2)
     {
-        var _forward=-0.73-_i*0.1;
-        sc_visual_line(_x,_y,_radius,_angle,_forward,-0.15,_forward,0.15,2,_p.void);
+        sc_visual_circle(_x,_y,_r,_a,0.48,0.24*_side,0.12,_p.void,false);
+        sc_visual_circle(_x,_y,_r,_a,0.48,0.24*_side,0.095,_p.steel_dark,false);
+        sc_visual_circle(_x,_y,_r,_a,0.48,0.24*_side,0.095,_p.steel_light,true);
+
+        sc_rebel_visual_rivet_strip(
+            _x,_y,_r,_a,
+            0.36,0.19*_side,
+            0.58,0.19*_side,
+            3,_p
+        );
     }
 
-    // Nose outline and crude identification stripe.
-    sc_visual_line(_x,_y,_radius,_angle,1.3,0,0.47,-0.15,2,_p.outline);
-    sc_visual_line(_x,_y,_radius,_angle,1.3,0,0.47,0.15,2,_p.outline);
-    sc_visual_line(_x,_y,_radius,_angle,0.42,-0.13,0.28,0.13,3,_p.energy);
+    // ==================================================
+    // NOSE DETAILS
+    // ==================================================
+
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.93,-0.045,1.07,-0.015,_p);
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,1.07,0.015,0.93,0.045,_p);
+
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.5,-0.145,0.82,-0.085,4,_p);
 }
 
 /// @description Draws one fixed Rebel scrap cannon.

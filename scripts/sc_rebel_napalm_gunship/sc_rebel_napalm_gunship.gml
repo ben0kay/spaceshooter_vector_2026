@@ -223,290 +223,299 @@ function sc_enemy_rebel_napalm_gunship_visual_data()
     };
 }
 
-/// @description Draws the bulky tank-fed Rebel Napalm Gunship hull.
+/// @description Draws the detailed tank-fed Rebel Napalm Gunship hull.
 function sc_enemy_rebel_napalm_gunship_body_draw(_x,_y,_r,_a,_v)
 {
     var _p=_v.palette;
 
     // ==================================================
-    // DARK ENGINEERING UNDERFRAME
+    // EXPOSED CENTRAL CHASSIS
     // ==================================================
 
     sc_visual_quad(_x,_y,_r,_a,
-        0.5,-0.3,
-        -0.78,-0.47,
-        -1.02,-0.26,
-        0.34,-0.18,
-        _p.hull_dark
-    );
-
-    sc_visual_quad(_x,_y,_r,_a,
-        0.5,0.3,
-        0.34,0.18,
-        -1.02,0.26,
-        -0.78,0.47,
-        _p.hull_dark
-    );
-
-    // Heavy central backbone.
-    sc_visual_quad(_x,_y,_r,_a,
-        0.9,-0.13,
-        -1,-0.15,
-        -1,0.15,
-        0.9,0.13,
+        0.96,-0.17,
+        -0.96,-0.2,
+        -1.05,0.2,
+        0.96,0.17,
         _p.void
     );
 
     sc_visual_quad(_x,_y,_r,_a,
-        0.82,-0.09,
-        -0.91,-0.1,
-        -0.91,0.1,
-        0.82,0.09,
-        _p.hull_mid
+        0.86,-0.11,
+        -0.91,-0.13,
+        -0.91,0.13,
+        0.86,0.11,
+        _p.steel_dark
     );
 
+    // Long structural rails.
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.82,-0.15,0.67,-0.13,_p);
+    sc_rebel_visual_brace(_x,_y,_r,_a,-0.82,0.15,0.67,0.13,_p);
+
     // ==================================================
-    // LARGE REAR NAPALM CANISTERS
+    // LARGE REAR NAPALM TANKS
     // ==================================================
 
     for (var _side=-1; _side<=1; _side+=2)
     {
-        var _sy=0.38*_side;
+        var _sy=0.39*_side;
 
-        // Main tank body.
+        // Dark tank cradle.
         sc_visual_quad(_x,_y,_r,_a,
-            -0.18,_sy-0.15,
-            -0.83,_sy-0.15,
-            -0.83,_sy+0.15,
-            -0.18,_sy+0.15,
-            _p.metal
+            -0.12,_sy-0.18,
+            -0.82,_sy-0.18,
+            -0.9,_sy+0.18,
+            -0.13,_sy+0.18,
+            _p.void
         );
 
-        // Rounded tank ends.
-        sc_visual_circle(_x,_y,_r,_a,-0.18,_sy,0.15,_p.hull_light,false);
-        sc_visual_circle(_x,_y,_r,_a,-0.83,_sy,0.15,_p.hull_mid,false);
+        sc_rebel_visual_brace(_x,_y,_r,_a,-0.18,_sy-0.18,-0.73,_sy-0.18,_p);
+        sc_rebel_visual_brace(_x,_y,_r,_a,-0.18,_sy+0.18,-0.73,_sy+0.18,_p);
 
-        // Dark lower grime strip.
-        sc_visual_line(_x,_y,_r,_a,-0.2,_sy+0.09,-0.8,_sy+0.09,5,_p.hull_dark);
-
-        // Tank securing bands.
-        sc_visual_line(_x,_y,_r,_a,-0.31,_sy-0.16,-0.31,_sy+0.16,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.31,_sy-0.15,-0.31,_sy+0.15,2,_p.outline);
-
-        sc_visual_line(_x,_y,_r,_a,-0.51,_sy-0.16,-0.51,_sy+0.16,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.51,_sy-0.15,-0.51,_sy+0.15,2,_p.outline);
-
-        sc_visual_line(_x,_y,_r,_a,-0.7,_sy-0.16,-0.7,_sy+0.16,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.7,_sy-0.15,-0.7,_sy+0.15,2,_p.outline);
-
-        // Rough hazard stripe plate.
+        // Main cylindrical tank.
         sc_visual_quad(_x,_y,_r,_a,
-            -0.38,_sy-0.11,
-            -0.61,_sy-0.11,
-            -0.61,_sy-0.04,
-            -0.38,_sy-0.04,
-            _p.accent
+            -0.17,_sy-0.14,
+            -0.78,_sy-0.14,
+            -0.78,_sy+0.14,
+            -0.17,_sy+0.14,
+            _p.steel_mid
         );
 
-        sc_visual_line(_x,_y,_r,_a,-0.39,_sy-0.1,-0.45,_sy-0.04,2,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.47,_sy-0.1,-0.53,_sy-0.04,2,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.55,_sy-0.1,-0.61,_sy-0.04,2,_p.void);
+        sc_visual_circle(_x,_y,_r,_a,-0.17,_sy,0.14,_p.steel_light,false);
+        sc_visual_circle(_x,_y,_r,_a,-0.78,_sy,0.14,_p.steel_dark,false);
 
-        // Heavy pipe from tank toward central manifold.
-        sc_visual_line(_x,_y,_r,_a,-0.69,_sy-0.17,-0.48,0.17*_side,8,_p.void);
-        sc_visual_line(_x,_y,_r,_a,-0.69,_sy-0.17,-0.48,0.17*_side,4,_p.metal);
+        // Dirty lower tank plate.
+        sc_visual_quad(_x,_y,_r,_a,
+            -0.23,_sy+0.03,
+            -0.7,_sy+0.03,
+            -0.7,_sy+0.12,
+            -0.23,_sy+0.12,
+            _p.hull_mid
+        );
 
-        sc_visual_circle(_x,_y,_r,_a,-0.49,0.17*_side,0.055,_p.hull_dark,false);
-        sc_visual_circle(_x,_y,_r,_a,-0.49,0.17*_side,0.035,_p.energy,false);
+        // Tank straps.
+        for (var _i=0; _i<3; ++_i)
+        {
+            var _f=-0.31-_i*0.19;
+            sc_visual_line(_x,_y,_r,_a,_f,_sy-0.155,_f,_sy+0.155,5,_p.void);
+            sc_visual_line(_x,_y,_r,_a,_f,_sy-0.14,_f,_sy+0.14,2,_p.steel_dark);
+        }
+
+        // Tank warning panel.
+        sc_rebel_visual_hazard_panel(_x,_y,_r,_a,-0.48,_sy-0.07*_side,0.25,0.07,_p);
+
+        // Feed pipe into manifold.
+        sc_rebel_visual_pipe(_x,_y,_r,_a,-0.7,_sy-0.17*_side,-0.47,0.18*_side,5,_p);
+
+        // Small valve.
+        sc_visual_circle(_x,_y,_r,_a,-0.47,0.18*_side,0.055,_p.void,false);
+        sc_visual_circle(_x,_y,_r,_a,-0.47,0.18*_side,0.032,_p.rust,false);
+
+        // A couple visible tank rivets.
+        sc_rebel_visual_rivet_strip(_x,_y,_r,_a,-0.27,_sy-0.12,-0.67,_sy-0.12,5,_p);
     }
 
     // ==================================================
-    // CENTRAL PRESSURE MANIFOLD / PIPE
+    // CENTRAL PRESSURE LINE
     // ==================================================
 
-    // Thick black backing makes the pipe obvious.
-    sc_visual_line(_x,_y,_r,_a,-0.88,0,0.5,0,15,_p.void);
+    sc_rebel_visual_pipe_hot(_x,_y,_r,_a,-0.9,0,0.61,0,9,_p);
 
-    // Main rusty metal pipe.
-    sc_visual_line(_x,_y,_r,_a,-0.86,0,0.5,0,10,_p.metal);
-
-    // Inner heated/feed pipe.
-    sc_visual_line(_x,_y,_r,_a,-0.82,0,0.48,0,4,_p.energy);
-
-    // Pipe coupling rings.
+    // Heavy pipe couplings.
     for (var _i=0; _i<5; ++_i)
     {
-        var _f=-0.68+_i*0.25;
-
-        sc_visual_line(_x,_y,_r,_a,_f,-0.1,_f,0.1,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a,_f,-0.08,_f,0.08,2,_p.outline);
+        var _f=-0.67+_i*0.27;
+        sc_visual_line(_x,_y,_r,_a,_f,-0.1,_f,0.1,6,_p.void);
+        sc_visual_line(_x,_y,_r,_a,_f,-0.085,_f,0.085,2,_p.steel_light);
     }
 
-    // Large rear manifold.
-    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.18,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.14,_p.hull_mid,false);
-    sc_visual_circle(_x,_y,_r,_a,-0.78,0,0.14,_p.metal,true);
+    // Rear pressure manifold.
+    sc_visual_circle(_x,_y,_r,_a,-0.75,0,0.17,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.75,0,0.135,_p.steel_mid,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.75,0,0.135,_p.steel_light,true);
 
     // ==================================================
-    // CENTRAL SINGLE ENGINE BLOCK
+    // CENTRAL ENGINE CASING
     // ==================================================
 
-    sc_visual_quad(_x,_y,_r,_a,
-        -0.7,-0.2,
-        -1.05,-0.19,
-        -1.09,0.19,
-        -0.7,0.2,
-        _p.hull_dark
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.69,-0.2,
+        -1.05,-0.18,
+        -1.09,0,
+        -0.7,0,
+        _p.steel_mid,_p
     );
 
-    sc_visual_quad(_x,_y,_r,_a,
-        -0.74,-0.14,
-        -1,-0.13,
-        -1,0.13,
-        -0.74,0.14,
-        _p.hull_mid
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        -0.7,0,
+        -1.09,0,
+        -1.05,0.18,
+        -0.69,0.2,
+        _p.steel_dark,_p
     );
 
-    sc_visual_line(_x,_y,_r,_a,-0.78,-0.15,-0.78,0.15,3,_p.outline);
-    sc_visual_line(_x,_y,_r,_a,-0.94,-0.13,-0.94,0.13,3,_p.metal);
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.9,-0.1,0.23,0.035,3,_p);
+    sc_rebel_visual_vent(_x,_y,_r,_a,-0.9,0.1,0.23,0.035,3,_p);
 
     // ==================================================
-    // WIDE SCRAP ARMOUR SHOULDERS
+    // BROAD SCRAP SHOULDERS
     // ==================================================
 
     for (var _side=-1; _side<=1; _side+=2)
     {
-        // Main shoulder.
+        // Structural shoulder frame.
         sc_visual_quad(_x,_y,_r,_a,
-            0.36,0.18*_side,
-            0.02,0.4*_side,
-            -0.46,0.52*_side,
-            -0.38,0.27*_side,
-            _side<0?_p.hull_light:_p.hull_mid
+            0.34,0.17*_side,
+            0.05,0.34*_side,
+            -0.41,0.55*_side,
+            -0.62,0.49*_side,
+            _p.void
         );
 
-        // Rear scrap plate.
-        sc_visual_quad(_x,_y,_r,_a,
-            -0.08,0.4*_side,
-            -0.32,0.59*_side,
-            -0.62,0.58*_side,
-            -0.46,0.48*_side,
-            _p.hull_dark
+        sc_rebel_visual_brace(_x,_y,_r,_a,0.25,0.2*_side,-0.5,0.49*_side,_p);
+        sc_rebel_visual_brace(_x,_y,_r,_a,-0.06,0.31*_side,-0.3,0.48*_side,_p);
+
+        // Main shoulder plate.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            0.31,0.2*_side,
+            0.04,0.34*_side,
+            -0.35,0.51*_side,
+            -0.54,0.45*_side,
+            _side<0?_p.hull_light:_p.paint,
+            _p
         );
 
-        // Small mismatched patch.
-        sc_visual_quad(_x,_y,_r,_a,
-            0.11,0.28*_side,
-            -0.08,0.41*_side,
-            -0.26,0.39*_side,
-            -0.1,0.29*_side,
-            _p.metal
+        // Outer dark patch.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            -0.2,0.43*_side,
+            -0.38,0.56*_side,
+            -0.62,0.53*_side,
+            -0.48,0.41*_side,
+            _p.hull_dark,_p
         );
 
-        // Exposed brace.
-        sc_visual_line(_x,_y,_r,_a,0.21,0.22*_side,-0.34,0.47*_side,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a,0.21,0.22*_side,-0.34,0.47*_side,2,_p.outline);
+        // Small repair panel.
+        sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+            0.11,0.26*_side,
+            -0.08,0.36*_side,
+            -0.22,0.33*_side,
+            -0.03,0.23*_side,
+            _p.steel_mid,_p
+        );
 
-        // Hazard mark on one battered shoulder.
+        // Outer vent.
+        sc_rebel_visual_vent(_x,_y,_r,_a,-0.32,0.47*_side,0.18,0.03,3,_p);
+
+        // One battered hazard panel.
         if (_side>0)
-        {
-            sc_visual_line(_x,_y,_r,_a,-0.15,0.42,-0.23,0.51,4,_p.accent);
-            sc_visual_line(_x,_y,_r,_a,-0.23,0.42,-0.31,0.51,4,_p.accent);
-        }
+            sc_rebel_visual_hazard_panel(_x,_y,_r,_a,-0.23,0.43,0.22,0.07,_p);
+        else
+            sc_rebel_visual_patch_x(_x,_y,_r,_a,-0.18,-0.42,0.035,_p);
     }
 
     // ==================================================
-    // BROAD WEDGE FORWARD HULL
+    // FORWARD COCKPIT / ARMOUR BODY
     // ==================================================
 
+    // Dark broad base shape.
     sc_visual_triangle(_x,_y,_r,_a,
-        1.12,0,
-        0.02,-0.39,
-        0.02,0.39,
-        _p.hull_dark,
-        false
+        1.13,0,
+        0.02,-0.36,
+        0.02,0.36,
+        _p.void,false
     );
 
-    // Patchwork left half.
-    sc_visual_triangle(_x,_y,_r,_a,
+    // Left forward armour.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
         1.08,0,
-        0.08,-0.34,
-        0.63,-0.19,
-        _p.hull_light,
-        false
+        0.61,-0.2,
+        0.08,-0.31,
+        0.37,-0.09,
+        _p.hull_light,_p
     );
 
-    sc_visual_quad(_x,_y,_r,_a,
-        0.63,-0.19,
-        0.08,-0.34,
-        -0.04,-0.19,
-        0.46,-0.1,
-        _p.metal
-    );
-
-    // Patchwork right half.
-    sc_visual_triangle(_x,_y,_r,_a,
+    // Right forward armour.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
         1.08,0,
-        0.63,0.19,
-        0.08,0.34,
-        _p.hull_mid,
-        false
+        0.37,0.09,
+        0.08,0.31,
+        0.61,0.2,
+        _p.paint,_p
     );
 
-    sc_visual_quad(_x,_y,_r,_a,
-        0.63,0.19,
-        0.46,0.1,
-        -0.04,0.19,
-        0.08,0.34,
-        _p.metal
+    // Mid hull patchwork.
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.43,-0.1,
+        0.06,-0.27,
+        -0.09,-0.16,
+        0.27,-0.04,
+        _p.hull_mid,_p
     );
 
-    // Angular side armour rails.
-    for (var _side=-1; _side<=1; _side+=2)
-    {
-        sc_visual_line(_x,_y,_r,_a,1.05,0.05*_side,0.08,0.32*_side,4,_p.void);
-        sc_visual_line(_x,_y,_r,_a,1.03,0.05*_side,0.1,0.31*_side,2,_p.outline);
-    }
+    sc_rebel_visual_patch_plate(_x,_y,_r,_a,
+        0.27,0.04,
+        -0.09,0.16,
+        0.06,0.27,
+        0.43,0.1,
+        _p.steel_mid,_p
+    );
 
     // ==================================================
-    // DARK COCKPIT WINDOWS
+    // MULTI-PANE COCKPIT
     // ==================================================
 
     sc_visual_quad(_x,_y,_r,_a,
-        0.67,-0.18,
-        0.4,-0.24,
-        0.29,-0.15,
-        0.61,-0.09,
+        0.79,-0.11,
+        0.52,-0.17,
+        0.38,-0.1,
+        0.67,-0.035,
         _p.void
     );
 
     sc_visual_quad(_x,_y,_r,_a,
-        0.67,0.18,
-        0.61,0.09,
-        0.29,0.15,
-        0.4,0.24,
+        0.67,0.035,
+        0.38,0.1,
+        0.52,0.17,
+        0.79,0.11,
         _p.void
     );
 
-    sc_visual_line(_x,_y,_r,_a,0.62,-0.13,0.37,-0.18,2,_p.energy);
-    sc_visual_line(_x,_y,_r,_a,0.62,0.13,0.37,0.18,2,_p.energy);
+    sc_visual_line(_x,_y,_r,_a,0.57,-0.15,0.51,-0.05,2,_p.steel_light);
+    sc_visual_line(_x,_y,_r,_a,0.51,0.05,0.57,0.15,2,_p.steel_light);
+
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.73,-0.055,0.83,-0.025,_p);
+    sc_rebel_visual_slit_light(_x,_y,_r,_a,0.83,0.025,0.73,0.055,_p);
 
     // ==================================================
-    // FRONT PIPE / PROJECTOR FEED
+    // SURFACE DETAIL
     // ==================================================
 
-    sc_visual_line(_x,_y,_r,_a,0.1,0,0.67,0,12,_p.void);
-    sc_visual_line(_x,_y,_r,_a,0.12,0,0.67,0,7,_p.metal);
-    sc_visual_line(_x,_y,_r,_a,0.14,0,0.65,0,3,_p.energy);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.19,-0.25,0.12,-0.08,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,0.12,0.08,0.19,0.25,_p);
 
-    // Projector mounting plate.
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.15,-0.3,-0.08,-0.13,_p);
+    sc_rebel_visual_panel_seam(_x,_y,_r,_a,-0.08,0.13,-0.15,0.3,_p);
+
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.05,-0.31,0.37,-0.21,5,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.37,0.21,0.05,0.31,5,_p);
+
+    sc_rebel_visual_patch_x(_x,_y,_r,_a,0.06,-0.16,0.025,_p);
+
+    sc_rebel_visual_chevrons(_x,_y,_r,_a,0.17,0.27,0.035,1,_p);
+
+    // ==================================================
+    // FRONT PROJECTOR FEED
+    // ==================================================
+
+    sc_rebel_visual_pipe_hot(_x,_y,_r,_a,0.08,0,0.66,0,7,_p);
+
+    // Projector mounting socket.
     sc_visual_circle(_x,_y,_r,_a,0.4,0,0.22,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.hull_mid,false);
-    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.metal,true);
+    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.steel_dark,false);
+    sc_visual_circle(_x,_y,_r,_a,0.4,0,0.18,_p.steel_light,true);
 
-    // Mount braces.
-    sc_visual_line(_x,_y,_r,_a,0.27,-0.17,0.5,-0.17,3,_p.outline);
-    sc_visual_line(_x,_y,_r,_a,0.27,0.17,0.5,0.17,3,_p.outline);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.28,-0.17,0.51,-0.17,4,_p);
+    sc_rebel_visual_rivet_strip(_x,_y,_r,_a,0.51,0.17,0.28,0.17,4,_p);
 }
 
 /// @description Draws the long limited-arc Rebel Napalm Projector.

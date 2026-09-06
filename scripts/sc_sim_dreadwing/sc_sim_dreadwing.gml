@@ -32,7 +32,7 @@ function sc_enemy_register_sim_dreadwing()
                 speed_max: 3,
                 acceleration: 0.12,
                 friction_coeff: 0.992,
-                turn_speed: 1,
+                turn_speed: 1.25,
                 directional: true,
                 directional_speed_min: 0.3,
                 directional_thrust_min: 0.42
@@ -195,14 +195,14 @@ function sc_enemy_register_sim_dreadwing()
 		            conditions: {
 		                line_of_sight: true,
 		                range_min: 250,
-		                range_max: 900
+		                range_max: 1080
 		            },
 
 		            aim: {
 		                mode: AimMode.MOUNT,
 		                angle_offset: 0,
 		                inaccuracy: 0,
-		                fire_tolerance: 10
+		                fire_tolerance: 20
 		            },
 
 		            shot: {
@@ -211,11 +211,11 @@ function sc_enemy_register_sim_dreadwing()
 		            },
 
 		            telegraph: {
-		                duration: 48,
-		                aim_lock_remaining: 15,
-		                track_during_active: false,
+		                duration: 36,
+		                aim_lock_remaining: 10,
+		                track_during_active: true,
 		                scale: 0.18,
-		                particle_interval: 2,
+		                particle_interval: 1,
 		                draw_script: sc_attack_telegraph_energy_draw,
 		                particle_script: sc_particles_attack_telegraph_emit
 		            },
@@ -236,7 +236,7 @@ function sc_enemy_register_sim_dreadwing()
 		            conditions: {
 		                line_of_sight: true,
 		                range_min: 220,
-		                range_max: 1050
+		                range_max: 1600
 		            },
 
 		            aim: {
@@ -252,7 +252,7 @@ function sc_enemy_register_sim_dreadwing()
 		            },
 
 		            telegraph: {
-		                duration: 72,
+		                duration: 60,
 		                aim_lock_remaining: 0,
 		                track_during_active: true,
 		                scale: 0.34,
