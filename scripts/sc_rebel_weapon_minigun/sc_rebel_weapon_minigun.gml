@@ -19,9 +19,9 @@ function sc_weapon_register_rebel_minigun()
             projectile_key: "projectile_minigun",
 
             projectile: {
-                scale: 1.15,
-                speed: 25,
-                life: 150
+                scale: 1,
+                speed: 48,
+                life: 120
             },
 
             damage: {

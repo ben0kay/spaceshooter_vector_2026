@@ -122,6 +122,7 @@
     {"id":{"name":"sc_Enums","path":"scripts/sc_Enums/sc_Enums.yy",},},
     {"id":{"name":"sc_faction_register","path":"scripts/sc_faction_register/sc_faction_register.yy",},},
     {"id":{"name":"sc_game_init","path":"scripts/sc_game_init/sc_game_init.yy",},},
+    {"id":{"name":"sc_gui_button","path":"scripts/sc_gui_button/sc_gui_button.yy",},},
     {"id":{"name":"sc_health_bar","path":"scripts/sc_health_bar/sc_health_bar.yy",},},
     {"id":{"name":"sc_hud_bake","path":"scripts/sc_hud_bake/sc_hud_bake.yy",},},
     {"id":{"name":"sc_hud_level","path":"scripts/sc_hud_level/sc_hud_level.yy",},},

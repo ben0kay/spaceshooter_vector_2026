@@ -267,7 +267,10 @@ function sc_input_init()
             fire_primary: false,
             mine: false,
             fire_secondary: false,
+
+            ui_select_held: false,
             ui_select_pressed: false,
+            ui_select_released: false,
 
             fullscreen_pressed: false,
             inventory_pressed: false,
@@ -300,7 +303,10 @@ function sc_input_update()
     _action.fire_primary = mouse_check_button(_binding.fire_primary);
     _action.mine = mouse_check_button(_binding.mine);
     _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
+
+    _action.ui_select_held = mouse_check_button(mb_left);
     _action.ui_select_pressed = mouse_check_button_pressed(mb_left);
+    _action.ui_select_released = mouse_check_button_released(mb_left);
 
     _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
     _action.dash_held = keyboard_check(_binding.dash);

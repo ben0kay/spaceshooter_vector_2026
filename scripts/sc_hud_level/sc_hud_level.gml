@@ -73,35 +73,42 @@ function sc_hud_level_data()
             drag_offset_y: 0
         },
 			
-		inventory: {
-		    width: 1080,
-		    height: 680,
+		        inventory: {
+            width: 1280,
+            height: 720,
 
-		    tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
-		    tab_x: 48,
-		    tab_y: 98,
-		    tab_width: 154,
-		    tab_height: 40,
-		    tab_gap: 14,
+            tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
+            tab_x: 385,
+            tab_y: 82,
+            tab_width: 128,
+            tab_height: 42,
+            tab_gap: 10,
 
-		    grid: {
-		        x: 58,
-		        y: 200,
-		        columns: 8,
-		        rows: 5,
-		        slot_size: 66,
-		        gap: 8,
-		        width: 584,
-		        height: 362
-		    },
+            grid: {
+                x: 50,
+                y: 195,
+                columns: 8,
+                rows: 4,
+                slot_size: 92,
+                gap: 8,
+                width: 792,
+                height: 392
+            },
 
-		    info: {
-		        x: 690,
-		        y: 182,
-		        width: 330,
-		        height: 398
-		    }
-		}
+            info: {
+                x: 875,
+                y: 165,
+                width: 350,
+                height: 470
+            },
+
+            capacity: {
+                x: 50,
+                y: 646,
+                width: 600,
+                height: 12
+            }
+        }
     };
 }
 
@@ -109,6 +116,21 @@ function sc_hud_level_data()
 function sc_hud_level_init(_hud_object)
 {
     var _data = sc_hud_level_data();
+    var _inventory_data = _data.inventory;
+    var _tabs = [];
+
+    for (var _i = 0; _i < array_length(_inventory_data.tabs); _i++)
+    {
+        array_push(_tabs, sc_gui_button_create(
+            _i,
+            _inventory_data.tab_x + _i * (_inventory_data.tab_width + _inventory_data.tab_gap),
+            _inventory_data.tab_y,
+            _inventory_data.tab_width,
+            _inventory_data.tab_height,
+            _inventory_data.tabs[_i],
+            GUIButtonStyle.TAB
+        ));
+    }
 
     _hud_object.hud = {
         data: _data,
@@ -120,19 +142,32 @@ function sc_hud_level_init(_hud_object)
         },
 
         inventory: {
-		    open: false,
-		    tab: InventoryTab.CARGO,
-		    selected_slot: 0
-		},
+            open: false,
+            tab: InventoryTab.CARGO,
+            selected_slot: 0,
 
-		cache: {
-		    bottom_body: -1,
-		    bottom_effects: array_create(_data.bottom.effect_frames, -1),
-		    top_body: -1,
-		    top_effects: array_create(_data.top.effect_frames, -1),
-		    minimap_dock: -1,
-		    inventory_body: -1
-		}
+            drag: {
+                active: false,
+                source_slot: -1
+            },
+
+            buttons: {
+                tabs: _tabs,
+                close: sc_gui_button_create("close", 1225, 28, 34, 34, "X", GUIButtonStyle.DANGER),
+                sort: sc_gui_button_create("sort", 707, 632, 135, 38, "SORT", GUIButtonStyle.STANDARD),
+                transfer: sc_gui_button_create("transfer", 895, 575, 140, 42, "TRANSFER", GUIButtonStyle.STANDARD),
+                drop: sc_gui_button_create("drop", 1065, 575, 140, 42, "DROP STACK", GUIButtonStyle.DANGER)
+            }
+        },
+
+        cache: {
+            bottom_body: -1,
+            bottom_effects: array_create(_data.bottom.effect_frames, -1),
+            top_body: -1,
+            top_effects: array_create(_data.top.effect_frames, -1),
+            minimap_dock: -1,
+            inventory_body: -1
+        }
     };
 
     return sc_hud_level_cache_bake(_hud_object.hud);

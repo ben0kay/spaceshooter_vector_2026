@@ -382,6 +382,29 @@ function sc_player_continuous_weapon_release(_player)
     return true;
 }
 
+/// @description Immediately stops player movement and active propulsion.
+function sc_player_movement_stop(_player)
+{
+    var _movement = _player.movement;
+
+    _movement.input_x = 0;
+    _movement.input_y = 0;
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    _movement.speed = 0;
+    _movement.moving = false;
+    _movement.boost.active = false;
+}
+
+/// @description Suspends movement and weapon use for a blocking player state.
+function sc_player_control_suspend(_player)
+{
+    sc_player_continuous_weapons_release(_player);
+    sc_player_movement_stop(_player);
+
+    _player.combat.weapons_allowed = false;
+}
+
 /// @description Releases the player's currently active mining beam.
 function sc_player_mining_beam_release(_player)
 {
