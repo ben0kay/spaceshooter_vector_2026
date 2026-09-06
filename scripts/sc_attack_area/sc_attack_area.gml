@@ -125,63 +125,68 @@ function sc_attack_area_standard_init(_area, _create)
 }
 
 /// @description Initializes one continuously maintained capsule or cone area.
-function sc_beam_init(_area,_create)
+function sc_beam_init(_area, _create)
 {
-    var _definition=variable_clone(_create.definition);
-    var _shape=_definition.shape;
-    var _geometry=variable_clone(_definition.geometry);
-    var _source_behaviour=_definition.behaviour;
-    var _scale=max(0.01,_create.scale);
-    var _interval=max(1,round(_source_behaviour.tick_interval));
+    var _definition = variable_clone(_create.definition);
+    var _shape = _definition.shape;
+    var _geometry = variable_clone(_definition.geometry);
+    var _source_behaviour = _definition.behaviour;
+    var _scale = max(0.01, _create.scale);
+    var _interval = max(1, round(_source_behaviour.tick_interval));
 
-    var _behaviour={
-        release_duration:max(1,round(_source_behaviour.release_duration)),
-        tick_interval:_interval,
-        max_targets:_source_behaviour.max_targets
+    var _behaviour = {
+        release_duration: max(1, round(_source_behaviour.release_duration)),
+        tick_interval: _interval,
+        hit_once: false,
+        max_targets: _source_behaviour.max_targets
     };
 
-    var _runtime={
-        next_damage_tick:GAME_TICK+_interval,
-        refreshed_tick:GAME_TICK,
-        releasing:false,
-        release_alpha:1,
-        hit_ids:[]
+    var _runtime = {
+        next_damage_tick: GAME_TICK + _interval,
+        refreshed_tick: GAME_TICK,
+        releasing: false,
+        release_alpha: 1,
+        hit_ids: []
     };
 
     switch (_shape)
     {
         case AttackAreaShape.CAPSULE:
-            _runtime.maximum_length=_geometry.length*_scale;
-            _runtime.growth_length=0;
-            _runtime.hit_length=0;
+            _runtime.maximum_length = _geometry.length * _scale;
+            _runtime.growth_length = 0;
+            _runtime.hit_length = 0;
 
-            _geometry.length=0;
-            _geometry.radius*=_scale;
+            _geometry.length = 0;
+            _geometry.radius *= _scale;
 
-            _behaviour.growth_speed=max(0,_source_behaviour.growth_speed*_scale);
-            _behaviour.piercing=_source_behaviour.piercing;
-            _behaviour.blocks_on_solids=_source_behaviour.blocks_on_solids;
+            _behaviour.growth_speed = max(
+                0,
+                _source_behaviour.growth_speed * _scale
+            );
+
+            _behaviour.piercing = _source_behaviour.piercing;
+            _behaviour.blocks_on_solids = _source_behaviour.blocks_on_solids;
         break;
 
         case AttackAreaShape.CONE:
-            _geometry.range*=_scale;
+            _geometry.range *= _scale;
         break;
     }
 
-    _area.attack_area={
-        delivery_type:AttackDelivery.BEAM,
-        source:_create.source,
-        direction:_create.direction,
-        shape:_shape,
-        geometry:_geometry,
-        damage:sc_damage_packet_create(_create.damage,_create.source),
-        behaviour:_behaviour,
-        visual:variable_clone(_definition.visual),
-        runtime:_runtime
+    _area.attack_area = {
+        delivery_type: AttackDelivery.BEAM,
+        source: _create.source,
+        direction: _create.direction,
+        shape: _shape,
+        geometry: _geometry,
+        damage: sc_damage_packet_create(_create.damage, _create.source),
+        behaviour: _behaviour,
+        visual: variable_clone(_definition.visual),
+        runtime: _runtime
     };
 
-    _area.draw_angle=_create.direction;
-    _area.initialized=true;
+    _area.draw_angle = _create.direction;
+    _area.initialized = true;
     return true;
 }
 

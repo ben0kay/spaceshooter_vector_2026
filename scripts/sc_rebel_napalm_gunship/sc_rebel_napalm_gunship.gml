@@ -9,168 +9,168 @@ canister, thin scrap wings and a limited-arc flame projector.
 function sc_enemy_register_rebel_napalm_gunship()
 {
     return sc_enemy_register({
-        identity:{
-            key:"e_rebel_napalm_gunship",
-            name:"Rebel Napalm Gunship",
-            faction:Faction.REBEL,
-            role:EnemyRole.FIGHTER,
-            ship_class:EnemyClass.STANDARD,
-            rank:EnemyRank.COMMON,
-            threat_value:3
+        identity: {
+            key: "e_rebel_napalm_gunship",
+            name: "Rebel Napalm Gunship",
+            faction: Faction.REBEL,
+            role: EnemyRole.FIGHTER,
+            ship_class: EnemyClass.STANDARD,
+            rank: EnemyRank.COMMON,
+            threat_value: 3
         },
 
-        reward:{ credits:48 },
+        reward: { credits: 48 },
 
-        stats_base:{
-            shield_max:0,
-            armour_max:230,
-            hull_max:120,
-            mass:1.2,
+        stats_base: {
+            shield_max: 0,
+            armour_max: 230,
+            hull_max: 120,
+            mass: 1.2,
 
-            handling:{
-                speed_max:4.3,
-                acceleration:0.19,
-                friction_coeff:0.978,
-                turn_speed:2.7,
-                directional:true,
-                directional_speed_min:0.38,
-                directional_thrust_min:0.48
+            handling: {
+                speed_max: 4.3,
+                acceleration: 0.19,
+                friction_coeff: 0.978,
+                turn_speed: 2.7,
+                directional: true,
+                directional_speed_min: 0.38,
+                directional_thrust_min: 0.48
             },
 
-            range:{
-                detection:1050,
-                combat:470,
-                backaway:145,
-                forget:1500,
-                wander:360,
-                alert_share:950
+            range: {
+                detection: 1050,
+                combat: 470,
+                backaway: 145,
+                forget: 1500,
+                wander: 360,
+                alert_share: 950
             },
 
-            damage_multiplier:1,
-            fire_rate_multiplier:1
+            damage_multiplier: 1,
+            fire_rate_multiplier: 1
         },
 
-        movement_controller:{
-            asteroid_response:AsteroidResponse.AVOID,
-            idle_script:sc_enemy_movement_wander,
-            chase_script:sc_enemy_movement_stalk_range,
-            combat_script:sc_enemy_movement_stalk_range,
+        movement_controller: {
+            asteroid_response: AsteroidResponse.AVOID,
+            idle_script: sc_enemy_movement_wander,
+            chase_script: sc_enemy_movement_stalk_range,
+            combat_script: sc_enemy_movement_stalk_range,
 
-            runtime:{
-                stalker:{
-                    side:choose(-1,1),
-                    next_switch_tick:0
+            runtime: {
+                stalker: {
+                    side: choose(-1, 1),
+                    next_switch_tick: 0
                 }
             },
 
-            facing:{
-                default_mode:EnemyFacingMode.TARGET,
-                backaway_mode:EnemyFacingMode.TARGET,
-                angle_offset:0,
-                turn_speed_scale:1,
-                spin_speed:0
+            facing: {
+                default_mode: EnemyFacingMode.TARGET,
+                backaway_mode: EnemyFacingMode.TARGET,
+                angle_offset: 0,
+                turn_speed_scale: 1,
+                spin_speed: 0
             },
 
-            strafe:{
-                amount:0,
-                speed:0
+            strafe: {
+                amount: 0,
+                speed: 0
             },
 
-            stalker:{
-                hold_range:330,
-                approach_speed:0.85,
-                circle_speed:0.38,
-                firing_speed:0.24,
-                side_angle:78,
-                switch_min:90,
-                switch_max:180
+            stalker: {
+                hold_range: 330,
+                approach_speed: 0.85,
+                circle_speed: 0.38,
+                firing_speed: 0.24,
+                side_angle: 78,
+                switch_min: 90,
+                switch_max: 180
             }
         },
 
-        awareness_controller:{
-            unseen_damage_script:sc_enemy_awareness_investigate,
-            alert_receive_script:sc_enemy_awareness_investigate,
-            duration:540,
-            arrival_radius:85,
-            search_duration:170,
-            speed_scale:0.65
+        awareness_controller: {
+            unseen_damage_script: sc_enemy_awareness_investigate,
+            alert_receive_script: sc_enemy_awareness_investigate,
+            duration: 540,
+            arrival_radius: 85,
+            search_duration: 170,
+            speed_scale: 0.65
         },
 
-        visual:sc_enemy_rebel_napalm_gunship_visual_data(),
+        visual: sc_enemy_rebel_napalm_gunship_visual_data(),
 
-        collision:{
-            radius_forward_scale:1.08,
-            radius_side_scale:0.72,
-            blocks_player:true
+        collision: {
+            radius_forward_scale: 1.08,
+            radius_side_scale: 0.72,
+            blocks_player: true
         },
 
-        hardpoints:[
+        hardpoints: [
             {
-                key:"napalm_projector",
-                group:"flamethrower",
-                forward:0.4,
-                side:0,
-                angle:0,
-                muzzle_forward:0.57,
+                key: "napalm_projector",
+                group: "flamethrower",
+                forward: 0.4,
+                side: 0,
+                angle: 0,
+                muzzle_forward: 0.57,
 
-                rotation:{
-                    mode:HardpointRotation.TARGET,
-                    turn_speed:2.8,
-                    arc:140,
-                    return_to_rest:true
+                rotation: {
+                    mode: HardpointRotation.TARGET,
+                    turn_speed: 2.8,
+                    arc: 140,
+                    return_to_rest: true
                 },
 
-                draw_script:sc_enemy_rebel_napalm_projector_draw
+                draw_script: sc_enemy_rebel_napalm_projector_draw
             }
         ],
 
-        thrusters:[
-            { key:"engine_left",forward:-0.82,side:-0.25,angle:180,scale:0.78 },
-            { key:"engine_right",forward:-0.82,side:0.25,angle:180,scale:0.78 }
+        thrusters: [
+            { key: "engine_left", forward: -0.82, side: -0.25, angle: 180, scale: 0.78 },
+            { key: "engine_right", forward: -0.82, side: 0.25, angle: 180, scale: 0.78 }
         ],
 
-        attack_controller:{
-            selection:AttackSelection.WEIGHTED,
+        attack_controller: {
+            selection: AttackSelection.WEIGHTED,
 
-            attacks:[
+            attacks: [
                 {
-                    key:"napalm_burst",
-                    weight:100,
-                    hardpoint_group:"flamethrower",
-                    weapon_key:"weapon_rebel_flamethrower",
+                    key: "napalm_burst",
+                    weight: 100,
+                    hardpoint_group: "flamethrower",
+                    weapon_key: "weapon_rebel_flamethrower",
 
-                    conditions:{
-                        line_of_sight:true,
-                        range_min:90,
-                        range_max:430
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 90,
+                        range_max: 430
                     },
 
-                    aim:{
-                        mode:AimMode.MOUNT,
-                        angle_offset:0,
-                        inaccuracy:1.5,
-                        fire_tolerance:10
+                    aim: {
+                        mode: AimMode.MOUNT,
+                        angle_offset: 0,
+                        inaccuracy: 1.5,
+                        fire_tolerance: 10
                     },
 
-                    shot:{
-                        pattern:ShotPattern.SINGLE,
-                        amount:1
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
                     },
 
-                    telegraph:{
-                        duration:28,
-                        aim_lock_remaining:0,
-                        track_during_active:true,
-                        scale:0.17,
-                        particle_interval:3,
-                        draw_script:sc_attack_telegraph_energy_draw,
-                        particle_script:sc_particles_attack_telegraph_emit
+                    telegraph: {
+                        duration: 28,
+                        aim_lock_remaining: 0,
+                        track_during_active: true,
+                        scale: 0.17,
+                        particle_interval: 3,
+                        draw_script: sc_attack_telegraph_energy_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
                     },
 
-                    firing:{
-                        order:HardpointFireOrder.ALL,
-                        duration:105,
-                        cooldown:145
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        duration: 105,
+                        cooldown: 145
                     }
                 }
             ]
@@ -182,38 +182,38 @@ function sc_enemy_register_rebel_napalm_gunship()
 function sc_enemy_rebel_napalm_gunship_visual_data()
 {
     return {
-        radius:66,
-        motion_strength:2,
-        palette:sc_faction_palette_get(Faction.REBEL),
-        core:{ forward:-0.38,side:0 },
+        radius: 66,
+        motion_strength: 2,
+        palette: sc_faction_palette_get(Faction.REBEL),
+        core: { forward: -0.38, side: 0 },
 
-        draw:{
-            body:sc_enemy_rebel_napalm_gunship_body_draw,
-            core:sc_enemy_rebel_napalm_gunship_core_draw
+        draw: {
+            body: sc_enemy_rebel_napalm_gunship_body_draw,
+            core: sc_enemy_rebel_napalm_gunship_core_draw
         },
 
-        death:{
-            script:sc_enemy_rebel_napalm_gunship_death,
+        death: {
+            script: sc_enemy_rebel_napalm_gunship_death,
 
-            draw_scripts:[
+            draw_scripts: [
                 sc_enemy_rebel_napalm_fragment_front_draw,
                 sc_enemy_rebel_napalm_fragment_left_draw,
                 sc_enemy_rebel_napalm_fragment_right_draw
             ]
         },
 
-        thrust:{
-            draw_script:sc_enemy_rebel_thrust_draw,
-            ignition_script:sc_particles_enemy_thrust_ignition,
-            particle_script:sc_particles_enemy_thrust_emit
+        thrust: {
+            draw_script: sc_enemy_rebel_thrust_draw,
+            ignition_script: sc_particles_enemy_thrust_ignition,
+            particle_script: sc_particles_enemy_thrust_emit
         },
 
-        bake:{
-            body_canvas_size:256,
-            core_canvas_size:128,
-            hardpoint_canvas_size:128,
-            thrust_canvas_size:128,
-            fragment_canvas_size:192
+        bake: {
+            body_canvas_size: 256,
+            core_canvas_size: 128,
+            hardpoint_canvas_size: 128,
+            thrust_canvas_size: 128,
+            fragment_canvas_size: 192
         }
     };
 }
