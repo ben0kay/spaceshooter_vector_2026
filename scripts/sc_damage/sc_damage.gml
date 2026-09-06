@@ -67,8 +67,8 @@ function sc_damage_layer_multiplier_get(_type, _layer)
     return 1;
 }
 
-/// @description Resolves raw packet power through shield, armour and hull with correct overflow.
-function sc_damage_resolve(_packet, _shield, _armour, _hull)
+/// @description Resolves one damage packet through shield, armour and hull.
+function sc_damage_resolve(_packet, _shield, _armour, _hull, _armour_hull_multiplier = 1)
 {
     var _remaining = sc_damage_packet_amount_get(_packet);
     var _names = ["shield", "armour", "hull"];
@@ -77,11 +77,12 @@ function sc_damage_resolve(_packet, _shield, _armour, _hull)
     var _dealt = [0, 0, 0];
     var _impact_layer = DefenceLayer.NONE;
 
-    for (var _i = 0; _i < 3 && _remaining > 0; _i++)
+    for (var _i = 0; _i < 3 && _remaining > 0; ++_i)
     {
         if (_current[_i] <= 0) continue;
 
         var _multiplier = sc_damage_layer_multiplier_get(_packet.type, _names[_i]);
+        if (_i > 0) _multiplier *= _armour_hull_multiplier;
         if (_multiplier <= 0) { _remaining = 0; break; }
 
         var _damage = min(_current[_i], _remaining * _multiplier);
@@ -94,11 +95,15 @@ function sc_damage_resolve(_packet, _shield, _armour, _hull)
     }
 
     return {
-        shield: _current[0], armour: _current[1], hull: _current[2],
+        shield: _current[0],
+        armour: _current[1],
+        hull: _current[2],
         impact_layer: _impact_layer,
 
         dealt: {
-            shield: _dealt[0], armour: _dealt[1], hull: _dealt[2],
+            shield: _dealt[0],
+            armour: _dealt[1],
+            hull: _dealt[2],
             total: _dealt[0] + _dealt[1] + _dealt[2]
         },
 

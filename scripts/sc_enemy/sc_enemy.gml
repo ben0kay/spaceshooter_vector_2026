@@ -10,18 +10,17 @@ function sc_enemy_init(_enemy, _enemy_key)
     var _data = variable_struct_get(global.data.enemies, _enemy_key);
     var _radius = _data.visual.radius;
 	
-	var _rear_damage = variable_clone(global.config.enemy.rear_damage);
+var _rear_damage = variable_clone(global.config.enemy.rear_damage);
 
-	if (variable_struct_exists(_data, "rear_damage"))
-	{
-	    var _override = _data.rear_damage;
+if (variable_struct_exists(_data, "rear_damage"))
+{
+    var _override = _data.rear_damage;
+    _rear_damage.arc = _override.arc;
+    _rear_damage.multiplier = _override.multiplier;
+}
 
-	    if (variable_struct_exists(_override, "arc")) _rear_damage.arc = _override.arc;
-	    if (variable_struct_exists(_override, "multiplier")) _rear_damage.multiplier = _override.multiplier;
-	}
-
-	_rear_damage.arc = clamp(_rear_damage.arc, 0, 360);
-	_rear_damage.multiplier = max(1, _rear_damage.multiplier);
+_rear_damage.arc = clamp(_rear_damage.arc, 0, 360);
+_rear_damage.multiplier = max(1, _rear_damage.multiplier);
 
     _enemy.enemy = {
         key: _enemy_key,
@@ -687,15 +686,14 @@ function sc_enemy_draw(_enemy)
     }
 }
 
-/// @description Applies layered enemy damage with the global rear-hit bonus.
+/// @description Applies layered enemy damage with an optional rear armour and hull bonus.
 function sc_enemy_damage(_enemy, _packet, _impact = undefined)
 {
     var _data = _enemy.enemy;
     if (_data.state == EnemyState.DEAD) return false;
 
-    var _rear_hit = false;
-    var _packet_resolve = _packet;
     var _rear = _data.rear_damage;
+    var _rear_angle = false;
 
     if (_rear.arc > 0 && is_struct(_impact))
     {
@@ -707,19 +705,26 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
             var _impact_direction = point_direction(_enemy.x, _enemy.y, _impact.x, _impact.y);
             var _rear_direction = _enemy.draw_angle + 180;
 
-            if (abs(angle_difference(_impact_direction, _rear_direction)) <= _rear.arc * 0.5)
-            {
-                _packet_resolve = variable_clone(_packet);
-                _packet_resolve.amount *= _rear.multiplier;
-                _rear_hit = true;
-            }
+            _rear_angle = abs(angle_difference(
+                _impact_direction,
+                _rear_direction
+            )) <= _rear.arc * 0.5;
         }
     }
 
     var _defence = _data.defence;
-    var _result = sc_damage_resolve(_packet_resolve, _defence.shield.current, _defence.armour.current, _defence.hull.current);
+    var _rear_multiplier = _rear_angle ? _rear.multiplier : 1;
+    var _result = sc_damage_resolve(
+        _packet,
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current,
+        _rear_multiplier
+    );
 
-    _result.rear_hit = _rear_hit;
+    _result.rear_hit = _rear_angle
+        && (_result.dealt.armour > 0 || _result.dealt.hull > 0);
+
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
     _defence.hull.current = _result.hull;
@@ -741,7 +746,8 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
 
     if (_data.state == EnemyState.FLEEING)
     {
-        if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        if (_result.effect.type == DamageEffect.STAGGER
+        && sc_damage_effect_triggered(_result.effect))
             sc_enemy_stagger_begin(_enemy, _result.effect);
 
         return _result;
@@ -751,7 +757,8 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
     sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
     sc_enemy_flee_try(_enemy, _result);
 
-    if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+    if (_result.effect.type == DamageEffect.STAGGER
+    && sc_damage_effect_triggered(_result.effect))
         sc_enemy_stagger_begin(_enemy, _result.effect);
 
     return _result;
