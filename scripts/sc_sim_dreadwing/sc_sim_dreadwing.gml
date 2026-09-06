@@ -145,10 +145,23 @@ function sc_enemy_register_sim_dreadwing()
 
         attack_controller: {
 		    selection: AttackSelection.WEIGHTED,
+			max_active_channels: 2,
+
+			channels: [
+			    {
+			        key: "cannons",
+			        selection: AttackSelection.WEIGHTED
+			    },
+			    {
+			        key: "heavy",
+			        selection: AttackSelection.WEIGHTED
+			    }
+			],
 
 		    attacks: [
 		        {
 		            key: "four_cannon_salvo",
+					channel: "cannons",
 		            weight: 40,
 		            hardpoint_group: "cannons",
 		            weapon_key: "weapon_simulant_pulse",
@@ -180,6 +193,7 @@ function sc_enemy_register_sim_dreadwing()
 		        },
 		        {
 		            key: "centre_beam",
+					channel: "heavy",
 		            weight: 40,
 		            hardpoint_group: "beam",
 		            weapon_key: "weapon_simulant_thin_beam",
@@ -220,6 +234,7 @@ function sc_enemy_register_sim_dreadwing()
 		        },
 		        {
 		            key: "seeker_core_launch",
+					channel: "heavy",
 		            weight: 20,
 		            hardpoint_group: "core_weapon",
 		            weapon_key: "weapon_simulant_seeker_core",

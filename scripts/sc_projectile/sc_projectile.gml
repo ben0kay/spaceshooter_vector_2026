@@ -87,6 +87,8 @@ function sc_projectile_init(_projectile, _create)
         }
     };
 
+	_projectile.draw_angle = _create.direction;
+	
     if (is_struct(_defence))
     {
         sc_entity_init(
@@ -106,7 +108,6 @@ function sc_projectile_init(_projectile, _create)
     var _mask_scale = _collision.radius / 16;
     _projectile.image_xscale = _mask_scale;
     _projectile.image_yscale = _mask_scale;
-    _projectile.draw_angle = _create.direction;
     _projectile.initialized = true;
     return true;
 }

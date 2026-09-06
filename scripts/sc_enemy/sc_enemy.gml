@@ -148,32 +148,8 @@ function sc_enemy_init(_enemy, _enemy_key)
     for (var _i = 0; _i < array_length(_runtime.thrusters); _i++)
         _runtime.thrusters[_i].runtime = { active: false, power: 0, phase: irandom(359) };
 
-    for (var _i = 0; _i < array_length(_runtime.attack_controller.attacks); _i++)
-    {
-        var _attack = _runtime.attack_controller.attacks[_i];
-        _attack.hardpoint_indices = [];
-
-        for (var _h = 0; _h < array_length(_runtime.hardpoints); _h++)
-        {
-            if (_runtime.hardpoints[_h].group == _attack.hardpoint_group)
-                array_push(_attack.hardpoint_indices, _h);
-        }
-    }
-
-    _runtime.attack_controller.runtime = {
-        phase: EnemyAttackPhase.IDLE,
-        current_attack: -1,
-        next_attack_index: 0,
-        hardpoint_cursor: 0,
-        volley_count: 0,
-        next_fire_tick: 0,
-        cooldown_until: 0,
-        attack_end_tick: 0,
-        telegraph_start_tick: 0,
-        telegraph_end_tick: 0,
-        next_telegraph_particle_tick: 0,
-        active_deliveries: []
-    };
+if (!sc_enemy_attack_controller_init(_enemy))
+        return false;
 
     _enemy.initialized = true;
     global.level.enemies_alive++;

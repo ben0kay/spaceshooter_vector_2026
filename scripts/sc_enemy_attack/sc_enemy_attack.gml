@@ -1,77 +1,242 @@
-/// @description Returns whether a fixed participating hardpoint currently locks the enemy hull.
+/// @description Creates one independent enemy attack-channel runtime.
+function sc_enemy_attack_runtime_create()
+{
+    return {
+        phase: EnemyAttackPhase.IDLE,
+        current_attack: -1,
+        next_attack_index: 0,
+        hardpoint_cursor: 0,
+        volley_count: 0,
+        next_fire_tick: 0,
+        cooldown_until: 0,
+        attack_end_tick: 0,
+        telegraph_start_tick: 0,
+        telegraph_end_tick: 0,
+        next_telegraph_particle_tick: 0,
+        active_deliveries: []
+    };
+}
+
+/// @description Makes one channel available to existing shared attack functions.
+function sc_enemy_attack_channel_bind(_controller, _channel)
+{
+    _controller.selection = _channel.selection;
+    _controller.attacks = _channel.attacks;
+    _controller.runtime = _channel.runtime;
+}
+
+/// @description Initializes backward-compatible independent attack channels.
+function sc_enemy_attack_controller_init(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _controller = _data.attack_controller;
+    var _source_attacks = _controller.attacks;
+
+    // Existing definitions automatically become one main channel.
+    if (!variable_struct_exists(_controller, "channels"))
+    {
+        _controller.channels = [{
+            key: "main",
+            selection: _controller.selection,
+            attacks: _source_attacks,
+            runtime: sc_enemy_attack_runtime_create()
+        }];
+    }
+    else
+    {
+        if (array_length(_controller.channels) <= 0)
+        {
+            show_debug_message("ENEMY ATTACK ERROR - no channels: " + _data.key);
+            return false;
+        }
+
+        // Prepare authored channel configuration.
+        for (var _i = 0; _i < array_length(_controller.channels); _i++)
+        {
+            var _channel = _controller.channels[_i];
+
+            if (!variable_struct_exists(_channel, "selection"))
+                _channel.selection = _controller.selection;
+
+            _channel.attacks = [];
+            _channel.runtime = sc_enemy_attack_runtime_create();
+        }
+
+        // Assign the existing flat attack definitions to their named channels.
+        for (var _i = 0; _i < array_length(_source_attacks); _i++)
+        {
+            var _attack = _source_attacks[_i];
+
+            if (!variable_struct_exists(_attack, "channel"))
+            {
+                show_debug_message(
+                    "ENEMY ATTACK ERROR - missing channel on "
+                    + _data.key + ": " + _attack.key
+                );
+
+                return false;
+            }
+
+            var _assigned = false;
+
+            for (var _c = 0; _c < array_length(_controller.channels); _c++)
+            {
+                var _channel = _controller.channels[_c];
+
+                if (_channel.key != _attack.channel) continue;
+
+                array_push(_channel.attacks, _attack);
+                _assigned = true;
+                break;
+            }
+
+            if (!_assigned)
+            {
+                show_debug_message(
+                    "ENEMY ATTACK ERROR - unknown channel "
+                    + _attack.channel + " on " + _data.key
+                );
+
+                return false;
+            }
+        }
+    }
+
+    var _channel_count = array_length(_controller.channels);
+
+    _controller.max_active_channels = variable_struct_exists(_controller, "max_active_channels")
+        ? clamp(round(_controller.max_active_channels), 1, _channel_count)
+        : 1;
+
+    // Resolve every channel attack to its physical hardpoints.
+    for (var _c = 0; _c < _channel_count; _c++)
+    {
+        var _channel = _controller.channels[_c];
+
+        if (array_length(_channel.attacks) <= 0)
+        {
+            show_debug_message(
+                "ENEMY ATTACK ERROR - empty channel "
+                + _channel.key + " on " + _data.key
+            );
+
+            return false;
+        }
+
+        for (var _i = 0; _i < array_length(_channel.attacks); _i++)
+        {
+            var _attack = _channel.attacks[_i];
+            _attack.hardpoint_indices = [];
+
+            for (var _h = 0; _h < array_length(_data.hardpoints); _h++)
+            {
+                if (_data.hardpoints[_h].group == _attack.hardpoint_group)
+                    array_push(_attack.hardpoint_indices, _h);
+            }
+
+            if (array_length(_attack.hardpoint_indices) <= 0)
+            {
+                show_debug_message(
+                    "ENEMY ATTACK ERROR - no hardpoints for "
+                    + _attack.key + " on " + _data.key
+                );
+
+                return false;
+            }
+        }
+    }
+
+    // Keep the legacy aliases valid for the existing shared attack functions.
+    sc_enemy_attack_channel_bind(_controller, _controller.channels[0]);
+    return true;
+}
+
+/// @description Returns whether one channel is telegraphing or actively attacking.
+function sc_enemy_attack_channel_active(_channel)
+{
+    var _phase = _channel.runtime.phase;
+
+    return _phase == EnemyAttackPhase.TELEGRAPH
+        || _phase == EnemyAttackPhase.ACTIVE;
+}
+
+/// @description Returns whether one attack runtime currently locks its aim.
+function sc_enemy_attack_runtime_aim_locked(_attack, _runtime)
+{
+    if (!variable_struct_exists(_attack, "telegraph")) return false;
+
+    switch (_runtime.phase)
+    {
+        case EnemyAttackPhase.TELEGRAPH:
+            return GAME_TICK >=
+                _runtime.telegraph_end_tick
+                - _attack.telegraph.aim_lock_remaining;
+
+        case EnemyAttackPhase.ACTIVE:
+            return !_attack.telegraph.track_during_active;
+    }
+
+    return false;
+}
+
+/// @description Returns whether any fixed participating hardpoint locks the enemy hull.
 function sc_enemy_attack_aim_locked(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
-    var _runtime = _controller.runtime;
 
-    if (_runtime.current_attack < 0) return false;
-
-    var _attack = _controller.attacks[_runtime.current_attack];
-    if (!variable_struct_exists(_attack, "telegraph")) return false;
-
-    var _locked = false;
-
-    switch (_runtime.phase)
+    for (var _c = 0; _c < array_length(_controller.channels); _c++)
     {
-        case EnemyAttackPhase.TELEGRAPH:
-            _locked = GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
-        break;
+        var _channel = _controller.channels[_c];
+        var _runtime = _channel.runtime;
 
-        case EnemyAttackPhase.ACTIVE:
-            _locked = !_attack.telegraph.track_during_active;
-        break;
-    }
+        if (_runtime.current_attack < 0) continue;
 
-    if (!_locked) return false;
+        var _attack = _channel.attacks[_runtime.current_attack];
+        if (!sc_enemy_attack_runtime_aim_locked(_attack, _runtime)) continue;
 
-    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
-    {
-        var _hardpoint = _enemy.enemy.hardpoints[_attack.hardpoint_indices[_i]];
-        if (_hardpoint.rotation.mode == HardpointRotation.FIXED) return true;
+        for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+        {
+            var _hardpoint = _enemy.enemy.hardpoints[_attack.hardpoint_indices[_i]];
+
+            if (_hardpoint.rotation.mode == HardpointRotation.FIXED)
+                return true;
+        }
     }
 
     return false;
 }
 
-/// @description Returns whether one independently rotating participating hardpoint has locked its aim.
+/// @description Returns whether a rotating hardpoint is locked by any active channel.
 function sc_enemy_attack_hardpoint_aim_locked(_enemy, _hardpoint_index)
 {
     var _controller = _enemy.enemy.attack_controller;
-    var _runtime = _controller.runtime;
 
-    if (_runtime.current_attack < 0) return false;
-
-    var _attack = _controller.attacks[_runtime.current_attack];
-    if (!variable_struct_exists(_attack, "telegraph")) return false;
-
-    var _locked = false;
-
-    switch (_runtime.phase)
+    for (var _c = 0; _c < array_length(_controller.channels); _c++)
     {
-        case EnemyAttackPhase.TELEGRAPH:
-            _locked = GAME_TICK >= _runtime.telegraph_end_tick - _attack.telegraph.aim_lock_remaining;
-        break;
+        var _channel = _controller.channels[_c];
+        var _runtime = _channel.runtime;
 
-        case EnemyAttackPhase.ACTIVE:
-            _locked = !_attack.telegraph.track_during_active;
-        break;
-    }
+        if (_runtime.current_attack < 0) continue;
 
-    if (!_locked) return false;
+        var _attack = _channel.attacks[_runtime.current_attack];
+        if (!sc_enemy_attack_runtime_aim_locked(_attack, _runtime)) continue;
 
-    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
-    {
-        if (_attack.hardpoint_indices[_i] == _hardpoint_index)
-            return _enemy.enemy.hardpoints[_hardpoint_index].rotation.mode == HardpointRotation.TARGET;
+        for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+        {
+            if (_attack.hardpoint_indices[_i] != _hardpoint_index) continue;
+
+            return _enemy.enemy.hardpoints[_hardpoint_index].rotation.mode
+                == HardpointRotation.TARGET;
+        }
     }
 
     return false;
 }
 
-/// @description Releases active deliveries and cancels the current enemy attack.
-function sc_enemy_attack_cancel(_enemy)
+/// @description Releases deliveries and resets one attack channel.
+function sc_enemy_attack_channel_cancel(_channel)
 {
-    var _runtime = _enemy.enemy.attack_controller.runtime;
+    var _runtime = _channel.runtime;
 
     for (var _i = 0; _i < array_length(_runtime.active_deliveries); _i++)
     {
@@ -87,9 +252,21 @@ function sc_enemy_attack_cancel(_enemy)
     _runtime.attack_end_tick = 0;
     _runtime.telegraph_start_tick = 0;
     _runtime.telegraph_end_tick = 0;
+    _runtime.next_telegraph_particle_tick = 0;
 }
 
-/// @description Completes one enemy attack and begins its registered cooldown.
+/// @description Cancels every active attack channel belonging to an enemy.
+function sc_enemy_attack_cancel(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+
+    for (var _c = 0; _c < array_length(_controller.channels); _c++)
+        sc_enemy_attack_channel_cancel(_controller.channels[_c]);
+
+    sc_enemy_attack_channel_bind(_controller, _controller.channels[0]);
+}
+
+/// @description Completes the currently bound attack and begins its cooldown.
 function sc_enemy_attack_finish(_enemy, _cooldown)
 {
     var _runtime = _enemy.enemy.attack_controller.runtime;
@@ -108,6 +285,7 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     _runtime.attack_end_tick = 0;
     _runtime.telegraph_start_tick = 0;
     _runtime.telegraph_end_tick = 0;
+    _runtime.next_telegraph_particle_tick = 0;
     _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
@@ -552,34 +730,56 @@ function sc_enemy_attack_telegraph_update(_enemy, _attack)
     }
 }
 
-/// @description Draws faction-coloured attack telegraphs at the enemy's visual position.
+/// @description Draws every currently active channel telegraph.
 function sc_enemy_attack_telegraph_draw(_enemy, _draw_x, _draw_y)
 {
     var _data = _enemy.enemy;
     var _controller = _data.attack_controller;
-    var _runtime = _controller.runtime;
-
-    if (_runtime.phase != EnemyAttackPhase.TELEGRAPH || _runtime.current_attack < 0) return;
-
-    var _attack = _controller.attacks[_runtime.current_attack];
-    var _telegraph = _attack.telegraph;
     var _offset_x = _draw_x - _enemy.x;
     var _offset_y = _draw_y - _enemy.y;
-    var _progress = clamp(
-        (GAME_TICK - _runtime.telegraph_start_tick)
-        / max(1, _runtime.telegraph_end_tick - _runtime.telegraph_start_tick),
-        0, 1
-    );
 
-    for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+    for (var _c = 0; _c < array_length(_controller.channels); _c++)
     {
-        var _transform = { x: 0, y: 0, direction: 0 };
-        sc_enemy_hardpoint_attack_transform(_enemy, _attack, _attack.hardpoint_indices[_i], _transform);
+        var _channel = _controller.channels[_c];
+        var _runtime = _channel.runtime;
 
-        _transform.x += _offset_x;
-        _transform.y += _offset_y;
+        if (_runtime.phase != EnemyAttackPhase.TELEGRAPH
+        || _runtime.current_attack < 0)
+            continue;
 
-        _telegraph.draw_script(_enemy, _attack, _transform, _progress, _data.visual.palette, _telegraph);
+        var _attack = _channel.attacks[_runtime.current_attack];
+        var _telegraph = _attack.telegraph;
+
+        var _progress = clamp(
+            (GAME_TICK - _runtime.telegraph_start_tick)
+            / max(1, _runtime.telegraph_end_tick - _runtime.telegraph_start_tick),
+            0,
+            1
+        );
+
+        for (var _i = 0; _i < array_length(_attack.hardpoint_indices); _i++)
+        {
+            var _transform = { x: 0, y: 0, direction: 0 };
+
+            sc_enemy_hardpoint_attack_transform(
+                _enemy,
+                _attack,
+                _attack.hardpoint_indices[_i],
+                _transform
+            );
+
+            _transform.x += _offset_x;
+            _transform.y += _offset_y;
+
+            _telegraph.draw_script(
+                _enemy,
+                _attack,
+                _transform,
+                _progress,
+                _data.visual.palette,
+                _telegraph
+            );
+        }
     }
 }
 
@@ -709,7 +909,7 @@ function sc_enemy_beam_attack_sustain(_enemy, _attack)
 }
 
 /// @description Updates telegraphs, gated projectile volleys and sustained beam attacks.
-function sc_enemy_attack_update(_enemy)
+function sc_enemy_attack_channel_update(_enemy)
 {
     var _data = _enemy.enemy;
     var _controller = _data.attack_controller;
@@ -800,4 +1000,48 @@ function sc_enemy_attack_update(_enemy)
         sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
     else
         _runtime.next_fire_tick = GAME_TICK + max(1, round(_attack.firing.interval / _fire_rate));
+}
+
+/// @description Updates every independent attack channel within its concurrency limit.
+function sc_enemy_attack_update(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _channels = _controller.channels;
+    var _active_count = 0;
+
+    for (var _c = 0; _c < array_length(_channels); _c++)
+    {
+        if (sc_enemy_attack_channel_active(_channels[_c]))
+            _active_count++;
+    }
+
+    for (var _c = 0; _c < array_length(_channels); _c++)
+    {
+        var _channel = _channels[_c];
+        var _runtime = _channel.runtime;
+        var _was_active = sc_enemy_attack_channel_active(_channel);
+
+        var _ready_to_start =
+            _runtime.phase == EnemyAttackPhase.IDLE
+            || (
+                _runtime.phase == EnemyAttackPhase.COOLDOWN
+                && GAME_TICK >= _runtime.cooldown_until
+            );
+
+        if (_ready_to_start
+        && !_was_active
+        && _active_count >= _controller.max_active_channels)
+            continue;
+
+        sc_enemy_attack_channel_bind(_controller, _channel);
+        sc_enemy_attack_channel_update(_enemy);
+
+        var _is_active = sc_enemy_attack_channel_active(_channel);
+
+        if (!_was_active && _is_active) _active_count++;
+        else if (_was_active && !_is_active) _active_count--;
+    }
+
+    // Leave the controller in a stable backward-compatible state.
+    sc_enemy_attack_channel_bind(_controller, _channels[0]);
 }
