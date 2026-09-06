@@ -177,3 +177,231 @@ function sc_visual_shield_sprite_draw(_sprite, _x, _y, _angle, _palette, _charge
         gpu_set_blendmode(bm_normal);
     }
 }
+
+/// @description Draws one upgradeable frontal elliptical shield arc.
+function sc_visual_shield_focus_draw(
+    _x,
+    _y,
+    _angle,
+    _collision,
+    _arc,
+    _palette,
+    _charge_ratio,
+    _hit_alpha,
+    _draw_alpha,
+    _config
+)
+{
+    var _half_arc = clamp(_arc * 0.5, 1, 179);
+    var _forward = _collision.radius_forward
+        * _config.radius_forward_scale;
+
+    var _side = _collision.radius_side
+        * _config.radius_side_scale;
+
+    var _pulse = 1
+        + sin(GAME_TICK * _config.pulse_speed)
+        * _config.pulse_amount;
+
+    var _alpha = clamp(
+        _config.arc_alpha
+        * lerp(0.45, 1, _charge_ratio)
+        * _pulse,
+        0,
+        1
+    ) * _draw_alpha;
+
+    gpu_set_blendmode(bm_add);
+
+    // Soft layered arcs create the concentrated forward field.
+    for (var _layer = _config.arc_layers - 1;
+    _layer >= 0;
+    --_layer)
+    {
+        var _layer_forward = _forward
+            + _layer * _config.arc_spacing;
+
+        var _layer_side = _side
+            + _layer * _config.arc_spacing;
+
+        var _layer_alpha = _alpha
+            / (_layer + 1);
+
+        var _previous_x = 0;
+        var _previous_y = 0;
+
+        for (var _i = 0;
+        _i <= _config.arc_segments;
+        ++_i)
+        {
+            var _progress = _i
+                / _config.arc_segments;
+
+            var _local_angle = lerp(
+                -_half_arc,
+                _half_arc,
+                _progress
+            );
+
+            var _local_forward =
+                dcos(_local_angle)
+                * _layer_forward;
+
+            var _local_side =
+                dsin(_local_angle)
+                * _layer_side;
+
+            var _point_x = _x
+                + lengthdir_x(
+                    _local_forward,
+                    _angle
+                )
+                + lengthdir_x(
+                    _local_side,
+                    _angle + 90
+                );
+
+            var _point_y = _y
+                + lengthdir_y(
+                    _local_forward,
+                    _angle
+                )
+                + lengthdir_y(
+                    _local_side,
+                    _angle + 90
+                );
+
+            if (_i > 0)
+            {
+                draw_set_alpha(_layer_alpha);
+                draw_set_colour(
+                    _layer == 0
+                        ? _palette.core
+                        : _palette.energy
+                );
+
+                draw_line_width(
+                    _previous_x,
+                    _previous_y,
+                    _point_x,
+                    _point_y,
+                    _config.arc_thickness
+                );
+            }
+
+            _previous_x = _point_x;
+            _previous_y = _point_y;
+        }
+    }
+
+    // Draw the two edge projectors toward the arc endpoints.
+    for (var _edge = -1;
+    _edge <= 1;
+    _edge += 2)
+    {
+        var _edge_angle = _half_arc * _edge;
+
+        var _edge_forward =
+            dcos(_edge_angle)
+            * _forward;
+
+        var _edge_side =
+            dsin(_edge_angle)
+            * _side;
+
+        var _edge_x = _x
+            + lengthdir_x(_edge_forward, _angle)
+            + lengthdir_x(_edge_side, _angle + 90);
+
+        var _edge_y = _y
+            + lengthdir_y(_edge_forward, _angle)
+            + lengthdir_y(_edge_side, _angle + 90);
+
+        var _projector_x = _x
+            + lengthdir_x(
+                _collision.radius_forward * 0.84,
+                _angle
+            )
+            + lengthdir_x(
+                _collision.radius_side * 0.38 * _edge,
+                _angle + 90
+            );
+
+        var _projector_y = _y
+            + lengthdir_y(
+                _collision.radius_forward * 0.84,
+                _angle
+            )
+            + lengthdir_y(
+                _collision.radius_side * 0.38 * _edge,
+                _angle + 90
+            );
+
+        draw_set_alpha(
+            _config.endpoint_alpha
+            * _draw_alpha
+        );
+
+        draw_set_colour(_palette.energy);
+
+        draw_line_width(
+            _projector_x,
+            _projector_y,
+            _edge_x,
+            _edge_y,
+            1
+        );
+
+        draw_set_colour(_palette.core);
+
+        draw_circle(
+            _edge_x,
+            _edge_y,
+            2.5,
+            false
+        );
+    }
+
+    // A frontal glow makes the protected region feel denser.
+    var _nose_x = _x
+        + lengthdir_x(_forward, _angle);
+
+    var _nose_y = _y
+        + lengthdir_y(_forward, _angle);
+
+    draw_set_alpha(
+        (
+            _config.field_alpha
+            + _hit_alpha * 0.35
+        ) * _draw_alpha
+    );
+
+    draw_set_colour(_palette.glow);
+
+    draw_circle(
+        _nose_x,
+        _nose_y,
+        max(8, _collision.radius_side * 0.42),
+        false
+    );
+
+    draw_set_alpha(
+        (
+            _config.inner_alpha
+            + _hit_alpha * 0.6
+        ) * _draw_alpha
+    );
+
+    draw_set_colour(_palette.core);
+
+    draw_circle(
+        _nose_x,
+        _nose_y,
+        max(3, _collision.radius_side * 0.13),
+        false
+    );
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

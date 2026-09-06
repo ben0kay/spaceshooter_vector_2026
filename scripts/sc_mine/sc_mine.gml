@@ -112,11 +112,10 @@ function sc_mine_init(_mine, _create)
     return true;
 }
 
-/// @description Finds the nearest differently aligned entity inside a radius.
+/// @description Finds the first valid hostile entity inside a radius.
 function sc_mine_target_hostile(_mine, _radius)
 {
-    var _data = _mine.mine;
-    var _source = _data.source;
+    var _source = _mine.mine.source;
     var _list = ds_list_create();
 
     var _count = collision_circle_list(
@@ -131,14 +130,12 @@ function sc_mine_target_hostile(_mine, _radius)
     );
 
     var _target = noone;
-    var _nearest = sqr(_radius);
 
     for (var _i = 0; _i < _count; ++_i)
     {
         var _candidate = _list[| _i];
 
-        if (!instance_exists(_candidate)
-        || !_candidate.initialized
+        if (!_candidate.initialized
         || _candidate.entity.faction == _source.faction)
             continue;
 
@@ -146,15 +143,8 @@ function sc_mine_target_hostile(_mine, _radius)
         && _candidate.enemy.state == EnemyState.DEAD)
             continue;
 
-        var _dx = _candidate.x - _mine.x;
-        var _dy = _candidate.y - _mine.y;
-        var _distance = _dx * _dx + _dy * _dy;
-
-        if (_distance > _nearest)
-            continue;
-
-        _nearest = _distance;
         _target = _candidate;
+        break;
     }
 
     ds_list_destroy(_list);

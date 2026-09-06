@@ -112,6 +112,27 @@ function sc_ship_shard_visual_data()
             ignition_script: sc_particles_shard_ignition,
             particle_script: sc_particles_shard_thrust
         },
+		
+		shield_focus: {
+    particle_script: sc_particles_shard_shield_focus,
+    particle_interval: 2,
+
+    arc_segments: 24,
+    arc_layers: 3,
+    arc_spacing: 3,
+    arc_thickness: 2,
+
+    radius_forward_scale: 1.55,
+    radius_side_scale: 1.55,
+
+    field_alpha: 0.14,
+    arc_alpha: 0.88,
+    inner_alpha: 0.38,
+    endpoint_alpha: 0.7,
+
+    pulse_speed: 0.12,
+    pulse_amount: 0.12
+},
 
         draw: {
             hull: sc_ship_shard_hull_draw,
@@ -122,18 +143,20 @@ function sc_ship_shard_visual_data()
             hardpoint: sc_ship_shard_cannon_draw,
             muzzle_flash: sc_ship_shard_muzzle_flash_draw,
             shield: sc_ship_shard_shield_draw,
-            thrust: sc_ship_shard_thrust_draw
+            thrust: sc_ship_shard_thrust_draw,
+			focus: sc_ship_shard_focus_draw,
         },
 
         death_script: sc_ship_shard_death,
 
         bake: {
-            body_canvas_size: 224, wing_canvas_size: 160,
-            core_canvas_size: 96, hardpoint_canvas_size: 96,
-            muzzle_canvas_size: 96, muzzle_frames: 4,
-            shield_canvas_size: 224, thrust_canvas_size: 128,
-            damage_stages: 4
-        }
+		    body_canvas_size: 224, wing_canvas_size: 160,
+		    core_canvas_size: 96, hardpoint_canvas_size: 96,
+		    muzzle_canvas_size: 96, muzzle_frames: 4,
+		    shield_canvas_size: 224, focus_canvas_size: 224,
+		    thrust_canvas_size: 128,
+		    damage_stages: 4
+		}
     };
 }
 /*
@@ -379,6 +402,117 @@ function sc_ship_shard_shield_draw(_x, _y, _radius, _angle, _visual, _collision)
     sc_visual_shield_bake_draw(_x, _y, _collision.radius_forward, _collision.radius_side, _visual.palette);
 }
 
+/// @description Bakes the Shard's forward shield-focus projector overlay.
+function sc_ship_shard_focus_draw(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _visual
+)
+{
+    var _palette = _visual.palette;
+
+    gpu_set_blendmode(bm_normal);
+
+    // Paired armoured projector housings beside the nose.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_quad(
+            _x, _y,
+            _radius, _angle,
+             0.2, 0.22 * _side,
+             0.72, 0.18 * _side,
+             0.9, 0.29 * _side,
+             0.34, 0.38 * _side,
+            _palette.outline
+        );
+
+        sc_visual_quad(
+            _x, _y,
+            _radius, _angle,
+             0.3, 0.24 * _side,
+             0.7, 0.21 * _side,
+             0.78, 0.27 * _side,
+             0.39, 0.33 * _side,
+            _palette.hull_light
+        );
+
+        sc_visual_triangle(
+            _x, _y,
+            _radius, _angle,
+             0.68, 0.2 * _side,
+             1.08, 0.31 * _side,
+             0.82, 0.36 * _side,
+            _palette.hull_mid,
+            false
+        );
+    }
+
+    gpu_set_blendmode(bm_add);
+
+    // Bright conductors feeding shield power forward.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_visual_line(
+            _x, _y,
+            _radius, _angle,
+             0.13, 0.19 * _side,
+             0.83, 0.26 * _side,
+            4,
+            _palette.glow,
+            0.45
+        );
+
+        sc_visual_line(
+            _x, _y,
+            _radius, _angle,
+             0.2, 0.19 * _side,
+             0.91, 0.28 * _side,
+            2,
+            _palette.energy,
+            0.92
+        );
+
+        sc_visual_circle(
+            _x,
+            _y,
+            _radius,
+            _angle,
+            0.93,
+            0.29 * _side,
+            0.075,
+            _palette.core,
+            false
+        );
+    }
+
+    // Central forward power channel.
+    sc_visual_line(
+        _x, _y,
+        _radius, _angle,
+        -0.04, 0,
+         0.93, 0,
+        5,
+        _palette.glow,
+        0.35
+    );
+
+    sc_visual_line(
+        _x, _y,
+        _radius, _angle,
+         0.03, 0,
+         1.02, 0,
+        2,
+        _palette.core,
+        0.9
+    );
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
 /// @description Draws the Shard's attached twin aqua engine flames.
 function sc_ship_shard_thrust_draw(_x, _y, _radius, _angle, _visual)
 {
@@ -619,7 +753,7 @@ function sc_ship_shard_death(_player)
     return true;
 }
 
-/// @description Registers all particle types used by the Shard engines.
+/// @description Registers all Shard engine and shield-focus particles.
 function sc_particles_register_shard()
 {
     var _outer = sc_particles_type_create();
@@ -628,33 +762,73 @@ function sc_particles_register_shard()
     var _ring = sc_particles_type_create();
     var _flash = sc_particles_type_create();
     var _dash = sc_particles_type_create();
+    var _focus = sc_particles_type_create();
 
-    if (!part_type_exists(_outer) || !part_type_exists(_inner) || !part_type_exists(_fire)
-    || !part_type_exists(_ring) || !part_type_exists(_flash) || !part_type_exists(_dash))
+    if (!part_type_exists(_outer)
+    || !part_type_exists(_inner)
+    || !part_type_exists(_fire)
+    || !part_type_exists(_ring)
+    || !part_type_exists(_flash)
+    || !part_type_exists(_dash)
+    || !part_type_exists(_focus))
     {
-        show_debug_message("SHARD PARTICLE ERROR - type creation failed");
+        show_debug_message(
+            "SHARD PARTICLE ERROR - type creation failed"
+        );
+
         return false;
     }
 
-    // Short-lived overlapping flame avoids comb trails while turning.
-    part_type_sprite(_outer, s_particle_trail_white_beam, false, false, false);
-    part_type_colour3(_outer, make_colour_rgb(0, 65, 210), make_colour_rgb(0, 175, 255), make_colour_rgb(35, 235, 255));
+    part_type_sprite(
+        _outer,
+        s_particle_trail_white_beam,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour3(
+        _outer,
+        make_colour_rgb(0, 65, 210),
+        make_colour_rgb(0, 175, 255),
+        make_colour_rgb(35, 235, 255)
+    );
+
     part_type_alpha3(_outer, 0.78, 0.52, 0);
     part_type_speed(_outer, 0.15, 0.55, -0.02, 0);
     part_type_life(_outer, 3, 5);
     part_type_orientation(_outer, 180, 180, 0, 0, true);
     part_type_blend(_outer, true);
 
-    part_type_sprite(_inner, s_particle_trail_white_beam, false, false, false);
-    part_type_colour3(_inner, c_white, make_colour_rgb(175, 255, 255), make_colour_rgb(15, 195, 255));
+    part_type_sprite(
+        _inner,
+        s_particle_trail_white_beam,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour3(
+        _inner,
+        c_white,
+        make_colour_rgb(175, 255, 255),
+        make_colour_rgb(15, 195, 255)
+    );
+
     part_type_alpha3(_inner, 1, 0.68, 0);
     part_type_speed(_inner, 0.2, 0.7, -0.025, 0);
     part_type_life(_inner, 2, 4);
     part_type_orientation(_inner, 180, 180, 0, 0, true);
     part_type_blend(_inner, true);
 
-    // Softer fire is allowed to detach and linger slightly longer.
-    part_type_sprite(_fire, s_particle_firesmoke_trail_color, false, false, false);
+    part_type_sprite(
+        _fire,
+        s_particle_firesmoke_trail_color,
+        false,
+        false,
+        false
+    );
+
     part_type_colour1(_fire, c_white);
     part_type_alpha3(_fire, 0.3, 0.16, 0);
     part_type_speed(_fire, 0.4, 1, -0.025, 0);
@@ -662,34 +836,102 @@ function sc_particles_register_shard()
     part_type_orientation(_fire, 180, 180, 0, 0, true);
     part_type_blend(_fire, false);
 
-    part_type_sprite(_ring, s_particle_ring_v2, false, false, false);
-    part_type_colour2(_ring, c_white, make_colour_rgb(25, 225, 255));
+    part_type_sprite(
+        _ring,
+        s_particle_ring_v2,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour2(
+        _ring,
+        c_white,
+        make_colour_rgb(25, 225, 255)
+    );
+
     part_type_alpha2(_ring, 0.95, 0);
     part_type_speed(_ring, 0, 0, 0, 0);
     part_type_life(_ring, 8, 12);
     part_type_orientation(_ring, 0, 359, 0, 2, false);
     part_type_blend(_ring, true);
 
-    part_type_sprite(_flash, s_particle_exposion_star, false, false, false);
-    part_type_colour2(_flash, c_white, make_colour_rgb(25, 225, 255));
+    part_type_sprite(
+        _flash,
+        s_particle_exposion_star,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour2(
+        _flash,
+        c_white,
+        make_colour_rgb(25, 225, 255)
+    );
+
     part_type_alpha3(_flash, 1, 0.65, 0);
     part_type_speed(_flash, 0, 0, 0, 0);
     part_type_life(_flash, 5, 8);
     part_type_orientation(_flash, 0, 359, 0, 5, false);
     part_type_blend(_flash, true);
 
-    part_type_sprite(_dash, s_particle_trail_white_arrow, false, false, false);
-    part_type_colour3(_dash, c_white, make_colour_rgb(40, 235, 255), make_colour_rgb(0, 80, 220));
+    part_type_sprite(
+        _dash,
+        s_particle_trail_white_arrow,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour3(
+        _dash,
+        c_white,
+        make_colour_rgb(40, 235, 255),
+        make_colour_rgb(0, 80, 220)
+    );
+
     part_type_alpha3(_dash, 0.9, 0.58, 0);
     part_type_speed(_dash, 0.35, 0.9, -0.03, 0);
     part_type_life(_dash, 3, 5);
     part_type_orientation(_dash, 180, 180, 0, 0, true);
     part_type_blend(_dash, true);
 
-    return sc_particles_group_register("shard", {
-        outer: _outer, inner: _inner, fire: _fire,
-        ring: _ring, flash: _flash, dash: _dash
-    });
+    // Energy motes flow from the hull toward the reinforced nose.
+    part_type_sprite(
+        _focus,
+        s_particle_exposion_star,
+        false,
+        false,
+        false
+    );
+
+    part_type_colour3(
+        _focus,
+        make_colour_rgb(10, 100, 220),
+        make_colour_rgb(30, 230, 255),
+        c_white
+    );
+
+    part_type_alpha3(_focus, 0, 0.85, 0);
+    part_type_size(_focus, 0.035, 0.075, 0.002, 0.015);
+    part_type_speed(_focus, 2.8, 5.2, 0.04, 0);
+    part_type_life(_focus, 10, 18);
+    part_type_orientation(_focus, -12, 12, 0, 5, true);
+    part_type_blend(_focus, true);
+
+    return sc_particles_group_register(
+        "shard",
+        {
+            outer: _outer,
+            inner: _inner,
+            fire: _fire,
+            ring: _ring,
+            flash: _flash,
+            dash: _dash,
+            focus: _focus
+        }
+    );
 }
 
 /// @description Emits one powerful layered Shard engine ignition burst.
@@ -749,6 +991,76 @@ function sc_particles_shard_thrust(_x, _y, _direction, _power, _scale, _boosting
         part_type_size(_types.dash, _dash_size * 0.85, _dash_size, -0.018 * _scale, 0.008);
         part_particles_create(global.particles.system, _x, _y, _types.dash, _dashing ? 3 : 2);
     }
+
+    return true;
+}
+
+/// @description Sends Shard energy motes toward the focused shield.
+function sc_particles_shard_shield_focus(_player)
+{
+    if (!sc_optimization_circle_visible(
+        _player.x,
+        _player.y,
+        _player.ship.visual.radius * 2,
+        48
+    ))
+        return true;
+
+    var _types = sc_particles_group_get("shard");
+    if (!is_struct(_types)) return false;
+
+    var _angle = _player.draw_angle;
+    var _radius = _player.ship.visual.radius;
+    var _side = choose(-1, 1);
+
+    var _x = _player.x
+        + lengthdir_x(
+            random_range(-0.45, 0.25) * _radius,
+            _angle
+        )
+        + lengthdir_x(
+            random_range(0.18, 0.48)
+            * _radius
+            * _side,
+            _angle + 90
+        );
+
+    var _y = _player.y
+        + lengthdir_y(
+            random_range(-0.45, 0.25) * _radius,
+            _angle
+        )
+        + lengthdir_y(
+            random_range(0.18, 0.48)
+            * _radius
+            * _side,
+            _angle + 90
+        );
+
+    part_type_direction(
+        _types.focus,
+        _angle - 8,
+        _angle + 8,
+        0,
+        0
+    );
+
+    part_type_orientation(
+        _types.focus,
+        _angle,
+        _angle,
+        0,
+        4,
+        true
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _x,
+        _y,
+        _types.focus,
+        1
+    );
 
     return true;
 }
