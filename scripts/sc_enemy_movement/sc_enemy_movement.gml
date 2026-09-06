@@ -156,6 +156,51 @@ function sc_enemy_movement_pursue(_enemy)
     sc_enemy_movement_chase(_enemy);
 }
 
+/// @description Closes to short range before circling unevenly around the target.
+function sc_enemy_movement_stalk_range(_enemy)
+{
+    var _data=_enemy.enemy;
+    var _target=_data.target_id;
+    if (!instance_exists(_target)) return;
+
+    var _movement=_data.movement;
+    var _runtime=_movement.behaviour_runtime.stalker;
+    var _config=_data.movement_controller.stalker;
+    var _command=_movement.command;
+    var _dx=_target.x-_enemy.x;
+    var _dy=_target.y-_enemy.y;
+    var _distance_sq=_dx*_dx+_dy*_dy;
+    var _toward=point_direction(0,0,_dx,_dy);
+    var _firing=_data.attack_controller.channels[0].runtime.phase==EnemyAttackPhase.ACTIVE;
+
+    if (GAME_TICK>=_runtime.next_switch_tick)
+    {
+        _runtime.side*=-1;
+        _runtime.next_switch_tick=GAME_TICK+irandom_range(
+            _config.switch_min,
+            _config.switch_max
+        );
+    }
+
+    if (_distance_sq>sqr(_config.hold_range))
+    {
+        _command.active=true;
+        _command.apply_friction=false;
+        _command.direction=_toward;
+        _command.speed_scale=_firing?_config.firing_speed:_config.approach_speed;
+    }
+    else
+    {
+        _command.active=true;
+        _command.apply_friction=false;
+        _command.direction=_toward+_config.side_angle*_runtime.side;
+        _command.speed_scale=_firing?_config.firing_speed:_config.circle_speed;
+    }
+
+    _command.face_direction=_toward;
+    _command.facing_mode=EnemyFacingMode.TARGET;
+}
+
 /// @description Pursues the target using irregular changes in approach angle and speed.
 function sc_enemy_movement_erratic_skirmish(_enemy)
 {
@@ -275,6 +320,7 @@ function sc_enemy_movement_orbit(_enemy)
     _command.speed_scale = clamp(point_distance(0, 0, _move_x, _move_y), 0.25, 1);
     _command.face_direction = _toward;
 }
+
 /// @description Selects one unobstructed wander destination inside the registered spawn radius.
 function sc_enemy_wander_target_select(_enemy)
 {

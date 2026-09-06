@@ -37,6 +37,8 @@ function sc_weapon_register_shard_mining_beam()
 
             beam: {
                 geometry: { length: 650, radius: 3.5 },
+				
+				shape: AttackAreaShape.CAPSULE,
 
                 behaviour: {
                     growth_speed: 100,

@@ -28,6 +28,8 @@ function sc_weapon_register_shard_laser()
 
             beam: {
                 geometry: { length: 1100, radius: 8 },
+				
+				shape: AttackAreaShape.CAPSULE,
 
                 behaviour: {
                     growth_speed: 145,

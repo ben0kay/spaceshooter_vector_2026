@@ -124,54 +124,64 @@ function sc_attack_area_standard_init(_area, _create)
     return true;
 }
 
-/// @description Initializes one held capsule beam with its own lifecycle.
-function sc_beam_init(_area, _create)
+/// @description Initializes one continuously maintained capsule or cone area.
+function sc_beam_init(_area,_create)
 {
-    var _definition = variable_clone(_create.definition);
-    var _behaviour = _definition.behaviour;
-    var _scale = max(0.01, _create.scale);
-    var _maximum_length = _definition.geometry.length * _scale;
-    var _interval = max(1, round(_behaviour.tick_interval));
+    var _definition=variable_clone(_create.definition);
+    var _shape=_definition.shape;
+    var _geometry=variable_clone(_definition.geometry);
+    var _source_behaviour=_definition.behaviour;
+    var _scale=max(0.01,_create.scale);
+    var _interval=max(1,round(_source_behaviour.tick_interval));
 
-    _area.attack_area = {
-        delivery_type: AttackDelivery.BEAM,
-        source: _create.source,
-        direction: _create.direction,
-        shape: AttackAreaShape.CAPSULE,
-
-        geometry: {
-            length: 0,
-            radius: _definition.geometry.radius * _scale
-        },
-
-        damage: sc_damage_packet_create(_create.damage, _create.source),
-
-        behaviour: {
-            growth_speed: max(0, _behaviour.growth_speed * _scale),
-            release_duration: max(1, round(_behaviour.release_duration)),
-            tick_interval: _interval,
-            piercing: _behaviour.piercing,
-            blocks_on_solids: _behaviour.blocks_on_solids,
-            hit_once: false,
-            max_targets: _behaviour.max_targets
-        },
-
-        visual: variable_clone(_definition.visual),
-
-        runtime: {
-            maximum_length: _maximum_length,
-            growth_length: 0,
-            hit_length: 0,
-            next_damage_tick: GAME_TICK + _interval,
-            refreshed_tick: GAME_TICK,
-            releasing: false,
-            release_alpha: 1,
-            hit_ids: []
-        }
+    var _behaviour={
+        release_duration:max(1,round(_source_behaviour.release_duration)),
+        tick_interval:_interval,
+        max_targets:_source_behaviour.max_targets
     };
 
-    _area.draw_angle = _create.direction;
-    _area.initialized = true;
+    var _runtime={
+        next_damage_tick:GAME_TICK+_interval,
+        refreshed_tick:GAME_TICK,
+        releasing:false,
+        release_alpha:1,
+        hit_ids:[]
+    };
+
+    switch (_shape)
+    {
+        case AttackAreaShape.CAPSULE:
+            _runtime.maximum_length=_geometry.length*_scale;
+            _runtime.growth_length=0;
+            _runtime.hit_length=0;
+
+            _geometry.length=0;
+            _geometry.radius*=_scale;
+
+            _behaviour.growth_speed=max(0,_source_behaviour.growth_speed*_scale);
+            _behaviour.piercing=_source_behaviour.piercing;
+            _behaviour.blocks_on_solids=_source_behaviour.blocks_on_solids;
+        break;
+
+        case AttackAreaShape.CONE:
+            _geometry.range*=_scale;
+        break;
+    }
+
+    _area.attack_area={
+        delivery_type:AttackDelivery.BEAM,
+        source:_create.source,
+        direction:_create.direction,
+        shape:_shape,
+        geometry:_geometry,
+        damage:sc_damage_packet_create(_create.damage,_create.source),
+        behaviour:_behaviour,
+        visual:variable_clone(_definition.visual),
+        runtime:_runtime
+    };
+
+    _area.draw_angle=_create.direction;
+    _area.initialized=true;
     return true;
 }
 
@@ -599,40 +609,43 @@ function sc_beam_hit_length_update(_area, _data)
     _data.geometry.length = _length;
 }
 
-/// @description Extends, clips, damages and releases one held beam.
-function sc_beam_update(_area, _data)
+/// @description Updates one maintained capsule or cone delivery.
+function sc_beam_update(_area,_data)
 {
-    var _behaviour = _data.behaviour;
-    var _runtime = _data.runtime;
+    var _behaviour=_data.behaviour;
+    var _runtime=_data.runtime;
 
-    if (GAME_TICK - _runtime.refreshed_tick > 1)
-        _runtime.releasing = true;
+    if (GAME_TICK-_runtime.refreshed_tick>1)
+        _runtime.releasing=true;
 
     if (_runtime.releasing)
     {
-        _runtime.release_alpha -= 1 / _behaviour.release_duration;
+        _runtime.release_alpha-=1/_behaviour.release_duration;
 
-        if (_runtime.release_alpha <= 0)
+        if (_runtime.release_alpha<=0)
             instance_destroy(_area);
 
         return;
     }
 
-    _runtime.growth_length = min(
-        _runtime.maximum_length,
-        _runtime.growth_length + _behaviour.growth_speed
-    );
-
-    sc_beam_hit_length_update(_area, _data);
-
-    if (GAME_TICK >= _runtime.next_damage_tick)
+    if (_data.shape==AttackAreaShape.CAPSULE)
     {
-        sc_attack_area_damage_apply(_area);
-        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
+        _runtime.growth_length=min(
+            _runtime.maximum_length,
+            _runtime.growth_length+_behaviour.growth_speed
+        );
+
+        sc_beam_hit_length_update(_area,_data);
     }
 
-    if (variable_struct_exists(_data.visual, "particle_script"))
-        _data.visual.particle_script(_area, _data);
+    if (GAME_TICK>=_runtime.next_damage_tick)
+    {
+        sc_attack_area_damage_apply(_area);
+        _runtime.next_damage_tick=GAME_TICK+_behaviour.tick_interval;
+    }
+
+    if (variable_struct_exists(_data.visual,"particle_script"))
+        _data.visual.particle_script(_area,_data);
 }
 
 /// @description Draws one registered short-lived attack-area visual.

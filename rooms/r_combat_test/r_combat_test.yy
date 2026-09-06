@@ -28,6 +28,9 @@
     {"name":"inst_614B87D0","path":"rooms/r_combat_test/r_combat_test.yy",},
     {"name":"inst_75244CFD","path":"rooms/r_combat_test/r_combat_test.yy",},
     {"name":"inst_102457E2","path":"rooms/r_combat_test/r_combat_test.yy",},
+    {"name":"inst_60E16FF6","path":"rooms/r_combat_test/r_combat_test.yy",},
+    {"name":"inst_2265D8AF","path":"rooms/r_combat_test/r_combat_test.yy",},
+    {"name":"inst_292910ED","path":"rooms/r_combat_test/r_combat_test.yy",},
   ],
   "isDnd":false,
   "layers":[
@@ -55,13 +58,13 @@
           ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":992.0,"y":1440.0,},
         {"$GMRInstance":"v4","%Name":"inst_1870B0FD","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_1870B0FD","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"enemy_sim_siegebreaker",},
-          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":6624.0,"y":1440.0,},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":6624.0,"y":416.0,},
         {"$GMRInstance":"v4","%Name":"inst_7F8F7E99","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_7F8F7E99","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"enemy_sim_skirmisher",},
-          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7424.0,"y":1600.0,},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7424.0,"y":576.0,},
         {"$GMRInstance":"v4","%Name":"inst_D0AAAF8","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_D0AAAF8","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"enemy_sim_skirmisher",},
-          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":5600.0,"y":1856.0,},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":6112.0,"y":1088.0,},
         {"$GMRInstance":"v4","%Name":"inst_15B2010","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_15B2010","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"enemy_rebel_gunship",},
           ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7232.0,"y":4000.0,},
@@ -89,6 +92,15 @@
         {"$GMRInstance":"v4","%Name":"inst_102457E2","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_102457E2","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"e_corp_interceptor",},
           ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7136.0,"y":6336.0,},
+        {"$GMRInstance":"v4","%Name":"inst_60E16FF6","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_60E16FF6","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
+            {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"e_rebel_skirmisher",},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7424.0,"y":3424.0,},
+        {"$GMRInstance":"v4","%Name":"inst_2265D8AF","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_2265D8AF","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
+            {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"e_rebel_skirmisher",},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7200.0,"y":2944.0,},
+        {"$GMRInstance":"v4","%Name":"inst_292910ED","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_292910ED","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
+            {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"e_rebel_skirmisher",},
+          ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7616.0,"y":2336.0,},
       ],"layers":[],"name":"Enemy","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Effects_Back","depth":500,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[],"layers":[],"name":"Effects_Back","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Instances","depth":600,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_skirmisher",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_skirmisher",
+  "parent":{
+    "name":"enemies",
+    "path":"folders/scripts/ENEMY/factions/REBEL/enemies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

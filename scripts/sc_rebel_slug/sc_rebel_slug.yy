@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_slug",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_slug",
+  "parent":{
+    "name":"projectiles",
+    "path":"folders/scripts/ENEMY/factions/REBEL/projectiles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
