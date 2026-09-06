@@ -419,6 +419,9 @@ function sc_projectile_damage(_projectile, _packet)
     if (_result.dealt.total <= 0) return false;
 
     _data.visual.runtime.hit_alpha = 1;
+	
+	if (is_struct(_defence.health_bar))
+    sc_health_bar_damage_show(_defence.health_bar);
 
     if (_defence.hull.current <= 0)
     {
@@ -716,4 +719,16 @@ function sc_projectile_draw(_projectile)
         c_white,
         _alpha
     );
+	
+	if (is_struct(_data.defence)
+		&& is_struct(_data.defence.health_bar))
+		{
+		    sc_health_bar_draw(
+		        _draw_x,
+		        _draw_y,
+		        _visual.radius * _scale,
+		        _data.defence,
+		        _data.defence.health_bar
+		    );
+		}
 }

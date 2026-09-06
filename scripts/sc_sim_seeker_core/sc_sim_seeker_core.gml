@@ -21,7 +21,7 @@ function sc_projectile_register_simulant_seeker_core()
         projectile_class: ProjectileClass.HEAVY,
 
         collision: {
-            radius: 13
+            radius: 16
         },
 
 		defence: {
