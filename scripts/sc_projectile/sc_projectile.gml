@@ -26,14 +26,18 @@ function sc_projectile_init(_projectile, _create)
 
     var _detonation = undefined;
 
-    if (variable_struct_exists(_data, "detonation"))
-    {
-        _detonation = {
-            area: variable_clone(_data.detonation.area),
-            scale: _delivery.detonation.scale,
-            damage: variable_clone(_delivery.detonation.damage)
-        };
-    }
+	if (variable_struct_exists(_data, "detonation"))
+	{
+	    _detonation = {
+	        area: variable_clone(_data.detonation.area),
+	        scale: _delivery.detonation.scale,
+	        damage: variable_clone(_delivery.detonation.damage),
+
+	        emissions: variable_struct_exists(_data.detonation, "emissions")
+	            ? variable_clone(_data.detonation.emissions)
+	            : []
+	    };
+	}
 
     var _defence = undefined;
 
@@ -206,7 +210,7 @@ function sc_projectile_homing_update(_projectile)
     _data.direction = _data.direction mod 360;
 }
 
-/// @description Creates the projectile template's explosion using weapon-owned power.
+/// @description Creates a projectile's explosion and optional child emissions.
 function sc_projectile_detonate(_projectile)
 {
     var _data = _projectile.projectile;
@@ -227,6 +231,9 @@ function sc_projectile_detonate(_projectile)
         _projectile.layer,
         _detonation.scale
     );
+
+    if (array_length(_detonation.emissions) > 0)
+        sc_projectile_detonation_emissions_emit(_projectile);
 
     return true;
 }

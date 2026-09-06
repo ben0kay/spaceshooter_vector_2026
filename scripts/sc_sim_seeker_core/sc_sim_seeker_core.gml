@@ -71,8 +71,18 @@ function sc_projectile_register_simulant_seeker_core()
 					    fragment_colour: _palette.energy
 					}
 		        }
-            }
+            },
+			
+			emissions: [
+                sc_projectile_emission_radial_create(
+                    "weapon_simulant_pulse",
+                    6,
+                    0
+                )
+            ]
         },
+		
+		
 
         visual: {
             radius: 15,
