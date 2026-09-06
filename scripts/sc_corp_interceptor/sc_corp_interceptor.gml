@@ -10,7 +10,7 @@ function sc_enemy_register_corporation_interceptor()
 {
     return sc_enemy_register({
         identity: {
-            key: "enemy_corporation_interceptor",
+            key: "e_corp_interceptor",
             name: "Corp Interceptor",
             faction: Faction.CORPORATION,
             role: EnemyRole.FIGHTER,
