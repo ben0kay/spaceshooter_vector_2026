@@ -339,34 +339,56 @@ function sc_attack_area_target_inside(_area, _target)
     return false;
 }
 
-/// @description Returns an area damage packet scaled by distance from its origin.
+/// @description Returns an area damage packet scaled by distance.
 function sc_attack_area_damage_packet_get(_area, _target)
 {
     var _data = _area.attack_area;
-    if (_data.delivery_type == AttackDelivery.BEAM) return _data.damage;
+
+    if (_data.delivery_type == AttackDelivery.BEAM)
+        return _data.damage;
 
     var _behaviour = _data.behaviour;
-    if (_behaviour.falloff_minimum >= 1) return _data.damage;
 
-    var _distance = point_distance(_area.x, _area.y, _target.x, _target.y);
-    var _distance_ratio = clamp(_distance / _behaviour.falloff_distance, 0, 1);
+    if (_behaviour.falloff_minimum >= 1)
+        return _data.damage;
+
+    var _distance = point_distance(
+        _area.x,
+        _area.y,
+        _target.x,
+        _target.y
+    );
+
+    var _distance_ratio = clamp(
+        _distance / _behaviour.falloff_distance,
+        0,
+        1
+    );
+
     var _falloff = lerp(
         1,
         _behaviour.falloff_minimum,
-        power(_distance_ratio, _behaviour.falloff_exponent)
+        power(
+            _distance_ratio,
+            _behaviour.falloff_exponent
+        )
     );
 
     return {
         amount: _data.damage.amount * _falloff,
         type: _data.damage.type,
-        knockback_force: _data.damage.knockback_force * _falloff,
+
+        knockback_force:
+            _data.damage.knockback_force
+            * _falloff,
+
         effect: _data.damage.effect,
         extraction: _data.damage.extraction,
         source: _data.damage.source
     };
 }
 
-/// @description Applies one damage tick to valid opposing entities inside the area.
+/// @description Applies one damage tick to opposing entities inside the area.
 function sc_attack_area_damage_apply(_area)
 {
     var _data = _area.attack_area;
@@ -376,30 +398,60 @@ function sc_attack_area_damage_apply(_area)
     var _count = ds_list_size(_candidates);
     var _targets_hit = 0;
 
-    for (var _i = 0; _i < _count; _i++)
+    for (var _i = 0; _i < _count; ++_i)
     {
         var _target = _candidates[| _i];
 
-        if (_target == _source.owner_id) continue;
-        if (_target.entity.faction == _source.faction) continue;
-        if (_behaviour.hit_once && sc_attack_area_target_was_hit(_data, _target)) continue;
-        if (!sc_attack_area_target_inside(_area, _target)) continue;
+        if (_target == _source.owner_id)
+            continue;
 
-        var _packet = sc_attack_area_damage_packet_get(_area, _target);
+        if (_target.entity.faction == _source.faction)
+            continue;
+
+        if (_behaviour.hit_once
+        && sc_attack_area_target_was_hit(_data, _target))
+            continue;
+
+        if (!sc_attack_area_target_inside(_area, _target))
+            continue;
+
+        var _packet = sc_attack_area_damage_packet_get(
+            _area,
+            _target
+        );
+
         var _knockback_direction = _data.direction;
 
-        // Read target position before damage because damage may destroy it.
         if (_data.shape == AttackAreaShape.CIRCLE)
         {
             var _dx = _target.x - _area.x;
             var _dy = _target.y - _area.y;
 
             if (abs(_dx) + abs(_dy) > 0.001)
-                _knockback_direction = point_direction(0, 0, _dx, _dy);
+            {
+                _knockback_direction = point_direction(
+                    0,
+                    0,
+                    _dx,
+                    _dy
+                );
+            }
         }
 
-        var _result = _target.entity.damage_script(_target, _packet);
-        if (!is_struct(_result)) continue;
+        var _impact = {
+            x: _area.x,
+            y: _area.y,
+            direction: _knockback_direction
+        };
+
+        var _result = _target.entity.damage_script(
+            _target,
+            _packet,
+            _impact
+        );
+
+        if (!is_struct(_result))
+            continue;
 
         sc_entity_knockback_apply(
             _target,
@@ -408,11 +460,15 @@ function sc_attack_area_damage_apply(_area)
         );
 
         if (_behaviour.hit_once)
-            array_push(_data.runtime.hit_ids, _target);
+            array_push(
+                _data.runtime.hit_ids,
+                _target
+            );
 
-        _targets_hit++;
+        ++_targets_hit;
 
-        if (_behaviour.max_targets > 0 && _targets_hit >= _behaviour.max_targets)
+        if (_behaviour.max_targets > 0
+        && _targets_hit >= _behaviour.max_targets)
             break;
     }
 

@@ -873,24 +873,119 @@ function sc_player_visual_update(_player)
     _runtime.shield_hit_alpha = max(0, _runtime.shield_hit_alpha - 0.06);
 }
 
-/// @description Applies one damage packet to the player's layered defence.
-function sc_player_damage(_player, _packet)
+/// @description Activates RMB frontal shield focus while energy is available.
+function sc_player_shield_focus_update(_player)
 {
-    if (global.PlayerState == PlayerState.DESTROYED) return false;
+    var _focus = _player.combat.shield_focus;
+    _focus.active = false;
+
+    if (global.PlayerState != PlayerState.ACTIVE
+    || !global.input.action.fire_secondary
+    || _player.defence.shield.current <= 0)
+        return false;
+
+    var _cost = _player.ship.stats.final.shield_focus_energy_cost;
+
+    if (!sc_player_resource_spend(
+        _player,
+        ResourceType.ENERGY,
+        _cost
+    ))
+        return false;
+
+    _focus.active = true;
+    return true;
+}
+
+/// @description Applies directional damage through the player's layered defence.
+function sc_player_damage(
+    _player,
+    _packet,
+    _impact = undefined
+)
+{
+    if (global.PlayerState == PlayerState.DESTROYED)
+        return false;
 
     var _dash = _player.movement.dash;
-    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable) return false;
+
+    if (global.PlayerState == PlayerState.DASHING
+    && _dash.invulnerable)
+        return false;
 
     var _defence = _player.defence;
-    var _result = sc_damage_resolve(_packet, _defence.shield.current, _defence.armour.current, _defence.hull.current);
+    var _focus = _player.combat.shield_focus;
+    var _stats = _player.ship.stats.final;
+    var _packet_resolve = _packet;
+    var _shield_resolve = _defence.shield.current;
+
+    _focus.protected_impact = false;
+
+    if (_focus.active
+    && is_struct(_impact))
+    {
+        var _impact_direction = point_direction(
+            _player.x,
+            _player.y,
+            _impact.x,
+            _impact.y
+        );
+
+        var _inside_arc = abs(
+            angle_difference(
+                _impact_direction,
+                _player.draw_angle
+            )
+        ) <= _stats.shield_focus_arc * 0.5;
+
+        _focus.impact_direction = _impact_direction;
+        _focus.protected_impact = _inside_arc;
+
+        if (_inside_arc)
+        {
+            _packet_resolve = variable_clone(_packet);
+            _packet_resolve.amount *=
+                _stats.shield_focus_damage_multiplier;
+        }
+        else
+        {
+            _shield_resolve = 0;
+        }
+    }
+
+    var _result = sc_damage_resolve(
+        _packet_resolve,
+        _shield_resolve,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    if (_focus.active
+    && is_struct(_impact)
+    && !_focus.protected_impact)
+    {
+        _result.shield = _defence.shield.current;
+        _result.shield_focus_bypassed = true;
+    }
+    else
+    {
+        _result.shield_focus_bypassed = false;
+    }
+
+    _result.shield_focus_protected =
+        _focus.active
+        && _focus.protected_impact;
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
     _defence.hull.current = _result.hull;
 
-    if (_result.dealt.total <= 0) return false;
+    if (_result.dealt.total <= 0)
+        return false;
 
-    _defence.shield.recharge_delay_remaining = _player.ship.stats.final.shield_recharge_delay;
+    _defence.shield.recharge_delay_remaining =
+        _stats.shield_recharge_delay;
+
     sc_health_bar_damage_show(_player.health_bar);
 
     if (_result.dealt.shield > 0)
@@ -902,8 +997,14 @@ function sc_player_damage(_player, _packet)
         global.PlayerState = PlayerState.DESTROYED;
         sc_player_die(_player, _packet);
     }
-    else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
-        sc_player_stagger_begin(_player, _result.effect);
+    else if (_result.effect.type == DamageEffect.STAGGER
+    && sc_damage_effect_triggered(_result.effect))
+    {
+        sc_player_stagger_begin(
+            _player,
+            _result.effect
+        );
+    }
 
     return _result;
 }

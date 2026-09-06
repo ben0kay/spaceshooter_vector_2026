@@ -8,6 +8,9 @@ function sc_ship_register_shard()
 			mass: 1,
             hull_max: 100, armour_max: 100, shield_max: 100,
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
+			
+			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
+			shield_focus_arc: 90, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
 
             energy_max: 500, energy_regeneration: 0.2, energy_recharge_delay: 45,
             fuel_max: 1000, fuel_regeneration: 0,

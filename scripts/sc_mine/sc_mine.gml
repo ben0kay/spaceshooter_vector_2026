@@ -146,12 +146,9 @@ function sc_mine_target_hostile(_mine, _radius)
         && _candidate.enemy.state == EnemyState.DEAD)
             continue;
 
-        var _distance = point_distance_sqr(
-            _mine.x,
-            _mine.y,
-            _candidate.x,
-            _candidate.y
-        );
+        var _dx = _candidate.x - _mine.x;
+        var _dy = _candidate.y - _mine.y;
+        var _distance = _dx * _dx + _dy * _dy;
 
         if (_distance > _nearest)
             continue;

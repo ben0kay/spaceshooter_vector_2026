@@ -156,9 +156,13 @@ function sc_player_init(_player, _ship_key)
     mining: {
         next_fire_tick: 0,
         active_delivery_id: noone
-    }
+    },
 
-    // RMB frontal shield runtime goes here later.
+    shield_focus: {
+        active: false,
+        protected_impact: false,
+        impact_direction: 0
+    }
 };
 
     _player.aim = {

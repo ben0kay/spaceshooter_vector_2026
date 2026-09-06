@@ -22,6 +22,8 @@ function sc_ship_register_fighter()
 			weapons_while_boosting: 0,
 			weapons_while_dashing: 0,
         },
+			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
+shield_focus_arc: 90, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
         collision: { radius: 26 },
 		systems: sc_ship_systems_standard(),
         visual: { colour_primary: make_colour_rgb(35, 165, 255), colour_secondary: make_colour_rgb(255, 135, 35), scale: 1 },
@@ -39,6 +41,8 @@ function sc_ship_register_bastion()
         {
             hull_max: 160, armour_max: 140, shield_max: 80,
             shield_recharge_delay: 210, shield_recharge_rate: 0.25,
+			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
+shield_focus_arc: 90, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
             speed_max: 4.2, acceleration: 0.22, deceleration: 0.32, turn_speed: 3.8,
             damage_multiplier: 1.1, fire_rate_multiplier: 0.9, cargo_capacity: 32,
 			boost_speed_multiplier: 1.25,

@@ -511,20 +511,45 @@ function sc_projectile_entity_collision(_projectile, _target)
 {
     var _data = _projectile.projectile;
 
-    if (_data.state != ProjectileState.ACTIVE) return false;
-    if (_target == _data.source.owner_id) return false;
-    if (_target.entity.faction == _data.source.faction) return false;
+    if (_data.state != ProjectileState.ACTIVE)
+        return false;
+
+    if (_target == _data.source.owner_id)
+        return false;
+
+    if (_target.entity.faction == _data.source.faction)
+        return false;
 
     var _target_faction = _target.entity.faction;
-    var _result = _target.entity.damage_script(_target, _data.damage);
-    var _class_config = sc_projectile_class_config_get(_data.projectile_class);
+
+    var _impact = {
+        x: _projectile.x,
+        y: _projectile.y,
+        direction: _data.direction
+    };
+
+    var _result = _target.entity.damage_script(
+        _target,
+        _data.damage,
+        _impact
+    );
+
+    var _class_config = sc_projectile_class_config_get(
+        _data.projectile_class
+    );
+
     var _impact_x = _projectile.x;
     var _impact_y = _projectile.y;
     var _shield_impact = undefined;
 
-    if (is_struct(_result) && _result.impact_layer == DefenceLayer.SHIELD)
+    if (is_struct(_result)
+    && _result.impact_layer == DefenceLayer.SHIELD)
     {
-        _shield_impact = sc_projectile_shield_impact_get(_projectile, _target);
+        _shield_impact = sc_projectile_shield_impact_get(
+            _projectile,
+            _target
+        );
+
         _impact_x = _shield_impact.x;
         _impact_y = _shield_impact.y;
 
@@ -548,8 +573,14 @@ function sc_projectile_entity_collision(_projectile, _target)
             _data.direction
         );
 
-        if (_target_faction == Faction.PLAYER && _class_config.camera_shake > 0)
-            sc_camera_shake(_class_config.camera_shake, _class_config.shake_time);
+        if (_target_faction == Faction.PLAYER
+        && _class_config.camera_shake > 0)
+        {
+            sc_camera_shake(
+                _class_config.camera_shake,
+                _class_config.shake_time
+            );
+        }
 
         var _can_ricochet =
             _result.impact_layer == DefenceLayer.SHIELD
@@ -558,7 +589,13 @@ function sc_projectile_entity_collision(_projectile, _target)
             && random(1) < _class_config.deflect_chance;
 
         if (_can_ricochet)
-            return sc_projectile_ricochet_begin(_projectile, _shield_impact, _class_config);
+        {
+            return sc_projectile_ricochet_begin(
+                _projectile,
+                _shield_impact,
+                _class_config
+            );
+        }
     }
 
     sc_projectile_detonate(_projectile);
