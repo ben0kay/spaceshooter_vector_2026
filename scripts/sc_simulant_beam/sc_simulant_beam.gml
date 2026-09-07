@@ -104,18 +104,18 @@ function sc_simulant_thin_beam_particles_emit(_area, _data)
     part_particles_create(global.particles.impact_system, _x, _y, _particles.ember, irandom_range(1, 2));
 }
 
-/// @description Draws a thin unstable violet Simulant beam.
 function sc_attack_area_simulant_thin_beam_draw(_area, _data)
 {
     var _p = _data.visual.palette;
+    var _runtime = _data.runtime;
     var _length = _runtime.visual_length;
-    var _alpha = _data.runtime.release_alpha;
+    var _alpha = _runtime.release_alpha;
     var _pulse = 1 + sin(GAME_TICK * 0.47) * 0.11 + sin(GAME_TICK * 0.19) * 0.05;
     var _width = _data.geometry.radius * _pulse;
     var _segments = max(2, ceil(_length / 110));
     var _previous_x = _area.x;
     var _previous_y = _area.y;
-
+	
     gpu_set_blendmode(bm_add);
 
     for (var _i = 1; _i <= _segments; _i++)
