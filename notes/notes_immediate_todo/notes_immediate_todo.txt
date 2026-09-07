@@ -60,3 +60,7 @@ Do not create separate objects for every resource.
 Keep actual items on the player; keep only interface state in the HUD.
 Avoid Step-event inventory work while Ship Command is closed.
 Keep static inventory artwork baked and draw changing content dynamically.
+
+
+enemy role specific flee / alert parameters 
+MINIMAP spoof blip causing ambush
