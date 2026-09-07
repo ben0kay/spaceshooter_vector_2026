@@ -8,8 +8,8 @@
   "name":"o_asteroid_test_spawner",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"OBJECTS---",
+    "path":"folders/OBJECTS---.yy",
   },
   "parentObjectId":null,
   "persistent":false,

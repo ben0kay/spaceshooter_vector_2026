@@ -17,7 +17,6 @@ function sc_weapon_register_shard_mining_beam()
 
     return sc_weapon_register({
         identity: { key: "weapon_shard_mining_beam", name: "Shard Mining Beam" },
-
         resource: { type: ResourceType.ENERGY, cost: 0.35 },
 
         delivery: {
@@ -31,14 +30,13 @@ function sc_weapon_register_shard_mining_beam()
 
                 extraction: {
                     efficiency: 1.25,
-					yield_multiplier: 1.5
+                    yield_multiplier: 1.5
                 }
             },
 
             beam: {
+                shape: AttackAreaShape.CAPSULE,
                 geometry: { length: 650, radius: 3.5 },
-				
-				shape: AttackAreaShape.CAPSULE,
 
                 behaviour: {
                     growth_speed: 100,
@@ -50,8 +48,44 @@ function sc_weapon_register_shard_mining_beam()
                 },
 
                 visual: {
-					
-					impact: {
+                    palette: _palette,
+
+                    style: {
+                        segment_length: 75,
+                        width_start: 0.82,
+                        width_end: 1.12,
+                        pulse_amount: 0.08,
+                        pulse_speed: 0.38,
+                        pulse_secondary_amount: 0,
+                        pulse_secondary_speed: 0,
+                        wobble_amount: 0.12,
+                        wobble_speed: 0.29,
+                        wobble_step: 0.83,
+
+                        glow_width: 4,
+                        glow_alpha: 0.13,
+                        body_width: 2,
+                        body_alpha: 0.5,
+                        inner_width: 0.8,
+                        inner_alpha: 0.95,
+                        hot_width: 0.25,
+                        hot_alpha: 1,
+
+                        body_colour_mix: 0,
+                        inner_colour_mix: 0,
+                        hot_colour_mix: 0,
+
+                        band_spacing: 95,
+                        band_length: 14,
+                        band_speed: 4,
+                        band_width: 0.2,
+                        band_alpha: 0.18,
+
+                        source_flare_radius: 0.75,
+                        source_flare_alpha: 0.9
+                    },
+
+                    impact: {
                         overlap_ratio: 0.3,
                         overlap_max: 110,
                         solid_overlap: 12,
@@ -59,8 +93,8 @@ function sc_weapon_register_shard_mining_beam()
                         particles_enabled: false,
                         particle_interval: 2
                     },
-                    palette: _palette,
-                    draw_script: sc_attack_area_shard_mining_beam_draw,
+
+                    draw_script: sc_attack_area_beam_layered_draw,
                     particles_register_script: sc_shard_mining_beam_particles_register,
                     particle_script: sc_shard_mining_beam_particles_emit
                 }
@@ -80,7 +114,6 @@ function sc_weapon_register_shard_mining_beam()
         audio: { sound: noone, volume: 0.4, pitch_range: 0.04 }
     });
 }
-
 /// @description Registers visible mining sparks and soft contact motes.
 function sc_shard_mining_beam_particles_register()
 {
@@ -218,93 +251,4 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
     }
 
     return true;
-}
-
-/// @description Draws a thin unstable yellow mining beam and flickering contact point.
-function sc_attack_area_shard_mining_beam_draw(_area, _data)
-{
-    var _p = _data.visual.palette;
-    var _runtime = _data.runtime;
-    var _length = _runtime.visual_length;
-    var _alpha = _runtime.release_alpha;
-    var _pulse = 1 + sin(GAME_TICK * 0.38) * 0.08;
-    var _width = _data.geometry.radius * _pulse;
-    var _segments = max(2, ceil(_length / 75));
-    var _previous_x = _area.x;
-    var _previous_y = _area.y;
-
-    gpu_set_blendmode(bm_add);
-
-    for (var _i = 1; _i <= _segments; _i++)
-    {
-        var _progress = _i / _segments;
-        var _distance = _length * _progress;
-
-        var _wobble =
-            sin(GAME_TICK * 0.29 + _i * 0.83)
-            * _width
-            * 0.12
-            * sin(_progress * pi);
-
-        var _current_x =
-            _area.x
-            + lengthdir_x(_distance, _data.direction)
-            + lengthdir_x(_wobble, _data.direction + 90);
-
-        var _current_y =
-            _area.y
-            + lengthdir_y(_distance, _data.direction)
-            + lengthdir_y(_wobble, _data.direction + 90);
-
-        draw_set_alpha(_alpha * 0.13);
-        draw_set_colour(_p.glow);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 4);
-
-        draw_set_alpha(_alpha * 0.5);
-        draw_set_colour(_p.accent);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 2);
-
-        draw_set_alpha(_alpha * 0.95);
-        draw_set_colour(_p.energy);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(2, _width * 0.8));
-
-        draw_set_alpha(_alpha);
-        draw_set_colour(_p.core);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(1, _width * 0.25));
-
-        _previous_x = _current_x;
-        _previous_y = _current_y;
-    }
-
-    var _contact = _runtime.hit_length < _runtime.growth_length - 0.5;
-
-    if (_contact)
-    {
-        var _impact_x = _area.x + lengthdir_x(_length, _data.direction);
-        var _impact_y = _area.y + lengthdir_y(_length, _data.direction);
-        var _flicker = 1 + sin(GAME_TICK * 0.73 + real(_area.id)) * 0.2;
-        var _impact_radius = _width * 1.8 * _flicker;
-
-        draw_set_alpha(_alpha * 0.2);
-        draw_set_colour(_p.glow);
-        draw_circle(_impact_x, _impact_y, _impact_radius * 2.4, false);
-
-        draw_set_alpha(_alpha * 0.8);
-        draw_set_colour(_p.energy);
-        draw_circle(_impact_x, _impact_y, _impact_radius, false);
-
-        draw_set_alpha(_alpha);
-        draw_set_colour(_p.core);
-        draw_line_width(
-            _impact_x + lengthdir_x(_impact_radius, GAME_TICK * 7),
-            _impact_y + lengthdir_y(_impact_radius, GAME_TICK * 7),
-            _impact_x + lengthdir_x(_impact_radius, GAME_TICK * 7 + 180),
-            _impact_y + lengthdir_y(_impact_radius, GAME_TICK * 7 + 180),
-            1
-        );
-    }
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
-    gpu_set_blendmode(bm_normal);
 }

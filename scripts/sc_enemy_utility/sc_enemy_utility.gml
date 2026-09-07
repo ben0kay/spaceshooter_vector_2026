@@ -262,29 +262,22 @@ function sc_enemy_utility_update(_enemy)
     return true;
 }
 
-/// @description Draws one stable Corporation repair beam between emitter and ally.
+/// @description Draws one Corporation repair beam through the shared layered renderer.
 function sc_enemy_utility_repair_beam_draw(_x, _y, _target_x, _target_y, _channel, _palette)
 {
+    sc_visual_beam_layered_draw(
+        _x, _y,
+        _target_x, _target_y,
+        _channel.visual.width,
+        _channel.visual.style,
+        _palette,
+        1,
+        real(_channel.runtime.target_id)
+    );
+
     var _pulse = 0.9 + sin(GAME_TICK * 0.18) * 0.1;
-    var _width = _channel.visual.width * _pulse;
 
     gpu_set_blendmode(bm_add);
-
-    draw_set_alpha(0.16);
-    draw_set_colour(_palette.glow);
-    draw_line_width(_x, _y, _target_x, _target_y, _channel.visual.glow_width * _pulse);
-
-    draw_set_alpha(0.48);
-    draw_set_colour(_palette.accent);
-    draw_line_width(_x, _y, _target_x, _target_y, _width * 2.2);
-
-    draw_set_alpha(0.9);
-    draw_set_colour(_palette.energy);
-    draw_line_width(_x, _y, _target_x, _target_y, _width);
-
-    draw_set_alpha(1);
-    draw_set_colour(_palette.core);
-    draw_line_width(_x, _y, _target_x, _target_y, max(1, _width * 0.3));
 
     draw_set_alpha(0.24);
     draw_set_colour(_palette.glow);

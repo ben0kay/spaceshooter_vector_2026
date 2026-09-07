@@ -28,8 +28,8 @@
   ],
   "name":"r_sector",
   "parent":{
-    "name":"rooms",
-    "path":"folders/rooms.yy",
+    "name":"ROOMS---",
+    "path":"folders/ROOMS---.yy",
   },
   "parentRoom":null,
   "physicsSettings":{

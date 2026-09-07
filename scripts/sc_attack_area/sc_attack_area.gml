@@ -661,6 +661,25 @@ function sc_beam_hit_length_update(_area, _data)
     _data.geometry.length = _length;
 }
 
+/// @description Draws one capsule beam through the shared layered renderer.
+function sc_attack_area_beam_layered_draw(_area, _data)
+{
+    var _runtime = _data.runtime;
+    var _length = _runtime.visual_length;
+    var _end_x = _area.x + lengthdir_x(_length, _data.direction);
+    var _end_y = _area.y + lengthdir_y(_length, _data.direction);
+
+    sc_visual_beam_layered_draw(
+        _area.x, _area.y,
+        _end_x, _end_y,
+        _data.geometry.radius,
+        _data.visual.style,
+        _data.visual.palette,
+        _runtime.release_alpha,
+        real(_area.id)
+    );
+}
+
 /// @description Draws one generic white-hot flare at the beam's visual endpoint.
 function sc_beam_impact_draw(_area, _data)
 {

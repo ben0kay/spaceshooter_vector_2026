@@ -10,8 +10,8 @@
   "name":"o_ship_select",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"OBJECTS---",
+    "path":"folders/OBJECTS---.yy",
   },
   "parentObjectId":null,
   "persistent":false,

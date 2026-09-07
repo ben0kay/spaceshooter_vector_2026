@@ -13,8 +13,7 @@ function sc_weapon_register_shard_laser()
 
     return sc_weapon_register({
         identity: { key: "weapon_shard_laser", name: "Shard Laser" },
-		
-		resource: { type: ResourceType.ENERGY, cost: 0.25 },
+        resource: { type: ResourceType.ENERGY, cost: 0.25 },
 
         delivery: {
             type: AttackDelivery.BEAM,
@@ -27,9 +26,8 @@ function sc_weapon_register_shard_laser()
             },
 
             beam: {
+                shape: AttackAreaShape.CAPSULE,
                 geometry: { length: 1100, radius: 8 },
-				
-				shape: AttackAreaShape.CAPSULE,
 
                 behaviour: {
                     growth_speed: 145,
@@ -41,8 +39,44 @@ function sc_weapon_register_shard_laser()
                 },
 
                 visual: {
-					
-					impact: {
+                    palette: _palette,
+
+                    style: {
+                        segment_length: 85,
+                        width_start: 1,
+                        width_end: 1,
+                        pulse_amount: 0.13,
+                        pulse_speed: 0.42,
+                        pulse_secondary_amount: 0.07,
+                        pulse_secondary_speed: 0.17,
+                        wobble_amount: 0.22,
+                        wobble_speed: 0.34,
+                        wobble_step: 0.91,
+
+                        glow_width: 4.4,
+                        glow_alpha: 0.13,
+                        body_width: 2.25,
+                        body_alpha: 0.46,
+                        inner_width: 0.88,
+                        inner_alpha: 0.92,
+                        hot_width: 0.28,
+                        hot_alpha: 1,
+
+                        body_colour_mix: 1,
+                        inner_colour_mix: 1,
+                        hot_colour_mix: 1,
+
+                        band_spacing: 145,
+                        band_length: 24,
+                        band_speed: 5,
+                        band_width: 0.22,
+                        band_alpha: 0.22,
+
+                        source_flare_radius: 0.9,
+                        source_flare_alpha: 1
+                    },
+
+                    impact: {
                         overlap_ratio: 0.35,
                         overlap_max: 120,
                         solid_overlap: 18,
@@ -50,8 +84,8 @@ function sc_weapon_register_shard_laser()
                         particles_enabled: true,
                         particle_interval: 2
                     },
-                    palette: _palette,
-                    draw_script: sc_attack_area_shard_laser_draw,
+
+                    draw_script: sc_attack_area_beam_layered_draw,
                     particles_register_script: sc_shard_laser_particles_register,
                     particle_script: sc_shard_laser_particles_emit
                 }
@@ -133,62 +167,4 @@ function sc_shard_laser_particles_emit(_area, _data)
         _particles.ember,
         irandom_range(2, 3)
     );
-}
-
-/// @description Draws the extending, pulsing and visually unstable Shard laser.
-function sc_attack_area_shard_laser_draw(_area, _data)
-{
-    var _p = _data.visual.palette;
-    var _geometry = _data.geometry;
-    var _runtime = _data.runtime;
-    var _length = _runtime.visual_length;
-    var _alpha = _runtime.release_alpha;
-    var _pulse = 1 + sin(GAME_TICK * 0.42) * 0.13 + sin(GAME_TICK * 0.17) * 0.07;
-    var _width = _geometry.radius * _pulse;
-    var _segments = max(2, ceil(_length / 85));
-    var _previous_x = _area.x;
-    var _previous_y = _area.y;
-
-    gpu_set_blendmode(bm_add);
-
-    for (var _i = 1; _i <= _segments; _i++)
-    {
-        var _progress = _i / _segments;
-        var _distance = _length * _progress;
-        var _wobble = sin(GAME_TICK * 0.34 + _i * 0.91) * _width * 0.22 * sin(_progress * pi);
-        var _current_x = _area.x
-            + lengthdir_x(_distance, _data.direction)
-            + lengthdir_x(_wobble, _data.direction + 90);
-
-        var _current_y = _area.y
-            + lengthdir_y(_distance, _data.direction)
-            + lengthdir_y(_wobble, _data.direction + 90);
-
-        draw_set_alpha(_alpha * 0.13);
-        draw_set_colour(_p.glow);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 4.4);
-
-        draw_set_alpha(_alpha * 0.46);
-        draw_set_colour(_p.energy);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 2.25);
-
-        draw_set_alpha(_alpha * 0.92);
-        draw_set_colour(_p.core);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(3, _width * 0.88));
-
-        draw_set_alpha(_alpha);
-        draw_set_colour(c_white);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(1, _width * 0.28));
-
-        _previous_x = _current_x;
-        _previous_y = _current_y;
-    }
-
-    draw_set_alpha(_alpha * 0.3);
-    draw_set_colour(_p.glow);
-    draw_circle(_area.x, _area.y, _width * 3.4, false);
-
-    draw_set_alpha(_alpha);
-    draw_set_colour(_p.core);
-    draw_circle(_area.x, _area.y, _width * 0.9, false);
 }

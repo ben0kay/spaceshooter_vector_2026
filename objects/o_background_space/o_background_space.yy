@@ -10,8 +10,8 @@
   "name":"o_background_space",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"OBJECTS---",
+    "path":"folders/OBJECTS---.yy",
   },
   "parentObjectId":null,
   "persistent":false,

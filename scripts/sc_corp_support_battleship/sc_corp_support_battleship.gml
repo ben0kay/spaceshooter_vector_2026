@@ -251,9 +251,43 @@ function sc_enemy_register_corporation_support_battleship()
                     },
 
                     visual: {
-                        width: 5,
-                        glow_width: 18
-                    }
+					    width: 5,
+
+					    style: {
+					        segment_length: 90,
+					        width_start: 0.9,
+					        width_end: 1.15,
+					        pulse_amount: 0.1,
+					        pulse_speed: 0.18,
+					        pulse_secondary_amount: 0,
+					        pulse_secondary_speed: 0,
+					        wobble_amount: 0,
+					        wobble_speed: 0,
+					        wobble_step: 0,
+
+					        glow_width: 3.6,
+					        glow_alpha: 0.16,
+					        body_width: 2.2,
+					        body_alpha: 0.48,
+					        inner_width: 1,
+					        inner_alpha: 0.9,
+					        hot_width: 0.3,
+					        hot_alpha: 1,
+
+					        body_colour_mix: 0,
+					        inner_colour_mix: 0,
+					        hot_colour_mix: 0,
+
+					        band_spacing: 115,
+					        band_length: 20,
+					        band_speed: 3,
+					        band_width: 0.24,
+					        band_alpha: 0.24,
+
+					        source_flare_radius: 0.8,
+					        source_flare_alpha: 0.8
+					    }
+					}
                 }
             ]
         }

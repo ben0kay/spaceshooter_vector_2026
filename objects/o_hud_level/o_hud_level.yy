@@ -11,8 +11,8 @@
   "name":"o_hud_level",
   "overriddenProperties":[],
   "parent":{
-    "name":"objects",
-    "path":"folders/objects.yy",
+    "name":"OBJECTS---",
+    "path":"folders/OBJECTS---.yy",
   },
   "parentObjectId":null,
   "persistent":false,

@@ -11,7 +11,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"stucture",
-    "path":"folders/objects/stucture.yy",
+    "path":"folders/OBJECTS---/stucture.yy",
   },
   "parentObjectId":null,
   "persistent":false,

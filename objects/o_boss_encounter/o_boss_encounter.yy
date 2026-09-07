@@ -12,7 +12,7 @@
   "overriddenProperties":[],
   "parent":{
     "name":"boss",
-    "path":"folders/objects/boss.yy",
+    "path":"folders/OBJECTS---/boss.yy",
   },
   "parentObjectId":null,
   "persistent":false,

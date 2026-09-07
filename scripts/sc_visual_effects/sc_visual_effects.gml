@@ -128,3 +128,125 @@ function sc_visual_effect_signal_arcs(_x, _y, _target_x, _target_y, _config, _pr
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
+
+/// @description Draws one configurable layered beam between two explicit points.
+function sc_visual_beam_layered_draw(_x1, _y1, _x2, _y2, _base_width, _style, _palette, _alpha = 1, _phase = 0)
+{
+    var _length = point_distance(_x1, _y1, _x2, _y2);
+    if (_length <= 0.01 || _alpha <= 0) return;
+
+    var _direction = point_direction(_x1, _y1, _x2, _y2);
+    var _pulse = 1
+        + sin(GAME_TICK * _style.pulse_speed + _phase) * _style.pulse_amount
+        + sin(GAME_TICK * _style.pulse_secondary_speed + _phase) * _style.pulse_secondary_amount;
+
+    var _glow_colour = _palette.glow;
+    var _body_colour = merge_colour(_palette.accent, _palette.energy, _style.body_colour_mix);
+    var _inner_colour = merge_colour(_palette.energy, _palette.core, _style.inner_colour_mix);
+    var _hot_colour = merge_colour(_palette.core, c_white, _style.hot_colour_mix);
+    var _segments = max(2, ceil(_length / _style.segment_length));
+    var _previous_x = _x1;
+    var _previous_y = _y1;
+
+    gpu_set_blendmode(bm_add);
+
+    for (var _i = 1; _i <= _segments; ++_i)
+    {
+        var _progress = _i / _segments;
+        var _distance = _length * _progress;
+        var _width_scale = lerp(_style.width_start, _style.width_end, _progress);
+        var _width = _base_width * _width_scale * _pulse;
+        var _wobble = sin(
+            GAME_TICK * _style.wobble_speed
+            + _i * _style.wobble_step
+            + _phase
+        ) * _base_width * _style.wobble_amount * sin(_progress * pi);
+
+        var _current_x = _x1
+            + lengthdir_x(_distance, _direction)
+            + lengthdir_x(_wobble, _direction + 90);
+
+        var _current_y = _y1
+            + lengthdir_y(_distance, _direction)
+            + lengthdir_y(_wobble, _direction + 90);
+
+        draw_set_alpha(_alpha * _style.glow_alpha);
+        draw_set_colour(_glow_colour);
+        draw_line_width(
+            _previous_x, _previous_y,
+            _current_x, _current_y,
+            _width * _style.glow_width
+        );
+
+        draw_set_alpha(_alpha * _style.body_alpha);
+        draw_set_colour(_body_colour);
+        draw_line_width(
+            _previous_x, _previous_y,
+            _current_x, _current_y,
+            _width * _style.body_width
+        );
+
+        draw_set_alpha(_alpha * _style.inner_alpha);
+        draw_set_colour(_inner_colour);
+        draw_line_width(
+            _previous_x, _previous_y,
+            _current_x, _current_y,
+            max(1, _width * _style.inner_width)
+        );
+
+        draw_set_alpha(_alpha * _style.hot_alpha);
+        draw_set_colour(_hot_colour);
+        draw_line_width(
+            _previous_x, _previous_y,
+            _current_x, _current_y,
+            max(1, _width * _style.hot_width)
+        );
+
+        _previous_x = _current_x;
+        _previous_y = _current_y;
+    }
+
+    if (_style.band_alpha > 0)
+    {
+        var _spacing = max(1, _style.band_spacing);
+        var _offset = (GAME_TICK * _style.band_speed + _phase) mod _spacing;
+        if (_offset < 0) _offset += _spacing;
+
+        draw_set_colour(_hot_colour);
+        draw_set_alpha(_alpha * _style.band_alpha);
+
+        for (var _distance = _offset; _distance < _length; _distance += _spacing)
+        {
+            var _band_end = min(_length, _distance + _style.band_length);
+            var _progress = _distance / _length;
+            var _width = _base_width
+                * lerp(_style.width_start, _style.width_end, _progress)
+                * _style.band_width;
+
+            draw_line_width(
+                _x1 + lengthdir_x(_distance, _direction),
+                _y1 + lengthdir_y(_distance, _direction),
+                _x1 + lengthdir_x(_band_end, _direction),
+                _y1 + lengthdir_y(_band_end, _direction),
+                max(1, _width)
+            );
+        }
+    }
+
+    if (_style.source_flare_alpha > 0)
+    {
+        var _source_radius = _base_width * _style.source_flare_radius * _pulse;
+
+        draw_set_alpha(_alpha * _style.source_flare_alpha * 0.3);
+        draw_set_colour(_glow_colour);
+        draw_circle(_x1, _y1, _source_radius * 2.2, false);
+
+        draw_set_alpha(_alpha * _style.source_flare_alpha);
+        draw_set_colour(_inner_colour);
+        draw_circle(_x1, _y1, _source_radius, false);
+    }
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

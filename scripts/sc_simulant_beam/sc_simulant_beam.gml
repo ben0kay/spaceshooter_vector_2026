@@ -25,9 +25,8 @@ function sc_weapon_register_simulant_thin_beam()
             },
 
             beam: {
+                shape: AttackAreaShape.CAPSULE,
                 geometry: { length: 1250, radius: 5 },
-				
-				shape: AttackAreaShape.CAPSULE,
 
                 behaviour: {
                     growth_speed: 120,
@@ -39,8 +38,44 @@ function sc_weapon_register_simulant_thin_beam()
                 },
 
                 visual: {
-					
-					                    impact: {
+                    palette: _palette,
+
+                    style: {
+                        segment_length: 110,
+                        width_start: 0.92,
+                        width_end: 1.08,
+                        pulse_amount: 0.11,
+                        pulse_speed: 0.47,
+                        pulse_secondary_amount: 0.05,
+                        pulse_secondary_speed: 0.19,
+                        wobble_amount: 0.16,
+                        wobble_speed: 0.42,
+                        wobble_step: 0.83,
+
+                        glow_width: 4,
+                        glow_alpha: 0.14,
+                        body_width: 2.1,
+                        body_alpha: 0.5,
+                        inner_width: 0.85,
+                        inner_alpha: 0.94,
+                        hot_width: 0.28,
+                        hot_alpha: 1,
+
+                        body_colour_mix: 0,
+                        inner_colour_mix: 0,
+                        hot_colour_mix: 0,
+
+                        band_spacing: 180,
+                        band_length: 18,
+                        band_speed: 7,
+                        band_width: 0.18,
+                        band_alpha: 0.28,
+
+                        source_flare_radius: 0.8,
+                        source_flare_alpha: 1
+                    },
+
+                    impact: {
                         overlap_ratio: 0.3,
                         overlap_max: 90,
                         solid_overlap: 14,
@@ -48,8 +83,8 @@ function sc_weapon_register_simulant_thin_beam()
                         particles_enabled: true,
                         particle_interval: 3
                     },
-                    palette: _palette,
-                    draw_script: sc_attack_area_simulant_thin_beam_draw,
+
+                    draw_script: sc_attack_area_beam_layered_draw,
                     particles_register_script: sc_simulant_thin_beam_particles_register,
                     particle_script: sc_simulant_thin_beam_particles_emit
                 }
@@ -102,57 +137,6 @@ function sc_simulant_thin_beam_particles_emit(_area, _data)
 
     part_type_direction(_particles.ember, _ember_direction - 9, _ember_direction + 9, 0, 0);
     part_particles_create(global.particles.impact_system, _x, _y, _particles.ember, irandom_range(1, 2));
-}
-
-function sc_attack_area_simulant_thin_beam_draw(_area, _data)
-{
-    var _p = _data.visual.palette;
-    var _runtime = _data.runtime;
-    var _length = _runtime.visual_length;
-    var _alpha = _runtime.release_alpha;
-    var _pulse = 1 + sin(GAME_TICK * 0.47) * 0.11 + sin(GAME_TICK * 0.19) * 0.05;
-    var _width = _data.geometry.radius * _pulse;
-    var _segments = max(2, ceil(_length / 110));
-    var _previous_x = _area.x;
-    var _previous_y = _area.y;
-	
-    gpu_set_blendmode(bm_add);
-
-    for (var _i = 1; _i <= _segments; _i++)
-    {
-        var _progress = _i / _segments;
-        var _distance = _length * _progress;
-        var _wobble = sin(GAME_TICK * 0.42 + _i * 0.83) * _width * 0.16 * sin(_progress * pi);
-        var _current_x = _area.x + lengthdir_x(_distance, _data.direction) + lengthdir_x(_wobble, _data.direction + 90);
-        var _current_y = _area.y + lengthdir_y(_distance, _data.direction) + lengthdir_y(_wobble, _data.direction + 90);
-
-        draw_set_alpha(_alpha * 0.14);
-        draw_set_colour(_p.glow);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 4);
-
-        draw_set_alpha(_alpha * 0.5);
-        draw_set_colour(_p.accent);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, _width * 2.1);
-
-        draw_set_alpha(_alpha * 0.94);
-        draw_set_colour(_p.energy);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(2, _width * 0.85));
-
-        draw_set_alpha(_alpha);
-        draw_set_colour(_p.core);
-        draw_line_width(_previous_x, _previous_y, _current_x, _current_y, max(1, _width * 0.28));
-
-        _previous_x = _current_x;
-        _previous_y = _current_y;
-    }
-
-    draw_set_alpha(_alpha * 0.25);
-    draw_set_colour(_p.glow);
-    draw_circle(_area.x, _area.y, _width * 3.2, false);
-
-    draw_set_alpha(_alpha);
-    draw_set_colour(_p.core);
-    draw_circle(_area.x, _area.y, _width * 0.8, false);
 }
 
 /// @description Draws the Dreadwing's thin central beam emitter.

@@ -21,8 +21,8 @@
   ],
   "name":"r_boss_test",
   "parent":{
-    "name":"rooms",
-    "path":"folders/rooms.yy",
+    "name":"ROOMS---",
+    "path":"folders/ROOMS---.yy",
   },
   "parentRoom":null,
   "physicsSettings":{
