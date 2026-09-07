@@ -22,9 +22,10 @@ function sc_enemy_faction_corporation_weapons_register()
 {
     if (!sc_weapon_register_corporation_plasma()) return false;
     if (!sc_weapon_register_corporation_rocket()) return false;
-	if (!sc_weapon_register_corporation_micro_missile()) return false;
+    if (!sc_weapon_register_corporation_micro_missile()) return false;
     if (!sc_weapon_register_corporation_pursuit_micro_missile()) return false;
     if (!sc_weapon_register_corporation_breach_micro_missile()) return false;
+    if (!sc_weapon_register_corporation_combat_beam()) return false;
     return true;
 }
 
@@ -33,5 +34,6 @@ function sc_enemy_faction_corporation_ships_register()
 {
     if (!sc_enemy_register_corporation_interceptor()) return false;
     if (!sc_enemy_register_corporation_support_battleship()) return false;
+    if (!sc_enemy_register_corporation_razorwing_champion()) return false;
     return true;
 }
