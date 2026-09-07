@@ -15,7 +15,7 @@ function sc_asteroid_size_data(_size)
         case AsteroidSize.MEDIUM: return { radius: 58, health: 130, yield_min: 4, yield_max: 8 };
         case AsteroidSize.LARGE: return { radius: 105, health: 340, yield_min: 8, yield_max: 18 };
 		case AsteroidSize.HUGE: return { radius: 256, health: 768, yield_min: 15, yield_max: 35 };
-		case AsteroidSize.COLOSSAL: return { radius: 768, health: 2048, yield_min: 35, yield_max: 50 };
+		case AsteroidSize.COLOSSAL: return { radius: 640, health: 2048, yield_min: 35, yield_max: 50 };
     }
 
     return undefined;

@@ -132,10 +132,6 @@ function sc_asteroid_primitive_draw(_x, _y, _radius, _variant, _stage, _palette)
     draw_set_alpha(1);
     sc_asteroid_polygon_draw(_x, _y, _radius, _points, _palette.dark, _palette.light);
 
-    draw_set_colour(_palette.mid);
-    draw_set_alpha(0.62);
-    draw_circle(_x - _radius * 0.05, _y - _radius * 0.05, _radius * 0.62, false);
-
     draw_set_alpha(1);
     sc_asteroid_craters_draw(_x, _y, _radius, _variant, _palette);
     sc_asteroid_damage_draw(_x, _y, _radius, _stage, _palette);
