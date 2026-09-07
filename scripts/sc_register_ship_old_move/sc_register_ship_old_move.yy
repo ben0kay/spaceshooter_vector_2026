@@ -6,7 +6,7 @@
   "name":"sc_register_ship_old_move",
   "parent":{
     "name":"PLAYER",
-    "path":"folders/scripts/PLAYER.yy",
+    "path":"folders/SCRIPTS---/PLAYER.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

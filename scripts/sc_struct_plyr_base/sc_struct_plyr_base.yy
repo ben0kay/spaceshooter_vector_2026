@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_struct_plyr_base",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_struct_plyr_base",
+  "parent":{
+    "name":"STRUCTURES---",
+    "path":"folders/SCRIPTS---/STRUCTURES---.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -6,7 +6,7 @@
   "name":"sc_visual_helper",
   "parent":{
     "name":"VISUAL_HELPERS",
-    "path":"folders/scripts/VISUAL_HELPERS.yy",
+    "path":"folders/SCRIPTS---/VISUAL_HELPERS.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

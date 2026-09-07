@@ -6,7 +6,7 @@
   "name":"sc_sim_rocket",
   "parent":{
     "name":"projectiles",
-    "path":"folders/scripts/ENEMY/factions/SIMULANT/projectiles.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

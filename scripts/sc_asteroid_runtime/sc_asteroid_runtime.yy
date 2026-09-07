@@ -6,7 +6,7 @@
   "name":"sc_asteroid_runtime",
   "parent":{
     "name":"asteroids",
-    "path":"folders/scripts/asteroids.yy",
+    "path":"folders/SCRIPTS---/asteroids.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

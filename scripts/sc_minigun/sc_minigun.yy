@@ -6,7 +6,7 @@
   "name":"sc_minigun",
   "parent":{
     "name":"weapons",
-    "path":"folders/scripts/PLAYER/weapons.yy",
+    "path":"folders/SCRIPTS---/PLAYER/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

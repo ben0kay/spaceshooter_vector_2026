@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_world_structure",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_world_structure",
+  "parent":{
+    "name":"STRUCTURES---",
+    "path":"folders/SCRIPTS---/STRUCTURES---.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -6,7 +6,7 @@
   "name":"sc_background_boss",
   "parent":{
     "name":"effects",
-    "path":"folders/scripts/effects.yy",
+    "path":"folders/SCRIPTS---/effects.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

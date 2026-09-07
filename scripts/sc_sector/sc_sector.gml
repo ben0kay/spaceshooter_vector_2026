@@ -186,6 +186,31 @@ function sc_sector_player_entry_apply(_player)
     _sector.transitioning = false;
 }
 
+/// @description Spawns permanent authored content belonging to one sector.
+function sc_sector_structures_spawn(_layer)
+{
+    var _sector = global.game.sector;
+
+    if (_sector.x != 0 || _sector.y != 0)
+        return 0;
+
+    var _structure = instance_create_layer(
+        1500,
+        room_height * 0.5,
+        _layer,
+        o_world_structure,
+        {
+            structure_create: {
+                key: "player_starting_base",
+                angle: 0,
+                collision_layer: _layer
+            }
+        }
+    );
+
+    return instance_exists(_structure);
+}
+
 /// @description Generates the active sector and restores any carried player.
 function sc_sector_room_create()
 {
@@ -202,7 +227,9 @@ function sc_sector_room_create()
 
     random_set_seed(_sector_seed);
 
+	sc_sector_structures_spawn(_layer);
     sc_sector_asteroid_fields_spawn(_layer);
+	
 
     random_set_seed(_previous_seed);
 

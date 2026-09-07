@@ -6,7 +6,7 @@
   "name":"sc_profile",
   "parent":{
     "name":"BOOT",
-    "path":"folders/scripts/BOOT.yy",
+    "path":"folders/SCRIPTS---/BOOT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

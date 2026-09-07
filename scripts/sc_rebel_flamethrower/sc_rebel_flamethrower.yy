@@ -6,7 +6,7 @@
   "name":"sc_rebel_flamethrower",
   "parent":{
     "name":"weapons",
-    "path":"folders/scripts/ENEMY/factions/REBEL/weapons.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/weapons.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

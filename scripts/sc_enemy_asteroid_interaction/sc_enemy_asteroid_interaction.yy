@@ -6,7 +6,7 @@
   "name":"sc_enemy_asteroid_interaction",
   "parent":{
     "name":"ENEMY",
-    "path":"folders/scripts/ENEMY.yy",
+    "path":"folders/SCRIPTS---/ENEMY.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

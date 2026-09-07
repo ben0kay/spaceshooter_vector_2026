@@ -6,7 +6,7 @@
   "name":"particles_projectile_impact",
   "parent":{
     "name":"particles",
-    "path":"folders/scripts/effects/particles.yy",
+    "path":"folders/SCRIPTS---/effects/particles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -6,7 +6,7 @@
   "name":"sc_sim_twin_fighter",
   "parent":{
     "name":"enemies",
-    "path":"folders/scripts/ENEMY/factions/SIMULANT/enemies.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

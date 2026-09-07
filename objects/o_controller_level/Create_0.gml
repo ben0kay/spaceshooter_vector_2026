@@ -90,14 +90,26 @@ if (_campaign_player)
     exit;
 }
 
+var _spawn_x = room_width * 0.5;
+var _spawn_y = room_height * 0.5;
+
+if (sc_sector_campaign_active()
+&& global.game.sector.x == 0
+&& global.game.sector.y == 0
+&& global.game.sector.entry_side == "centre")
+{
+    _spawn_x = 2700;
+    _spawn_y = room_height * 0.5;
+}
+
 var _selector = instance_create_layer(
     0,
     0,
     "Instances",
     o_ship_select,
     {
-        spawn_x: room_width * 0.5,
-        spawn_y: room_height * 0.5
+        spawn_x: _spawn_x,
+        spawn_y: _spawn_y
     }
 );
 

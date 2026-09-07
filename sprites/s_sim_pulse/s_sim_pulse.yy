@@ -26,7 +26,7 @@
   "origin":4,
   "parent":{
     "name":"projectiles",
-    "path":"folders/scripts/ENEMY/factions/SIMULANT/projectiles.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/projectiles.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

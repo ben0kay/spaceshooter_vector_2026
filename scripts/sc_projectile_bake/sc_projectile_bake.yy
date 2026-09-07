@@ -6,7 +6,7 @@
   "name":"sc_projectile_bake",
   "parent":{
     "name":"baking",
-    "path":"folders/scripts/baking.yy",
+    "path":"folders/SCRIPTS---/baking.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

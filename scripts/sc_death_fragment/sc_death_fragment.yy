@@ -6,7 +6,7 @@
   "name":"sc_death_fragment",
   "parent":{
     "name":"effects",
-    "path":"folders/scripts/effects.yy",
+    "path":"folders/SCRIPTS---/effects.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

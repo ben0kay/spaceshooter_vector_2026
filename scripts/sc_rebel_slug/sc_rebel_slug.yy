@@ -6,7 +6,7 @@
   "name":"sc_rebel_slug",
   "parent":{
     "name":"projectiles",
-    "path":"folders/scripts/ENEMY/factions/REBEL/projectiles.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/projectiles.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -6,7 +6,7 @@
   "name":"sc_corp_visual_helper",
   "parent":{
     "name":"CORP SYNDICATE",
-    "path":"folders/scripts/ENEMY/factions/CORP SYNDICATE.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/CORP SYNDICATE.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -6,7 +6,7 @@
   "name":"sim_visuals_shared",
   "parent":{
     "name":"SIMULANT",
-    "path":"folders/scripts/ENEMY/factions/SIMULANT.yy",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

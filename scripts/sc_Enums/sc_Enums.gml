@@ -63,3 +63,5 @@ enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 
 enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE, COLOSSAL }
 enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY }
+
+enum StructureCollisionShape { CIRCLE, RECTANGLE }

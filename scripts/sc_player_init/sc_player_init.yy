@@ -6,7 +6,7 @@
   "name":"sc_player_init",
   "parent":{
     "name":"PLAYER",
-    "path":"folders/scripts/PLAYER.yy",
+    "path":"folders/SCRIPTS---/PLAYER.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

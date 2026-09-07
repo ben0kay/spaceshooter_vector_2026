@@ -6,7 +6,7 @@
   "name":"projectiles_shared",
   "parent":{
     "name":"PROJECTILE",
-    "path":"folders/scripts/PROJECTILE.yy",
+    "path":"folders/SCRIPTS---/PROJECTILE.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
