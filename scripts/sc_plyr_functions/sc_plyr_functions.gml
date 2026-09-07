@@ -452,7 +452,7 @@ function sc_player_continuous_weapons_release(_player)
     return _primary || _mining;
 }
 
-/// @description Selects one temporary primary weapon using number keys 1-5.
+/// @description Selects one normal primary slot and leaves debug weapon mode.
 function sc_player_weapon_selection_update(_player)
 {
     var _input = global.input.action;
@@ -466,6 +466,7 @@ function sc_player_weapon_selection_update(_player)
 
     if (_slot < 0) return false;
 
+    var _debug_disabled = sc_player_debug_weapon_disable(_player);
     var _loadout = _player.ship.loadout;
 
     if (_slot >= array_length(_loadout.primary_slots)
@@ -477,11 +478,11 @@ function sc_player_weapon_selection_update(_player)
             + " IS EMPTY"
         );
 
-        return false;
+        return _debug_disabled;
     }
 
     var _weapon_key = _loadout.primary_slots[_slot];
-    if (_slot == _loadout.primary_slot) return false;
+    if (_slot == _loadout.primary_slot) return _debug_disabled;
 
     sc_player_continuous_weapon_release(_player);
 
@@ -492,16 +493,20 @@ function sc_player_weapon_selection_update(_player)
 
     show_debug_message(
         "PLAYER WEAPON SELECTED - "
-        + variable_struct_get(
-            global.data.weapons,
-            _weapon_key
-        ).identity.name
+        + variable_struct_get(global.data.weapons,_weapon_key).identity.name
     );
 
     return true;
 }
 
-/// @description Fires or maintains the player's held-LMB primary weapon.
+/// @description Pays normal weapon cost while debug weapons remain free.
+function sc_player_primary_weapon_cost_pay(_player,_weapon,_debug)
+{
+    if (_debug) return true;
+    return sc_player_resource_spend(_player,_weapon.resource.type,_weapon.resource.cost);
+}
+
+/// @description Fires the normal or temporary debug primary weapon.
 function sc_player_primary_weapon_update(_player)
 {
     var _runtime = _player.combat.primary;
@@ -514,8 +519,15 @@ function sc_player_primary_weapon_update(_player)
         return false;
     }
 
-    var _weapon_key = _player.ship.loadout.primary;
-    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+    var _debug = _player.combat.debug_weapon;
+    var _debug_active = _debug.enabled;
+    var _weapon_key = _debug_active
+        ? _debug.weapon_key
+        : _player.ship.loadout.primary;
+
+    var _weapon = variable_struct_get(global.data.weapons,_weapon_key);
+    var _shot = _debug_active ? _debug.shot : _weapon.shot;
+    var _firing = _debug_active ? _debug.firing : _weapon.firing;
     var _hardpoints = _player.ship.hardpoints.primary;
     var _hardpoint = _hardpoints[_runtime.hardpoint_cursor];
     var _hardpoint_runtime = _hardpoint.runtime;
@@ -523,29 +535,29 @@ function sc_player_primary_weapon_update(_player)
     var _muzzle_x = _player.x;
     var _muzzle_y = _player.y;
 
-    switch (_weapon.firing.mount_mode)
+    switch (_firing.mount_mode)
     {
         case WeaponMountMode.HARDPOINT:
             _angle += _hardpoint.angle;
 
             var _mount_x = _player.x
-                + lengthdir_x(_hardpoint.x, _player.draw_angle)
-                + lengthdir_x(_hardpoint.y, _player.draw_angle + 90)
-                - lengthdir_x(_hardpoint_runtime.recoil, _angle);
+                + lengthdir_x(_hardpoint.x,_player.draw_angle)
+                + lengthdir_x(_hardpoint.y,_player.draw_angle + 90)
+                - lengthdir_x(_hardpoint_runtime.recoil,_angle);
 
             var _mount_y = _player.y
-                + lengthdir_y(_hardpoint.x, _player.draw_angle)
-                + lengthdir_y(_hardpoint.y, _player.draw_angle + 90)
-                - lengthdir_y(_hardpoint_runtime.recoil, _angle);
+                + lengthdir_y(_hardpoint.x,_player.draw_angle)
+                + lengthdir_y(_hardpoint.y,_player.draw_angle + 90)
+                - lengthdir_y(_hardpoint_runtime.recoil,_angle);
 
-            _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
-            _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
+            _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward,_angle);
+            _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward,_angle);
         break;
 
         case WeaponMountMode.CENTRE:
-            var _centre_forward = _weapon.firing.centre_forward * _player.ship.visual.radius;
-            _muzzle_x += lengthdir_x(_centre_forward, _angle);
-            _muzzle_y += lengthdir_y(_centre_forward, _angle);
+            var _centre_forward = _firing.centre_forward * _player.ship.visual.radius;
+            _muzzle_x += lengthdir_x(_centre_forward,_angle);
+            _muzzle_y += lengthdir_y(_centre_forward,_angle);
         break;
     }
 
@@ -553,56 +565,57 @@ function sc_player_primary_weapon_update(_player)
     {
         if (instance_exists(_runtime.active_delivery_id))
         {
-            if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
+            if (!sc_player_primary_weapon_cost_pay(_player,_weapon,_debug_active))
             {
                 sc_player_continuous_weapon_release(_player);
                 return false;
             }
 
-            return sc_beam_sustain(_runtime.active_delivery_id, _muzzle_x, _muzzle_y, _angle);
+            return sc_beam_sustain(
+                _runtime.active_delivery_id,
+                _muzzle_x,_muzzle_y,_angle
+            );
         }
 
         if (GAME_TICK < _runtime.next_fire_tick) return false;
-
-        if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
-            return false;
+        if (!sc_player_primary_weapon_cost_pay(_player,_weapon,_debug_active)) return false;
 
         var _beam = sc_weapon_fire(
-            _player, _weapon_key, _weapon.shot,
-            _muzzle_x, _muzzle_y, _angle,
+            _player,_weapon_key,_shot,
+            _muzzle_x,_muzzle_y,_angle,
             _player.ship.stats.final.damage_multiplier
         );
 
         if (!instance_exists(_beam)) return false;
 
         _runtime.active_delivery_id = _beam;
-        _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval));
+        _runtime.next_fire_tick = GAME_TICK + max(1,round(_firing.interval));
         return true;
     }
 
     if (GAME_TICK < _runtime.next_fire_tick) return false;
-
-    if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
-        return false;
+    if (!sc_player_primary_weapon_cost_pay(_player,_weapon,_debug_active)) return false;
 
     var _delivery = sc_weapon_fire(
-        _player, _weapon_key, _weapon.shot,
-        _muzzle_x, _muzzle_y, _angle,
+        _player,_weapon_key,_shot,
+        _muzzle_x,_muzzle_y,_angle,
         _player.ship.stats.final.damage_multiplier
     );
 
     if (!_delivery) return false;
 
-    if (_weapon.firing.mount_mode == WeaponMountMode.HARDPOINT)
+    if (_firing.mount_mode == WeaponMountMode.HARDPOINT)
     {
-        _hardpoint_runtime.recoil = _weapon.firing.recoil;
-        _hardpoint_runtime.muzzle_flash = _weapon.firing.muzzle_flash_duration;
-        _hardpoint_runtime.muzzle_flash_max = max(1, _weapon.firing.muzzle_flash_duration);
-        _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
+        _hardpoint_runtime.recoil = _firing.recoil;
+        _hardpoint_runtime.muzzle_flash = _firing.muzzle_flash_duration;
+        _hardpoint_runtime.muzzle_flash_max = max(1,_firing.muzzle_flash_duration);
+        _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1)
+            mod array_length(_hardpoints);
     }
 
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
-    _runtime.next_fire_tick = GAME_TICK + max(1, round(_weapon.firing.interval / _fire_rate));
+    _runtime.next_fire_tick = GAME_TICK
+        + max(1,round(_firing.interval / _fire_rate));
 
     return true;
 }

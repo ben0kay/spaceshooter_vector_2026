@@ -308,6 +308,7 @@ function sc_input_init()
 			weapon_5: ord("5"),
 			
 			debug_enemy_spawn: vk_f1,
+			debug_weapon_test: vk_f2,
 
             fullscreen: vk_f11
         },
@@ -338,6 +339,7 @@ function sc_input_init()
 			weapon_5_pressed: false,
 			
 			debug_enemy_spawn_pressed: false,
+			debug_weapon_test_pressed: false,
         }
     };
 
@@ -376,4 +378,5 @@ function sc_input_update()
     _action.weapon_5_pressed = keyboard_check_pressed(_binding.weapon_5);
 	
 	_action.debug_enemy_spawn_pressed = keyboard_check_pressed(_binding.debug_enemy_spawn);
+	_action.debug_weapon_test_pressed = keyboard_check_pressed(_binding.debug_weapon_test);
 }

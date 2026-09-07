@@ -145,25 +145,32 @@ function sc_player_init(_player, _ship_key)
     };
 
     _player.combat = {
-    weapons_allowed: true,
+	    weapons_allowed: true,
 
-    primary: {
-        hardpoint_cursor: 0,
-        next_fire_tick: 0,
-        active_delivery_id: noone
-    },
+	    primary: {
+	        hardpoint_cursor: 0,
+	        next_fire_tick: 0,
+	        active_delivery_id: noone
+	    },
 
-    mining: {
-        next_fire_tick: 0,
-        active_delivery_id: noone
-    },
+	    debug_weapon: {
+	        enabled: false,
+	        weapon_key: "",
+	        shot: undefined,
+	        firing: undefined
+	    },
 
-    shield_focus: {
-        active: false,
-        protected_impact: false,
-        impact_direction: 0
-    }
-};
+	    mining: {
+	        next_fire_tick: 0,
+	        active_delivery_id: noone
+	    },
+
+	    shield_focus: {
+	        active: false,
+	        protected_impact: false,
+	        impact_direction: 0
+	    }
+	};
 
     _player.aim = {
         world_x: _player.x,

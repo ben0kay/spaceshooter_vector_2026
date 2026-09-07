@@ -5,13 +5,35 @@ if (global.LevelState != LevelState.PLAYING
 
 if (global.input.action.debug_enemy_spawn_pressed)
 {
+    if (hud.debug_weapon_test.open)
+    {
+        hud.debug_weapon_test.open = false;
+        global.LevelState = LevelState.PLAYING;
+    }
+
     sc_debug_enemy_spawn_toggle(hud);
+    exit;
+}
+
+if (global.input.action.debug_weapon_test_pressed)
+{
+    if (hud.debug_enemy_spawn.open)
+    {
+        hud.debug_enemy_spawn.open = false;
+        global.LevelState = LevelState.PLAYING;
+    }
+
+    sc_debug_weapon_test_toggle(hud);
     exit;
 }
 
 if (global.LevelState == LevelState.DEBUG)
 {
-    sc_debug_enemy_spawn_update(hud);
+    if (hud.debug_enemy_spawn.open)
+        sc_debug_enemy_spawn_update(hud);
+    else if (hud.debug_weapon_test.open)
+        sc_debug_weapon_test_update(hud);
+
     exit;
 }
 

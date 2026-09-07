@@ -7,4 +7,5 @@ if (!sc_hud_level_init(id))
 }
 
 sc_debug_enemy_spawn_init(hud);
+sc_debug_weapon_test_init(hud);
 global.level.hud = id;
