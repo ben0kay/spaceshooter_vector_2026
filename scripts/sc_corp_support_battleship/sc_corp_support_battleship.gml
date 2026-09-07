@@ -14,7 +14,7 @@ function sc_enemy_register_corporation_support_battleship()
             name: "Corp Support Battleship",
             faction: Faction.CORPORATION,
             role: EnemyRole.SUPPORT,
-            ship_class: EnemyClass.HEAVY,
+            ship_class: EnemyClass.SUPERHEAVY,
             rank: EnemyRank.ELITE,
             threat_value: 35
         },
