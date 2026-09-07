@@ -39,6 +39,15 @@ function sc_weapon_register_simulant_thin_beam()
                 },
 
                 visual: {
+					
+					                    impact: {
+                        overlap_ratio: 0.3,
+                        overlap_max: 90,
+                        solid_overlap: 14,
+                        radius_scale: 1.45,
+                        particles_enabled: true,
+                        particle_interval: 3
+                    },
                     palette: _palette,
                     draw_script: sc_attack_area_simulant_thin_beam_draw,
                     particles_register_script: sc_simulant_thin_beam_particles_register,

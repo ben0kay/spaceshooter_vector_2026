@@ -146,7 +146,13 @@ function sc_beam_init(_area, _create)
         refreshed_tick: GAME_TICK,
         releasing: false,
         release_alpha: 1,
-        hit_ids: []
+        hit_ids: [],
+
+        impact_active: false,
+        impact_target_id: noone,
+        impact_overlap: 0,
+        contact_length: 0,
+        visual_length: 0
     };
 
     switch (_shape)
@@ -159,11 +165,7 @@ function sc_beam_init(_area, _create)
             _geometry.length = 0;
             _geometry.radius *= _scale;
 
-            _behaviour.growth_speed = max(
-                0,
-                _source_behaviour.growth_speed * _scale
-            );
-
+            _behaviour.growth_speed = max(0, _source_behaviour.growth_speed * _scale);
             _behaviour.piercing = _source_behaviour.piercing;
             _behaviour.blocks_on_solids = _source_behaviour.blocks_on_solids;
         break;
@@ -532,30 +534,57 @@ function sc_beam_entity_hit_length_get(_area, _data, _maximum_length)
     if (_data.behaviour.piercing) return _maximum_length;
 
     var _source = _data.source;
+    var _runtime = _data.runtime;
+    var _impact = _data.visual.impact;
     var _candidates = sc_attack_area_candidates_get(_area);
     var _count = ds_list_size(_candidates);
     var _direction_x = lengthdir_x(1, _data.direction);
     var _direction_y = lengthdir_y(1, _data.direction);
     var _closest = _maximum_length;
 
-    for (var _i = 0; _i < _count; _i++)
+    for (var _i = 0; _i < _count; ++_i)
     {
         var _target = _candidates[| _i];
 
-        if (_target == _source.owner_id) continue;
-        if (_target.entity.faction == _source.faction) continue;
+        if (_target == _source.owner_id
+        || _target.entity.faction == _source.faction)
+            continue;
 
         var _relative_x = _target.x - _area.x;
         var _relative_y = _target.y - _area.y;
         var _forward = _relative_x * _direction_x + _relative_y * _direction_y;
-        if (_forward < 0 || _forward > _closest) continue;
 
-        var _side = abs(_relative_x * -_direction_y + _relative_y * _direction_x);
-        var _combined_radius = _data.geometry.radius + sc_attack_area_target_radius_get(_target);
+        if (_forward < 0 || _forward > _closest)
+            continue;
+
+        var _side = abs(
+            _relative_x * -_direction_y
+            + _relative_y * _direction_x
+        );
+
+        var _target_radius = sc_attack_area_target_radius_get(_target);
+        var _combined_radius = _data.geometry.radius + _target_radius;
         if (_side > _combined_radius) continue;
 
-        var _entry = _forward - sqrt(max(0, _combined_radius * _combined_radius - _side * _side));
-        _closest = max(0, _entry + 0.01);
+        var _entry = max(
+            0,
+            _forward - sqrt(max(
+                0,
+                _combined_radius * _combined_radius
+                - _side * _side
+            ))
+        );
+
+        if (_entry >= _closest)
+            continue;
+
+        _closest = _entry;
+        _runtime.impact_active = true;
+        _runtime.impact_target_id = _target;
+        _runtime.impact_overlap = min(
+            _impact.overlap_max,
+            _target_radius * _impact.overlap_ratio
+        );
     }
 
     ds_list_destroy(_candidates);
@@ -572,16 +601,20 @@ function sc_beam_solid_hit_length_get(_area, _data, _maximum_length)
     var _solids = ds_list_create();
 
     collision_line_list(
-        _area.x, _area.y, _end_x, _end_y,
-        o_solid, false, true, _solids, false
+        _area.x, _area.y,
+        _end_x, _end_y,
+        o_solid, false, true,
+        _solids, false
     );
 
+    var _runtime = _data.runtime;
+    var _impact = _data.visual.impact;
     var _count = ds_list_size(_solids);
     var _direction_x = lengthdir_x(1, _data.direction);
     var _direction_y = lengthdir_y(1, _data.direction);
     var _closest = _maximum_length;
 
-    for (var _i = 0; _i < _count; _i++)
+    for (var _i = 0; _i < _count; ++_i)
     {
         var _solid = _solids[| _i];
         var _centre_x = (_solid.bbox_left + _solid.bbox_right) * 0.5;
@@ -592,65 +625,118 @@ function sc_beam_solid_hit_length_get(_area, _data, _maximum_length)
         var _forward = (_centre_x - _area.x) * _direction_x + (_centre_y - _area.y) * _direction_y;
         var _entry = max(0, _forward - _extent);
 
-        if (_entry < _closest)
-            _closest = _entry;
+        if (_entry >= _closest)
+            continue;
+
+        _closest = _entry;
+        _runtime.impact_active = true;
+        _runtime.impact_target_id = noone;
+        _runtime.impact_overlap = _impact.solid_overlap;
     }
 
     ds_list_destroy(_solids);
     return _closest;
 }
 
-/// @description Resolves the visible and damaging length of one beam.
+/// @description Resolves separate damaging, contact and visible beam lengths.
 function sc_beam_hit_length_update(_area, _data)
 {
     var _runtime = _data.runtime;
     var _length = _runtime.growth_length;
+
+    _runtime.impact_active = false;
+    _runtime.impact_target_id = noone;
+    _runtime.impact_overlap = 0;
 
     _data.geometry.length = _length;
     _length = sc_beam_entity_hit_length_get(_area, _data, _length);
     _length = sc_beam_solid_hit_length_get(_area, _data, _length);
 
     _runtime.hit_length = _length;
+    _runtime.contact_length = _length;
+    _runtime.visual_length = _runtime.impact_active
+        ? min(_runtime.growth_length, _length + _runtime.impact_overlap)
+        : _length;
+
     _data.geometry.length = _length;
 }
 
-/// @description Updates one maintained capsule or cone delivery.
-function sc_beam_update(_area,_data)
+/// @description Draws one generic white-hot flare at the beam's visual endpoint.
+function sc_beam_impact_draw(_area, _data)
 {
-    var _behaviour=_data.behaviour;
-    var _runtime=_data.runtime;
+    var _runtime = _data.runtime;
+    if (!_runtime.impact_active) return;
 
-    if (GAME_TICK-_runtime.refreshed_tick>1)
-        _runtime.releasing=true;
+    var _impact = _data.visual.impact;
+    var _palette = _data.visual.palette;
+    var _alpha = _runtime.release_alpha;
+    var _pulse = 0.9 + sin(GAME_TICK * 0.5) * 0.1;
+    var _radius = _data.geometry.radius * _impact.radius_scale * _pulse;
+    var _x = _area.x + lengthdir_x(_runtime.visual_length, _data.direction);
+    var _y = _area.y + lengthdir_y(_runtime.visual_length, _data.direction);
+
+    gpu_set_blendmode(bm_add);
+
+    draw_set_alpha(_alpha * 0.2);
+    draw_set_colour(_palette.glow);
+    draw_circle(_x, _y, _radius * 2.4, false);
+
+    draw_set_alpha(_alpha * 0.6);
+    draw_set_colour(_palette.energy);
+    draw_circle(_x, _y, _radius * 1.45, false);
+
+    draw_set_alpha(_alpha);
+    draw_set_colour(_palette.core);
+    draw_circle(_x, _y, _radius, false);
+
+    draw_set_colour(c_white);
+    draw_circle(_x, _y, max(2, _radius * 0.45), false);
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Updates one maintained capsule or cone delivery.
+function sc_beam_update(_area, _data)
+{
+    var _behaviour = _data.behaviour;
+    var _runtime = _data.runtime;
+
+    if (GAME_TICK - _runtime.refreshed_tick > 1)
+        _runtime.releasing = true;
 
     if (_runtime.releasing)
     {
-        _runtime.release_alpha-=1/_behaviour.release_duration;
+        _runtime.release_alpha -= 1 / _behaviour.release_duration;
 
-        if (_runtime.release_alpha<=0)
+        if (_runtime.release_alpha <= 0)
             instance_destroy(_area);
 
         return;
     }
 
-    if (_data.shape==AttackAreaShape.CAPSULE)
+    if (_data.shape == AttackAreaShape.CAPSULE)
     {
-        _runtime.growth_length=min(
+        _runtime.growth_length = min(
             _runtime.maximum_length,
-            _runtime.growth_length+_behaviour.growth_speed
+            _runtime.growth_length + _behaviour.growth_speed
         );
 
-        sc_beam_hit_length_update(_area,_data);
+        sc_beam_hit_length_update(_area, _data);
     }
 
-    if (GAME_TICK>=_runtime.next_damage_tick)
+    if (GAME_TICK >= _runtime.next_damage_tick)
     {
         sc_attack_area_damage_apply(_area);
-        _runtime.next_damage_tick=GAME_TICK+_behaviour.tick_interval;
+        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
     }
 
-    if (variable_struct_exists(_data.visual,"particle_script"))
-        _data.visual.particle_script(_area,_data);
+    if (variable_struct_exists(_data.visual, "particle_script"))
+        _data.visual.particle_script(_area, _data);
+
+    if (_data.shape == AttackAreaShape.CAPSULE)
+        sc_particles_beam_impact_emit(_area, _data);
 }
 
 /// @description Draws one registered short-lived attack-area visual.
@@ -658,6 +744,10 @@ function sc_attack_area_draw(_area)
 {
     var _data = _area.attack_area;
     _data.visual.draw_script(_area, _data);
+
+    if (_data.delivery_type == AttackDelivery.BEAM
+    && _data.shape == AttackAreaShape.CAPSULE)
+        sc_beam_impact_draw(_area, _data);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

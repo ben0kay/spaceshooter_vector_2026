@@ -41,6 +41,15 @@ function sc_weapon_register_shard_laser()
                 },
 
                 visual: {
+					
+					impact: {
+                        overlap_ratio: 0.35,
+                        overlap_max: 120,
+                        solid_overlap: 18,
+                        radius_scale: 1.4,
+                        particles_enabled: true,
+                        particle_interval: 2
+                    },
                     palette: _palette,
                     draw_script: sc_attack_area_shard_laser_draw,
                     particles_register_script: sc_shard_laser_particles_register,

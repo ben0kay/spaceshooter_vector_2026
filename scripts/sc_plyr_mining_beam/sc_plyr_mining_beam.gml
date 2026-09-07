@@ -50,6 +50,15 @@ function sc_weapon_register_shard_mining_beam()
                 },
 
                 visual: {
+					
+					impact: {
+                        overlap_ratio: 0.3,
+                        overlap_max: 110,
+                        solid_overlap: 12,
+                        radius_scale: 1.6,
+                        particles_enabled: false,
+                        particle_interval: 2
+                    },
                     palette: _palette,
                     draw_script: sc_attack_area_shard_mining_beam_draw,
                     particles_register_script: sc_shard_mining_beam_particles_register,
