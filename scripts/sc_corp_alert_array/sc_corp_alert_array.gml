@@ -32,6 +32,21 @@ function sc_faction_device_register_corporation_alert_array()
                 alert_cooldown: 300,
                 alert_pulse_radius: 320,
 
+                signal: {
+                    duration: 90,
+                    arc_amount: 6,
+                    launch_spacing: 0.08,
+                    start_distance: 54,
+                    radius_min: 16,
+                    radius_max: 62,
+                    arc_angle: 120,
+                    segments: 12,
+                    thickness: 3,
+                    alpha: 0.85
+                },
+
+                trail_lines: 9,
+
                 trail_lines: 9,
                 trail_spacing: 1.8,
                 trail_alpha: 0.34,

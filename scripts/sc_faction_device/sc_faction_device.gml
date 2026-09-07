@@ -48,7 +48,7 @@ function sc_faction_device_init(_device,_key)
     var _cache = sc_faction_device_visual_cache_get(_key);
     if (!is_struct(_cache)) return false;
 
-    var _stats = variable_clone(_definition.stats);
+        var _stats = variable_clone(_definition.stats);
     var _controllers = variable_clone(_definition.controllers);
     var _sensor_runtime = undefined;
 
@@ -58,7 +58,13 @@ function sc_faction_device_init(_device,_key)
             previous_angle: _controllers.sensor.start_angle,
             angle: _controllers.sensor.start_angle,
             next_alert_tick: GAME_TICK,
-            detected_alpha: 0
+            detected_alpha: 0,
+
+            signal: {
+                remaining: 0,
+                target_x: 0,
+                target_y: 0
+            }
         };
     }
 
@@ -233,7 +239,8 @@ function sc_faction_device_sensor_update(_device)
 
     _runtime.previous_angle = _runtime.angle;
     _runtime.angle = (_runtime.angle + _sensor.sweep_speed) mod 360;
-    _runtime.detected_alpha = max(0,_runtime.detected_alpha - 0.035);
+    _runtime.detected_alpha = max(0, _runtime.detected_alpha - 0.035);
+    _runtime.signal.remaining = max(0, _runtime.signal.remaining - 1);
 
     if (!instance_exists(global.player_id)
     || global.PlayerState == PlayerState.DESTROYED
@@ -268,6 +275,10 @@ function sc_faction_device_sensor_update(_device)
     _runtime.next_alert_tick = GAME_TICK + _sensor.alert_cooldown;
     _runtime.detected_alpha = 1;
 
+    _runtime.signal.remaining = _sensor.signal.duration;
+    _runtime.signal.target_x = _player.x;
+    _runtime.signal.target_y = _player.y;
+
     sc_faction_device_alert_emit(
         _device,
         _player.x,
@@ -294,7 +305,7 @@ function sc_faction_device_update(_device)
     );
 }
 
-/// @description Draws one device sensor sweep and fading trail.
+/// @description Draws one device sensor sweep, signal arcs and fading trail.
 function sc_faction_device_sensor_draw(_device)
 {
     var _data = _device.device;
@@ -321,32 +332,29 @@ function sc_faction_device_sensor_draw(_device)
             * _i
             * _sensor.trail_spacing;
 
-        var _end_x = _device.x + lengthdir_x(_radius,_angle);
-        var _end_y = _device.y + lengthdir_y(_radius,_angle);
+        var _end_x = _device.x + lengthdir_x(_radius, _angle);
+        var _end_y = _device.y + lengthdir_y(_radius, _angle);
 
         draw_set_colour(_palette.energy);
-        draw_set_alpha(
-            _sensor.trail_alpha
-            * _amount
-            * _amount
-        );
+        draw_set_alpha(_sensor.trail_alpha * _amount * _amount);
 
         draw_line_width(
             _device.x,
             _device.y,
             _end_x,
             _end_y,
-            max(1,_sensor.sweep_width * _amount)
+            max(1, _sensor.sweep_width * _amount)
         );
     }
 
     if (_runtime.detected_alpha > 0)
     {
-        var _end_x = _device.x + lengthdir_x(_radius,_runtime.angle);
-        var _end_y = _device.y + lengthdir_y(_radius,_runtime.angle);
+        var _end_x = _device.x + lengthdir_x(_radius, _runtime.angle);
+        var _end_y = _device.y + lengthdir_y(_radius, _runtime.angle);
 
         draw_set_colour(_palette.core);
         draw_set_alpha(_runtime.detected_alpha);
+
         draw_line_width(
             _device.x,
             _device.y,
@@ -358,14 +366,26 @@ function sc_faction_device_sensor_draw(_device)
 
     gpu_set_blendmode(bm_normal);
 
+    if (_runtime.signal.remaining > 0)
+    {
+        var _signal_progress = 1
+            - _runtime.signal.remaining
+            / _sensor.signal.duration;
+
+        sc_visual_effect_signal_arcs(
+            _device.x,
+            _device.y,
+            _runtime.signal.target_x,
+            _runtime.signal.target_y,
+            _sensor.signal,
+            _signal_progress,
+            _palette
+        );
+    }
+
     draw_set_colour(_palette.outline);
     draw_set_alpha(0.12);
-    draw_circle(
-        _device.x,
-        _device.y,
-        _radius,
-        true
-    );
+    draw_circle(_device.x, _device.y, _radius, true);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
