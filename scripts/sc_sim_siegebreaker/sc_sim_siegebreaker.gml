@@ -15,8 +15,8 @@ function sc_enemy_register_sim_siegebreaker()
             name: "Simulant Siegebreaker",
             faction: Faction.SIMULANT,
             role: EnemyRole.FIGHTER,
-            ship_class: EnemyClass.HEAVY,
-            rank: EnemyRank.ELITE,
+            ship_class: EnemyClass.STANDARD,
+            rank: EnemyRank.VETERAN,
             threat_value: 14
         },
 
