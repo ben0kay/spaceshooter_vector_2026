@@ -54,15 +54,14 @@ function sc_enemy_engagement_target_valid(_enemy,_target)
 /// @description Removes expired or destroyed rejected-target memories.
 function sc_enemy_engagement_rejections_clean(_enemy)
 {
-    var _runtime = _enemy.enemy.engagement;
-    var _rejected = _runtime.rejected;
+    var _rejected = _enemy.enemy.engagement.rejected;
 
     for (var _i = array_length(_rejected)-1; _i >= 0; --_i)
     {
         var _entry = _rejected[_i];
 
         if (!instance_exists(_entry.target_id)
-        || GAME_TICK >= _entry.until)
+        || GAME_TICK >= _entry.expiry_tick)
             array_delete(_rejected,_i,1);
     }
 }
@@ -94,9 +93,9 @@ function sc_enemy_engagement_candidate_reject(_enemy,_candidate)
 {
     var _data = _enemy.enemy;
 
-    array_push(_data.engagement.rejected,
-        until
-        target_id: _candidate,: GAME_TICK+max(1,round(_data.doctrine.engagement.reject_cooldown))
+    array_push(_data.engagement.rejected,{
+        target_id: _candidate,
+        expiry_tick: GAME_TICK+max(1,round(_data.doctrine.engagement.reject_cooldown))
     });
 }
 
@@ -129,6 +128,23 @@ function sc_enemy_engagement_candidate_consider(_enemy,_candidate,_range_sq,_cur
     };
 }
 
+/// @description Returns whether an entity is inside the faction-engagement area.
+function sc_enemy_engagement_area_contains(_entity)
+{
+    var _config = global.config.enemy.engagement;
+
+    if (!_config.limit_to_player_range)
+        return true;
+
+    if (!instance_exists(global.player_id))
+        return false;
+
+    return sc_point_distance_sq(
+        _entity.x,_entity.y,
+        global.player_id.x,global.player_id.y
+    ) <= sqr(_config.activation_range);
+}
+
 /// @description Finds the nearest eligible, non-rejected combat candidate.
 function sc_enemy_engagement_candidate_find(_enemy,_range_sq = undefined)
 {
@@ -143,6 +159,7 @@ function sc_enemy_engagement_candidate_find(_enemy,_range_sq = undefined)
 
     sc_enemy_engagement_rejections_clean(_enemy);
 
+    // Player acquisition always uses the enemy's ordinary detection range.
     if (instance_exists(global.player_id))
     {
         var _result = sc_enemy_engagement_candidate_consider(
@@ -154,6 +171,10 @@ function sc_enemy_engagement_candidate_find(_enemy,_range_sq = undefined)
         _nearest_sq = _result.distance_sq;
     }
 
+    // Only enemy-versus-enemy acquisition is restricted by this config.
+    if (!sc_enemy_engagement_area_contains(_enemy))
+        return _target;
+
     var _list = ds_list_create();
     var _count = collision_circle_list(
         _enemy.x,_enemy.y,_range,
@@ -162,8 +183,13 @@ function sc_enemy_engagement_candidate_find(_enemy,_range_sq = undefined)
 
     for (var _i = 0; _i < _count; ++_i)
     {
+        var _candidate = _list[| _i];
+
+        if (!sc_enemy_engagement_area_contains(_candidate))
+            continue;
+
         var _result = sc_enemy_engagement_candidate_consider(
-            _enemy,_list[| _i],
+            _enemy,_candidate,
             _range_sq,_target,_nearest_sq
         );
 

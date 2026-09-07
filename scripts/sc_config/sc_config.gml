@@ -226,6 +226,11 @@ function sc_config_init()
 			    side_switch_penalty: 30,
 			    line_of_sight_width_scale: 0.45
 			},
+				
+			engagement: {
+                limit_to_player_range: true,
+                activation_range: 5000
+            },
         },
 			
 		asteroid: {
