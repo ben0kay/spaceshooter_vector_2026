@@ -2,14 +2,14 @@
 function sc_world_structure_register_player_base()
 {
     return sc_world_structure_register({
-        identity:{
+        identity: {
             key: "player_starting_base",
             name: "Frontier Haven"
         },
 
         visual:{
-            canvas_width:2304,
-            canvas_height:1280,
+            canvas_width: 2304,
+            canvas_height: 1280,
             palette: sc_faction_palette_get(Faction.PLAYER),
             draw_script: sc_world_structure_player_base_draw
         },

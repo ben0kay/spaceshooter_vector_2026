@@ -3,6 +3,7 @@ notes_code_preferences. Read and REMEMBER before doing work.
 
 If multiple adjacent functions in the same .gml file need replacing, give me one complete code block containing the entire file—or one continuous replacement section—in the correct order.
 I prefer vertically compressed code (check some functions in the project for examples)
+please add a space after the colon : or = in code unless it isn't needed for some specific operation
 I need you to give me code by pasting in chat. NEVER update the github yourself
 I dont like when u put like 1 little thing on its own line unless necessary.
 I like ENUMS where appropriate. - I like these on 1 line too. Or recently we are using script callbacks for things where it fits better than an ENUM.
