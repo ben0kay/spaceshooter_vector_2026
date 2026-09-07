@@ -204,47 +204,57 @@ function sc_enemy_perception_update(_enemy)
     var _awareness = _data.awareness;
     var _target = _data.target_id;
 
-    // A committed target prevents all general acquisition scans.
-    if (instance_exists(_target))
+    // Validate and maintain an existing committed target.
+    if (_target != noone)
     {
-        if (!sc_enemy_engagement_target_valid(_enemy,_target))
-        {
-            sc_enemy_attack_cancel(_enemy);
-            _data.target_id = noone;
-            _data.target_distance_sq = 0;
-            _data.state = EnemyState.IDLE;
-            return;
-        }
-
-        _data.target_distance_sq = sc_point_distance_sq(
-            _enemy.x,_enemy.y,
-            _target.x,_target.y
-        );
-
-        if (_data.target_distance_sq <= _range.detection_sq)
-        {
-            _awareness.last_known_x = _target.x;
-            _awareness.last_known_y = _target.y;
-        }
-
-        if (_data.target_distance_sq > _range.forget_sq)
+        if (!sc_enemy_engagement_target_valid(_enemy, _target))
         {
             sc_enemy_attack_cancel(_enemy);
             _data.target_id = noone;
             _data.target_distance_sq = 0;
             _data.state = EnemyState.IDLE;
         }
-        else if (_data.target_distance_sq <= _range.combat_sq)
-            _data.state = EnemyState.ATTACKING;
         else
         {
-            if (_data.state == EnemyState.ATTACKING)
+            _data.target_distance_sq = sc_point_distance_sq(
+                _enemy.x, _enemy.y,
+                _target.x, _target.y
+            );
+
+            if (_data.target_distance_sq <= _range.detection_sq)
+            {
+                _awareness.last_known_x = _target.x;
+                _awareness.last_known_y = _target.y;
+            }
+
+            if (_data.target_distance_sq > _range.forget_sq)
+            {
                 sc_enemy_attack_cancel(_enemy);
+                _data.target_id = noone;
+                _data.target_distance_sq = 0;
+                _data.state = EnemyState.IDLE;
+            }
+            else if (_data.target_distance_sq <= _range.combat_sq)
+                _data.state = EnemyState.ATTACKING;
+            else
+            {
+                if (_data.state == EnemyState.ATTACKING)
+                    sc_enemy_attack_cancel(_enemy);
 
-            _data.state = EnemyState.CHASING;
+                _data.state = EnemyState.CHASING;
+            }
+
+            if (_data.target_id != noone)
+                return;
         }
-
-        return;
+    }
+    else if (_data.state == EnemyState.CHASING
+    || _data.state == EnemyState.ATTACKING)
+    {
+        // Recover from a target destroyed before perception validated it.
+        sc_enemy_attack_cancel(_enemy);
+        _data.target_distance_sq = 0;
+        _data.state = EnemyState.IDLE;
     }
 
     // Only uncommitted idle/investigating ships seek new targets.
@@ -255,7 +265,7 @@ function sc_enemy_perception_update(_enemy)
     var _candidate = sc_enemy_engagement_candidate_find(_enemy);
     if (!instance_exists(_candidate)) return;
 
-    sc_enemy_engagement_try(_enemy,_candidate);
+    sc_enemy_engagement_try(_enemy, _candidate);
 }
 
 /// @description Updates enemy hardpoint aiming, temporary obstacle targeting, aim locks and recoil.
