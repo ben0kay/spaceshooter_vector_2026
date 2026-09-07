@@ -96,48 +96,71 @@ function sc_player_solid_move_basic(_player)
     _movement.speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
 }
 
-/// @description Separates the player from any asteroid already overlapping its rotated mask.
-function sc_player_asteroid_overlap_resolve(_player)
+/// @description Returns one solid or asteroid overlapping the player's rotated mask.
+function sc_player_obstacle_overlap_get(_player)
+{
+    var _obstacle = instance_place(_player.x,_player.y,o_solid);
+    if (instance_exists(_obstacle)) return _obstacle;
+
+    if (global.level.asteroids_alive > 0)
+        return instance_place(_player.x,_player.y,o_asteroid);
+
+    return noone;
+}
+
+/// @description Separates the player from an obstacle entered through movement or rotation.
+function sc_player_obstacle_overlap_resolve(_player)
 {
     var _movement = _player.movement;
-    var _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+    var _obstacle = sc_player_obstacle_overlap_get(_player);
 
-    if (!instance_exists(_asteroid))
+    if (!instance_exists(_obstacle))
     {
         _movement.safe_x = _player.x;
         _movement.safe_y = _player.y;
         return false;
     }
 
-    var _impact_asteroid = _asteroid;
+    var _impact_asteroid = _obstacle.object_index == o_asteroid
+        ? _obstacle
+        : noone;
 
-    // This loop runs only during an exceptional existing overlap.
-    for (var _i = 0; _i < 96; _i++)
+    // Exceptional recovery only; ordinary movement prevents overlap.
+    for (var _i = 0; _i < 96; ++_i)
     {
         var _normal;
 
-        if (point_distance(_asteroid.x, _asteroid.y, _player.x, _player.y) > 0.01)
-            _normal = point_direction(_asteroid.x, _asteroid.y, _player.x, _player.y);
+        if (point_distance(_obstacle.x,_obstacle.y,_player.x,_player.y) > 0.01)
+            _normal = point_direction(_obstacle.x,_obstacle.y,_player.x,_player.y);
         else if (_movement.speed > 0.01)
-            _normal = point_direction(0, 0, -_movement.velocity_x, -_movement.velocity_y);
+            _normal = point_direction(0,0,-_movement.velocity_x,-_movement.velocity_y);
         else
             _normal = _player.draw_angle + 180;
 
-        _player.x += lengthdir_x(2, _normal);
-        _player.y += lengthdir_y(2, _normal);
+        _player.x += lengthdir_x(2,_normal);
+        _player.y += lengthdir_y(2,_normal);
 
-        _asteroid = instance_place(_player.x, _player.y, o_asteroid);
+        _obstacle = sc_player_obstacle_overlap_get(_player);
 
-        if (!instance_exists(_asteroid))
+        if (!instance_exists(_obstacle))
         {
             _movement.safe_x = _player.x;
             _movement.safe_y = _player.y;
-            sc_player_asteroid_bounce(_player, _impact_asteroid);
+
+            if (instance_exists(_impact_asteroid))
+                sc_player_asteroid_bounce(_player,_impact_asteroid);
+            else
+            {
+                _movement.velocity_x = 0;
+                _movement.velocity_y = 0;
+                _movement.speed = 0;
+            }
+
             return true;
         }
     }
 
-    // Absolute fallback: return to the last confirmed clear position.
+    // Absolute fallback to the last position clear of every obstacle.
     _player.x = _movement.safe_x;
     _player.y = _movement.safe_y;
     _movement.velocity_x = 0;

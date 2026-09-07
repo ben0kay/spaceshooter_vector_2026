@@ -19,7 +19,7 @@ function sc_ship_register_shard()
             bullets_max: 1500, explosives_max: 200,
             cargo_capacity: 100,
 
-            speed_max: 10, acceleration: 0.5, deceleration: 0.6, turn_speed: 10,
+            speed_max: 10, acceleration: 0.5, deceleration: 0.3, turn_speed: 10,
             directional_speed_min: 0.72, directional_thrust_min: 0.28,
             damage_multiplier: 1.2, fire_rate_multiplier: 1,
 
@@ -105,10 +105,10 @@ function sc_ship_shard_visual_data()
         },
 
         thrust: {
-            mounts: [
-                { forward: -1.04, side: -0.19, scale: 0.72, phase: 0 },
-                { forward: -1.04, side: 0.19, scale: 0.72, phase: 0 }
-            ],
+		    mounts: [
+		        { forward: -1.24, side: -0.19, scale: 0.72, phase: 0 },
+		        { forward: -1.24, side: 0.19, scale: 0.72, phase: 0 }
+		    ],
 
             ignition_script: sc_particles_shard_ignition,
             particle_script: sc_particles_shard_thrust

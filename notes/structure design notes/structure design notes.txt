@@ -1,0 +1,7 @@
+Player structure visual idea: use the asteroid-style polygon approach as inspiration, but not random jaggedness. 
+For player structures, use controlled geometric irregularity—clipped corners, stepped edges, small protrusions, 
+recessed bites, asymmetric extensions, and authored polygon points—to make large station sections feel more 
+intricate and less like obvious rectangles/circles. Keep the shapes deterministic and baked, so they always look 
+identical and cost almost nothing at runtime. 
+Potential future helpers: sc_struct_plyr_hull_polygon, sc_struct_plyr_armour_plate, 
+sc_struct_plyr_irregular_module, sc_struct_plyr_connector_module.

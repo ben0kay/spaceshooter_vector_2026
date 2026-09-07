@@ -71,6 +71,7 @@
     {"id":{"name":"notes_immediate_todo","path":"notes/notes_immediate_todo/notes_immediate_todo.yy",},},
     {"id":{"name":"notes_potential_future_ideas","path":"notes/notes_potential_future_ideas/notes_potential_future_ideas.yy",},},
     {"id":{"name":"notes_ship_systems","path":"notes/notes_ship_systems/notes_ship_systems.yy",},},
+    {"id":{"name":"structure design notes","path":"notes/structure design notes/structure design notes.yy",},},
     {"id":{"name":"o_asteroid_test_spawner","path":"objects/o_asteroid_test_spawner/o_asteroid_test_spawner.yy",},},
     {"id":{"name":"o_asteroid","path":"objects/o_asteroid/o_asteroid.yy",},},
     {"id":{"name":"o_attack_area","path":"objects/o_attack_area/o_attack_area.yy",},},
