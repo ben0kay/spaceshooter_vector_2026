@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_rebel_visual_helper",
   "parent":{
-    "name":"VISUAL_HELPERS",
-    "path":"folders/scripts/VISUAL_HELPERS.yy",
+    "name":"REBEL",
+    "path":"folders/scripts/ENEMY/factions/REBEL.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

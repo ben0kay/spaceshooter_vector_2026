@@ -70,7 +70,7 @@ function sc_ship_shard_visual_data()
 {
     return {
         radius: 46,
-		motion_strength: 3,
+        motion_strength: 3,
 
         // Compatibility fields used by ship-selection previews.
         scale: 1,
@@ -91,41 +91,71 @@ function sc_ship_shard_visual_data()
         },
 
         wing: {
-            hinge_forward: -0.03, hinge_side: 0.34,
-            fold_idle: -2, fold_moving: 4, fold_boost: 10, fold_dash: 16,
+            hinge_forward: -0.03,
+            hinge_side: 0.34,
+
+            fold_idle: -2,
+            fold_moving: 4,
+            fold_boost: 10,
+            fold_dash: 16,
+
             fold_response: 0.14
         },
 
         core: {
-            forward: -0.18, side: 0,
-            idle_speed: 0.45, movement_speed: 4.5,
-            boost_multiplier: 1.35, dash_multiplier: 1.75,
+            forward: -0.18,
+            side: 0,
+
+            idle_speed: 0.45,
+            movement_speed: 4.5,
+
+            boost_multiplier: 1.35,
+            dash_multiplier: 1.75,
+
             response: 0.12
         },
 
         thrust: {
             mounts: [
-                { forward: -1.08, side: -0.13, scale: 0.72, phase: 0 },
-                { forward: -1.08, side: 0.13, scale: 0.72, phase: 0 }
+                { forward: -1.04, side: -0.19, scale: 0.72, phase: 0 },
+                { forward: -1.04, side: 0.19, scale: 0.72, phase: 0 }
             ],
 
             ignition_script: sc_particles_shard_ignition,
             particle_script: sc_particles_shard_thrust
         },
-		
-		shield_focus: {
-    particle_script: sc_particles_shard_shield_focus, particle_interval: 1,
-    arc_segments: 36, radius_forward_scale: 1.35, radius_side_scale: 2.15,
-    offset_forward_scale: -0.12, crescent_depth: 0.4,
 
-    field_alpha: 0.3, outer_glow_width: 7, outer_width: 3, inner_width: 2,
-    outer_alpha: 0.42, edge_alpha: 0.95, inner_alpha: 0.5,
-    pulse_speed: 0.09, pulse_amount: 0.05,
+        shield_focus: {
+            particle_script: sc_particles_shard_shield_focus,
+            particle_interval: 1,
 
-    streak_amount: 13, streak_speed: 0.025, streak_travel: 22,
-    streak_length_min: 5, streak_length_max: 18,
-    streak_width: 2, streak_alpha: 0.75
-},
+            arc_segments: 36,
+            radius_forward_scale: 1.35,
+            radius_side_scale: 2.15,
+            offset_forward_scale: -0.12,
+            crescent_depth: 0.4,
+
+            field_alpha: 0.3,
+            outer_glow_width: 7,
+            outer_width: 3,
+            inner_width: 2,
+
+            outer_alpha: 0.42,
+            edge_alpha: 0.95,
+            inner_alpha: 0.5,
+
+            pulse_speed: 0.09,
+            pulse_amount: 0.05,
+
+            streak_amount: 13,
+            streak_speed: 0.025,
+            streak_travel: 22,
+
+            streak_length_min: 5,
+            streak_length_max: 18,
+            streak_width: 2,
+            streak_alpha: 0.75
+        },
 
         draw: {
             hull: sc_ship_shard_hull_draw,
@@ -137,19 +167,23 @@ function sc_ship_shard_visual_data()
             muzzle_flash: sc_ship_shard_muzzle_flash_draw,
             shield: sc_ship_shard_shield_draw,
             thrust: sc_ship_shard_thrust_draw,
-			focus: sc_ship_shard_focus_draw,
+            focus: sc_ship_shard_focus_draw
         },
 
         death_script: sc_ship_shard_death,
 
         bake: {
-		    body_canvas_size: 224, wing_canvas_size: 160,
-		    core_canvas_size: 96, hardpoint_canvas_size: 96,
-		    muzzle_canvas_size: 96, muzzle_frames: 4,
-		    shield_canvas_size: 224, focus_canvas_size: 224,
-		    thrust_canvas_size: 128,
-		    damage_stages: 4
-		}
+            body_canvas_size: 224,
+            wing_canvas_size: 160,
+            core_canvas_size: 96,
+            hardpoint_canvas_size: 96,
+            muzzle_canvas_size: 96,
+            muzzle_frames: 4,
+            shield_canvas_size: 224,
+            focus_canvas_size: 224,
+            thrust_canvas_size: 128,
+            damage_stages: 4
+        }
     };
 }
 /*

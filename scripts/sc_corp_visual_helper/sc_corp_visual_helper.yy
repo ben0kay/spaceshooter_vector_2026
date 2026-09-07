@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_corporation_register",
+  "%Name":"sc_corp_visual_helper",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_corporation_register",
+  "name":"sc_corp_visual_helper",
   "parent":{
     "name":"CORP SYNDICATE",
     "path":"folders/scripts/ENEMY/factions/CORP SYNDICATE.yy",

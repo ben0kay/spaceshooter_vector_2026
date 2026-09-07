@@ -94,9 +94,9 @@ function sc_enemy_engagement_candidate_reject(_enemy,_candidate)
 {
     var _data = _enemy.enemy;
 
-    array_push(_data.engagement.rejected,{
-        target_id: _candidate,
-        until: GAME_TICK+max(1,round(_data.doctrine.engagement.reject_cooldown))
+    array_push(_data.engagement.rejected,
+        until
+        target_id: _candidate,: GAME_TICK+max(1,round(_data.doctrine.engagement.reject_cooldown))
     });
 }
 
