@@ -13,6 +13,7 @@ function sc_enemy_faction_corporation_projectiles_register()
 {
     if (!sc_projectile_register_corporation_plasma()) return false;
     if (!sc_projectile_register_corporation_rocket()) return false;
+	if (!sc_projectile_register_corporation_micro_missile()) return false;
     return true;
 }
 
@@ -21,6 +22,9 @@ function sc_enemy_faction_corporation_weapons_register()
 {
     if (!sc_weapon_register_corporation_plasma()) return false;
     if (!sc_weapon_register_corporation_rocket()) return false;
+	if (!sc_weapon_register_corporation_micro_missile()) return false;
+    if (!sc_weapon_register_corporation_pursuit_micro_missile()) return false;
+    if (!sc_weapon_register_corporation_breach_micro_missile()) return false;
     return true;
 }
 
