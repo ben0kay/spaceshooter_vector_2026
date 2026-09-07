@@ -229,7 +229,7 @@ function sc_config_init()
 				
 			engagement: {
                 limit_to_player_range: true,
-                activation_range: 5000
+                activation_range: 4000
             },
         },
 			

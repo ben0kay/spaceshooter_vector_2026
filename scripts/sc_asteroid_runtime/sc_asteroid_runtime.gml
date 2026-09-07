@@ -13,7 +13,9 @@ function sc_asteroid_size_data(_size)
     {
         case AsteroidSize.SMALL: return { radius: 30, health: 45, yield_min: 1, yield_max: 3 };
         case AsteroidSize.MEDIUM: return { radius: 58, health: 130, yield_min: 4, yield_max: 8 };
-        case AsteroidSize.LARGE: return { radius: 105, health: 340, yield_min: 10, yield_max: 18 };
+        case AsteroidSize.LARGE: return { radius: 105, health: 340, yield_min: 8, yield_max: 18 };
+		case AsteroidSize.HUGE: return { radius: 256, health: 768, yield_min: 15, yield_max: 35 };
+		case AsteroidSize.COLOSSAL: return { radius: 768, health: 2048, yield_min: 35, yield_max: 50 };
     }
 
     return undefined;
@@ -328,8 +330,8 @@ function sc_asteroid_weighted_choose(_entries)
     return _entries[array_length(_entries) - 1];
 }
 
-/// @description Spawns one temporary mixed asteroid field.
-function sc_asteroid_test_field_spawn(_centre_x, _centre_y, _radius, _amount, _layer)
+/// @description Spawns one temporary mixed asteroid field with guaranteed giant asteroids.
+function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer)
 {
     var _materials = [
         { key: "asteroid_carbon", weight: 24 },
@@ -342,33 +344,59 @@ function sc_asteroid_test_field_spawn(_centre_x, _centre_y, _radius, _amount, _l
     ];
 
     var _sizes = [
-        { size: AsteroidSize.SMALL, weight: 46 },
-        { size: AsteroidSize.MEDIUM, weight: 39 },
-        { size: AsteroidSize.LARGE, weight: 15 }
+        { size: AsteroidSize.SMALL, weight: 42 },
+        { size: AsteroidSize.MEDIUM, weight: 34 },
+        { size: AsteroidSize.LARGE, weight: 19 },
+        { size: AsteroidSize.HUGE, weight: 4 },
+        { size: AsteroidSize.COLOSSAL, weight: 1 }
     ];
 
+    // Spawn largest first so smaller rocks cannot occupy all available space.
+    var _forced_sizes = [
+        AsteroidSize.COLOSSAL,
+        AsteroidSize.HUGE,
+        AsteroidSize.HUGE
+    ];
+
+    var _target_amount = max(3,_amount);
     var _spawned = 0;
     var _attempts = 0;
+    var _attempts_max = _target_amount*80;
 
-    while (_spawned < _amount && _attempts < _amount * 20)
+    while (_spawned < _target_amount && _attempts < _attempts_max)
     {
         _attempts++;
 
-        var _direction = random(360);
-        var _distance = sqrt(random(1)) * _radius;
-        var _x = _centre_x + lengthdir_x(_distance, _direction);
-        var _y = _centre_y + lengthdir_y(_distance, _direction);
+        var _size = _spawned < array_length(_forced_sizes)
+            ? _forced_sizes[_spawned]
+            : sc_asteroid_weighted_choose(_sizes).size;
 
-        if (_x < 180 || _x > room_width - 180 || _y < 180 || _y > room_height - 180) continue;
-        if (collision_circle(_x, _y, 125, o_asteroid, false, true) != noone) continue;
+        var _size_data = sc_asteroid_size_data(_size);
+        var _edge_margin = _size_data.radius*1.1+32;
+        var _spawn_clearance = _size_data.radius*0.95+24;
+        var _direction = random(360);
+        var _distance = sqrt(random(1))*_radius;
+        var _x = _centre_x+lengthdir_x(_distance,_direction);
+        var _y = _centre_y+lengthdir_y(_distance,_direction);
+
+        if (_x < _edge_margin
+        || _x > room_width-_edge_margin
+        || _y < _edge_margin
+        || _y > room_height-_edge_margin)
+            continue;
+
+        if (collision_circle(
+            _x,_y,_spawn_clearance,
+            o_asteroid,false,true
+        ) != noone)
+            continue;
 
         var _material = sc_asteroid_weighted_choose(_materials);
-        var _size = sc_asteroid_weighted_choose(_sizes);
 
-        instance_create_layer(_x, _y, _layer, o_asteroid, {
+        instance_create_layer(_x,_y,_layer,o_asteroid,{
             asteroid_create: {
                 key: _material.key,
-                size: _size.size
+                size: _size
             }
         });
 

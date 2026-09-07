@@ -61,5 +61,5 @@ enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }
 //==================================================
 enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 
-enum AsteroidSize { SMALL, MEDIUM, LARGE }
+enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE, COLOSSAL }
 enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY }
