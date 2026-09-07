@@ -33,6 +33,7 @@
     {"name":"inst_292910ED","path":"rooms/r_combat_test/r_combat_test.yy",},
     {"name":"inst_29A70014","path":"rooms/r_combat_test/r_combat_test.yy",},
     {"name":"inst_6531822D","path":"rooms/r_combat_test/r_combat_test.yy",},
+    {"name":"inst_64212379","path":"rooms/r_combat_test/r_combat_test.yy",},
   ],
   "isDnd":false,
   "layers":[
@@ -109,6 +110,7 @@
         {"$GMRInstance":"v4","%Name":"inst_6531822D","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_6531822D","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"properties":[
             {"$GMOverriddenProperty":"v1","%Name":"","name":"","objectId":{"name":"o_enemy","path":"objects/o_enemy/o_enemy.yy",},"propertyId":{"name":"enemy_key","path":"objects/o_enemy/o_enemy.yy",},"resourceType":"GMOverriddenProperty","resourceVersion":"2.0","value":"e_rebel_skirmisher",},
           ],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":7744.0,"y":2976.0,},
+        {"$GMRInstance":"v4","%Name":"inst_64212379","colour":4294967295,"frozen":false,"hasCreationCode":false,"ignore":false,"imageIndex":0,"imageSpeed":1.0,"inheritCode":false,"inheritedItemId":null,"inheritItemSettings":false,"isDnd":false,"name":"inst_64212379","objectId":{"name":"o_faction_device","path":"objects/o_faction_device/o_faction_device.yy",},"properties":[],"resourceType":"GMRInstance","resourceVersion":"2.0","rotation":0.0,"scaleX":1.0,"scaleY":1.0,"x":6304.0,"y":5856.0,},
       ],"layers":[],"name":"Enemy","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Effects_Back","depth":500,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[],"layers":[],"name":"Effects_Back","properties":[],"resourceType":"GMRInstanceLayer","resourceVersion":"2.0","userdefinedDepth":false,"visible":true,},
     {"$GMRInstanceLayer":"","%Name":"Instances","depth":600,"effectEnabled":true,"effectType":null,"gridX":32,"gridY":32,"hierarchyFrozen":false,"inheritLayerDepth":false,"inheritLayerSettings":false,"inheritSubLayers":true,"inheritVisibility":true,"instances":[

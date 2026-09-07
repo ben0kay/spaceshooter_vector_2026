@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_faction_device",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_faction_device",
+  "parent":{
+    "name":"ENEMY",
+    "path":"folders/SCRIPTS---/ENEMY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

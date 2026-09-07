@@ -254,9 +254,8 @@ function sc_player_solid_move(_player)
     var _movement = _player.movement;
     _player.image_angle = _player.draw_angle;
 
-    // Must happen before the stationary return because rotation can cause overlap.
-    if (global.level.asteroids_alive > 0)
-        sc_player_asteroid_overlap_resolve(_player);
+    // Must precede the stationary return because rotation can cause overlap.
+    sc_player_obstacle_overlap_resolve(_player);
 
     if (_movement.velocity_x == 0 && _movement.velocity_y == 0)
     {

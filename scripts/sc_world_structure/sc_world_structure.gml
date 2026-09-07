@@ -118,19 +118,33 @@ function sc_world_structure_init(_structure, _create)
     return true;
 }
 
-/// @description Draws one baked static world structure.
+/// @description Draws one baked world structure with subtle visual drift.
 function sc_world_structure_draw(_structure)
 {
     var _runtime = _structure.structure;
+    var _visual = _runtime.data.visual;
+    var _motion = _visual.motion;
+
+    var _side = sin(GAME_TICK * _motion.side_speed) * _motion.side_amount;
+    var _forward = sin(GAME_TICK * _motion.forward_speed) * _motion.forward_amount;
+    var _angle_offset = sin(GAME_TICK * _motion.angle_speed) * _motion.angle_amount;
+
+    var _draw_x = _structure.x
+        + lengthdir_x(_forward, _structure.draw_angle)
+        + lengthdir_x(_side, _structure.draw_angle - 90);
+
+    var _draw_y = _structure.y
+        + lengthdir_y(_forward, _structure.draw_angle)
+        + lengthdir_y(_side, _structure.draw_angle - 90);
 
     draw_sprite_ext(
         _runtime.sprite,
         0,
-        _structure.x,
-        _structure.y,
+        _draw_x,
+        _draw_y,
         1,
         1,
-        _structure.draw_angle,
+        _structure.draw_angle + _angle_offset,
         c_white,
         1
     );

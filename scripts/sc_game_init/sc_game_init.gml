@@ -20,6 +20,7 @@ function sc_game_init()
     if (!sc_particles_init()) return false;
     if (!sc_ship_visual_cache_init()) return false;
     if (!sc_enemy_visual_cache_init()) return false;
+	if (!sc_faction_device_visual_cache_init()) return false;
     if (!sc_projectile_visual_cache_init()) return false;
     if (!sc_asteroid_visual_cache_init()) return false;
 	if (!sc_world_structure_visual_cache_init()) return false;

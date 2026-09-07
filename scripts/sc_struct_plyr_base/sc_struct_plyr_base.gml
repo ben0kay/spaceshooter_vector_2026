@@ -8,11 +8,20 @@ function sc_world_structure_register_player_base()
         },
 
         visual: {
-            canvas_width: 2304,
-            canvas_height: 1280,
-            palette: sc_faction_palette_get(Faction.PLAYER),
-            draw_script: sc_world_structure_player_base_draw
-        },
+    canvas_width: 2304,
+    canvas_height: 1280,
+    palette: sc_faction_palette_get(Faction.PLAYER),
+    draw_script: sc_world_structure_player_base_draw,
+
+	    motion: {
+	        side_amount: 1.5,
+	        side_speed: 0.006,
+	        forward_amount: 1,
+	        forward_speed: 0.004,
+	        angle_amount: 0.08,
+	        angle_speed: 0.003
+	    }
+	},
 
         collision: {
             broad_radius: 1080,

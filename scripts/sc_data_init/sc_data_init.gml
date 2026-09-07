@@ -12,6 +12,7 @@ function sc_data_init()
         items: {},
         asteroids: {},
 		structures: {},
+		devices: {},
     };
 	if (!sc_faction_register_player()) return false;
     if (!sc_faction_hostility_init()) return false;
@@ -20,6 +21,7 @@ function sc_data_init()
 	if (!sc_world_structure_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
+	if (!sc_faction_device_register_all()) return false;
     if (!sc_plyr_register_all()) return false;
 
     show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
