@@ -2,6 +2,11 @@
 function sc_config_init()
 {
     global.config = {
+		
+		debug: {
+		    structure_collision: true
+		},
+		
         visual: {
             ship_motion: {
                 side_amount: 0.6, side_speed: 0.018,

@@ -514,6 +514,35 @@ function sc_projectile_projectile_collision(_projectile, _target)
     return true;
 }
 
+/// @description Resolves one projectile striking an indestructible solid.
+function sc_projectile_solid_collision(_projectile,_solid)
+{
+    if (!instance_exists(_projectile)
+    || !_projectile.initialized)
+        return false;
+
+    var _data = _projectile.projectile;
+
+    if (_data.state != ProjectileState.ACTIVE
+    || _data.runtime.destroyed)
+        return false;
+
+    _data.visual.impact_script(
+        _projectile.x,
+        _projectile.y,
+        _data.direction,
+        noone,
+        _data.scale
+    );
+
+    sc_projectile_detonate(_projectile);
+
+    if (instance_exists(_projectile))
+        instance_destroy(_projectile);
+
+    return true;
+}
+
 /// @description Resolves one projectile collision against a damageable entity.
 function sc_projectile_entity_collision(_projectile, _target)
 {

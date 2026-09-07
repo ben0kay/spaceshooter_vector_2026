@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_struct_plyr_base",
+  "%Name":"sc_struct_plyr_visual_helpers",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_struct_plyr_base",
+  "name":"sc_struct_plyr_visual_helpers",
   "parent":{
     "name":"PLAYER",
     "path":"folders/SCRIPTS---/STRUCTURES---/PLAYER.yy",
