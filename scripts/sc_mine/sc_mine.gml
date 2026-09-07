@@ -119,14 +119,8 @@ function sc_mine_target_hostile(_mine, _radius)
     var _list = ds_list_create();
 
     var _count = collision_circle_list(
-        _mine.x,
-        _mine.y,
-        _radius,
-        o_entity,
-        false,
-        true,
-        _list,
-        false
+        _mine.x, _mine.y, _radius,
+        o_entity, false, true, _list, false
     );
 
     var _target = noone;
@@ -134,12 +128,14 @@ function sc_mine_target_hostile(_mine, _radius)
     for (var _i = 0; _i < _count; ++_i)
     {
         var _candidate = _list[| _i];
+        var _faction = _candidate.entity.faction;
 
         if (!_candidate.initialized
-        || _candidate.entity.faction == _source.faction)
+        || _faction == noone
+        || _faction == _source.faction)
             continue;
 
-        if (_candidate.entity.faction != Faction.PLAYER
+        if (_candidate.object_index == o_enemy
         && _candidate.enemy.state == EnemyState.DEAD)
             continue;
 
