@@ -218,7 +218,6 @@
     {"id":{"name":"sc_weapon","path":"scripts/sc_weapon/sc_weapon.yy",},},
     {"id":{"name":"sc_world_feedback","path":"scripts/sc_world_feedback/sc_world_feedback.yy",},},
     {"id":{"name":"sc_world_structure","path":"scripts/sc_world_structure/sc_world_structure.yy",},},
-    {"id":{"name":"Script117","path":"scripts/Script117/Script117.yy",},},
     {"id":{"name":"sim_visuals_shared","path":"scripts/sim_visuals_shared/sim_visuals_shared.yy",},},
     {"id":{"name":"s_blur","path":"sprites/s_blur/s_blur.yy",},},
     {"id":{"name":"s_bright_flame_core","path":"sprites/s_bright_flame_core/s_bright_flame_core.yy",},},
