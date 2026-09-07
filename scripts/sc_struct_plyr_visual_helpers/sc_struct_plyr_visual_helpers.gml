@@ -388,35 +388,43 @@ function sc_struct_plyr_antenna(_x,_y,_cx,_cy,_length,_vertical,_p)
 
 
 /// @description Draws one top-down player sensor dish assembly.
-function sc_struct_plyr_sensor_dish(_x,_y,_cx,_cy,_radius,_p)
+function sc_struct_plyr_sensor_dish(_x, _y, _cx, _cy, _radius, _p)
 {
     draw_set_colour(_p.outline);
-    draw_circle(_x+_cx,_y+_cy,_radius*0.58,false);
+    draw_circle(_x + _cx, _y + _cy, _radius * 0.58, false);
 
     draw_set_colour(_p.hull_dark);
-    draw_circle(_x+_cx,_y+_cy,_radius*0.5,false);
+    draw_circle(_x + _cx, _y + _cy, _radius * 0.5, false);
 
     draw_set_colour(_p.hull_light);
-    draw_circle(_x+_cx,_y+_cy,_radius*0.34,false);
+    draw_circle(_x + _cx, _y + _cy, _radius * 0.34, false);
 
     draw_set_colour(_p.void);
-    draw_circle(_x+_cx,_y+_cy,_radius*0.22,false);
+    draw_circle(_x + _cx, _y + _cy, _radius * 0.22, false);
 
     draw_set_colour(_p.metal);
-    draw_circle(_x+_cx+_radius*0.15,_y+_cy-_radius*0.2,_radius*0.52,true);
+    draw_circle(
+        _x + _cx + _radius * 0.15,
+        _y + _cy - _radius * 0.2,
+        _radius * 0.52,
+        true
+    );
 
     draw_set_colour(_p.outline);
     draw_line_width(
-        _x+_cx-radius*0.1,_y+_cy+radius*0.12,
-        _x+_cx+radius*0.42,_y+_cy-radius*0.46,
+        _x + _cx - _radius * 0.1,
+        _y + _cy + _radius * 0.12,
+        _x + _cx + _radius * 0.42,
+        _y + _cy - _radius * 0.46,
         6
     );
 
     draw_set_colour(_p.energy);
     draw_circle(
-        _x+_cx+radius*0.42,
-        _y+_cy-radius*0.46,
-        6,false
+        _x + _cx + _radius * 0.42,
+        _y + _cy - _radius * 0.46,
+        6,
+        false
     );
 
     draw_set_colour(c_white);
