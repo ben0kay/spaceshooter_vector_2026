@@ -141,7 +141,7 @@ function sc_attack_area_shard_laser_draw(_area, _data)
     var _p = _data.visual.palette;
     var _geometry = _data.geometry;
     var _runtime = _data.runtime;
-    var _length = _geometry.length;
+    var _length = _runtime.visual_length;
     var _alpha = _runtime.release_alpha;
     var _pulse = 1 + sin(GAME_TICK * 0.42) * 0.13 + sin(GAME_TICK * 0.17) * 0.07;
     var _width = _geometry.radius * _pulse;

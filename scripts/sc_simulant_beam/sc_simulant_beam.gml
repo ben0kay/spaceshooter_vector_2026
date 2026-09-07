@@ -108,7 +108,7 @@ function sc_simulant_thin_beam_particles_emit(_area, _data)
 function sc_attack_area_simulant_thin_beam_draw(_area, _data)
 {
     var _p = _data.visual.palette;
-    var _length = _data.geometry.length;
+    var _length = _runtime.visual_length;
     var _alpha = _data.runtime.release_alpha;
     var _pulse = 1 + sin(GAME_TICK * 0.47) * 0.11 + sin(GAME_TICK * 0.19) * 0.05;
     var _width = _data.geometry.radius * _pulse;

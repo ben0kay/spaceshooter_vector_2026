@@ -153,18 +153,16 @@ function sc_shard_mining_beam_particles_register()
     });
 }
 
-/// @description Emits visible material-coloured particles at the mining contact point.
+/// @description Emits visible material-coloured particles at the mining beam's visual endpoint.
 function sc_shard_mining_beam_particles_emit(_area, _data)
 {
     var _runtime = _data.runtime;
-
-    if (_runtime.hit_length >= _runtime.growth_length - 0.5)
-        return false;
+    if (!_runtime.impact_active) return false;
 
     var _particles = sc_particles_group_get("beam_shard_mining");
     if (!is_struct(_particles)) return false;
 
-    var _distance = _data.geometry.length;
+    var _distance = _runtime.visual_length;
     var _x = _area.x + lengthdir_x(_distance, _data.direction);
     var _y = _area.y + lengthdir_y(_distance, _data.direction);
     var _direction = _data.direction + 180 + random_range(-70, 70);
@@ -185,40 +183,26 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
         _glow = _item.visual.glow;
     }
 
-    part_type_colour3(
-        _particles.spark,
-        _core,
-        _colour,
-        _glow
-    );
-
-    part_type_colour3(
-        _particles.mote,
-        _core,
-        _colour,
-        _glow
-    );
+    part_type_colour3(_particles.spark, _core, _colour, _glow);
+    part_type_colour3(_particles.mote, _core, _colour, _glow);
 
     part_type_direction(
         _particles.spark,
         _direction - 22,
         _direction + 22,
-        0,
-        0
+        0, 0
     );
 
     part_type_direction(
         _particles.mote,
         _direction - 55,
         _direction + 55,
-        0,
-        0
+        0, 0
     );
 
     part_particles_create(
         global.particles.impact_system,
-        _x,
-        _y,
+        _x, _y,
         _particles.spark,
         irandom_range(1, 2)
     );
@@ -227,8 +211,7 @@ function sc_shard_mining_beam_particles_emit(_area, _data)
     {
         part_particles_create(
             global.particles.impact_system,
-            _x,
-            _y,
+            _x, _y,
             _particles.mote,
             1
         );
@@ -242,7 +225,7 @@ function sc_attack_area_shard_mining_beam_draw(_area, _data)
 {
     var _p = _data.visual.palette;
     var _runtime = _data.runtime;
-    var _length = _data.geometry.length;
+    var _length = _runtime.visual_length;
     var _alpha = _runtime.release_alpha;
     var _pulse = 1 + sin(GAME_TICK * 0.38) * 0.08;
     var _width = _data.geometry.radius * _pulse;
