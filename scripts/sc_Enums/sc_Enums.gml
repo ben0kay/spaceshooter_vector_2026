@@ -18,8 +18,8 @@ enum Faction { PLAYER, SIMULANT, REBEL, CORPORATION, ALIEN, AUTOMATED }
 enum EnemyState { IDLE, INVESTIGATING, CHASING, ATTACKING, STUNNED, FLEEING, DEAD }
 enum EnemyFacingMode { TARGET, MOVEMENT, COMMAND, FIXED, SPIN }
 enum EnemyRole { FIGHTER, CARGO, MINER, SUPPORT } 
-enum EnemyClass { LIGHT, STANDARD, HEAVY, CAPITAL } 
-enum EnemyRank { COMMON, ELITE, MINIBOSS, BOSS }
+enum EnemyClass { LIGHT, STANDARD, HEAVY, SUPERHEAVY, CAPITAL, TITAN } 
+enum EnemyRank { COMMON, VETERAN, ELITE, CHAMPION, MINIBOSS, BOSS }
 enum EnemyRemovalReason { KILLED, ESCAPED, DESPAWNED }
 
 //==================================================
