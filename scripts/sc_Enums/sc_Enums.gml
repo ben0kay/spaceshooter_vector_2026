@@ -2,7 +2,7 @@
 // GAME / FLOW STATES
 //==================================================
 enum GameState { BOOT, MENU, PLAYING, PAUSED, GAME_OVER }
-enum LevelState { NONE, INITIALIZING, SHIP_SELECT, PLAYING, COMPLETE, FAILED, EXITING }
+enum LevelState { NONE, INITIALIZING, SHIP_SELECT, PLAYING, DEBUG, COMPLETE, FAILED, EXITING }
 enum PlayerState { INITIALIZING, ACTIVE, DASHING, STUNNED, INVENTORY, DISABLED, DESTROYED }
 enum BossEncounterState { WAITING, APPROACH, WAVE, BOSS, VICTORY }
 //==================================================
@@ -61,7 +61,7 @@ enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }
 //==================================================
 enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 
-enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE, COLOSSAL }
+enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE}
 enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY }
 
 enum StructureCollisionShape { CIRCLE, RECTANGLE }

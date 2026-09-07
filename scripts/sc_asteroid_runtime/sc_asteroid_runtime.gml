@@ -15,7 +15,6 @@ function sc_asteroid_size_data(_size)
         case AsteroidSize.MEDIUM: return { radius: 58, health: 130, yield_min: 4, yield_max: 8 };
         case AsteroidSize.LARGE: return { radius: 105, health: 340, yield_min: 8, yield_max: 18 };
 		case AsteroidSize.HUGE: return { radius: 256, health: 768, yield_min: 15, yield_max: 35 };
-		case AsteroidSize.COLOSSAL: return { radius: 640, health: 2048, yield_min: 35, yield_max: 50 };
     }
 
     return undefined;
@@ -330,7 +329,7 @@ function sc_asteroid_weighted_choose(_entries)
     return _entries[array_length(_entries) - 1];
 }
 
-/// @description Spawns one temporary mixed asteroid field with guaranteed giant asteroids.
+/// @description Spawns one temporary mixed asteroid field with guaranteed huge asteroids.
 function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer)
 {
     var _materials = [
@@ -347,18 +346,16 @@ function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer
         { size: AsteroidSize.SMALL, weight: 42 },
         { size: AsteroidSize.MEDIUM, weight: 34 },
         { size: AsteroidSize.LARGE, weight: 19 },
-        { size: AsteroidSize.HUGE, weight: 4 },
-        { size: AsteroidSize.COLOSSAL, weight: 1 }
+        { size: AsteroidSize.HUGE, weight: 5 }
     ];
 
     // Spawn largest first so smaller rocks cannot occupy all available space.
     var _forced_sizes = [
-        AsteroidSize.COLOSSAL,
         AsteroidSize.HUGE,
         AsteroidSize.HUGE
     ];
 
-    var _target_amount = max(3,_amount);
+    var _target_amount = max(2,_amount);
     var _spawned = 0;
     var _attempts = 0;
     var _attempts_max = _target_amount*80;

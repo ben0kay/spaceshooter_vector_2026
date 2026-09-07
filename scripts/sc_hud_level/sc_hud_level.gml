@@ -574,7 +574,9 @@ function sc_hud_level_top_content_draw(_hud, _player, _x, _y)
 /// @description Draws the complete permanent HUD in GUI space.
 function sc_hud_level_draw(_hud)
 {
-    if (global.LevelState != LevelState.PLAYING) return;
+    if (global.LevelState != LevelState.PLAYING
+	&& global.LevelState != LevelState.DEBUG)
+	    return;
 
     var _data = _hud.data;
     var _cache = _hud.cache;

@@ -13,7 +13,7 @@ function sc_data_init()
         asteroids: {},
 		structures: {},
     };
-
+	if (!sc_faction_register_player()) return false;
     if (!sc_faction_hostility_init()) return false;
     if (!sc_item_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;

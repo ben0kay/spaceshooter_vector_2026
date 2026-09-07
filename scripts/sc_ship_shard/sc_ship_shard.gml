@@ -77,18 +77,7 @@ function sc_ship_shard_visual_data()
         colour_primary: make_colour_rgb(25, 225, 255),
         colour_secondary: make_colour_rgb(175, 220, 228),
 
-        palette: {
-            void: make_colour_rgb(2, 7, 12),
-            hull_dark: make_colour_rgb(10, 23, 31),
-            hull_mid: make_colour_rgb(28, 56, 68),
-            hull_light: make_colour_rgb(75, 126, 140),
-            metal: make_colour_rgb(175, 220, 228),
-            outline: make_colour_rgb(45, 105, 120),
-            accent: make_colour_rgb(25, 135, 255),
-            energy: make_colour_rgb(25, 225, 255),
-            core: make_colour_rgb(220, 255, 255),
-            glow: make_colour_rgb(0, 115, 195)
-        },
+        palette: sc_faction_palette_get(Faction.PLAYER),
 
         wing: {
             hinge_forward: -0.03,

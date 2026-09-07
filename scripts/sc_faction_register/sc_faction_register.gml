@@ -19,6 +19,29 @@ function sc_faction_register(_faction, _data)
     return true;
 }
 
+function sc_faction_register_player()
+{
+    return sc_faction_register(Faction.PLAYER,{
+        identity:{name:"Player"},
+
+        palette:{
+            void: make_colour_rgb(2,7,12),
+            hull_dark: make_colour_rgb(10,23,31),
+            hull_mid: make_colour_rgb(28,56,68),
+            hull_light: make_colour_rgb(75,126,140),
+            metal: make_colour_rgb(175,220,228),
+
+            outline: make_colour_rgb(45,105,120),
+            accent: make_colour_rgb(25,135,255),
+            energy: make_colour_rgb(25,225,255),
+            core: make_colour_rgb(220,255,255),
+            glow: make_colour_rgb(0,115,195),
+
+            warning: make_colour_rgb(232,151,38)
+        }
+    });
+}
+
 
 /// @description Registers the Simulant faction and visual language.
 function sc_faction_register_simulant()

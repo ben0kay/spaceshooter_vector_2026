@@ -598,7 +598,7 @@ function sc_enemy_movement_update(_enemy)
     if (_state == EnemyState.ATTACKING && !_backawaying)
         sc_enemy_movement_strafe_apply(_enemy);
 
-    sc_enemy_asteroid_response_apply(_enemy);
+    sc_enemy_obstacle_response_apply(_enemy);
     sc_enemy_facing_update(_enemy);
     sc_enemy_movement_apply(_enemy);
 

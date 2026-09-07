@@ -1,5 +1,19 @@
-/// @description Updates HUD systems according to the current player state.
-if (global.LevelState != LevelState.PLAYING) exit;
+/// @description Updates HUD, inventory and debug interfaces.
+if (global.LevelState != LevelState.PLAYING
+&& global.LevelState != LevelState.DEBUG)
+    exit;
+
+if (global.input.action.debug_enemy_spawn_pressed)
+{
+    sc_debug_enemy_spawn_toggle(hud);
+    exit;
+}
+
+if (global.LevelState == LevelState.DEBUG)
+{
+    sc_debug_enemy_spawn_update(hud);
+    exit;
+}
 
 sc_hud_level_update(hud);
 
