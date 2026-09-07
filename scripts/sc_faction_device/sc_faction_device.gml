@@ -61,10 +61,11 @@ function sc_faction_device_init(_device,_key)
             detected_alpha: 0,
 
             signal: {
-                remaining: 0,
-                target_x: 0,
-                target_y: 0
-            }
+    remaining: 0,
+    target_id: noone,
+    target_x: 0,
+    target_y: 0
+}
         };
     }
 
@@ -276,8 +277,9 @@ function sc_faction_device_sensor_update(_device)
     _runtime.detected_alpha = 1;
 
     _runtime.signal.remaining = _sensor.signal.duration;
-    _runtime.signal.target_x = _player.x;
-    _runtime.signal.target_y = _player.y;
+	_runtime.signal.target_id = _player;
+	_runtime.signal.target_x = _player.x;
+	_runtime.signal.target_y = _player.y;
 
     sc_faction_device_alert_emit(
         _device,
@@ -367,21 +369,29 @@ function sc_faction_device_sensor_draw(_device)
     gpu_set_blendmode(bm_normal);
 
     if (_runtime.signal.remaining > 0)
-    {
-        var _signal_progress = 1
-            - _runtime.signal.remaining
-            / _sensor.signal.duration;
+	{
+	    var _signal_target = _runtime.signal.target_id;
 
-        sc_visual_effect_signal_arcs(
-            _device.x,
-            _device.y,
-            _runtime.signal.target_x,
-            _runtime.signal.target_y,
-            _sensor.signal,
-            _signal_progress,
-            _palette
-        );
-    }
+	    if (instance_exists(_signal_target))
+	    {
+	        _runtime.signal.target_x = _signal_target.x;
+	        _runtime.signal.target_y = _signal_target.y;
+	    }
+
+	    var _signal_progress = 1
+	        - _runtime.signal.remaining
+	        / _sensor.signal.duration;
+
+	    sc_visual_effect_signal_arcs(
+	        _device.x,
+	        _device.y,
+	        _runtime.signal.target_x,
+	        _runtime.signal.target_y,
+	        _sensor.signal,
+	        _signal_progress,
+	        _palette
+	    );
+	}
 
     draw_set_colour(_palette.outline);
     draw_set_alpha(0.12);
