@@ -35,7 +35,7 @@ function sc_world_structure_get(_key)
 }
 
 /// @description Creates every collision piece belonging to one structure.
-function sc_world_structure_colliders_create(_structure, _layer)
+function sc_world_structure_colliders_create(_structure,_layer)
 {
     var _data = _structure.structure.data;
     var _parts = _data.collision.parts;
@@ -46,12 +46,12 @@ function sc_world_structure_colliders_create(_structure, _layer)
         var _part = _parts[_i];
         var _angle = _structure.draw_angle;
         var _x = _structure.x
-            + lengthdir_x(_part.forward, _angle)
-            + lengthdir_x(_part.side, _angle + 90);
+            + lengthdir_x(_part.forward,_angle)
+            + lengthdir_x(_part.side,_angle - 90);
 
         var _y = _structure.y
-            + lengthdir_y(_part.forward, _angle)
-            + lengthdir_y(_part.side, _angle + 90);
+            + lengthdir_y(_part.forward,_angle)
+            + lengthdir_y(_part.side,_angle - 90);
 
         var _create = {
             owner_id: _structure,
@@ -83,7 +83,7 @@ function sc_world_structure_colliders_create(_structure, _layer)
             { collider_create: _create }
         );
 
-        array_push(_colliders, _collider);
+        array_push(_colliders,_collider);
     }
 
     return _colliders;
@@ -164,11 +164,11 @@ function sc_world_structure_collision_debug_draw(_structure)
         var _part = _parts[_i];
         var _x = _structure.x
             + lengthdir_x(_part.forward,_structure_angle)
-            + lengthdir_x(_part.side,_structure_angle + 90);
+            + lengthdir_x(_part.side,_structure_angle - 90);
 
         var _y = _structure.y
             + lengthdir_y(_part.forward,_structure_angle)
-            + lengthdir_y(_part.side,_structure_angle + 90);
+            + lengthdir_y(_part.side,_structure_angle - 90);
 
         switch (_part.shape)
         {

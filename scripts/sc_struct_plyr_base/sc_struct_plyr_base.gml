@@ -71,7 +71,6 @@ function sc_world_structure_player_base_draw(_x, _y, _visual)
 
     sc_struct_plyr_truss(_x, _y, -120, -235, 390, -90, 12, _p);
     sc_struct_plyr_truss(_x, _y, -35, 240, 365, 90, 12, _p);
-    sc_struct_plyr_truss(_x, _y, 250, 245, 480, 135, 10, _p);
 
 
     //==================================================
@@ -199,11 +198,6 @@ function sc_world_structure_player_base_draw(_x, _y, _visual)
 
     for (var _i = 0; _i < 3; ++_i)
         sc_struct_plyr_crate(_x, _y, 22, 270 + _i * 56, 62, 44, _p);
-
-    // Suspended cargo cluster - decorative, intentionally not solid.
-    for (var _row = 0; _row < 2; ++_row)
-    for (var _col = 0; _col < 3; ++_col)
-        sc_struct_plyr_crate(_x, _y, 215 + _col * 43, 285 + _row * 44, 36, 34, _p);
 
     sc_struct_plyr_warning_stripe(_x, _y, -338, 222, 58, 13, _p);
     sc_struct_plyr_warning_stripe(_x, _y, -82, 428, 58, 13, _p);
