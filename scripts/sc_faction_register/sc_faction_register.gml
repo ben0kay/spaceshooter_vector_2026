@@ -122,33 +122,55 @@ function sc_faction_register_corporation()
     return sc_faction_register(Faction.CORPORATION, {
         identity: { name: "Corp Syndicate" },
 
-        palette: {
-            void: make_colour_rgb(9, 13, 20),
-            hull_dark: make_colour_rgb(38, 47, 59),
-            hull_mid: make_colour_rgb(100, 112, 126),
-            hull_light: make_colour_rgb(190, 198, 207),
-            metal: make_colour_rgb(225, 230, 235),
+        palette_standard: {
+    void: make_colour_rgb(4, 8, 13),
 
-            outline: make_colour_rgb(65, 77, 92),
-            accent: make_colour_rgb(35, 94, 214),
-            energy: make_colour_rgb(52, 132, 255),
-            core: make_colour_rgb(202, 229, 255),
-            glow: make_colour_rgb(18, 82, 224)
-        },
+    hull_dark: make_colour_rgb(22, 31, 42),
+    hull_mid: make_colour_rgb(70, 82, 96),
+    hull_light: make_colour_rgb(178, 186, 194),
+    metal: make_colour_rgb(224, 228, 232),
+
+    outline: make_colour_rgb(44, 58, 74),
+
+    armour_dark: make_colour_rgb(32, 42, 54),
+    armour_mid: make_colour_rgb(118, 129, 141),
+    armour_light: make_colour_rgb(214, 219, 224),
+
+    recess: make_colour_rgb(8, 14, 21),
+    trim: make_colour_rgb(90, 106, 124),
+    decal: make_colour_rgb(126, 145, 166),
+
+    accent: make_colour_rgb(32, 96, 220),
+    energy: make_colour_rgb(34, 128, 255),
+    sensor: make_colour_rgb(78, 170, 255),
+    core: make_colour_rgb(220, 241, 255),
+    glow: make_colour_rgb(16, 74, 220)
+}
 
         palette_elite: {
-            void: make_colour_rgb(4, 7, 12),
-            hull_dark: make_colour_rgb(15, 22, 31),
-            hull_mid: make_colour_rgb(39, 49, 62),
-            hull_light: make_colour_rgb(100, 111, 124),
-            metal: make_colour_rgb(174, 183, 193),
+    void: make_colour_rgb(3, 7, 12),
 
-            outline: make_colour_rgb(62, 76, 94),
-            accent: make_colour_rgb(29, 78, 190),
-            energy: make_colour_rgb(47, 119, 255),
-            core: make_colour_rgb(210, 233, 255),
-            glow: make_colour_rgb(13, 62, 204)
-        },
+    hull_dark: make_colour_rgb(18, 27, 37),
+    hull_mid: make_colour_rgb(62, 74, 89),
+    hull_light: make_colour_rgb(188, 196, 204),
+    metal: make_colour_rgb(232, 236, 240),
+
+    outline: make_colour_rgb(38, 52, 68),
+
+    armour_dark: make_colour_rgb(28, 38, 50),
+    armour_mid: make_colour_rgb(126, 138, 150),
+    armour_light: make_colour_rgb(222, 227, 232),
+
+    recess: make_colour_rgb(7, 12, 19),
+    trim: make_colour_rgb(96, 114, 134),
+    decal: make_colour_rgb(134, 154, 178),
+
+    accent: make_colour_rgb(26, 104, 232),
+    energy: make_colour_rgb(36, 138, 255),
+    sensor: make_colour_rgb(90, 182, 255),
+    core: make_colour_rgb(230, 246, 255),
+    glow: make_colour_rgb(14, 82, 228)
+}
 
         damage_fx: {
             emit_script: sc_particles_enemy_damage_smoke_emit,

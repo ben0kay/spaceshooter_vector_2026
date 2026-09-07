@@ -265,7 +265,7 @@ function sc_enemy_register_corporation_razorwing_champion()
                     aim: {
                         mode: AimMode.TARGET,
                         angle_offset: 0,
-                        inaccuracy: 1.8,
+                        inaccuracy: 2.2,
                         fire_tolerance: 7
                     },
 
@@ -291,7 +291,7 @@ function sc_enemy_register_corporation_razorwing_champion()
 
                     conditions: {
                         line_of_sight: true,
-                        range_min: 380,
+                        range_min: 640,
                         range_max: 1500
                     },
 
@@ -299,7 +299,7 @@ function sc_enemy_register_corporation_razorwing_champion()
                         mode: AimMode.TARGET,
                         angle_offset: 0,
                         inaccuracy: 1,
-                        fire_tolerance: 12
+                        fire_tolerance: 45
                     },
 
                     shot: {
@@ -324,7 +324,7 @@ function sc_enemy_register_corporation_razorwing_champion()
                     conditions: {
                         line_of_sight: true,
                         range_min: 0,
-                        range_max: 380
+                        range_max: 640
                     },
 
                     aim: {
