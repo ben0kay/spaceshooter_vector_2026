@@ -545,13 +545,13 @@ function sc_enemy_movement_update(_enemy)
     switch (_state)
     {
         case EnemyState.IDLE:
-            if (_data.flee.sheltered)
-                sc_enemy_movement_flee_sheltered(_enemy);
-            else if (_data.flee.returning)
-                sc_enemy_movement_flee_return(_enemy);
-            else
-                _controller.idle_script(_enemy);
-        break;
+		    if (_data.critical_response.sheltered)
+		        sc_enemy_movement_retreat_sheltered(_enemy);
+		    else if (_data.critical_response.returning)
+		        sc_enemy_movement_retreat_return(_enemy);
+		    else
+		        _controller.idle_script(_enemy);
+		break;
 
         case EnemyState.INVESTIGATING:
             sc_enemy_movement_investigate(_enemy);
@@ -590,9 +590,13 @@ function sc_enemy_movement_update(_enemy)
             }
         break;
 
-        case EnemyState.FLEEING:
-            _data.flee.movement_script(_enemy, _data.flee.option);
-        break;
+        case EnemyState.RETREATING:
+		case EnemyState.FLEEING:
+		    _data.critical_response.movement_script(
+		        _enemy,
+		        _data.critical_response.option
+		    );
+break;
     }
 
     if (_state == EnemyState.ATTACKING && !_backawaying)
@@ -602,8 +606,9 @@ function sc_enemy_movement_update(_enemy)
     sc_enemy_facing_update(_enemy);
     sc_enemy_movement_apply(_enemy);
 
-    if (_state == EnemyState.FLEEING)
-        return sc_enemy_flee_arrival_update(_enemy);
+    if (_state == EnemyState.RETREATING
+	|| _state == EnemyState.FLEEING)
+	    return sc_enemy_critical_response_arrival_update(_enemy);
 
     return false;
 }

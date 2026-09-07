@@ -1,5 +1,5 @@
 /// @description Returns whether the configured defence layer received damage.
-function sc_enemy_flee_layer_damaged(_result, _layer)
+function sc_enemy_critical_response_layer_damaged(_result, _layer)
 {
     switch (_layer)
     {
@@ -12,7 +12,7 @@ function sc_enemy_flee_layer_damaged(_result, _layer)
 }
 
 /// @description Returns the enemy's current ratio for one defence layer.
-function sc_enemy_flee_layer_ratio(_enemy, _layer)
+function sc_enemy_critical_response_layer_ratio(_enemy, _layer)
 {
     var _defence = _enemy.enemy.defence;
 
@@ -31,17 +31,17 @@ function sc_enemy_flee_layer_ratio(_enemy, _layer)
     return 1;
 }
 
-/// @description Configures a flee target that escapes away from the player.
-function sc_enemy_flee_target_map(_enemy, _option)
+/// @description Configures a permanent map-escape direction.
+function sc_enemy_critical_response_target_map(_enemy, _option)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
     var _direction = _enemy.draw_angle;
 
     if (instance_exists(global.player_id))
-        _direction = point_direction(global.player_id.x, global.player_id.y, _enemy.x, _enemy.y);
+        _direction = point_direction(global.player_id.x, global.player_id.y,_enemy.x,_enemy.y);
     else if (instance_exists(_data.target_id))
-        _direction = point_direction(_data.target_id.x, _data.target_id.y, _enemy.x, _enemy.y);
+        _direction = point_direction(_data.target_id.x,_data.target_id.y,_enemy.x,_enemy.y);
 
     _runtime.direction = _direction;
     _runtime.target_id = noone;
@@ -49,16 +49,16 @@ function sc_enemy_flee_target_map(_enemy, _option)
     return true;
 }
 
-/// @description Configures a flee target using a preferred protector or nearest larger allied ship.
-function sc_enemy_flee_target_larger_ally(_enemy, _option)
+/// @description Finds a preferred protector or nearest larger allied ship.
+function sc_enemy_critical_response_target_larger_ally(_enemy, _option)
 {
     var _data = _enemy.enemy;
-    var _has_preference = variable_struct_exists(_option, "preferred_role");
+    var _has_preference = variable_struct_exists(_option,"preferred_role");
     var _list = ds_list_create();
 
     collision_circle_list(
-        _enemy.x, _enemy.y, _option.range,
-        o_enemy, false, true, _list, false
+        _enemy.x,_enemy.y,_option.range,
+        o_enemy,false,true,_list,false
     );
 
     var _target = noone;
@@ -66,7 +66,7 @@ function sc_enemy_flee_target_larger_ally(_enemy, _option)
     var _best_distance_sq = _option.range * _option.range;
     var _preferred_distance_sq = _best_distance_sq;
 
-    for (var _i = 0; _i < ds_list_size(_list); _i++)
+    for (var _i = 0; _i < ds_list_size(_list); ++_i)
     {
         var _candidate = _list[| _i];
         if (_candidate == _enemy || !_candidate.initialized) continue;
@@ -75,13 +75,14 @@ function sc_enemy_flee_target_larger_ally(_enemy, _option)
 
         if (_candidate_data.identity.faction != _data.identity.faction
         || _candidate_data.identity.ship_class <= _data.identity.ship_class
+        || _candidate_data.state == EnemyState.RETREATING
         || _candidate_data.state == EnemyState.FLEEING
         || _candidate_data.state == EnemyState.DEAD)
             continue;
 
         var _distance_sq = sc_point_distance_sq(
-            _enemy.x, _enemy.y,
-            _candidate.x, _candidate.y
+            _enemy.x,_enemy.y,
+            _candidate.x,_candidate.y
         );
 
         if (_distance_sq < _best_distance_sq)
@@ -107,29 +108,39 @@ function sc_enemy_flee_target_larger_ally(_enemy, _option)
 
     if (!instance_exists(_target)) return false;
 
-    _data.flee.target_id = _target;
-    _data.flee.arrived = false;
+    _data.critical_response.target_id = _target;
+    _data.critical_response.arrived = false;
     return true;
 }
 
-/// @description Selects and configures one weighted valid flee target.
-function sc_enemy_flee_target_select(_enemy)
+/// @description Returns the enemy state used by one implemented critical response.
+function sc_enemy_critical_response_state(_response)
+{
+    switch (_response)
+    {
+        case EnemyCriticalResponse.RETREAT: return EnemyState.RETREATING;
+        case EnemyCriticalResponse.FLEE: return EnemyState.FLEEING;
+    }
+
+    return -1;
+}
+
+/// @description Selects and configures one weighted valid critical response.
+function sc_enemy_critical_response_select(_enemy)
 {
     var _data = _enemy.enemy;
-    var _options = _data.doctrine.flee.targets;
+    var _options = _data.doctrine.critical_response.responses;
     var _available = [];
 
-    for (var _i = 0; _i < array_length(_options); _i++)
-    {
+    for (var _i = 0; _i < array_length(_options); ++_i)
         if (_options[_i].weight > 0)
-            array_push(_available, _i);
-    }
+            array_push(_available,_i);
 
     while (array_length(_available) > 0)
     {
         var _weight_total = 0;
 
-        for (var _i = 0; _i < array_length(_available); _i++)
+        for (var _i = 0; _i < array_length(_available); ++_i)
             _weight_total += _options[_available[_i]].weight;
 
         if (_weight_total <= 0) return false;
@@ -137,7 +148,7 @@ function sc_enemy_flee_target_select(_enemy)
         var _roll = random(_weight_total);
         var _selected_position = -1;
 
-        for (var _i = 0; _i < array_length(_available); _i++)
+        for (var _i = 0; _i < array_length(_available); ++_i)
         {
             _roll -= _options[_available[_i]].weight;
 
@@ -152,64 +163,88 @@ function sc_enemy_flee_target_select(_enemy)
             _selected_position = array_length(_available) - 1;
 
         var _option = _options[_available[_selected_position]];
-        array_delete(_available, _selected_position, 1);
+        array_delete(_available,_selected_position,1);
 
-        if (!_option.target_script(_enemy, _option))
-            continue;
+        var _state = sc_enemy_critical_response_state(_option.response);
+        if (_state < 0 || !_option.target_script(_enemy,_option)) continue;
 
-        _data.flee.option = _option;
-        _data.flee.movement_script = _option.movement_script;
-        _data.flee.arrival_script = _option.arrival_script;
+        var _runtime = _data.critical_response;
+        _runtime.selected = _option.response;
+        _runtime.option = _option;
+        _runtime.movement_script = _option.movement_script;
+        _runtime.arrival_script = _option.arrival_script;
+        _data.state = _state;
         return true;
     }
 
     return false;
 }
 
-/// @description Replaces an unavailable directed retreat with map escape.
-function sc_enemy_flee_fallback_map(_enemy)
-{
-    var _runtime = _enemy.enemy.flee;
-
-    _runtime.option = undefined;
-    _runtime.movement_script = sc_enemy_movement_flee_away;
-    _runtime.arrival_script = sc_enemy_flee_arrive_map;
-
-    return sc_enemy_flee_target_map(_enemy, undefined);
-}
-
-/// @description Begins fleeing once using one weighted faction target.
-function sc_enemy_flee_begin(_enemy)
+/// @description Converts a failed or interrupted retreat into permanent flight.
+function sc_enemy_critical_response_fallback_flee(_enemy)
 {
     var _data = _enemy.enemy;
-    if (_data.state == EnemyState.DEAD || _data.state == EnemyState.FLEEING || _data.flee.used) return false;
-    if (!sc_enemy_flee_target_select(_enemy)) return false;
+    var _runtime = _data.critical_response;
+    var _responses = _data.doctrine.critical_response.responses;
+
+    for (var _i = 0; _i < array_length(_responses); ++_i)
+    {
+        var _option = _responses[_i];
+        if (_option.response != EnemyCriticalResponse.FLEE) continue;
+
+        _runtime.selected = EnemyCriticalResponse.FLEE;
+        _runtime.option = _option;
+        _runtime.movement_script = _option.movement_script;
+        _runtime.arrival_script = _option.arrival_script;
+        _data.state = EnemyState.FLEEING;
+        return _option.target_script(_enemy,_option);
+    }
+
+    return false;
+}
+
+/// @description Begins one selected critical response for this enemy's lifetime.
+function sc_enemy_critical_response_begin(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.critical_response;
+
+    if (_data.state == EnemyState.DEAD
+    || _data.state == EnemyState.RETREATING
+    || _data.state == EnemyState.FLEEING
+    || _runtime.used)
+        return false;
+
+    if (!sc_enemy_critical_response_select(_enemy)) return false;
 
     sc_enemy_attack_cancel(_enemy);
 
-    _data.flee.used = true;
+    _runtime.used = true;
     _data.target_id = noone;
     _data.awareness.memory_until = 0;
     _data.awareness.arrived = false;
-    _data.state = EnemyState.FLEEING;
     return true;
 }
 
-/// @description Rolls an eligible faction-controlled flee attempt after damage.
-function sc_enemy_flee_try(_enemy, _result)
+/// @description Rolls an eligible faction-controlled response after damage.
+function sc_enemy_critical_response_try(_enemy, _result)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
+    var _config = _data.doctrine.critical_response;
 
     if (_data.state == EnemyState.DEAD
+    || _data.state == EnemyState.RETREATING
     || _data.state == EnemyState.FLEEING
     || _runtime.used
     || _data.identity.rank == EnemyRank.BOSS)
         return false;
 
-    var _config = _data.doctrine.flee;
-    var _class_multiplier = global.config.enemy.flee.class_chance_multiplier[_data.identity.ship_class];
-    var _chance = clamp(_config.chance * _class_multiplier, 0, 1);
+    var _class_multiplier = global.config.enemy.critical_response.class_chance_multiplier[
+        _data.identity.ship_class
+    ];
+
+    var _chance = clamp(_config.chance * _class_multiplier,0,1);
 
     if (_config.max_attempts <= 0
     || _chance <= 0
@@ -217,51 +252,47 @@ function sc_enemy_flee_try(_enemy, _result)
     || GAME_TICK < _runtime.next_attempt_tick)
         return false;
 
-    if (!sc_enemy_flee_layer_damaged(_result, _config.trigger_layer))
+    if (!sc_enemy_critical_response_layer_damaged(_result,_config.trigger_layer))
         return false;
 
-    var _ratio = sc_enemy_flee_layer_ratio(_enemy, _config.trigger_layer);
-
-    if (_ratio > clamp(_config.trigger_ratio, 0, 1))
-        return false;
+    var _ratio = sc_enemy_critical_response_layer_ratio(_enemy,_config.trigger_layer);
+    if (_ratio > clamp(_config.trigger_ratio,0,1)) return false;
 
     _runtime.attempts++;
-    _runtime.next_attempt_tick = GAME_TICK + max(0, round(_config.cooldown));
+    _runtime.next_attempt_tick = GAME_TICK + max(0,round(_config.cooldown));
 
-    if (random(1) >= _chance)
-        return false;
-
-    return sc_enemy_flee_begin(_enemy);
+    if (random(1) >= _chance) return false;
+    return sc_enemy_critical_response_begin(_enemy);
 }
 
-/// @description Flees along a stable map-escape heading with faction-controlled sway.
+/// @description Flees along a stable map-escape heading.
 function sc_enemy_movement_flee_away(_enemy, _option)
 {
     var _data = _enemy.enemy;
-    var _config = _data.doctrine.flee;
+    var _config = _data.doctrine.critical_response;
+    var _runtime = _data.critical_response;
     var _command = _data.movement.command;
     var _sway = sin(GAME_TICK * _config.sway_speed + real(_enemy.id) * 0.17)
         * _config.sway_amount;
 
     _command.active = true;
     _command.apply_friction = false;
-    _command.direction = _data.flee.direction + _sway;
+    _command.direction = _runtime.direction + _sway;
     _command.face_direction = _command.direction;
     _command.facing_mode = EnemyFacingMode.MOVEMENT;
-    _command.speed_scale = max(0, _config.speed_scale);
+    _command.speed_scale = max(0,_config.speed_scale);
 }
 
-/// @description Flees toward and shelters beside the selected larger allied ship.
-function sc_enemy_movement_flee_toward_ally(_enemy, _option)
+/// @description Retreats toward the selected larger allied ship.
+function sc_enemy_movement_retreat_toward_ally(_enemy, _option)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
     var _target = _runtime.target_id;
 
     if (!instance_exists(_target))
     {
-        sc_enemy_flee_fallback_map(_enemy);
-        sc_enemy_movement_flee_away(_enemy, undefined);
+        sc_enemy_critical_response_fallback_flee(_enemy);
         return;
     }
 
@@ -277,7 +308,7 @@ function sc_enemy_movement_flee_toward_ally(_enemy, _option)
     );
 
     var _arrival_radius = _target_radius + _enemy_radius + _option.arrival_margin;
-    var _distance_sq = sc_point_distance_sq(_enemy.x, _enemy.y, _target.x, _target.y);
+    var _distance_sq = sc_point_distance_sq(_enemy.x,_enemy.y,_target.x,_target.y);
 
     if (_distance_sq <= _arrival_radius * _arrival_radius)
     {
@@ -287,17 +318,17 @@ function sc_enemy_movement_flee_toward_ally(_enemy, _option)
 
     _command.active = true;
     _command.apply_friction = false;
-    _command.direction = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+    _command.direction = point_direction(_enemy.x,_enemy.y,_target.x,_target.y);
     _command.face_direction = _command.direction;
     _command.facing_mode = EnemyFacingMode.MOVEMENT;
-    _command.speed_scale = max(0, _data.doctrine.flee.speed_scale);
+    _command.speed_scale = max(0,_data.doctrine.critical_response.speed_scale);
 }
 
-/// @description Begins an interruptible return to the enemy's original spawn point.
-function sc_enemy_flee_return_begin(_enemy)
+/// @description Begins an interruptible return to the original spawn position.
+function sc_enemy_retreat_return_begin(_enemy)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
 
     _runtime.sheltered = false;
     _runtime.returning = true;
@@ -307,22 +338,23 @@ function sc_enemy_flee_return_begin(_enemy)
     return true;
 }
 
-/// @description Holds beside a support ship while allowing normal combat awareness.
-function sc_enemy_movement_flee_sheltered(_enemy)
+/// @description Holds beside a support ship while allowing normal combat.
+function sc_enemy_movement_retreat_sheltered(_enemy)
 {
-    sc_enemy_movement_flee_toward_ally(_enemy, _enemy.enemy.flee.option);
+    var _runtime = _enemy.enemy.critical_response;
+    sc_enemy_movement_retreat_toward_ally(_enemy,_runtime.option);
 }
 
-/// @description Returns a recovered enemy toward its original spawn point.
-function sc_enemy_movement_flee_return(_enemy)
+/// @description Returns a recovered enemy toward its original spawn position.
+function sc_enemy_movement_retreat_return(_enemy)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
     var _command = _data.movement.command;
     var _dx = _runtime.return_x - _enemy.x;
     var _dy = _runtime.return_y - _enemy.y;
-    var _arrival_radius = max(_data.collision.radius_forward, _data.collision.radius_side)
-        + global.config.enemy.flee.return_arrival_margin;
+    var _arrival_radius = max(_data.collision.radius_forward,_data.collision.radius_side)
+        + global.config.enemy.critical_response.return_arrival_margin;
 
     if (_dx * _dx + _dy * _dy <= _arrival_radius * _arrival_radius)
     {
@@ -337,37 +369,35 @@ function sc_enemy_movement_flee_return(_enemy)
 
     _command.active = true;
     _command.apply_friction = false;
-    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.direction = point_direction(0,0,_dx,_dy);
     _command.face_direction = _command.direction;
     _command.facing_mode = EnemyFacingMode.MOVEMENT;
-    _command.speed_scale = max(0, _data.doctrine.flee.speed_scale);
+    _command.speed_scale = max(0,_data.doctrine.critical_response.speed_scale);
 }
 
 /// @description Ends sheltering after full repair or loss of the support ship.
-function sc_enemy_flee_recovery_update(_enemy)
+function sc_enemy_retreat_recovery_update(_enemy)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
     var _support = _runtime.target_id;
     var _defence = _data.defence;
 
     if (!instance_exists(_support) || _support.enemy.state == EnemyState.DEAD)
-        return sc_enemy_flee_return_begin(_enemy);
+        return sc_enemy_retreat_return_begin(_enemy);
 
     if (_defence.armour.current < _defence.armour.maximum
     || _defence.hull.current < _defence.hull.maximum)
         return false;
 
-    return sc_enemy_flee_return_begin(_enemy);
+    return sc_enemy_retreat_return_begin(_enemy);
 }
 
-/// @description Removes a fleeing enemy after its entire footprint clears the room.
+/// @description Removes a fleeing enemy after clearing the room.
 function sc_enemy_flee_exit_check(_enemy)
 {
     var _data = _enemy.enemy;
-
-    if (_data.state != EnemyState.FLEEING)
-        return false;
+    if (_data.state != EnemyState.FLEEING) return false;
 
     var _padding = max(
         _data.collision.radius_forward,
@@ -380,7 +410,7 @@ function sc_enemy_flee_exit_check(_enemy)
     && _enemy.y <= room_height + _padding)
         return false;
 
-    return sc_enemy_remove(_enemy, EnemyRemovalReason.ESCAPED);
+    return sc_enemy_remove(_enemy,EnemyRemovalReason.ESCAPED);
 }
 
 /// @description Processes arrival for a ship fleeing off the map.
@@ -389,15 +419,14 @@ function sc_enemy_flee_arrive_map(_enemy, _option)
     return sc_enemy_flee_exit_check(_enemy);
 }
 
-/// @description Shelters at support or receives emergency repairs from a larger ally.
-function sc_enemy_flee_arrive_shelter(_enemy, _option)
+/// @description Shelters at support or receives emergency field repairs.
+function sc_enemy_retreat_arrive_shelter(_enemy, _option)
 {
     var _data = _enemy.enemy;
-    var _runtime = _data.flee;
+    var _runtime = _data.critical_response;
     var _target = _runtime.target_id;
 
-    if (_runtime.arrived || !instance_exists(_target))
-        return false;
+    if (_runtime.arrived || !instance_exists(_target)) return false;
 
     var _target_radius = max(
         _target.enemy.collision.radius_forward,
@@ -411,16 +440,18 @@ function sc_enemy_flee_arrive_shelter(_enemy, _option)
 
     var _arrival_radius = _target_radius + _enemy_radius + _option.arrival_margin;
 
-    if (sc_point_distance_sq(_enemy.x, _enemy.y, _target.x, _target.y)
+    if (sc_point_distance_sq(_enemy.x,_enemy.y,_target.x,_target.y)
     > _arrival_radius * _arrival_radius)
         return false;
 
     _runtime.arrived = true;
 
     var _identity = _target.enemy.identity;
+    var _preferred_support = variable_struct_exists(_option,"preferred_role")
+        && _identity.role == _option.preferred_role
+        && _identity.ship_class == _option.preferred_class;
 
-    if (_identity.role == EnemyRole.SUPPORT
-    && _identity.ship_class == EnemyClass.HEAVY)
+    if (_preferred_support)
     {
         _runtime.sheltered = true;
         _data.target_id = noone;
@@ -429,24 +460,24 @@ function sc_enemy_flee_arrive_shelter(_enemy, _option)
     }
 
     var _defence = _data.defence;
-    var _config = global.config.enemy.flee;
+    var _config = global.config.enemy.critical_response;
 
     _defence.hull.current = _defence.hull.maximum;
     _defence.armour.current = min(
         _defence.armour.maximum,
         _defence.armour.current + _defence.armour.maximum
-            * random_range(_config.field_repair_armour_min, _config.field_repair_armour_max)
+            * random_range(_config.field_repair_armour_min,_config.field_repair_armour_max)
     );
 
     _data.target_id = noone;
     _data.state = EnemyState.IDLE;
-    sc_enemy_flee_return_begin(_enemy);
+    sc_enemy_retreat_return_begin(_enemy);
     return false;
 }
 
-/// @description Runs the selected flee target's arrival callback.
-function sc_enemy_flee_arrival_update(_enemy)
+/// @description Runs the selected response's arrival callback.
+function sc_enemy_critical_response_arrival_update(_enemy)
 {
-    var _runtime = _enemy.enemy.flee;
-    return _runtime.arrival_script(_enemy, _runtime.option);
+    var _runtime = _enemy.enemy.critical_response;
+    return _runtime.arrival_script(_enemy,_runtime.option);
 }

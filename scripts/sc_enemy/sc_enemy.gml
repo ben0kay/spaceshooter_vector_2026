@@ -98,21 +98,22 @@ _rear_damage.multiplier = max(1, _rear_damage.multiplier);
             rejected: []
         },
 			
-		flee: {
-		    attempts: 0,
-		    next_attempt_tick: 0,
-		    used: false,
-		    direction: 0,
-		    target_id: noone,
-		    option: undefined,
-		    movement_script: undefined,
-		    arrival_script: undefined,
-		    arrived: false,
-		    sheltered: false,
-		    returning: false,
-		    return_x: 0,
-		    return_y: 0
-		},
+		critical_response: {
+    attempts: 0,
+    next_attempt_tick: 0,
+    used: false,
+    selected: -1,
+    direction: 0,
+    target_id: noone,
+    option: undefined,
+    movement_script: undefined,
+    arrival_script: undefined,
+    arrived: false,
+    sheltered: false,
+    returning: false,
+    return_x: 0,
+    return_y: 0
+},
 
 		awareness: {
 		    memory_until: 0,
@@ -752,19 +753,20 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
         return _result;
     }
 
-    if (_data.state == EnemyState.FLEEING)
-    {
-        if (_result.effect.type == DamageEffect.STAGGER
-        && sc_damage_effect_triggered(_result.effect))
-            sc_enemy_stagger_begin(_enemy, _result.effect);
+    if (_data.state == EnemyState.RETREATING
+	|| _data.state == EnemyState.FLEEING)
+	{
+	    if (_result.effect.type == DamageEffect.STAGGER
+	    && sc_damage_effect_triggered(_result.effect))
+	        sc_enemy_stagger_begin(_enemy,_result.effect);
 
-        return _result;
-    }
+	    return _result;
+	}
 
-    sc_enemy_engagement_retaliation_try(_enemy,_packet);
-    sc_enemy_awareness_damage_try(_enemy,_packet);
-    sc_enemy_alert_try(_enemy,_data.doctrine.alert.on_damage);
-    sc_enemy_flee_try(_enemy,_result);
+	sc_enemy_engagement_retaliation_try(_enemy,_packet);
+	sc_enemy_awareness_damage_try(_enemy,_packet);
+	sc_enemy_alert_try(_enemy,_data.doctrine.alert.on_damage);
+	sc_enemy_critical_response_try(_enemy,_result);
 
     if (_result.effect.type == DamageEffect.STAGGER
     && sc_damage_effect_triggered(_result.effect))

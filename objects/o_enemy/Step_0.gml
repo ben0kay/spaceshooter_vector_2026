@@ -3,8 +3,8 @@ if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_optimization_enemy_update(id);
 
-if (enemy.flee.sheltered)
-    sc_enemy_flee_recovery_update(id);
+if (enemy.critical_response.sheltered)
+    sc_enemy_retreat_recovery_update(id);
 
 var _updates = global.config.optimization.enemy_updates;
 var _optimization = enemy.optimization;
@@ -23,6 +23,7 @@ if ((enemy.state == EnemyState.CHASING || enemy.state == EnemyState.ATTACKING)
     _perception_due = true;
 
 if (enemy.state != EnemyState.STUNNED
+&& enemy.state != EnemyState.RETREATING
 && enemy.state != EnemyState.FLEEING
 && enemy.state != EnemyState.DEAD
 && _perception_due)

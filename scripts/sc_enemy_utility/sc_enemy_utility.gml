@@ -109,8 +109,8 @@ function sc_enemy_utility_target_damaged_ally(_enemy, _channel)
         var _hull_missing = 1 - _defence.hull.current / max(1, _defence.hull.maximum);
         if (_armour_missing <= 0 && _hull_missing <= 0) continue;
 
-        var _priority = _candidate_data.flee.sheltered
-            && _candidate_data.flee.target_id == _enemy;
+        var _priority = _candidate_data.critical_response.sheltered
+    && _candidate_data.critical_response.target_id == _enemy;
 
         var _damage = _hull_missing * 2 + _armour_missing;
         var _distance_sq = sc_point_distance_sq(
@@ -210,9 +210,10 @@ function sc_enemy_utility_update(_enemy)
     var _controller = _data.utility_controller;
     if (!is_struct(_controller)) return false;
 
-    var _disabled = _data.state == EnemyState.FLEEING
-        || _data.state == EnemyState.STUNNED
-        || _data.state == EnemyState.DEAD;
+    var _disabled = _data.state == EnemyState.RETREATING
+    || _data.state == EnemyState.FLEEING
+    || _data.state == EnemyState.STUNNED
+    || _data.state == EnemyState.DEAD;
 
     for (var _c = 0; _c < array_length(_controller.channels); _c++)
     {

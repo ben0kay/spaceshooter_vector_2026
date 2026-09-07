@@ -300,10 +300,11 @@ function sc_enemy_engagement_retaliate_default(_enemy,_attacker)
 {
     var _data = _enemy.enemy;
 
-    if (_data.state == EnemyState.DEAD
-    || _data.state == EnemyState.FLEEING
-    || _data.state == EnemyState.STUNNED)
-        return false;
+	 if (_data.state == EnemyState.DEAD
+	|| _data.state == EnemyState.RETREATING
+	|| _data.state == EnemyState.FLEEING
+	|| _data.state == EnemyState.STUNNED)
+	    return false;
 
     if (sc_enemy_engagement_target_valid(_enemy,_data.target_id))
         return false;

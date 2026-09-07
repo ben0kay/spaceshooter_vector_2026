@@ -197,7 +197,7 @@ function sc_config_init()
 			    multiplier: 1.25
 			},
 			
-			flee: {
+			critical_response: {
 			    class_chance_multiplier: [1, 0.6, 0.25, 0.1, 0.02, 0],
 			    field_repair_armour_min: 0.1,
 			    field_repair_armour_max: 0.25,

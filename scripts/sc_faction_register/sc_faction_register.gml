@@ -91,7 +91,7 @@ function sc_faction_register_simulant()
                 }
             },
 
-		    flee: {
+		    critical_response: {
     chance: 0.05,
     trigger_layer: DefenceLayer.HULL,
     trigger_ratio: 0.1,
@@ -101,11 +101,11 @@ function sc_faction_register_simulant()
     sway_amount: 4,
     sway_speed: 0.025,
 
-    targets: [
+    responses: [
         {
-            key: "leave_map",
+            response: EnemyCriticalResponse.FLEE,
             weight: 100,
-            target_script: sc_enemy_flee_target_map,
+            target_script: sc_enemy_critical_response_target_map,
             movement_script: sc_enemy_movement_flee_away,
             arrival_script: sc_enemy_flee_arrive_map
         }
@@ -178,7 +178,7 @@ function sc_faction_register_corporation()
                 }
             },
 
-		    flee: {
+		    critical_response: {
     chance: 0.9,
     trigger_layer: DefenceLayer.HULL,
     trigger_ratio: 0.6,
@@ -188,22 +188,22 @@ function sc_faction_register_corporation()
     sway_amount: 5,
     sway_speed: 0.025,
 
-    targets: [
+    responses: [
         {
-            key: "larger_ally",
-            weight: 100,
+            response: EnemyCriticalResponse.RETREAT,
+            weight: 95,
             range: 12000,
             arrival_margin: 96,
-			preferred_role: EnemyRole.SUPPORT,
-			preferred_class: EnemyClass.SUPERHEAVY,
-            target_script: sc_enemy_flee_target_larger_ally,
-            movement_script: sc_enemy_movement_flee_toward_ally,
-            arrival_script: sc_enemy_flee_arrive_shelter
+            preferred_role: EnemyRole.SUPPORT,
+            preferred_class: EnemyClass.SUPERHEAVY,
+            target_script: sc_enemy_critical_response_target_larger_ally,
+            movement_script: sc_enemy_movement_retreat_toward_ally,
+            arrival_script: sc_enemy_retreat_arrive_shelter
         },
         {
-            key: "leave_map",
-            weight: 0,
-            target_script: sc_enemy_flee_target_map,
+            response: EnemyCriticalResponse.FLEE,
+            weight: 5,
+            target_script: sc_enemy_critical_response_target_map,
             movement_script: sc_enemy_movement_flee_away,
             arrival_script: sc_enemy_flee_arrive_map
         }
@@ -301,7 +301,7 @@ function sc_faction_register_rebel()
                 }
             },
 
-		    flee: {
+		    critical_response: {
     chance: 1,
     trigger_layer: DefenceLayer.HULL,
     trigger_ratio: 0.9,
@@ -311,20 +311,20 @@ function sc_faction_register_rebel()
     sway_amount: 14,
     sway_speed: 0.04,
 
-    targets: [
+    responses: [
         {
-            key: "larger_ally",
+            response: EnemyCriticalResponse.RETREAT,
             weight: 5,
             range: 1600,
             arrival_margin: 128,
-            target_script: sc_enemy_flee_target_larger_ally,
-            movement_script: sc_enemy_movement_flee_toward_ally,
-            arrival_script: sc_enemy_flee_arrive_shelter
+            target_script: sc_enemy_critical_response_target_larger_ally,
+            movement_script: sc_enemy_movement_retreat_toward_ally,
+            arrival_script: sc_enemy_retreat_arrive_shelter
         },
         {
-            key: "leave_map",
+            response: EnemyCriticalResponse.FLEE,
             weight: 95,
-            target_script: sc_enemy_flee_target_map,
+            target_script: sc_enemy_critical_response_target_map,
             movement_script: sc_enemy_movement_flee_away,
             arrival_script: sc_enemy_flee_arrive_map
         }
