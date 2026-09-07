@@ -354,10 +354,10 @@ function sc_enemy_register_corporation_razorwing_champion()
 function sc_enemy_corporation_razorwing_visual_data()
 {
     return {
-        radius: 110,
+        radius: 90,
         motion_strength: 2.4,
         palette: sc_faction_palette_elite_get(Faction.CORPORATION),
-        core: { forward: -0.2, side: 0 },
+        core: { forward: -0.18, side: 0 },
 
         draw: {
             body: sc_enemy_corporation_razorwing_body_draw,
@@ -388,10 +388,10 @@ function sc_enemy_corporation_razorwing_visual_data()
         },
 
         bake: {
-            body_canvas_size: 512,
-            core_canvas_size: 192,
-            hardpoint_canvas_size: 192,
-            thrust_canvas_size: 160,
+            body_canvas_size: 384,
+            core_canvas_size: 160,
+            hardpoint_canvas_size: 160,
+            thrust_canvas_size: 128,
             fragment_canvas_size: 320
         }
     };
@@ -404,279 +404,326 @@ function sc_enemy_corporation_razorwing_body_draw(_x,_y,_r,_a,_v)
     sc_enemy_corporation_razorwing_armour_draw(_x,_y,_r,_a,_v,0);
 }
 
-/// @description Draws the permanent dark Razorwing chassis.
+/// @description Draws the permanent narrow mechanical Razorwing chassis.
 function sc_enemy_corporation_razorwing_hull_draw(_x,_y,_r,_a,_v,_stage)
 {
     var _p = _v.palette;
 
-    // Wide mechanical underframe.
-    sc_visual_triangle(_x,_y,_r,_a, 1.42,0, 0.18,-0.4, -0.92,-0.28,_p.void,false);
-    sc_visual_triangle(_x,_y,_r,_a, 1.42,0, -0.92,0.28, 0.18,0.4,_p.hull_dark,false);
+    // Narrow rigid underframe.
+    sc_visual_triangle(_x,_y,_r,_a, 1.56,0, 0.28,-0.25, -0.94,-0.2,_p.recess,false);
+    sc_visual_triangle(_x,_y,_r,_a, 1.56,0, -0.94,0.2, 0.28,0.25,_p.void,false);
 
-    // Central manufactured spine.
+    // Angular central spine.
     sc_visual_quad(
         _x,_y,_r,_a,
-         1.18,-0.12,
-        -0.85,-0.17,
-        -0.85,0.17,
-         1.18,0.12,
+         1.3,-0.105,
+        -0.84,-0.15,
+        -0.96,0,
+         1.3,0.105,
+        _p.hull_dark
+    );
+
+    sc_visual_quad(
+        _x,_y,_r,_a,
+         1.18,-0.07,
+        -0.69,-0.095,
+        -0.82,0,
+         1.18,0.07,
         _p.hull_mid
     );
 
-    sc_visual_triangle(_x,_y,_r,_a, 1.44,0, 0.65,-0.15, 0.65,0.15,_p.hull_light,false);
-    sc_visual_triangle(_x,_y,_r,_a, 1.35,0, 0.72,-0.08, 0.88,0,_p.metal,false);
-    sc_visual_triangle(_x,_y,_r,_a, 1.35,0, 0.88,0, 0.72,0.08,_p.hull_light,false);
+    // Long armoured nose.
+    sc_visual_triangle(_x,_y,_r,_a, 1.57,0, 0.72,-0.14, 0.72,0.14,_p.armour_dark,false);
+    sc_visual_triangle(_x,_y,_r,_a, 1.52,0, 0.8,-0.09, 0.92,0,_p.armour_light,false);
+    sc_visual_triangle(_x,_y,_r,_a, 1.52,0, 0.92,0, 0.8,0.09,_p.armour_mid,false);
 
-    // Central reactor channel.
-    sc_visual_line(_x,_y,_r,_a, 0.78,0, -0.55,0, 12,_p.void);
-    sc_visual_line(_x,_y,_r,_a, 0.72,0, -0.48,0, 6,_p.glow);
-    sc_visual_line(_x,_y,_r,_a, 0.66,0, -0.42,0, 2,_p.energy);
+    sc_corp_visual_panel_seam(_x,_y,_r,_a, 1.31,-0.055, 0.81,-0.09,_p);
+    sc_corp_visual_panel_seam(_x,_y,_r,_a, 1.31,0.055, 0.81,0.09,_p);
+    sc_corp_visual_energy_strip(_x,_y,_r,_a, 1.04,0, 1.43,0,2,_p);
 
-    // Rear engine housings.
+    // Recessed centreline power channel.
+    sc_corp_visual_energy_strip(_x,_y,_r,_a, 0.66,0, -0.52,0,3,_p);
+
+    // Internal wing braces exposed as armour peels away.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_corp_visual_armour_rib(
+            _x,_y,_r,_a,
+             0.36,0.18 * _side,
+            -0.15,0.48 * _side,
+            2,_p
+        );
+
+        sc_corp_visual_armour_rib(
+            _x,_y,_r,_a,
+            -0.1,0.23 * _side,
+            -0.55,0.55 * _side,
+            2,_p
+        );
+    }
+
+    // Compact recessed engine nacelles.
     for (var _side = -1; _side <= 1; _side += 2)
     {
         sc_visual_quad(
             _x,_y,_r,_a,
-            -0.35,0.14 * _side,
-            -0.78,0.18 * _side,
-            -1.02,0.31 * _side,
-            -0.46,0.32 * _side,
-            _p.void
+            -0.36,0.13 * _side,
+            -0.76,0.16 * _side,
+            -1.03,0.27 * _side,
+            -0.47,0.28 * _side,
+            _p.recess
         );
 
         sc_visual_quad(
             _x,_y,_r,_a,
-            -0.42,0.18 * _side,
-            -0.78,0.21 * _side,
-            -0.92,0.28 * _side,
-            -0.49,0.29 * _side,
-            _p.hull_mid
+            -0.43,0.17 * _side,
+            -0.77,0.19 * _side,
+            -0.94,0.245 * _side,
+            -0.5,0.25 * _side,
+            _p.armour_dark
         );
 
-        sc_visual_line(
+        sc_corp_visual_energy_strip(
             _x,_y,_r,_a,
-            -0.61,0.245 * _side,
-            -0.99,0.245 * _side,
-            7,_p.energy
+            -0.61,0.215 * _side,
+            -0.98,0.215 * _side,
+            2,_p
         );
     }
 
-    // Internal wing braces remain when armour is destroyed.
+    // Elite sensor and identification detailing.
+    sc_corp_visual_sensor_node(_x,_y,_r,_a, 0.66,0,0.035,_p);
+
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_line(_x,_y,_r,_a, 0.25,0.25 * _side, -0.25,0.64 * _side,8,_p.void);
-        sc_visual_line(_x,_y,_r,_a, 0.25,0.25 * _side, -0.25,0.64 * _side,3,_p.hull_mid);
-        sc_visual_line(_x,_y,_r,_a, -0.2,0.31 * _side, -0.62,0.72 * _side,7,_p.void);
-        sc_visual_line(_x,_y,_r,_a, -0.2,0.31 * _side, -0.62,0.72 * _side,2,_p.metal);
+        sc_corp_visual_ident_bar(
+            _x,_y,_r,_a,
+            0.55,0.13 * _side,
+            0.29,0.155 * _side,
+            _p
+        );
+
+        sc_corp_visual_light_slit(
+            _x,_y,_r,_a,
+            -0.26,0.13 * _side,
+            -0.48,0.145 * _side,
+            _p
+        );
     }
 
-    // Damage-stage fractures.
+    sc_corp_visual_vent_bank(_x,_y,_r,_a,-0.66,0,0.18,0.045,3,_p);
+
+    // Hull fractures become visible beneath destroyed armour.
     if (_stage >= 1)
     {
-        sc_visual_line(_x,_y,_r,_a, 0.38,-0.12, 0.12,0.05,2,_p.outline);
-        sc_visual_line(_x,_y,_r,_a, -0.18,0.12, -0.42,-0.04,2,_p.outline);
+        sc_visual_line(_x,_y,_r,_a, 0.42,-0.1, 0.18,0.03,2,_p.outline);
+        sc_visual_line(_x,_y,_r,_a, -0.15,0.12, -0.39,-0.025,2,_p.outline);
     }
 
     if (_stage >= 2)
     {
-        sc_visual_line(_x,_y,_r,_a, 0.02,-0.15, -0.16,0.04,2,_p.void);
-        sc_visual_line(_x,_y,_r,_a, -0.48,0.1, -0.7,-0.06,2,_p.void);
+        sc_visual_line(_x,_y,_r,_a, 0.04,-0.13, -0.14,0.04,2,_p.recess);
+        sc_visual_line(_x,_y,_r,_a, -0.46,0.09, -0.7,-0.05,2,_p.void);
     }
 
     if (_stage >= 3)
-        sc_visual_line(_x,_y,_r,_a, 0.62,0, -0.48,0,3,_p.hull_dark);
+        sc_visual_line(_x,_y,_r,_a, 0.58,0, -0.49,0,3,_p.recess);
 }
 
-/// @description Draws peeling elite armour and four swept blade wings.
+/// @description Draws the Razorwing's sharp zig-zag elite armour.
 function sc_enemy_corporation_razorwing_armour_draw(_x,_y,_r,_a,_v,_stage)
 {
     var _p = _v.palette;
 
-    // Main swept wings.
+    // Forward zig-zag blade wings.
     if (_stage <= 2)
     {
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_visual_quad(
+            sc_corp_visual_armour_plate(
                 _x,_y,_r,_a,
-                 0.48,0.25 * _side,
-                -0.08,0.86 * _side,
-                -0.65,1.08 * _side,
-                -0.24,0.36 * _side,
-                _p.outline
+                 0.55,0.18 * _side,
+                 0.08,0.52 * _side,
+                -0.34,0.69 * _side,
+                -0.08,0.27 * _side,
+                _p.armour_mid,_p
             );
 
-            sc_visual_quad(
+            // Sharp projecting outer tip.
+            sc_visual_triangle(
                 _x,_y,_r,_a,
-                 0.42,0.27 * _side,
-                -0.1,0.79 * _side,
-                -0.54,0.98 * _side,
-                -0.2,0.39 * _side,
-                _p.hull_light
+                 0.08,0.52 * _side,
+                -0.48,0.82 * _side,
+                -0.34,0.69 * _side,
+                _p.armour_dark,false
             );
 
-            sc_visual_quad(
+            sc_visual_triangle(
                 _x,_y,_r,_a,
-                 0.28,0.31 * _side,
-                -0.12,0.72 * _side,
-                -0.44,0.88 * _side,
-                -0.18,0.43 * _side,
-                _p.hull_mid
+                 0.1,0.49 * _side,
+                -0.4,0.75 * _side,
+                -0.3,0.65 * _side,
+                _p.armour_light,false
             );
 
-            sc_visual_line(
+            sc_corp_visual_energy_strip(
                 _x,_y,_r,_a,
-                 0.26,0.34 * _side,
-                -0.42,0.88 * _side,
-                6,_p.void
+                 0.29,0.31 * _side,
+                -0.29,0.65 * _side,
+                2,_p
             );
 
-            sc_visual_line(
+            sc_corp_visual_panel_seam(
                 _x,_y,_r,_a,
-                 0.25,0.34 * _side,
-                -0.4,0.85 * _side,
-                2,_p.energy
+                 0.42,0.24 * _side,
+                 0.02,0.5 * _side,
+                _p
             );
         }
     }
 
-    // Rear crescent blades.
+    // Rear swept blades form the second zig.
     if (_stage <= 1)
     {
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_visual_quad(
+            sc_corp_visual_armour_plate(
                 _x,_y,_r,_a,
-                -0.16,0.39 * _side,
-                -0.54,0.94 * _side,
-                -0.87,1.17 * _side,
-                -0.55,0.35 * _side,
-                _p.outline
+                -0.08,0.29 * _side,
+                -0.42,0.68 * _side,
+                -0.78,0.83 * _side,
+                -0.55,0.31 * _side,
+                _p.armour_dark,_p
             );
 
-            sc_visual_quad(
+            sc_visual_triangle(
                 _x,_y,_r,_a,
-                -0.2,0.42 * _side,
-                -0.55,0.87 * _side,
-                -0.76,1.04 * _side,
-                -0.5,0.39 * _side,
-                _p.hull_mid
+                -0.41,0.67 * _side,
+                -0.91,0.94 * _side,
+                -0.76,0.81 * _side,
+                _p.outline,false
             );
 
-            sc_visual_line(
+            sc_visual_triangle(
                 _x,_y,_r,_a,
-                -0.3,0.47 * _side,
-                -0.72,1 * _side,
-                3,_p.accent
+                -0.44,0.66 * _side,
+                -0.82,0.86 * _side,
+                -0.7,0.76 * _side,
+                _p.armour_mid,false
+            );
+
+            sc_corp_visual_energy_strip(
+                _x,_y,_r,_a,
+                -0.31,0.5 * _side,
+                -0.74,0.78 * _side,
+                2,_p
+            );
+
+            sc_corp_visual_ident_bar(
+                _x,_y,_r,_a,
+                -0.38,0.61 * _side,
+                -0.6,0.72 * _side,
+                _p
             );
         }
     }
 
-    // Raised centre armour.
+    // Flush elite centre armour.
     if (_stage == 0)
     {
-        sc_visual_quad(
+        sc_corp_visual_armour_plate(
             _x,_y,_r,_a,
-             0.62,-0.17,
-            -0.52,-0.22,
-            -0.52,0.22,
-             0.62,0.17,
-            _p.hull_light
+             0.68,-0.17,
+            -0.47,-0.205,
+            -0.47,0.205,
+             0.68,0.17,
+            _p.armour_dark,_p
         );
 
         sc_visual_quad(
             _x,_y,_r,_a,
-             0.52,-0.11,
-            -0.4,-0.14,
-            -0.4,0.14,
-             0.52,0.11,
-            _p.hull_dark
+             0.54,-0.1,
+            -0.36,-0.13,
+            -0.36,0.13,
+             0.54,0.1,
+            _p.recess
         );
 
-        sc_visual_line(_x,_y,_r,_a, 0.42,-0.14, -0.38,-0.18,2,_p.metal);
-        sc_visual_line(_x,_y,_r,_a, 0.42,0.14, -0.38,0.18,2,_p.outline);
+        sc_corp_visual_elite_panel(_x,_y,_r,_a, 0.35,-0.125,0.28,0.09,_p);
+        sc_corp_visual_elite_panel(_x,_y,_r,_a, 0.35,0.125,0.28,0.09,_p);
+        sc_corp_visual_elite_panel(_x,_y,_r,_a, -0.28,-0.15,0.22,0.075,_p);
+        sc_corp_visual_elite_panel(_x,_y,_r,_a, -0.28,0.15,0.22,0.075,_p);
     }
 
-    // Nose armour remains until the final stage.
+    // Narrow nose cap.
     if (_stage <= 2)
     {
-        sc_visual_triangle(_x,_y,_r,_a, 1.43,0, 0.7,-0.14, 0.7,0.14,_p.metal,false);
-        sc_visual_line(_x,_y,_r,_a, 1.37,0, 0.84,0,3,_p.energy);
+        sc_visual_triangle(_x,_y,_r,_a, 1.56,0, 0.74,-0.135, 0.74,0.135,_p.armour_light,false);
+        sc_visual_triangle(_x,_y,_r,_a, 1.48,0, 0.82,-0.075, 0.94,0,_p.metal,false);
+        sc_visual_triangle(_x,_y,_r,_a, 1.48,0, 0.94,0, 0.82,0.075,_p.armour_mid,false);
+        sc_corp_visual_energy_strip(_x,_y,_r,_a, 0.91,0, 1.43,0,2,_p);
     }
 }
 
-/// @description Draws one rotating paired plasma turret.
+/// @description Draws one rotating paired elite plasma turret.
 function sc_enemy_corporation_razorwing_twin_plasma_draw(_x,_y,_r,_a,_v,_alpha)
 {
     var _p = _v.palette;
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.105,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.086,_p.hull_light,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.052,_p.hull_dark,false);
+    sc_corp_visual_weapon_housing(_x,_y,_r,_a,0,0,0.22,0.18,_p);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.072,_p.armour_mid,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.04,_p.sensor,false);
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_line(_x,_y,_r,_a, 0.015,0.032 * _side, 0.28,0.026 * _side,5,_p.void);
-        sc_visual_line(_x,_y,_r,_a, 0.03,0.032 * _side, 0.3,0.026 * _side,2,_p.metal);
-        sc_visual_circle(_x,_y,_r,_a, 0.3,0.026 * _side,0.018,_p.core,false);
+        sc_visual_line(_x,_y,_r,_a, 0.02,0.031 * _side, 0.29,0.025 * _side,5,_p.recess);
+        sc_visual_line(_x,_y,_r,_a, 0.035,0.031 * _side, 0.31,0.025 * _side,2,_p.armour_light);
+        sc_visual_circle(_x,_y,_r,_a, 0.31,0.025 * _side,0.016,_p.core,false);
     }
 
-    sc_visual_line(_x,_y,_r,_a, 0.03,0, 0.24,0,2,_p.energy);
+    sc_visual_line(_x,_y,_r,_a, 0.04,0, 0.25,0,2,_p.energy);
     draw_set_alpha(1);
 }
 
-/// @description Draws one narrow-arc micro-missile turret.
+/// @description Draws one compact narrow-arc micro-missile turret.
 function sc_enemy_corporation_razorwing_rocket_turret_draw(_x,_y,_r,_a,_v,_alpha)
 {
     var _p = _v.palette;
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.115,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.095,_p.metal,false);
-
-    sc_visual_quad(
-        _x,_y,_r,_a,
-        -0.035,-0.07,
-         0.19,-0.06,
-         0.19,0.06,
-        -0.035,0.07,
-        _p.hull_dark
-    );
+    sc_corp_visual_weapon_housing(_x,_y,_r,_a,0.04,0,0.28,0.18,_p);
+    sc_visual_circle(_x,_y,_r,_a, -0.02,0,0.08,_p.armour_mid,false);
+    sc_visual_circle(_x,_y,_r,_a, -0.02,0,0.035,_p.sensor,false);
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        sc_visual_circle(_x,_y,_r,_a, 0.17,0.032 * _side,0.025,_p.void,false);
-        sc_visual_circle(_x,_y,_r,_a, 0.17,0.032 * _side,0.012,_p.energy,false);
+        sc_visual_line(_x,_y,_r,_a, 0.03,0.038 * _side, 0.21,0.032 * _side,6,_p.recess);
+        sc_visual_circle(_x,_y,_r,_a, 0.21,0.032 * _side,0.026,_p.void,false);
+        sc_visual_circle(_x,_y,_r,_a, 0.21,0.032 * _side,0.012,_p.energy,false);
     }
 
-    sc_visual_line(_x,_y,_r,_a, -0.01,-0.07, 0.18,-0.06,2,_p.hull_light);
+    sc_visual_line(_x,_y,_r,_a, -0.06,-0.075, 0.19,-0.06,2,_p.trim);
     draw_set_alpha(1);
 }
 
-/// @description Draws the fast-tracking central laser turret.
+/// @description Draws the fast-tracking elite central laser turret.
 function sc_enemy_corporation_razorwing_laser_turret_draw(_x,_y,_r,_a,_v,_alpha)
 {
     var _p = _v.palette;
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.19,_p.void,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.165,_p.metal,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.11,_p.hull_dark,false);
-    sc_visual_circle(_x,_y,_r,_a, 0,0,0.065,_p.energy,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.18,_p.recess,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.15,_p.armour_light,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.115,_p.armour_dark,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.06,_p.sensor,false);
+    sc_visual_circle(_x,_y,_r,_a, 0,0,0.025,_p.core,false);
 
-    sc_visual_quad(
-        _x,_y,_r,_a,
-        -0.01,-0.075,
-         0.31,-0.045,
-         0.31,0.045,
-        -0.01,0.075,
-        _p.hull_mid
-    );
-
-    sc_visual_line(_x,_y,_r,_a, 0.02,0, 0.35,0,7,_p.void);
-    sc_visual_line(_x,_y,_r,_a, 0.05,0, 0.35,0,3,_p.energy);
-    sc_visual_circle(_x,_y,_r,_a, 0.35,0,0.04,_p.core,false);
+    sc_corp_visual_weapon_housing(_x,_y,_r,_a,0.15,0,0.36,0.15,_p);
+    sc_visual_line(_x,_y,_r,_a, 0.01,0, 0.36,0,8,_p.recess);
+    sc_visual_line(_x,_y,_r,_a, 0.04,0, 0.37,0,4,_p.glow);
+    sc_visual_line(_x,_y,_r,_a, 0.07,0, 0.38,0,2,_p.energy);
+    sc_visual_circle(_x,_y,_r,_a, 0.38,0,0.038,_p.core,false);
 
     draw_set_alpha(1);
 }
