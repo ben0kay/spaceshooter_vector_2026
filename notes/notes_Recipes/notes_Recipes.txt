@@ -1,0 +1,10 @@
+RAW → MATERIAL → COMPONENT → MODULE
+
+Examples:
+
+Layer	Examples
+Raw	Iron Ore, Copper Ore, Silicon, Carbon
+Material	Refined Iron, Refined Copper, Silicon Wafer, Carbon Composite
+Component	Iron Plate, Copper Wire, Circuit Board, Support Pole, Bearing, Capacitor
+Module	Armour Plate, Weapon Assembly, Engine Component, Shield Emitter, Radar Array, Reactor Part
+ASSEMBLY — Minigun Turret, Mining Drone, Repair Drone, Refinery Unit, Radar Device, Shield Generator.

@@ -554,7 +554,7 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
         draw_text(_info_x + 140, _info_y + 82, string_upper(_selected_item.name));
 
         draw_set_colour(_palette.muted);
-        draw_text(_info_x + 140, _info_y + 108, "RAW RESOURCE");
+        draw_text(_info_x + 140, _info_y + 108, sc_item_layer_name_get(_definition.layer));
 
         draw_set_colour(_palette.accent);
         draw_text(_info_x + 18, _info_y + 184, "DESCRIPTION");
@@ -563,7 +563,7 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
         draw_text_ext(
             _info_x + 18,
             _info_y + 214,
-            "Unprocessed material recovered from asteroid deposits.",
+            _definition.description,
             22,
             _info.width - 36
         );

@@ -66,3 +66,6 @@ enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE}
 enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY }
 
 enum StructureCollisionShape { CIRCLE, RECTANGLE }
+
+enum ItemLayer { RAW, MATERIAL, COMPONENT, MODULE, ASSEMBLY }
+enum FacilityService { REFINERY, FABRICATOR, REPAIR }

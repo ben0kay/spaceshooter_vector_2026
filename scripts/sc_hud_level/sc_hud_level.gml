@@ -496,13 +496,17 @@ function sc_hud_minimap_dock_primitive_draw(_data)
 
     draw_set_colour(_palette.accent);
     draw_set_alpha(0.85);
-    draw_arc(
-        _centre_x - _radius,
-        _centre_y - _radius,
-        _centre_x + _radius,
-        _centre_y + _radius,
+    sc_visual_arc(
+        _centre_x,
+        _centre_y,
+        _radius,
+        _radius,
         200,
-        340
+        340,
+        24,
+        2,
+        _palette.accent,
+        0.85
     );
 
     draw_line_width(14, 4, 64, 4, 2);

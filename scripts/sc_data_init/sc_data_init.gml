@@ -10,6 +10,7 @@ function sc_data_init()
         projectiles: {},
         attacks: {},
         items: {},
+		recipes: {},
         asteroids: {},
 		structures: {},
 		devices: {},
@@ -17,6 +18,7 @@ function sc_data_init()
 	if (!sc_faction_register_player()) return false;
     if (!sc_faction_hostility_init()) return false;
     if (!sc_item_register_all()) return false;
+	if (!sc_recipe_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
 	if (!sc_world_structure_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;

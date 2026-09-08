@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_items",
+  "%Name":"sc_item_recipes",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_items",
+  "name":"sc_item_recipes",
   "parent":{
     "name":"ITEMS",
     "path":"folders/SCRIPTS---/ITEMS.yy",
