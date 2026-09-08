@@ -643,23 +643,33 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
     draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
 
     if (is_undefined(_installed))
-    {
-        draw_set_colour(_palette.muted);
-        draw_text(_slot_x + 14, _slot_y + 56, "EMPTY");
-    }
-    else
-    {
-        var _sprite = sc_resource_pickup_visual_cache_get(_installed.key, 0);
+	{
+	    draw_set_colour(_palette.muted);
+	    draw_text(_slot_x + 14, _slot_y + 56, "EMPTY");
+	}
+	else
+	{
+	    var _sprite = sc_resource_pickup_visual_cache_get(_installed.key, 0);
+	    var _armour_percent = round(
+	        _player.defence.armour.current
+	        / max(1, _player.defence.armour.maximum)
+	        * 100
+	    );
 
-        if (sprite_exists(_sprite))
-            draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 1);
+	    if (sprite_exists(_sprite))
+	        draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 1);
 
-        draw_set_colour(_grade_colour);
-        draw_text(_slot_x + 90, _slot_y + 52, _installed.name);
+	    draw_set_colour(_grade_colour);
+	    draw_text(_slot_x + 90, _slot_y + 52, _installed.name);
 
-        draw_set_colour(_palette.muted);
-        draw_text(_slot_x + 90, _slot_y + 75, sc_item_grade_name_get(_installed.grade));
-    }
+	    draw_set_colour(_palette.muted);
+	    draw_text(_slot_x + 90, _slot_y + 75, sc_item_grade_name_get(_installed.grade));
+
+	    draw_set_halign(fa_right);
+	    draw_set_colour(_grade_colour);
+	    draw_text(_slot_x + _armour_slot.width - 14, _slot_y + 75, string(_armour_percent) + "%");
+	    draw_set_halign(fa_left);
+	}
 
     var _ship_x = _origin_x + _equipment.ship_x;
     var _ship_y = _origin_y + _equipment.ship_y;

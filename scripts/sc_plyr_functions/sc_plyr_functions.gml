@@ -1041,6 +1041,9 @@ function sc_player_damage(
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
     _defence.hull.current = _result.hull;
+	
+	if (_defence.armour.current <= 0)
+    _player.inventory.equipment.armour = undefined;
 
     if (_result.dealt.total <= 0)
         return false;
