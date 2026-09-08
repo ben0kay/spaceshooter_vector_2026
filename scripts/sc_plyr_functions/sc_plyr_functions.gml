@@ -57,11 +57,19 @@ function sc_player_input_update(_player)
     _movement.input_y /= _length;
 }
 
-/// @description Updates player mouse aiming and visual rotation.
+/// @description Returns current cargo mass as a normalized ship-load ratio.
+function sc_player_cargo_load_ratio_get(_player)
+{
+    var _cargo = _player.resources.cargo;
+    return clamp(_cargo.weight / max(1, _cargo.capacity), 0, 1);
+}
+
+/// @description Updates player mouse aiming with a slight cargo-mass penalty.
 function sc_player_aim_update(_player)
 {
     var _aim = _player.aim;
-    var _turn_speed = _player.ship.stats.final.turn_speed;
+    var _load = sc_player_cargo_load_ratio_get(_player);
+    var _turn_speed = _player.ship.stats.final.turn_speed * lerp(1, 0.9, _load);
 
     _aim.world_x = mouse_x;
     _aim.world_y = mouse_y;
@@ -341,17 +349,25 @@ function sc_player_resources_update(_player)
         _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
 }
 
-/// @description Updates acceleration, directional efficiency and held-Shift boost.
+/// @description Updates movement with light cargo-mass handling and fuel penalties.
 function sc_player_normal_movement_update(_player)
 {
     var _movement = _player.movement;
     var _stats = _player.ship.stats.final;
+    var _load = sc_player_cargo_load_ratio_get(_player);
+    var _speed_multiplier = lerp(1, 0.92, _load);
+    var _response_multiplier = lerp(1, 0.85, _load);
+    var _fuel_multiplier = lerp(1, 1.1, _load);
 
     _movement.boost.active = global.input.action.dash_held && _movement.moving;
 
     if (_movement.moving)
     {
-        var _fuel_cost = _movement.boost.active ? _stats.fuel_boost_cost : _stats.fuel_movement_cost;
+        var _fuel_cost = _movement.boost.active
+            ? _stats.fuel_boost_cost
+            : _stats.fuel_movement_cost;
+
+        _fuel_cost *= _fuel_multiplier;
 
         if (!sc_player_resource_spend(_player, ResourceType.FUEL, _fuel_cost))
         {
@@ -371,12 +387,17 @@ function sc_player_normal_movement_update(_player)
         _alignment = (dcos(angle_difference(_travel_direction, _player.draw_angle)) + 1) * 0.5;
     }
 
-    var _speed_max = _stats.speed_max * lerp(_stats.directional_speed_min, 1, _alignment);
-    if (_movement.boost.active) _speed_max *= _stats.boost_speed_multiplier;
+    var _speed_max = _stats.speed_max
+        * _speed_multiplier
+        * lerp(_stats.directional_speed_min, 1, _alignment);
+
+    if (_movement.boost.active)
+        _speed_max *= _stats.boost_speed_multiplier;
 
     var _target_vx = _movement.moving ? _movement.input_x * _speed_max : 0;
     var _target_vy = _movement.moving ? _movement.input_y * _speed_max : 0;
-    var _change = _movement.moving ? _stats.acceleration : _stats.deceleration;
+    var _change = (_movement.moving ? _stats.acceleration : _stats.deceleration)
+        * _response_multiplier;
 
     _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_change, _change);
     _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_change, _change);

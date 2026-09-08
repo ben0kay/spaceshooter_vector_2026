@@ -520,8 +520,6 @@ function sc_hud_minimap_dock_primitive_draw(_data)
     draw_set_colour(c_white);
 }
 
-
-
 /// @description Draws one live labelled segmented HUD bar.
 function sc_hud_level_bar_draw(_hud, _origin_x, _origin_y, _cell, _label, _value, _ratio, _colour)
 {
@@ -595,7 +593,7 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     var _energy_ratio = _resources.energy.maximum > 0 ? _resources.energy.current / _resources.energy.maximum : 0;
     var _fuel_ratio = _resources.fuel.maximum > 0 ? _resources.fuel.current / _resources.fuel.maximum : 0;
     var _dash_ratio = _stats.dash_cooldown > 0 ? 1 - _dash.cooldown_remaining / _stats.dash_cooldown : 1;
-    var _cargo_ratio = _resources.cargo.capacity > 0 ? _resources.cargo.amount / _resources.cargo.capacity : 0;
+    var _cargo_ratio = _resources.cargo.capacity > 0 ? _resources.cargo.weight / _resources.cargo.capacity : 0;
 
     sc_hud_level_bar_draw(_hud, _x, _y, _cells.shield, "SHIELD", string(round(_shield_ratio * 100)) + "%", _shield_ratio, _palette.shield);
     sc_hud_level_bar_draw(_hud, _x, _y, _cells.armour, "ARMOUR", string(round(_armour_ratio * 100)) + "%", _armour_ratio, _palette.armour);
@@ -609,7 +607,7 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     var _dash_text = _dash.cooldown_remaining <= 0 ? "READY" : string(ceil(_dash.cooldown_remaining));
     sc_hud_level_bar_draw(_hud, _x, _y, _cells.dash, "DASH", _dash_text, _dash_ratio, _palette.dash);
 
-    var _cargo_text = string(floor(_resources.cargo.amount)) + " / " + string(floor(_resources.cargo.capacity));
+        var _cargo_text = string(floor(_resources.cargo.weight)) + " / " + string(floor(_resources.cargo.capacity));
     sc_hud_level_bar_draw(_hud, _x, _y, _cells.cargo, "CARGO", _cargo_text, _cargo_ratio, _palette.cargo);
 
     var _weapon = variable_struct_get(global.data.weapons, _player.ship.loadout.primary);
