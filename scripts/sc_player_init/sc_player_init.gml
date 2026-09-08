@@ -112,6 +112,7 @@ function sc_player_init(_player, _ship_key)
     };
 		
 	_player.inventory = sc_player_inventory_create();
+	sc_player_inventory_add(_player, "item_scanning_drone", 3, ItemGrade.COMMON);
 
     _player.movement = {
         input_x: 0,

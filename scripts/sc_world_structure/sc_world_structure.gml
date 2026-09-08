@@ -18,6 +18,7 @@ function sc_world_structure_register(_data)
 function sc_world_structure_register_all()
 {
     if (!sc_world_structure_register_player_base()) return false;
+    if (!sc_world_structure_register_derelict()) return false;
     return true;
 }
 

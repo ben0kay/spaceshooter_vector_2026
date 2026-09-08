@@ -230,5 +230,12 @@ function sc_item_register_all()
         cargo: { weight: 12, stack_max: 10 },
         module: { slot: ModuleSlot.TARGETING, effectiveness: 1, install_duration: 300 },
         visual: { colour: make_colour_rgb(71, 115, 132), glow: make_colour_rgb(38, 231, 243), draw_script: sc_item_plate_primitive_draw }
+        })
+    && sc_item_register({
+        identity: { key: "item_scanning_drone", name: "Scanning Drone" },
+        layer: ItemLayer.ASSEMBLY,
+        description: "A compact autonomous drone equipped with short-range scanning equipment.",
+        cargo: { weight: 8, stack_max: 5 },
+        visual: { colour: make_colour_rgb(86, 142, 156), glow: make_colour_rgb(0, 235, 245), draw_script: sc_item_plate_primitive_draw }
     });
 }

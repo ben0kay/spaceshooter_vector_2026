@@ -190,11 +190,9 @@ function sc_sector_player_entry_apply(_player)
 function sc_sector_structures_spawn(_layer)
 {
     var _sector = global.game.sector;
+    if (_sector.x != 0 || _sector.y != 0) return 0;
 
-    if (_sector.x != 0 || _sector.y != 0)
-        return 0;
-
-    var _structure = instance_create_layer(
+    var _base = instance_create_layer(
         1500,
         room_height * 0.5,
         _layer,
@@ -208,7 +206,21 @@ function sc_sector_structures_spawn(_layer)
         }
     );
 
-    return instance_exists(_structure);
+    var _derelict = instance_create_layer(
+        4400,
+        room_height * 0.5 + 850,
+        _layer,
+        o_derelict,
+        {
+            structure_create: {
+                key: "derelict_test",
+                angle: 18,
+                collision_layer: _layer
+            }
+        }
+    );
+
+    return instance_exists(_base) && instance_exists(_derelict);
 }
 
 /// @description Generates the active sector and restores any carried player.

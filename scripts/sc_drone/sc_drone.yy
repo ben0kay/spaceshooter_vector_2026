@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_drone",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_drone",
+  "parent":{
+    "name":"DRONE",
+    "path":"folders/SCRIPTS---/DRONE.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

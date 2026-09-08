@@ -39,6 +39,7 @@ if (global.LevelState == LevelState.DEBUG)
 
 sc_hud_level_update(hud);
 sc_hud_minimap_update(hud);
+sc_derelict_interaction_update(hud);
 sc_facility_interaction_update(hud);
 
 switch (global.PlayerState)
@@ -51,8 +52,13 @@ switch (global.PlayerState)
     case PlayerState.INVENTORY:
         sc_inventory_update(hud);
     break;
+	
+	case PlayerState.DERELICT:
+        // Derelict input is handled by sc_derelict_interaction_update().
+    break;
 
     case PlayerState.FACILITY:
         // Facility input is handled by sc_facility_interaction_update().
     break;
 }
+

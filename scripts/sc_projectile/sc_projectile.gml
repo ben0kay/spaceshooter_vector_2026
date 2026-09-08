@@ -514,18 +514,29 @@ function sc_projectile_projectile_collision(_projectile, _target)
     return true;
 }
 
-/// @description Resolves one projectile striking an indestructible solid.
-function sc_projectile_solid_collision(_projectile,_solid)
+/// @description Resolves one projectile striking world terrain or a damageable structure.
+function sc_projectile_solid_collision(_projectile, _solid)
 {
-    if (!instance_exists(_projectile)
-    || !_projectile.initialized)
-        return false;
+    if (!instance_exists(_projectile) || !_projectile.initialized) return false;
 
     var _data = _projectile.projectile;
+    if (_data.state != ProjectileState.ACTIVE || _data.runtime.destroyed) return false;
 
-    if (_data.state != ProjectileState.ACTIVE
-    || _data.runtime.destroyed)
-        return false;
+    if (variable_instance_exists(_solid, "owner_id")
+    && instance_exists(_solid.owner_id))
+    {
+        var _owner = _solid.owner_id;
+
+        if (variable_instance_exists(_owner, "structure")
+        && variable_struct_exists(_owner.structure, "damage_script")
+        && !is_undefined(_owner.structure.damage_script))
+        {
+            _owner.structure.damage_script(_owner, _data.damage, {
+                x: _projectile.x,
+                y: _projectile.y
+            });
+        }
+    }
 
     _data.visual.impact_script(
         _projectile.x,
