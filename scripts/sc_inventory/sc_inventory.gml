@@ -7,7 +7,7 @@ Static panel, tabs and empty cargo slots are baked once.
 Items, quantities, selection and descriptions are drawn dynamically.
 */
 
-/// @description Creates the player's persistent cargo inventory foundation.
+/// @description Creates the player's persistent cargo and equipment foundation.
 function sc_player_inventory_create()
 {
     var _columns = 8;
@@ -16,7 +16,22 @@ function sc_player_inventory_create()
     return {
         columns: _columns,
         rows: _rows,
-        slots: array_create(_columns * _rows, undefined)
+        slots: array_create(_columns * _rows, undefined),
+
+        equipment: {
+            armour: {
+                key: "item_armour_plate",
+                name: "Armour Plate",
+                grade: ItemGrade.COMMON
+            },
+
+            shield: undefined,
+            reactor: undefined,
+            thruster: undefined,
+            targeting: undefined,
+            utility: undefined,
+            auxiliary: undefined
+        }
     };
 }
 
@@ -94,7 +109,7 @@ function sc_player_inventory_slots_move(_player, _source_index, _target_index)
         return true;
     }
 
-    if (_source.key != _target.key)
+    if (_source.key != _target.key || _source.grade != _target.grade)
     {
         _slots[_source_index] = _target;
         _slots[_target_index] = _source;
@@ -223,6 +238,113 @@ function sc_inventory_selected_drop(_hud)
     return true;
 }
 
+/// @description Returns cargo indices containing equippable modules.
+function sc_inventory_module_indices_get(_player)
+{
+    var _indices = [];
+    var _slots = _player.inventory.slots;
+
+    for (var _i = 0; _i < array_length(_slots); ++_i)
+    {
+        var _slot = _slots[_i];
+        if (is_undefined(_slot)) continue;
+
+        var _definition = variable_struct_get(global.data.items, _slot.key);
+        if (_definition.layer == ItemLayer.MODULE) array_push(_indices, _i);
+    }
+
+    return _indices;
+}
+
+/// @description Returns the module-storage card beneath panel-local coordinates.
+function sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _mouse_y)
+{
+    var _storage = _data.equipment.storage;
+    var _indices = sc_inventory_module_indices_get(_player);
+    var _stride = _storage.slot_size + _storage.gap;
+    var _column = floor((_mouse_x - _storage.x) / _stride);
+
+    if (_column < 0 || _column >= _storage.columns || _column >= array_length(_indices)) return -1;
+
+    var _slot_x = _storage.x + _column * _stride;
+
+    if (_mouse_y < _storage.y
+    || _mouse_y > _storage.y + _storage.slot_size
+    || _mouse_x > _slot_x + _storage.slot_size)
+        return -1;
+
+    return _indices[_column];
+}
+
+/// @description Equips one armour module from a cargo slot.
+function sc_player_armour_module_equip(_player, _slot_index)
+{
+    var _slot = _player.inventory.slots[_slot_index];
+    if (is_undefined(_slot)) return false;
+
+    var _definition = variable_struct_get(global.data.items, _slot.key);
+
+    if (_definition.layer != ItemLayer.MODULE
+    || _definition.module.slot != ModuleSlot.ARMOUR)
+        return false;
+
+    var _removed = sc_player_inventory_slot_remove(_player, _slot_index, 1);
+    if (_removed.amount <= 0) return false;
+
+    var _grade = _slot.grade;
+    var _maximum = round(
+        _player.ship.stats.base.armour_max
+        * _definition.module.effectiveness
+        * sc_item_grade_multiplier_get(_grade)
+    );
+
+    _player.inventory.equipment.armour = {
+        key: _slot.key,
+        name: _slot.name,
+        grade: _grade
+    };
+
+    _player.defence.armour.maximum = _maximum;
+    _player.defence.armour.current = _maximum;
+    return true;
+}
+
+/// @description Updates dragging modules onto the equipment armour slot.
+function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _released)
+{
+    var _player = global.player_id;
+    var _runtime = _hud.inventory;
+    var _data = _hud.data.inventory;
+    var _armour = _data.equipment.armour;
+
+    if (_pressed)
+    {
+        var _slot = sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _mouse_y);
+
+        if (_slot >= 0)
+        {
+            _runtime.selected_slot = _slot;
+            _runtime.drag.active = true;
+            _runtime.drag.source_slot = _slot;
+        }
+    }
+
+    if (!_runtime.drag.active || !_released) return;
+
+    if (point_in_rectangle(
+        _mouse_x,
+        _mouse_y,
+        _armour.x,
+        _armour.y,
+        _armour.x + _armour.width,
+        _armour.y + _armour.height
+    ))
+        sc_player_armour_module_equip(_player, _runtime.drag.source_slot);
+
+    _runtime.drag.active = false;
+    _runtime.drag.source_slot = -1;
+}
+
 /// @description Updates Ship Command buttons and cargo dragging.
 function sc_inventory_update(_hud)
 {
@@ -264,7 +386,13 @@ function sc_inventory_update(_hud)
         }
     }
 
-    if (_runtime.tab != InventoryTab.CARGO) return;
+    if (_runtime.tab == InventoryTab.EQUIPMENT)
+	{
+	    sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _released);
+	    return;
+	}
+
+	if (_runtime.tab != InventoryTab.CARGO) return;
 
     var _selected = _player.inventory.slots[_runtime.selected_slot];
     _buttons.sort.enabled = true;
@@ -450,19 +578,210 @@ function sc_inventory_draw(_hud)
 
     sc_gui_button_draw(_runtime.buttons.close, _x, _y, _palette);
 
-    if (_runtime.tab == InventoryTab.CARGO)
-        sc_inventory_cargo_draw(_hud, _x, _y);
-    else
-    {
-        draw_set_colour(_palette.muted);
-        draw_set_halign(fa_center);
-        draw_text(_x + _data.width * 0.5, _y + 380, _data.tabs[_runtime.tab] + " INTERFACE NOT INSTALLED");
-    }
+    switch (_runtime.tab)
+	{
+	    case InventoryTab.CARGO:
+	        sc_inventory_cargo_draw(_hud, _x, _y);
+	    break;
+
+	    case InventoryTab.EQUIPMENT:
+	        sc_inventory_equipment_draw(_hud, _x, _y);
+	    break;
+
+	    default:
+	        draw_set_colour(_palette.muted);
+	        draw_set_halign(fa_center);
+	        draw_text(
+	            _x + _data.width * 0.5,
+	            _y + 430,
+	            _data.tabs[_runtime.tab] + " INTERFACE NOT INSTALLED"
+	        );
+	    break;
+	}
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
+}
+
+/// @description Draws the first functional ship-equipment interface.
+function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
+{
+    var _player = global.player_id;
+    var _runtime = _hud.inventory;
+    var _data = _hud.data.inventory;
+    var _equipment = _data.equipment;
+    var _palette = _hud.data.palette;
+    var _armour_slot = _equipment.armour;
+    var _installed = _player.inventory.equipment.armour;
+
+    draw_set_alpha(0.98);
+    draw_set_colour(_palette.background);
+    draw_rectangle(_origin_x + 32, _origin_y + 155, _origin_x + _data.width - 32, _origin_y + _data.height - 24, false);
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.7);
+    draw_rectangle(_origin_x + 32, _origin_y + 155, _origin_x + 1085, _origin_y + 675, true);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(1);
+    draw_text(_origin_x + 52, _origin_y + 178, "SHIP MODULE CONFIGURATION");
+
+    var _slot_x = _origin_x + _armour_slot.x;
+    var _slot_y = _origin_y + _armour_slot.y;
+    var _grade = is_undefined(_installed) ? ItemGrade.COMMON : _installed.grade;
+    var _grade_colour = sc_item_grade_colour_get(_grade);
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, false);
+
+    draw_set_colour(is_undefined(_installed) ? _palette.outline : _grade_colour);
+    draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
+
+    if (is_undefined(_installed))
+    {
+        draw_set_colour(_palette.muted);
+        draw_text(_slot_x + 14, _slot_y + 56, "EMPTY");
+    }
+    else
+    {
+        var _sprite = sc_resource_pickup_visual_cache_get(_installed.key, 0);
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 1);
+
+        draw_set_colour(_grade_colour);
+        draw_text(_slot_x + 90, _slot_y + 52, _installed.name);
+
+        draw_set_colour(_palette.muted);
+        draw_text(_slot_x + 90, _slot_y + 75, sc_item_grade_name_get(_installed.grade));
+    }
+
+    var _ship_x = _origin_x + _equipment.ship_x;
+    var _ship_y = _origin_y + _equipment.ship_y;
+    var _cache = _player.ship.visual.runtime.cache;
+    var _hull_stage = sc_player_damage_visual_stage(_player.defence.hull.current, _player.defence.hull.maximum);
+    var _armour_stage = sc_player_damage_visual_stage(_player.defence.armour.current, max(1, _player.defence.armour.maximum));
+
+    draw_set_alpha(0.15);
+    draw_set_colour(_palette.accent);
+    draw_circle(_ship_x, _ship_y, 190, true);
+    draw_circle(_ship_x, _ship_y, 145, true);
+
+    if (sprite_exists(_cache.hull[_hull_stage]))
+        draw_sprite_ext(_cache.hull[_hull_stage], 0, _ship_x, _ship_y, 1.15, 1.15, 270, c_white, 1);
+
+    if (_player.defence.armour.current > 0 && sprite_exists(_cache.armour[_armour_stage]))
+        draw_sprite_ext(_cache.armour[_armour_stage], 0, _ship_x, _ship_y, 1.15, 1.15, 270, c_white, 1);
+
+    draw_set_colour(_grade_colour);
+    draw_line_width(_slot_x + _armour_slot.width, _slot_y + 50, _ship_x - 120, _ship_y - 70, 2);
+    draw_circle(_ship_x - 120, _ship_y - 70, 6, false);
+
+    var _storage = _equipment.storage;
+    var _indices = sc_inventory_module_indices_get(_player);
+
+    draw_set_colour(_palette.outline);
+    draw_rectangle(_origin_x + 32, _origin_y + 682, _origin_x + 1085, _origin_y + 832, true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_origin_x + 52, _origin_y + 690, "MODULE STORAGE");
+
+    for (var _i = 0; _i < min(array_length(_indices), _storage.columns); ++_i)
+    {
+        var _slot_index = _indices[_i];
+        var _item = _player.inventory.slots[_slot_index];
+        var _x = _origin_x + _storage.x + _i * (_storage.slot_size + _storage.gap);
+        var _y = _origin_y + _storage.y;
+        var _item_grade = _item.grade;
+        var _colour = sc_item_grade_colour_get(_item_grade);
+        var _sprite = sc_resource_pickup_visual_cache_get(_item.key, _i mod 4);
+
+        draw_set_colour(_palette.void);
+        draw_rectangle(_x, _y, _x + _storage.slot_size, _y + _storage.slot_size, false);
+
+        draw_set_colour(_colour);
+        draw_rectangle(_x, _y, _x + _storage.slot_size, _y + _storage.slot_size, true);
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite, 0, _x + _storage.slot_size * 0.5, _y + 39, 1.15, 1.15, 0, c_white, 1);
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_colour);
+        draw_text(_x + _storage.slot_size - 6, _y + _storage.slot_size - 10, "x" + string(_item.amount));
+        draw_set_halign(fa_left);
+    }
+
+    var _inspector = _equipment.inspector;
+    var _info_x = _origin_x + _inspector.x;
+    var _info_y = _origin_y + _inspector.y;
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(_info_x, _info_y, _info_x + _inspector.width, _info_y + _inspector.height, false);
+
+    draw_set_colour(_palette.outline);
+    draw_rectangle(_info_x, _info_y, _info_x + _inspector.width, _info_y + _inspector.height, true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_info_x + 18, _info_y + 28, "MODULE INSPECTOR");
+    draw_line(_info_x + 18, _info_y + 52, _info_x + _inspector.width - 18, _info_y + 52);
+
+    if (!is_undefined(_installed))
+    {
+        var _definition = variable_struct_get(global.data.items, _installed.key);
+        var _maximum = _player.defence.armour.maximum;
+
+        draw_set_colour(_grade_colour);
+        draw_text(_info_x + 18, _info_y + 88, _installed.name);
+
+        draw_set_colour(_palette.muted);
+        draw_text(_info_x + 18, _info_y + 116, sc_item_grade_name_get(_installed.grade));
+
+        draw_set_colour(_palette.accent);
+        draw_text(_info_x + 18, _info_y + 165, "STAT EFFECTS");
+
+        draw_set_colour(_palette.text);
+        draw_text(_info_x + 18, _info_y + 200, "ARMOUR CAPACITY");
+        draw_text(_info_x + 18, _info_y + 228, "CURRENT INTEGRITY");
+        draw_text(_info_x + 18, _info_y + 256, "MASS");
+
+        draw_set_halign(fa_right);
+        draw_text(_info_x + _inspector.width - 18, _info_y + 200, "+" + string(_maximum));
+        draw_text(_info_x + _inspector.width - 18, _info_y + 228, string(_player.defence.armour.current) + " / " + string(_maximum));
+        draw_text(_info_x + _inspector.width - 18, _info_y + 256, string(_definition.cargo.weight));
+        draw_set_halign(fa_left);
+    }
+
+    if (_runtime.drag.active)
+    {
+        var _drag_item = _player.inventory.slots[_runtime.drag.source_slot];
+
+        if (!is_undefined(_drag_item))
+        {
+            var _mouse_x = device_mouse_x_to_gui(0);
+            var _mouse_y = device_mouse_y_to_gui(0);
+            var _sprite = sc_resource_pickup_visual_cache_get(_drag_item.key, 0);
+            var _colour = sc_item_grade_colour_get(_drag_item.grade);
+
+            draw_set_alpha(0.9);
+            draw_set_colour(_palette.void);
+            draw_circle(_mouse_x, _mouse_y, 35, false);
+
+            draw_set_colour(_colour);
+            draw_circle(_mouse_x, _mouse_y, 35, true);
+
+            if (sprite_exists(_sprite))
+                draw_sprite_ext(_sprite, 0, _mouse_x, _mouse_y, 1.3, 1.3, 0, c_white, 1);
+        }
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
 }
 
 /// @description Draws cargo cards, inspector, capacity and dragged stack.
@@ -635,34 +954,35 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
     draw_set_valign(fa_top);
 }
 
-/// @description Returns how many units of an item the player's cargo can accept.
-function sc_player_inventory_space_get(_player, _item_key)
+/// @description Returns how many units of an item and grade the player's cargo can accept.
+function sc_player_inventory_space_get(_player, _item_key, _grade = ItemGrade.COMMON)
 {
-    if (!instance_exists(_player) || !variable_struct_exists(global.data.items, _item_key))
-        return 0;
+    if (!instance_exists(_player) || !variable_struct_exists(global.data.items, _item_key)) return 0;
 
     var _definition = variable_struct_get(global.data.items, _item_key);
     var _inventory = _player.inventory;
+    var _graded = _definition.layer >= ItemLayer.MODULE;
+    var _item_grade = _graded ? _grade : undefined;
     var _weight = _definition.cargo.weight;
     var _stack_max = _definition.cargo.stack_max;
     var _weight_space = floor((_player.resources.cargo.capacity - _player.resources.cargo.weight) / max(0.001, _weight));
     var _slot_space = 0;
 
-    for (var _i = 0; _i < array_length(_inventory.slots); _i++)
+    for (var _i = 0; _i < array_length(_inventory.slots); ++_i)
     {
         var _slot = _inventory.slots[_i];
 
         if (is_undefined(_slot))
             _slot_space += _stack_max;
-        else if (_slot.key == _item_key)
+        else if (_slot.key == _item_key && _slot.grade == _item_grade)
             _slot_space += max(0, _stack_max - _slot.amount);
     }
 
     return max(0, min(_weight_space, _slot_space));
 }
 
-/// @description Adds an item to existing stacks and then empty cargo slots.
-function sc_player_inventory_add(_player, _item_key, _amount)
+/// @description Adds one item and grade to existing stacks and then empty cargo slots.
+function sc_player_inventory_add(_player, _item_key, _amount, _grade = ItemGrade.COMMON)
 {
     var _result = { accepted: 0, remaining: max(0, floor(_amount)) };
 
@@ -674,28 +994,34 @@ function sc_player_inventory_add(_player, _item_key, _amount)
     var _definition = variable_struct_get(global.data.items, _item_key);
     var _inventory = _player.inventory;
     var _stack_max = _definition.cargo.stack_max;
-    var _accepted = min(_result.remaining, sc_player_inventory_space_get(_player, _item_key));
+    var _item_grade = _definition.layer >= ItemLayer.MODULE ? _grade : undefined;
+    var _accepted = min(_result.remaining, sc_player_inventory_space_get(_player, _item_key, _item_grade));
     var _placing = _accepted;
 
-    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; _i++)
+    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; ++_i)
     {
         var _slot = _inventory.slots[_i];
 
-        if (is_undefined(_slot) || _slot.key != _item_key) continue;
+        if (is_undefined(_slot)
+        || _slot.key != _item_key
+        || _slot.grade != _item_grade)
+            continue;
 
         var _added = min(_placing, _stack_max - _slot.amount);
         _slot.amount += _added;
         _placing -= _added;
     }
 
-    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; _i++)
+    for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; ++_i)
     {
         if (!is_undefined(_inventory.slots[_i])) continue;
 
         var _added = min(_placing, _stack_max);
+
         _inventory.slots[_i] = {
             key: _item_key,
             name: _definition.identity.name,
+            grade: _item_grade,
             amount: _added
         };
 

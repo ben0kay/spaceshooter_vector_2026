@@ -87,51 +87,73 @@ function sc_hud_level_data()
         },
 			
 		facility: {
-            width: 1120,
-            height: 680,
+    width: 1380,
+    height: 800,
 
-            recipe_x: 550,
-            recipe_y: 132,
-            recipe_width: 525,
-            recipe_height: 48
-        },			
+    recipe_x: 680,
+    recipe_y: 132,
+    recipe_width: 655,
+    recipe_height: 52
+},
 			
 		inventory: {
-            width: 1280,
-            height: 720,
+    width: 1560,
+    height: 860,
 
-            tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
-            tab_x: 385,
-            tab_y: 82,
-            tab_width: 128,
-            tab_height: 42,
-            tab_gap: 10,
+    tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
+    tab_x: 385,
+    tab_y: 82,
+    tab_width: 128,
+    tab_height: 42,
+    tab_gap: 10,
 
-            grid: {
-                x: 50,
-                y: 195,
-                columns: 8,
-                rows: 4,
-                slot_size: 92,
-                gap: 8,
-                width: 792,
-                height: 392
-            },
+    grid: {
+        x: 50,
+        y: 195,
+        columns: 8,
+        rows: 4,
+        slot_size: 92,
+        gap: 8,
+        width: 792,
+        height: 392
+    },
 
-            info: {
-                x: 875,
-                y: 165,
-                width: 350,
-                height: 470
-            },
+    info: {
+        x: 875,
+        y: 165,
+        width: 350,
+        height: 470
+    },
 
-            capacity: {
-                x: 50,
-                y: 646,
-                width: 600,
-                height: 12
-            }
+    capacity: {
+        x: 50,
+        y: 646,
+        width: 600,
+        height: 12
+    },
+
+    equipment: {
+        ship_x: 700,
+        ship_y: 430,
+
+        armour: { x: 55, y: 210, width: 300, height: 100 },
+
+        storage: {
+            x: 55,
+            y: 700,
+            columns: 8,
+            slot_size: 74,
+            gap: 10
+        },
+
+        inspector: {
+            x: 1125,
+            y: 175,
+            width: 380,
+            height: 500
         }
+    }
+}
     };
 }
 
@@ -192,24 +214,24 @@ function sc_hud_level_init(_hud_object)
         },
 			
 		facility: {
-            open: false,
-            nearby_id: noone,
-            active_id: noone,
-            next_scan_tick: GAME_TICK,
-            scan_interval: 10,
+    open: false,
+    nearby_id: noone,
+    active_id: noone,
+    next_scan_tick: GAME_TICK,
+    scan_interval: 10,
 
-            recipe_keys: [],
-            selected_recipe: 0,
-            amount: 1,
+    recipe_keys: [],
+    selected_recipe: 0,
+    amount: 1,
 
-            buttons: {
-                close: sc_gui_button_create("close", 1060, 24, 34, 34, "X", GUIButtonStyle.DANGER),
-                amount_down: sc_gui_button_create("amount_down", 730, 340, 42, 38, "-", GUIButtonStyle.STANDARD),
-                amount_up: sc_gui_button_create("amount_up", 888, 340, 42, 38, "+", GUIButtonStyle.STANDARD),
-                process: sc_gui_button_create("process", 950, 340, 125, 38, "PROCESS", GUIButtonStyle.PRIMARY),
-                collect: sc_gui_button_create("collect", 930, 605, 145, 40, "COLLECT ALL", GUIButtonStyle.PRIMARY)
-            }
-        },
+    buttons: {
+        close: sc_gui_button_create("close", 1320, 24, 34, 34, "X", GUIButtonStyle.DANGER),
+        amount_down: sc_gui_button_create("amount_down", 860, 350, 42, 38, "-", GUIButtonStyle.STANDARD),
+        amount_up: sc_gui_button_create("amount_up", 1018, 350, 42, 38, "+", GUIButtonStyle.STANDARD),
+        process: sc_gui_button_create("process", 1210, 350, 125, 38, "PROCESS", GUIButtonStyle.PRIMARY),
+        collect: sc_gui_button_create("collect", 1190, 725, 145, 40, "COLLECT ALL", GUIButtonStyle.PRIMARY)
+    }
+},
 
         inventory: {
             open: false,
@@ -223,7 +245,7 @@ function sc_hud_level_init(_hud_object)
 
             buttons: {
                 tabs: _tabs,
-                close: sc_gui_button_create("close", 1225, 28, 34, 34, "X", GUIButtonStyle.DANGER),
+                close: sc_gui_button_create("close", 1505, 28, 34, 34, "X", GUIButtonStyle.DANGER),
                 sort: sc_gui_button_create("sort", 707, 632, 135, 38, "SORT", GUIButtonStyle.STANDARD),
                 transfer: sc_gui_button_create("transfer", 895, 575, 140, 42, "TRANSFER", GUIButtonStyle.STANDARD),
                 drop: sc_gui_button_create("drop", 1065, 575, 140, 42, "DROP STACK", GUIButtonStyle.DANGER)

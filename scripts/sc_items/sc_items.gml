@@ -5,6 +5,51 @@ Items define cargo mass, manufacturing layer, description and fallback visuals.
 Asteroids, recipes, pickups and inventory reference items by key.
 */
 
+/// @description Returns the readable name of one item grade.
+function sc_item_grade_name_get(_grade)
+{
+    switch (_grade)
+    {
+        case ItemGrade.COMMON: return "COMMON";
+        case ItemGrade.IMPROVED: return "IMPROVED";
+        case ItemGrade.ADVANCED: return "ADVANCED";
+        case ItemGrade.SUPERIOR: return "SUPERIOR";
+        case ItemGrade.PROTOTYPE: return "PROTOTYPE";
+    }
+
+    return "COMMON";
+}
+
+/// @description Returns the display colour of one item grade.
+function sc_item_grade_colour_get(_grade)
+{
+    switch (_grade)
+    {
+        case ItemGrade.COMMON: return make_colour_rgb(220, 232, 235);
+        case ItemGrade.IMPROVED: return make_colour_rgb(45, 235, 225);
+        case ItemGrade.ADVANCED: return make_colour_rgb(65, 135, 255);
+        case ItemGrade.SUPERIOR: return make_colour_rgb(180, 80, 255);
+        case ItemGrade.PROTOTYPE: return make_colour_rgb(255, 184, 55);
+    }
+
+    return c_white;
+}
+
+/// @description Returns the effectiveness multiplier of one item grade.
+function sc_item_grade_multiplier_get(_grade)
+{
+    switch (_grade)
+    {
+        case ItemGrade.COMMON: return 1;
+        case ItemGrade.IMPROVED: return 1.02;
+        case ItemGrade.ADVANCED: return 1.04;
+        case ItemGrade.SUPERIOR: return 1.07;
+        case ItemGrade.PROTOTYPE: return 1.1;
+    }
+
+    return 1;
+}
+
 /// @description Registers one cargo item.
 function sc_item_register(_data)
 {
@@ -102,11 +147,11 @@ function sc_item_register_all()
         visual: { colour: make_colour_rgb(156, 174, 185), glow: make_colour_rgb(54, 154, 174), draw_script: sc_item_plate_primitive_draw }
     })
     && sc_item_register({
-        identity: { key: "item_armour_plate", name: "Armour Plate" },
-        layer: ItemLayer.MODULE,
-        description: "A heavy reinforced plate capable of restoring damaged ship armour.",
-        cargo: { weight: 18, stack_max: 10 },
-        use: { armour_restore: 25, install_duration: 300 },
-        visual: { colour: make_colour_rgb(126, 158, 171), glow: make_colour_rgb(0, 224, 235), draw_script: sc_item_armour_primitive_draw }
-    });
+	    identity: { key: "item_armour_plate", name: "Armour Plate" },
+	    layer: ItemLayer.MODULE,
+	    description: "A complete reinforced armour assembly fitted over the ship hull.",
+	    cargo: { weight: 18, stack_max: 10 },
+	    module: { slot: ModuleSlot.ARMOUR, effectiveness: 1 },
+	    visual: { colour: make_colour_rgb(126, 158, 171), glow: make_colour_rgb(0, 224, 235), draw_script: sc_item_armour_primitive_draw }
+	});
 }
