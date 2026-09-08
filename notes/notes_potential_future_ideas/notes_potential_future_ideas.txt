@@ -929,4 +929,210 @@ Holographic decoys — Elite enemies could generate fake copies on the minimap.
 Warp-in reinforcements — High-level factions could arrive through dramatic short-range jumps.
 Emergency extraction — The player could eventually trigger an expensive emergency jump to escape disaster.
 
-The strongest ones for building directly on what you already have, rather than starting huge new subsystems, are probably: critical-response variants, faction reinforcement escalation, destructible hardpoints/subsystems, repair/support ships, carrier/drone deployment, scanner/recipe discovery, facility processing, salvage/blueprints, deployables, sector POIs, and faction installations. Your repo is already structured in a way that makes most of those natural extensions rather than rewrites.
+The strongest ones for building directly on what you already have, rather than starting huge new subsystems, are probably: 
+critical-response variants, faction reinforcement escalation, destructible hardpoints/subsystems, repair/support ships, 
+carrier/drone deployment, scanner/recipe discovery, facility processing, salvage/blueprints, deployables, 
+sector POIs, and faction installations. Your repo is already structured in a way that makes most of those natural 
+extensions rather than rewrites.
+
+
+Ship memory scars — your ship permanently records major battles as visible hull marks or log entries.
+Ancient machine language — discover symbols that slowly become readable as you scan more Automated structures.
+Signal mimics — some enemies imitate friendly distress beacons or player-generated signatures.
+Dead-sector silence — certain sectors suppress all radar and force visual navigation.
+False stars — distant “stars” on the backdrop are actually gigantic dormant structures you can eventually reach.
+Ship personality quirks — individual hulls could develop tiny stat quirks from repeated damage, repairs or upgrades.
+Overused-part fatigue — repeatedly pushing one system could reduce its reliability until serviced.
+Battlefield heat map — recent fighting leaves temporary detectable signatures that attract scavengers or patrols.
+Predator factions — some enemies actively seek other damaged ships rather than the player.
+Scavenger swarms — tiny neutral drones strip wrecks if you leave them unattended too long.
+Loot races — arrive at a fresh wreck site and compete with scavengers before it is picked clean.
+Corp evidence recovery — Corp may send cleanup teams to destroy sensitive wrecks before you scan them.
+Rebel booby-trapped wrecks — some abandoned ships explode, deploy mines or wake hidden turrets when salvaged.
+Living wrecks — damaged Alien ships could still twitch, regenerate or hatch smaller creatures.
+Simulant corpse networking — destroyed Simulant ships could temporarily boost nearby units before going offline.
+Black-box lies — recovered logs might contain intentionally falsified faction data.
+Memory fragments — scanning multiple wrecks from one battle reconstructs what happened there.
+Battle reenactment ghosts — advanced scanners could replay faint positional traces of old combat.
+Unknown megastructures — sector boundaries could contain objects far too large to understand early game.
+Partial megastructure access — only tiny exterior zones of giant structures are initially traversable.
+Ship graveyards — huge regions filled with old vessels from a forgotten war.
+Graveyard guardians — automated systems only activate if you disturb certain wrecks.
+Resource parasites — strange organisms cling to mineral asteroids and alter yields.
+Ore mutation — exotic radiation zones can change normal materials into rare variants.
+Unstable refined materials — some advanced matter slowly decays unless stored properly.
+Cryogenic cargo — certain biological or volatile resources need specialized storage.
+Self-growing materials — rare Alien matter could slowly duplicate under specific conditions.
+Corrupted modules — strange tech can provide strong bonuses with unpredictable side effects.
+Hybrid crafting — mix Corp precision tech with Rebel improvised parts for unusual modules.
+Illegal cross-faction tech — some combinations could make every major faction suspicious of you.
+Reverse-engineering risk — dismantling unknown tech could destroy it or trigger a hazard.
+Prototype instability — first-generation crafted versions of alien tech may malfunction occasionally.
+Module evolution — certain rare modules improve after surviving combat milestones.
+Sentient module — an advanced Simulant component could begin producing messages or behavior changes.
+Module corruption spread — corrupted technology could gradually affect adjacent installed modules.
+Ship infection — Alien bio-tech might literally grow through the hull if left installed too long.
+Emergency hull shedding — detach a damaged external module or armour section to reduce mass and escape.
+Disposable armour pods — bolt-on armour sections can be jettisoned once destroyed.
+Weapon recoil physics — absurdly heavy guns could slightly push lighter ships.
+Momentum weapons — kinetic impacts could physically knock small enemies off-course.
+Grapple combat — attach to another ship and drag, ram or destabilize it.
+Tether mines — mines connected by energy lines create dangerous barriers.
+Harpoon missiles — projectiles could tether targets instead of exploding.
+Magnetic debris storms — metallic wreckage gets pulled into shifting hazard clusters.
+Rotating battlefields — fight around a spinning station with moving safe and dangerous zones.
+Hull shadowing — large ships block beams or protect smaller units behind them.
+Physical cover formations — escorts deliberately hide behind larger allied ships.
+Shield shadowing — friendly ships can partially overlap protective shield fields.
+Missile corridors — large enemy fleets could create predictable missile lanes you weave through.
+Weapon blind spots — capital ships have genuine safe arcs where certain turrets cannot reach.
+Rotating armour sections — boss ships expose and hide weak points as mechanical layers move.
+Ship transformation — some enemies alter physical shape mid-fight for speed, defence or weapons.
+Detachable fighter sections — a larger vessel could split into smaller independent combat units.
+Recombining enemies — Simulant drones could merge into a heavier ship if enough survive.
+Swarm fusion — Alien units combine into temporary giant biological forms.
+Corp modular formations — multiple ships dock together into a temporary weapons platform.
+Rebel tow-gunships — crude ships tow giant weapon platforms behind them.
+Mobile asteroid bases — factions hollow out asteroids and slowly move them between sectors.
+Asteroid engines — discover an asteroid with ancient propulsion machinery embedded inside.
+Asteroid cracking event — a huge rock splits open and reveals a hidden facility.
+Resource eruptions — mining certain deposits can trigger bursts that scatter valuable fragments everywhere.
+Mining chain reactions — detonating one volatile vein can expose another deeper resource layer.
+Directional mining — where you cut an asteroid affects how it fragments.
+Precision extraction — skilled mining can preserve rare cores that brute-force mining destroys.
+Mining resonance — some deposits respond better to specific beam frequencies.
+Ship resonance scanning — identify internal cargo or systems from their energy signature.
+Fake cargo signatures — smugglers or pirates can spoof what their hold contains.
+Sensor triangulation gameplay — locate hidden objects by comparing signal strength from multiple positions.
+Manual long-range targeting — fire artillery at off-screen coordinates using scanner data.
+Spotter drones — deploy a drone to provide targeting data for long-range weapons.
+Delayed artillery — some huge weapons strike a marked location seconds later.
+Orbital bombardment equivalent — call in a massive off-screen strike from an allied installation.
+Sector artillery stations — fixed emplacements can fire across huge distances.
+Signal hacking — temporarily redirect hostile defence systems against their owners.
+IFF spoofing — briefly appear friendly to automated defences.
+Hijacked drones — capture weakened enemy drones and temporarily control them.
+Data theft — stay close to an enemy command ship long enough to siphon intelligence.
+Live blueprint theft — scan a weapon while it is actively firing to learn part of its design.
+Combat analysis — fighting the same enemy repeatedly gradually reveals its cooldowns and attack logic.
+Enemy counter-analysis — advanced factions could adapt slightly to weapons you overuse.
+Anti-player loadouts — hunters spawn with systems selected to counter your current build.
+Faction learning — repeated use of one tactic causes specific factions to respond differently later.
+Weapon signature reputation — enemies recognize a notorious weapon or hull used in previous attacks.
+Anonymous raiding — disguise your faction signature to avoid reputation loss during certain attacks.
+Recovered transponders — equip captured identity codes to access restricted areas.
+Transponder expiration — stolen IDs stop working once the faction detects the deception.
+Restricted military zones — entering without authorization triggers warnings before hostility.
+Inspection corridors — faction checkpoints scan ships entering important sectors.
+Secret military traffic — occasionally detect heavily protected transports with unique loot.
+VIP escape missions — a high-value enemy attempts to flee while escorts delay you.
+Fake VIP — some convoys deliberately use decoy ships.
+Priority targeting orders — command ships dynamically mark threats for allies.
+Fleet morale broadcasts — leaders send visible radio orders when the battle changes.
+Enemy confusion — destroy communications and coordinated fleets lose formation behavior.
+Comms blackout weapons — temporarily stop enemies sharing alerts or targeting information.
+Command latency — distant drones react slower if disconnected from their controller.
+Drone autonomy quality — better AI modules make player drones function better without direct control.
+Shipboard AI assistant — install an AI that handles targeting, repairs, navigation or alerts depending on module.
+AI personality variants — different recovered AI cores could favor aggression, caution or efficiency.
+AI trust system — some advanced AI systems unlock abilities based on how you use them.
+Crewless derelict awakening — boarding or powering a dead ship causes its AI to wake up.
+Ghost ships — apparently abandoned ships move when you stop looking directly at them.
+Missing-sector anomaly — map coordinates point to a sector that should not exist.
+Sector duplication — enter an anomaly and find a distorted copy of a known area.
+Time-lag zones — processing, projectiles or movement behave differently inside exotic anomalies.
+Frozen battles — discover ships suspended in a strange field and accidentally reactivate the fight.
+Ancient automated wars — two machine factions continue fighting long after their creators disappeared.
+Dormant fleets — enormous formations remain inactive unless certain conditions are met.
+Activation keys — recovered objects can wake specific ancient installations.
+Forbidden activation — some discoveries clearly warn the player not to turn them on.
+Sector-scale boss — fight something so large that only parts of it are visible at once.
+Moving boss terrain — the boss itself acts like the environment you navigate around.
+Boss interior breach — damage an exterior section enough to open a temporary attack route inside.
+Boss reactor run — enter a dangerous internal zone, damage a reactor, then escape before detonation.
+Boss weapon theft — destroy a giant weapon intact and later recover it as a unique blueprint.
+Boss retreat across sectors — a major enemy escapes and must be tracked to another region.
+Boss construction — discover enemies assembling a capital ship and choose whether to attack before completion.
+Enemy production timers — ignoring a hostile shipyard lets a dangerous ship eventually launch.
+Sector consequence clocks — some events worsen if left alone for too long.
+Expanding infestations — Alien presence spreads from one sector into adjacent sectors.
+Automated replication — machine factories build more structures if not destroyed.
+Rebel uprising — weak Rebel presence can suddenly explode after a local event.
+Corp quarantine — Corp seals a region after discovering dangerous technology.
+Faction evacuation — civilians and cargo fleets flee a sector before a major battle.
+Refugee convoys — protect or exploit displaced civilian traffic.
+Resource famine — local scarcity changes what enemies carry and what facilities need.
+Dynamic wreck fields — major battles permanently change sector scenery.
+Persistent battle scars — structures, wrecks and destroyed installations remain as landmarks.
+Player-made landmarks — leave beacons, wrecks or structures that visibly mark your history.
+Ship naming — individually name player ships and track their combat history.
+Ship lineage — replacement ships inherit small bonuses or records from previous vessels.
+Recovered old player wreck — after death, your destroyed ship can remain as a salvageable site.
+Personal black box — recover your own previous ship's data to regain part of its progression.
+Insurance fraud mission — deliberately destroy or abandon cargo under dubious contracts.
+Sabotaged equipment — bought or salvaged modules can occasionally contain hidden defects.
+Counterfeit parts — black-market components look legitimate but perform worse.
+Manufacturer identity — items could carry Corp, Rebel, Simulant or unknown origin metadata.
+Item provenance — rare modules remember where they came from.
+Legendary salvage — recover a named weapon from a famous wreck and keep its identity.
+Weapon history — track kills or bosses defeated with a specific unique weapon.
+Overcharged relics — ancient equipment may be impossible to repair normally.
+Cannibalized repairs — dismantle one installed module to repair another in an emergency.
+Emergency jury-rigging — field-repair a system temporarily with wrong components and reduced performance.
+Temporary patch plates — fast field repairs restore limited armour until proper service.
+Hull leaks — severe hull damage slowly drains resources until patched.
+Fuel leaks — damaged tanks leave a visible trail and gradually lose fuel.
+Energy arcing — damaged reactors create visible electrical hazards around the ship.
+Weapon jams — heavily damaged kinetic weapons occasionally fail until serviced.
+Thruster asymmetry — losing one engine makes movement physically uneven.
+Emergency spin control — compensate for damaged engines manually or with an upgrade.
+Directional subsystem layout — internal components physically correspond to parts of the hull.
+Penetrating weapons — rare attacks can strike internal components behind armour.
+Armour angling — movement orientation matters against certain projectile types.
+Ramming builds — reinforce the nose specifically for collision-based combat.
+Harvester builds — specialized hulls physically ingest small debris and pickups.
+Salvage claws — visible mechanical arms unfold when collecting large wreck pieces.
+Mobile workshop ship — a player hull sacrifices combat ability for field processing and repairs.
+Mobile refinery barge — a huge slow ship becomes your travelling industrial base.
+Drone mothership — build around command range and drone production instead of weapons.
+Stealth recon hull — tiny cargo and poor weapons but extremely strong scanning and concealment.
+Artillery cruiser — massive range but requires sensor support and slow aiming.
+Boarding cutter — specialized ship designed to disable and capture targets.
+Escort frigate player hull — bonuses when staying close to friendly ships or drones.
+Salvager ship — bonuses to wreck yield and component recovery.
+Interceptor hull — extreme acceleration with little cargo and limited endurance.
+Industrial progression split — combat and industry become equally viable ways to advance.
+Pacifist scavenger route — get rich by following wars and collecting leftovers without starting fights.
+Predatory merchant route — buy cheap materials in dangerous sectors and sell them where scarce.
+Explorer route — progression through discovery, scanning and rare coordinates.
+Engineer route — progression through facilities, production and module optimization.
+Mercenary route — progression mostly through contracts and faction warfare.
+Faction defector route — abandon one faction relationship entirely to gain another's trust.
+No permanent class system — let all those playstyles emerge from modules and ship choice instead of character classes.
+Dynamic titles — game gives the player informal titles based on behavior, like Salvager, Butcher or Pathfinder.
+Faction rumors — NPC chatter references things the player actually did.
+Sector legend system — repeated actions in one region create local reputation separate from global reputation.
+Ship intimidation — very powerful ships cause weak enemies to flee before combat starts.
+False weakness — deliberately appear damaged to lure aggressive enemies closer.
+Power-down ambush — shut down most systems to reduce detection and wait for a target.
+Cold-start delay — powering back up after silent running takes a brief dangerous moment.
+Reactor signature tracking — follow ships through space by residual energy trails.
+Missile exhaust tracking — scanner tech can infer where distant combat occurred.
+Wreck freshness — recent wrecks emit more detectable heat and contain better salvage.
+Scavenger ecology — different factions or creatures arrive at wrecks depending on region.
+Sector ecosystem — mining, combat and faction presence gradually influence what spawns there.
+Predator-prey enemy behavior — Alien hunters actively attack civilian or mining ships.
+Faction exploitation — Corp might deliberately lure hostile creatures toward Rebel territory.
+Proxy wars — factions manipulate neutral or automated forces against each other.
+Captured beacon traps — reprogram enemy distress beacons to lure their own reinforcements into an ambush.
+Remote detonation sabotage — hack an enemy ammo depot and leave before triggering it.
+Delayed sabotage — install a device that activates later after you exit.
+Tracker beacons — secretly tag a ship and follow it to a hidden base.
+Convoy tailing — discover secret facilities by following traffic instead of fighting it.
+Encrypted navigation logs — salvage routes from cargo ships to locate industrial sites.
+Trade intelligence — learn where valuable shipments are scheduled without creating a full economy sim.
+Threat prediction — advanced scanners estimate what reinforcements a faction is likely to send.
+Combat recorder — replay your last few seconds after death or major hits for debugging and style.
+Kill camera for bosses — dramatic vector zoom when a major enemy explodes.
+Slow-motion system failure — brief dramatic slowdown when your hull reaches critical condition.
+Emergency choice at 0 hull — sacrifice cargo, a module or reactor power for one last survival chance.
