@@ -266,6 +266,16 @@ function sc_config_init()
 			}
 		},
 			
+		crafting: {
+		    grades: [
+		        { chance: 0, multiplier: 1 },
+		        { chance: 0.01, multiplier: 1.05 },
+		        { chance: 0.002, multiplier: 1.15 },
+		        { chance: 0.0004, multiplier: 1.25 },
+		        { chance: 0.0001, multiplier: 1.4 }
+		    ]
+		},
+			
 		player_collision: {
 		    asteroid_bounce: 0.38,
 		    asteroid_bounce_min: 1.2,

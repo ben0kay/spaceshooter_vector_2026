@@ -29,7 +29,7 @@ function sc_weapon_register_shard_mining_beam()
                 effect: DamageEffect.NONE,
 
                 extraction: {
-				    asteroid_damage_multiplier: 4,
+				    asteroid_damage_multiplier: 8,
 				    efficiency: 1.25,
 				    yield_multiplier: 1.5
 				}
