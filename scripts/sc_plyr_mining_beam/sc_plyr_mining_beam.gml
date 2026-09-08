@@ -29,9 +29,10 @@ function sc_weapon_register_shard_mining_beam()
                 effect: DamageEffect.NONE,
 
                 extraction: {
-                    efficiency: 1.25,
-                    yield_multiplier: 1.5
-                }
+				    asteroid_damage_multiplier: 4,
+				    efficiency: 1.25,
+				    yield_multiplier: 1.5
+				}
             },
 
             beam: {
@@ -114,6 +115,7 @@ function sc_weapon_register_shard_mining_beam()
         audio: { sound: noone, volume: 0.4, pitch_range: 0.04 }
     });
 }
+
 /// @description Registers visible mining sparks and soft contact motes.
 function sc_shard_mining_beam_particles_register()
 {

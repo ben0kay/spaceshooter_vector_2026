@@ -1,5 +1,6 @@
 /// @description Draws permanent HUD and active overlay interfaces.
 sc_hud_level_draw(hud);
+sc_player_module_install_hud_draw(hud);
 sc_facility_prompt_draw(hud);
 sc_inventory_draw(hud);
 sc_facility_interface_draw(hud);

@@ -223,6 +223,8 @@ function sc_asteroid_damage(_asteroid, _packet)
 {
     var _health = _asteroid.asteroid.health;
     var _damage_amount = sc_damage_packet_amount_get(_packet);
+	if (is_struct(_packet.extraction))
+    _damage_amount *= _packet.extraction.asteroid_damage_multiplier;
 
     // Enemy demolition receives extra asteroid-only damage.
     // This does not increase damage dealt to the player or other enemies.

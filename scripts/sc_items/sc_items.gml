@@ -151,7 +151,7 @@ function sc_item_register_all()
 	    layer: ItemLayer.MODULE,
 	    description: "A complete reinforced armour assembly fitted over the ship hull.",
 	    cargo: { weight: 18, stack_max: 10 },
-	    module: { slot: ModuleSlot.ARMOUR, effectiveness: 1 },
+	    module: { slot: ModuleSlot.ARMOUR, effectiveness: 1, install_duration: 300 },
 	    visual: { colour: make_colour_rgb(126, 158, 171), glow: make_colour_rgb(0, 224, 235), draw_script: sc_item_armour_primitive_draw }
 	});
 }

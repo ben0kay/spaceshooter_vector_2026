@@ -31,6 +31,15 @@ function sc_player_inventory_create()
             targeting: undefined,
             utility: undefined,
             auxiliary: undefined
+        },
+
+        installation: {
+            active: false,
+            slot: -1,
+            item: undefined,
+            duration: 0,
+            remaining: 0,
+            cancelled_remaining: 0
         }
     };
 }
@@ -276,37 +285,131 @@ function sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _m
     return _indices[_column];
 }
 
-/// @description Equips one armour module from a cargo slot.
-function sc_player_armour_module_equip(_player, _slot_index)
+/// @description Begins installing one module from cargo.
+function sc_player_module_install_begin(_player, _slot_index)
 {
+    var _installation = _player.inventory.installation;
     var _slot = _player.inventory.slots[_slot_index];
-    if (is_undefined(_slot)) return false;
+
+    if (_installation.active || is_undefined(_slot)) return false;
 
     var _definition = variable_struct_get(global.data.items, _slot.key);
+    var _module = _definition.module;
 
-    if (_definition.layer != ItemLayer.MODULE
-    || _definition.module.slot != ModuleSlot.ARMOUR)
-        return false;
+    if (_definition.layer != ItemLayer.MODULE) return false;
+
+    switch (_module.slot)
+    {
+        case ModuleSlot.ARMOUR:
+            if (!is_undefined(_player.inventory.equipment.armour)) return false;
+        break;
+
+        default:
+            return false;
+    }
+
+    var _item = {
+        key: _slot.key,
+        name: _slot.name,
+        grade: _slot.grade
+    };
 
     var _removed = sc_player_inventory_slot_remove(_player, _slot_index, 1);
     if (_removed.amount <= 0) return false;
 
-    var _grade = _slot.grade;
-    var _maximum = round(
-        _player.ship.stats.base.armour_max
-        * _definition.module.effectiveness
-        * sc_item_grade_multiplier_get(_grade)
-    );
-
-    _player.inventory.equipment.armour = {
-        key: _slot.key,
-        name: _slot.name,
-        grade: _grade
-    };
-
-    _player.defence.armour.maximum = _maximum;
-    _player.defence.armour.current = _maximum;
+    _installation.active = true;
+    _installation.slot = _module.slot;
+    _installation.item = _item;
+    _installation.duration = _module.install_duration;
+    _installation.remaining = _module.install_duration;
+    _installation.cancelled_remaining = 0;
     return true;
+}
+
+/// @description Clears completed installation runtime.
+function sc_player_module_install_clear(_player)
+{
+    var _installation = _player.inventory.installation;
+
+    _installation.active = false;
+    _installation.slot = -1;
+    _installation.item = undefined;
+    _installation.duration = 0;
+    _installation.remaining = 0;
+}
+
+/// @description Cancels installation and returns its reserved module to cargo.
+function sc_player_module_install_cancel(_player)
+{
+    var _installation = _player.inventory.installation;
+    if (!_installation.active) return false;
+
+    var _item = _installation.item;
+    var _returned = sc_player_inventory_add(_player, _item.key, 1, _item.grade);
+
+    if (_returned.accepted <= 0) return false;
+
+    sc_player_module_install_clear(_player);
+    _installation.cancelled_remaining = 90;
+    return true;
+}
+
+/// @description Completes the currently installing module.
+function sc_player_module_install_complete(_player)
+{
+    var _installation = _player.inventory.installation;
+    if (!_installation.active) return false;
+
+    var _item = _installation.item;
+    var _definition = variable_struct_get(global.data.items, _item.key);
+
+    switch (_installation.slot)
+    {
+        case ModuleSlot.ARMOUR:
+            var _maximum = round(
+                _player.ship.stats.base.armour_max
+                * _definition.module.effectiveness
+                * sc_item_grade_multiplier_get(_item.grade)
+            );
+
+            _player.inventory.equipment.armour = {
+                key: _item.key,
+                name: _item.name,
+                grade: _item.grade
+            };
+
+            _player.defence.armour.maximum = _maximum;
+            _player.defence.armour.current = _maximum;
+        break;
+
+        default:
+            return false;
+    }
+
+    sc_player_module_install_clear(_player);
+    return true;
+}
+
+/// @description Updates timed player-module installation.
+function sc_player_module_install_update(_player)
+{
+    var _installation = _player.inventory.installation;
+
+    if (_installation.cancelled_remaining > 0)
+        _installation.cancelled_remaining--;
+
+    if (!_installation.active) return;
+
+    if (_player.movement.speed > 0.05)
+    {
+        sc_player_module_install_cancel(_player);
+        return;
+    }
+
+    _installation.remaining--;
+
+    if (_installation.remaining <= 0)
+        sc_player_module_install_complete(_player);
 }
 
 /// @description Updates dragging modules onto the equipment armour slot.
@@ -339,7 +442,7 @@ function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _rele
         _armour.x + _armour.width,
         _armour.y + _armour.height
     ))
-        sc_player_armour_module_equip(_player, _runtime.drag.source_slot);
+        sc_player_module_install_begin(_player, _runtime.drag.source_slot);
 
     _runtime.drag.active = false;
     _runtime.drag.source_slot = -1;
@@ -629,20 +732,49 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
     draw_text(_origin_x + 52, _origin_y + 178, "SHIP MODULE CONFIGURATION");
 
     var _slot_x = _origin_x + _armour_slot.x;
-    var _slot_y = _origin_y + _armour_slot.y;
-    var _grade = is_undefined(_installed) ? ItemGrade.COMMON : _installed.grade;
-    var _grade_colour = sc_item_grade_colour_get(_grade);
+	var _slot_y = _origin_y + _armour_slot.y;
+	var _installation = _player.inventory.installation;
+	var _installing = _installation.active && _installation.slot == ModuleSlot.ARMOUR;
+	var _display_item = _installing ? _installation.item : _installed;
+	var _grade = is_undefined(_display_item) ? ItemGrade.COMMON : _display_item.grade;
+	var _grade_colour = sc_item_grade_colour_get(_grade);
 
-    draw_set_colour(_palette.void);
-    draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, false);
+	draw_set_colour(_palette.void);
+	draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, false);
 
-    draw_set_colour(is_undefined(_installed) ? _palette.outline : _grade_colour);
-    draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, true);
+	draw_set_colour(is_undefined(_display_item) ? _palette.outline : _grade_colour);
+	draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, true);
 
-    draw_set_colour(_palette.accent);
-    draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
+	draw_set_colour(_palette.accent);
+	draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
 
-    if (is_undefined(_installed))
+	if (_installing)
+	{
+	    var _progress = 1 - _installation.remaining / max(1, _installation.duration);
+	    var _sprite = sc_resource_pickup_visual_cache_get(_display_item.key, 0);
+	    var _bar_x = _slot_x + 90;
+	    var _bar_y = _slot_y + 76;
+	    var _bar_width = _armour_slot.width - 106;
+
+	    if (sprite_exists(_sprite))
+	        draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 0.65);
+
+	    draw_set_colour(_grade_colour);
+	    draw_text(_slot_x + 90, _slot_y + 48, _display_item.name);
+
+	    draw_set_colour(_palette.accent);
+	    draw_text(_slot_x + 90, _slot_y + 65, "INSTALLING " + string(round(_progress * 100)) + "%");
+
+	    draw_set_colour(_palette.background);
+	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width, _bar_y + 8, false);
+
+	    draw_set_colour(_palette.accent);
+	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width * _progress, _bar_y + 8, false);
+
+	    draw_set_colour(_palette.outline);
+	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width, _bar_y + 8, true);
+	}
+	else if (is_undefined(_installed))
 	{
 	    draw_set_colour(_palette.muted);
 	    draw_text(_slot_x + 14, _slot_y + 56, "EMPTY");
@@ -1085,4 +1217,87 @@ function sc_player_inventory_item_remove(_player, _item_key, _amount)
     }
 
     return _amount - _remaining;
+}
+
+/// @description Draws installation progress beside the player ship.
+function sc_player_module_install_world_draw(_player)
+{
+    var _installation = _player.inventory.installation;
+    if (!_installation.active && _installation.cancelled_remaining <= 0) return;
+
+    var _x = _player.x + 75;
+    var _y = _player.y - 70;
+
+    if (_installation.cancelled_remaining > 0)
+    {
+        var _flash = ((_installation.cancelled_remaining div 8) mod 2) == 0;
+
+        draw_set_halign(fa_center);
+        draw_set_valign(fa_middle);
+        draw_set_alpha(_flash ? 1 : 0.35);
+        draw_set_colour(c_red);
+        draw_circle(_x, _y, 15, true);
+        draw_text(_x, _y, "!");
+        draw_text(_x, _y + 27, "INSTALLATION CANCELLED");
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_top);
+        draw_set_alpha(1);
+        draw_set_colour(c_white);
+        return;
+    }
+
+    var _progress = 1 - _installation.remaining / max(1, _installation.duration);
+    var _width = 110;
+
+    draw_set_alpha(0.9);
+    draw_set_colour(make_colour_rgb(5, 18, 24));
+    draw_rectangle(_x, _y, _x + _width, _y + 28, false);
+
+    draw_set_colour(c_aqua);
+    draw_rectangle(_x, _y, _x + _width, _y + 28, true);
+    draw_circle(_x + 14, _y + 14, 7, true);
+    draw_line_width(_x + 10, _y + 18, _x + 18, _y + 10, 2);
+
+    draw_set_colour(make_colour_rgb(18, 45, 52));
+    draw_rectangle(_x + 28, _y + 11, _x + _width - 8, _y + 18, false);
+
+    draw_set_colour(c_aqua);
+    draw_rectangle(_x + 28, _y + 11, _x + 28 + (_width - 36) * _progress, _y + 18, false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws active module installation on the permanent HUD.
+function sc_player_module_install_hud_draw(_hud)
+{
+    if (!instance_exists(global.player_id)) return;
+
+    var _installation = global.player_id.inventory.installation;
+    if (!_installation.active) return;
+
+    var _palette = _hud.data.palette;
+    var _progress = 1 - _installation.remaining / max(1, _installation.duration);
+    var _width = 300;
+    var _x = (display_get_gui_width() - _width) * 0.5;
+    var _y = display_get_gui_height() - 145;
+
+    draw_set_alpha(0.92);
+    draw_set_colour(_palette.background);
+    draw_rectangle(_x, _y, _x + _width, _y + 46, false);
+
+    draw_set_colour(_palette.outline);
+    draw_rectangle(_x, _y, _x + _width, _y + 46, true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 12, _y + 10, "INSTALLING " + _installation.item.name);
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(_x + 12, _y + 31, _x + _width - 12, _y + 38, false);
+
+    draw_set_colour(_palette.accent);
+    draw_rectangle(_x + 12, _y + 31, _x + 12 + (_width - 24) * _progress, _y + 38, false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }

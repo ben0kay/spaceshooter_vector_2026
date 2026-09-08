@@ -45,4 +45,5 @@ switch (global.PlayerState)
     break;
 }
 
+sc_player_module_install_update(id);
 image_angle = draw_angle;

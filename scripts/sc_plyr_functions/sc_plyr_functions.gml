@@ -1047,6 +1047,9 @@ function sc_player_damage(
 
     if (_result.dealt.total <= 0)
         return false;
+	
+	if (_player.inventory.installation.active)
+    sc_player_module_install_cancel(_player);
 
     _defence.shield.recharge_delay_remaining =
         _stats.shield_recharge_delay;
