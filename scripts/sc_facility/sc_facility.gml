@@ -265,8 +265,8 @@ function sc_facility_nearest_find(_player)
     return _nearest;
 }
 
-/// @description Builds the recipe list supported by one facility.
-function sc_facility_recipe_keys_get(_structure)
+/// @description Builds the supported recipe list for one output layer.
+function sc_facility_recipe_keys_get(_structure, _layer)
 {
     var _facility = _structure.structure.facility;
     var _keys = variable_struct_get_names(global.data.recipes);
@@ -275,15 +275,29 @@ function sc_facility_recipe_keys_get(_structure)
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
         var _recipe = variable_struct_get(global.data.recipes, _keys[_i]);
+        var _output = _recipe.outputs[0];
+        var _item = variable_struct_get(global.data.items, _output[0]);
 
-        if (sc_facility_service_has(_facility, _recipe.service))
+        if (_item.layer == _layer
+        && sc_facility_service_has(_facility, _recipe.service))
             array_push(_recipes, _keys[_i]);
     }
 
     return _recipes;
 }
 
-/// @description Opens one nearby facility interface.
+/// @description Selects one facility recipe-output category.
+function sc_facility_category_select(_hud, _layer)
+{
+    var _runtime = _hud.facility;
+
+    _runtime.selected_layer = _layer;
+    _runtime.recipe_keys = sc_facility_recipe_keys_get(_runtime.active_id, _layer);
+    _runtime.selected_recipe = 0;
+    _runtime.amount = 1;
+}
+
+/// @description Opens one nearby industrial-processing interface.
 function sc_facility_interface_open(_hud, _structure)
 {
     var _runtime = _hud.facility;
@@ -292,7 +306,8 @@ function sc_facility_interface_open(_hud, _structure)
 
     _runtime.open = true;
     _runtime.active_id = _structure;
-    _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure);
+    _runtime.selected_layer = ItemLayer.MATERIAL;
+    _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure, _runtime.selected_layer);
     _runtime.selected_recipe = 0;
     _runtime.amount = 1;
 
@@ -342,7 +357,7 @@ function sc_facility_interaction_update(_hud)
         sc_facility_interface_open(_hud, _runtime.nearby_id);
 }
 
-/// @description Updates facility recipe selection and processing buttons.
+/// @description Updates facility categories, recipes and processing controls.
 function sc_facility_interface_update(_hud)
 {
     var _runtime = _hud.facility;
@@ -369,22 +384,40 @@ function sc_facility_interface_update(_hud)
         return;
     }
 
-    for (var _i = 0; _i < array_length(_runtime.recipe_keys); ++_i)
+    if (_pressed)
     {
-        var _y = _data.recipe_y + _i * _data.recipe_height;
-
-        if (_pressed && point_in_rectangle(
-            _mouse_x,
-            _mouse_y,
-            _data.recipe_x,
-            _y,
-            _data.recipe_x + _data.recipe_width,
-            _y + _data.recipe_height - 6
-        ))
+        for (var _i = 0; _i < array_length(_data.categories); ++_i)
         {
-            _runtime.selected_recipe = _i;
-            _runtime.amount = 1;
-            return;
+            var _category = _data.categories[_i];
+            var _y = _data.category_y + _i * (_data.category_height + _data.category_gap);
+
+            if (point_in_rectangle(
+                _mouse_x, _mouse_y,
+                _data.category_x, _y,
+                _data.category_x + _data.category_width,
+                _y + _data.category_height
+            ))
+            {
+                sc_facility_category_select(_hud, _category.layer);
+                return;
+            }
+        }
+
+        for (var _i = 0; _i < array_length(_runtime.recipe_keys); ++_i)
+        {
+            var _y = _data.recipe_y + _i * _data.recipe_height;
+
+            if (point_in_rectangle(
+                _mouse_x, _mouse_y,
+                _data.recipe_x, _y,
+                _data.recipe_x + _data.recipe_width,
+                _y + _data.recipe_height - 6
+            ))
+            {
+                _runtime.selected_recipe = _i;
+                _runtime.amount = 1;
+                return;
+            }
         }
     }
 
@@ -399,20 +432,15 @@ function sc_facility_interface_update(_hud)
 
     if (_recipe_available)
     {
-        var _recipe_key = _runtime.recipe_keys[_runtime.selected_recipe];
-        var _recipe = sc_recipe_get(_recipe_key);
+        var _recipe = sc_recipe_get(_runtime.recipe_keys[_runtime.selected_recipe]);
         var _processor = sc_facility_processor_get(
             _runtime.active_id.structure.facility,
             _recipe.service
         );
 
-        var _amount_max = sc_recipe_player_amount_get(
-            global.player_id,
-            _recipe
-        );
+        var _amount_max = sc_recipe_player_amount_get(global.player_id, _recipe);
 
         _runtime.amount = min(_runtime.amount, max(1, _amount_max));
-
         _buttons.process.enabled =
             _amount_max >= _runtime.amount
             && array_length(_processor.queue) < _processor.queue_max;
@@ -521,25 +549,33 @@ function sc_facility_inventory_draw(_hud, _x, _y)
 }
 
 /// @description Draws processor activity and completed facility output.
-function sc_facility_status_draw(_hud, _structure, _x, _y)
+function sc_facility_status_draw(_hud, _structure, _x, _y, _width)
 {
     var _facility = _structure.structure.facility;
     var _palette = _hud.data.palette;
     var _processors = _facility.processors;
-    var _draw_y = _y;
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(_x, _y, _x + _width, _y + 130, false);
+
+    draw_set_colour(_palette.outline);
+    draw_rectangle(_x, _y, _x + _width, _y + 130, true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 18, _y + 22, "MACHINE STATUS");
 
     for (var _i = 0; _i < array_length(_processors); ++_i)
     {
         var _processor = _processors[_i];
+        var _row_y = _y + 52 + _i * 30;
 
-        draw_set_halign(fa_left);
-        draw_set_colour(_palette.accent);
-        draw_text(_x, _draw_y, sc_facility_service_name_get(_processor.type));
+        draw_set_colour(_palette.text);
+        draw_text(_x + 18, _row_y, sc_facility_service_name_get(_processor.type));
 
         if (is_undefined(_processor.active))
         {
             draw_set_colour(_palette.muted);
-            draw_text(_x + 120, _draw_y, "IDLE");
+            draw_text(_x + 180, _row_y, "IDLE");
         }
         else
         {
@@ -547,46 +583,61 @@ function sc_facility_status_draw(_hud, _structure, _x, _y)
             var _recipe = sc_recipe_get(_job.recipe_key);
             var _ratio = 1 - _job.remaining / max(1, _job.duration);
 
-            draw_set_colour(_palette.text);
-            draw_text(_x + 120, _draw_y, _recipe.identity.name + " x" + string(_job.amount));
+            draw_set_colour(_palette.core);
+            draw_text(_x + 180, _row_y, _recipe.identity.name);
 
             draw_set_colour(_palette.background);
-            draw_rectangle(_x + 120, _draw_y + 15, _x + 350, _draw_y + 22, false);
+            draw_rectangle(_x + 330, _row_y + 4, _x + _width - 85, _row_y + 11, false);
 
             draw_set_colour(_palette.accent);
-            draw_rectangle(_x + 120, _draw_y + 15, _x + 120 + 230 * _ratio, _draw_y + 22, false);
+            draw_rectangle(_x + 330, _row_y + 4, _x + 330 + (_width - 415) * _ratio, _row_y + 11, false);
         }
 
         draw_set_halign(fa_right);
         draw_set_colour(_palette.muted);
-        draw_text(_x + 410, _draw_y, "QUEUE " + string(array_length(_processor.queue)));
-
-        _draw_y += 48;
+        draw_text(_x + _width - 18, _row_y, "QUEUE " + string(array_length(_processor.queue)));
+        draw_set_halign(fa_left);
     }
 
-    draw_set_halign(fa_left);
+    var _output_y = _y + 145;
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(_x, _output_y, _x + _width, _output_y + 125, false);
+
+    draw_set_colour(_palette.outline);
+    draw_rectangle(_x, _output_y, _x + _width, _output_y + 125, true);
+
     draw_set_colour(_palette.accent);
-    draw_text(_x, _draw_y + 8, "COMPLETED OUTPUT");
+    draw_text(_x + 18, _output_y + 22, "COMPLETED OUTPUT");
 
-    _draw_y += 38;
-
-    for (var _i = 0; _i < array_length(_facility.output); ++_i)
+    if (array_length(_facility.output) <= 0)
     {
-        var _entry = _facility.output[_i];
+        draw_set_colour(_palette.muted);
+        draw_text(_x + 18, _output_y + 60, "NO COMPLETED ITEMS");
+    }
+    else
+    {
+        var _draw_y = _output_y + 56;
 
-        draw_set_colour(_palette.text);
-        draw_text(_x, _draw_y, _entry.name);
+        for (var _i = 0; _i < array_length(_facility.output); ++_i)
+        {
+            var _entry = _facility.output[_i];
 
-        draw_set_halign(fa_right);
-        draw_set_colour(_palette.core);
-        draw_text(_x + 410, _draw_y, "x" + string(_entry.amount));
+            draw_set_colour(_palette.text);
+            draw_text(_x + 18, _draw_y, _entry.name);
 
-        draw_set_halign(fa_left);
-        _draw_y += 25;
+            draw_set_halign(fa_right);
+            draw_set_colour(_palette.core);
+            draw_text(_x + _width - 18, _draw_y, "x" + string(_entry.amount));
+            draw_set_halign(fa_left);
+
+            _draw_y += 24;
+            if (_draw_y > _output_y + 105) break;
+        }
     }
 }
 
-/// @description Draws the complete facility interface.
+/// @description Draws the complete industrial-processing interface.
 function sc_facility_interface_draw(_hud)
 {
     var _runtime = _hud.facility;
@@ -603,7 +654,7 @@ function sc_facility_interface_draw(_hud)
     var _panel_y = floor((display_get_gui_height() - _data.height) * 0.5);
 
     draw_set_colour(c_black);
-    draw_set_alpha(0.68);
+    draw_set_alpha(0.72);
     draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
 
     draw_set_alpha(1);
@@ -613,97 +664,202 @@ function sc_facility_interface_draw(_hud)
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
+
     draw_set_colour(_palette.core);
-    draw_text(_panel_x + 42, _panel_y + 40, string_upper(_structure.structure.data.identity.name));
+    draw_text(_panel_x + 42, _panel_y + 38, string_upper(_structure.structure.data.identity.name));
 
     draw_set_colour(_palette.accent);
-    draw_text(_panel_x + 42, _panel_y + 68, "INDUSTRIAL PROCESSING");
+    draw_text(_panel_x + 42, _panel_y + 67, "INDUSTRIAL PROCESSING");
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_palette.muted);
+    draw_text(_panel_x + _data.width - 75, _panel_y + 42, "REFINE // FABRICATE // SUPPLY");
+    draw_set_halign(fa_left);
 
     draw_set_colour(_palette.outline);
-    draw_line(_panel_x + 515, _panel_y + 90, _panel_x + 515, _panel_y + _data.height - 35);
+    draw_line(_panel_x + 25, _panel_y + 100, _panel_x + _data.width - 25, _panel_y + 100);
 
-    sc_facility_inventory_draw(_hud, _panel_x, _panel_y);
+    for (var _i = 0; _i < array_length(_data.categories); ++_i)
+    {
+        var _category = _data.categories[_i];
+        var _x = _panel_x + _data.category_x;
+        var _y = _panel_y + _data.category_y + _i * (_data.category_height + _data.category_gap);
+        var _selected = _runtime.selected_layer == _category.layer;
 
-    draw_set_halign(fa_left);
+        draw_set_colour(_selected ? _palette.panel_light : _palette.void);
+        draw_rectangle(_x, _y, _x + _data.category_width, _y + _data.category_height, false);
+
+        draw_set_colour(_selected ? _palette.accent : _palette.outline);
+        draw_rectangle(_x, _y, _x + _data.category_width, _y + _data.category_height, true);
+
+        draw_set_colour(_selected ? _palette.core : _palette.text);
+        draw_text(_x + 28, _y + 37, _category.name);
+
+        draw_set_colour(_palette.muted);
+        draw_text_ext(_x + 28, _y + 70, _category.description, 18, _data.category_width - 56);
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_selected ? _palette.core : _palette.muted);
+        draw_text(_x + _data.category_width - 24, _y + 70, ">");
+        draw_set_halign(fa_left);
+    }
+
+    var _recipe_panel_x = _panel_x + _data.recipe_x;
+    var _recipe_panel_y = _panel_y + _data.recipe_y;
+
     draw_set_colour(_palette.accent);
-    draw_text(_panel_x + 550, _panel_y + 102, "AVAILABLE RECIPES");
+    draw_text(_recipe_panel_x, _recipe_panel_y - 28, "AVAILABLE RECIPES");
+
+    if (array_length(_runtime.recipe_keys) <= 0)
+    {
+        draw_set_colour(_palette.void);
+        draw_rectangle(
+            _recipe_panel_x,
+            _recipe_panel_y,
+            _recipe_panel_x + _data.recipe_width,
+            _recipe_panel_y + 90,
+            false
+        );
+
+        draw_set_colour(_palette.outline);
+        draw_rectangle(
+            _recipe_panel_x,
+            _recipe_panel_y,
+            _recipe_panel_x + _data.recipe_width,
+            _recipe_panel_y + 90,
+            true
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text(_recipe_panel_x + 22, _recipe_panel_y + 42, "NO RECIPES AVAILABLE");
+    }
 
     for (var _i = 0; _i < array_length(_runtime.recipe_keys); ++_i)
     {
         var _recipe = sc_recipe_get(_runtime.recipe_keys[_i]);
-        var _row_y = _panel_y + _data.recipe_y + _i * _data.recipe_height;
+        var _output = _recipe.outputs[0];
+        var _item = variable_struct_get(global.data.items, _output[0]);
+        var _row_y = _recipe_panel_y + _i * _data.recipe_height;
         var _selected = _runtime.selected_recipe == _i;
+        var _sprite = sc_resource_pickup_visual_cache_get(_output[0], _i mod 4);
 
         draw_set_colour(_selected ? _palette.panel_light : _palette.void);
         draw_rectangle(
-            _panel_x + _data.recipe_x,
+            _recipe_panel_x,
             _row_y,
-            _panel_x + _data.recipe_x + _data.recipe_width,
+            _recipe_panel_x + _data.recipe_width,
             _row_y + _data.recipe_height - 6,
             false
         );
 
         draw_set_colour(_selected ? _palette.accent : _palette.outline);
         draw_rectangle(
-            _panel_x + _data.recipe_x,
+            _recipe_panel_x,
             _row_y,
-            _panel_x + _data.recipe_x + _data.recipe_width,
+            _recipe_panel_x + _data.recipe_width,
             _row_y + _data.recipe_height - 6,
             true
         );
 
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite, 0, _recipe_panel_x + 34, _row_y + 31, 0.85, 0.85, 0, c_white, 1);
+
         draw_set_colour(_selected ? _palette.core : _palette.text);
-        draw_text(_panel_x + _data.recipe_x + 14, _row_y + 17, _recipe.identity.name);
+        draw_text(_recipe_panel_x + 67, _row_y + 21, _recipe.identity.name);
+
+        var _input = _recipe.inputs[0];
+        var _input_item = variable_struct_get(global.data.items, _input[0]);
+
+        draw_set_colour(_palette.muted);
+        draw_text(_recipe_panel_x + 67, _row_y + 43, "FROM " + string_upper(_input_item.identity.name));
 
         draw_set_halign(fa_right);
-        draw_set_colour(_palette.muted);
+        draw_set_colour(_palette.accent);
         draw_text(
-            _panel_x + _data.recipe_x + _data.recipe_width - 14,
-            _row_y + 17,
+            _recipe_panel_x + _data.recipe_width - 18,
+            _row_y + 31,
             sc_facility_service_name_get(_recipe.service)
         );
-
         draw_set_halign(fa_left);
     }
+
+    var _detail_x = _panel_x + _data.detail_x;
+    var _detail_y = _panel_y + _data.detail_y;
+    var _detail_width = _data.detail_width;
 
     if (array_length(_runtime.recipe_keys) > 0)
     {
         var _recipe = sc_recipe_get(_runtime.recipe_keys[_runtime.selected_recipe]);
-        var _detail_y = _panel_y + 285;
+        var _output = _recipe.outputs[0];
+        var _item = variable_struct_get(global.data.items, _output[0]);
+        var _sprite = sc_resource_pickup_visual_cache_get(_output[0], 0);
+
+        draw_set_colour(_palette.void);
+        draw_rectangle(_detail_x, _detail_y, _detail_x + _detail_width, _detail_y + 330, false);
+
+        draw_set_colour(_palette.outline);
+        draw_rectangle(_detail_x, _detail_y, _detail_x + _detail_width, _detail_y + 330, true);
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite, 0, _detail_x + 58, _detail_y + 58, 1.25, 1.25, 0, c_white, 1);
+
+        draw_set_colour(_palette.core);
+        draw_text(_detail_x + 105, _detail_y + 35, _recipe.identity.name);
 
         draw_set_colour(_palette.accent);
-        draw_text(_panel_x + 550, _detail_y, "REQUIREMENTS");
+        draw_text(
+            _detail_x + 105,
+            _detail_y + 62,
+            sc_facility_service_name_get(_recipe.service)
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text_ext(_detail_x + 24, _detail_y + 105, _item.description, 20, _detail_width - 48);
+
+        draw_set_colour(_palette.outline);
+        draw_line(_detail_x + 20, _detail_y + 175, _detail_x + _detail_width - 20, _detail_y + 175);
+
+        draw_set_colour(_palette.accent);
+        draw_text(_detail_x + 22, _detail_y + 198, "REQUIREMENTS");
 
         for (var _i = 0; _i < array_length(_recipe.inputs); ++_i)
         {
             var _input = _recipe.inputs[_i];
-            var _item = variable_struct_get(global.data.items, _input[0]);
+            var _input_item = variable_struct_get(global.data.items, _input[0]);
             var _stored = sc_player_inventory_item_count(global.player_id, _input[0]);
             var _needed = _input[1] * _runtime.amount;
+            var _row_y = _detail_y + 230 + _i * 28;
 
-            draw_set_colour(_stored >= _needed ? _palette.text : make_colour_rgb(255, 75, 90));
-            draw_text(
-                _panel_x + 550,
-                _detail_y + 30 + _i * 24,
-                _item.identity.name + "   " + string(_stored) + " / " + string(_needed)
-            );
+            draw_set_colour(_stored >= _needed ? _palette.text : _palette.warning);
+            draw_text(_detail_x + 24, _row_y, _input_item.identity.name);
+
+            draw_set_halign(fa_right);
+            draw_text(_detail_x + _detail_width - 24, _row_y, string(_stored) + " / " + string(_needed));
+            draw_set_halign(fa_left);
         }
 
         draw_set_colour(_palette.muted);
         draw_text(
-            _panel_x + 550,
-            _detail_y + 88,
-            "PROCESS TIME // "
-            + string(ceil(_recipe.duration * _runtime.amount / 60))
-            + " SEC"
+            _detail_x + 24,
+            _detail_y + 298,
+            "PROCESS TIME // " + string(ceil(_recipe.duration * _runtime.amount / 60)) + " SEC"
         );
     }
+
+    draw_set_colour(_palette.accent);
+    draw_text(_detail_x, _panel_y + 490, "PROCESSING");
+
+    draw_set_halign(fa_center);
+    draw_set_colour(_palette.core);
+    draw_text(_panel_x + 1111, _panel_y + 525, "BATCH x" + string(_runtime.amount));
+    draw_set_halign(fa_left);
 
     sc_facility_status_draw(
         _hud,
         _structure,
-        _panel_x + 550,
-        _panel_y + 405
+        _detail_x,
+        _panel_y + 575,
+        _detail_width
     );
 
     sc_gui_button_draw(_runtime.buttons.close, _panel_x, _panel_y, _palette);
@@ -711,10 +867,6 @@ function sc_facility_interface_draw(_hud)
     sc_gui_button_draw(_runtime.buttons.amount_up, _panel_x, _panel_y, _palette);
     sc_gui_button_draw(_runtime.buttons.process, _panel_x, _panel_y, _palette);
     sc_gui_button_draw(_runtime.buttons.collect, _panel_x, _panel_y, _palette);
-
-    draw_set_halign(fa_center);
-    draw_set_colour(_palette.core);
-    draw_text(_panel_x + 830, _panel_y + 363, "BATCH x" + string(_runtime.amount));
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

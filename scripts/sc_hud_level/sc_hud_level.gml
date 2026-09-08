@@ -29,7 +29,9 @@ function sc_hud_level_data()
             energy: make_colour_rgb(0, 245, 255),
             fuel: make_colour_rgb(20, 205, 218),
             dash: make_colour_rgb(105, 250, 255),
-            cargo: make_colour_rgb(45, 225, 205)
+            cargo: make_colour_rgb(45, 225, 205),
+			
+			warning: make_colour_rgb(255, 170, 45),
         },
 
         bottom: {
@@ -87,13 +89,30 @@ function sc_hud_level_data()
         },
 			
 		facility: {
-    width: 1380,
-    height: 800,
+    width: 1600,
+    height: 900,
 
-    recipe_x: 680,
-    recipe_y: 132,
-    recipe_width: 655,
-    recipe_height: 52
+    category_x: 30,
+    category_y: 145,
+    category_width: 290,
+    category_height: 145,
+    category_gap: 14,
+
+    recipe_x: 350,
+    recipe_y: 145,
+    recipe_width: 600,
+    recipe_height: 68,
+
+    detail_x: 980,
+    detail_y: 145,
+    detail_width: 590,
+
+    categories: [
+        { layer: ItemLayer.MATERIAL, name: "MATERIALS", description: "RAW RESOURCES TO REFINED MATERIALS" },
+        { layer: ItemLayer.COMPONENT, name: "COMPONENTS", description: "MECHANICAL, ELECTRONIC AND STRUCTURAL PARTS" },
+        { layer: ItemLayer.MODULE, name: "MODULES", description: "FUNCTIONAL SHIP SYSTEMS AND UPGRADES" },
+        { layer: ItemLayer.ASSEMBLY, name: "ASSEMBLIES", description: "COMPLETE DEVICES, WEAPONS AND MACHINES" }
+    ]
 },
 			
 		inventory: {
@@ -214,24 +233,25 @@ function sc_hud_level_init(_hud_object)
         },
 			
 		facility: {
-    open: false,
-    nearby_id: noone,
-    active_id: noone,
-    next_scan_tick: GAME_TICK,
-    scan_interval: 10,
+	    open: false,
+	    nearby_id: noone,
+	    active_id: noone,
+	    next_scan_tick: GAME_TICK,
+	    scan_interval: 10,
 
-    recipe_keys: [],
-    selected_recipe: 0,
-    amount: 1,
+	    selected_layer: ItemLayer.MATERIAL,
+	    recipe_keys: [],
+	    selected_recipe: 0,
+	    amount: 1,
 
-    buttons: {
-        close: sc_gui_button_create("close", 1320, 24, 34, 34, "X", GUIButtonStyle.DANGER),
-        amount_down: sc_gui_button_create("amount_down", 860, 350, 42, 38, "-", GUIButtonStyle.STANDARD),
-        amount_up: sc_gui_button_create("amount_up", 1018, 350, 42, 38, "+", GUIButtonStyle.STANDARD),
-        process: sc_gui_button_create("process", 1210, 350, 125, 38, "PROCESS", GUIButtonStyle.PRIMARY),
-        collect: sc_gui_button_create("collect", 1190, 725, 145, 40, "COLLECT ALL", GUIButtonStyle.PRIMARY)
-    }
-},
+	    buttons: {
+	        close: sc_gui_button_create("close", 1545, 25, 34, 34, "X", GUIButtonStyle.DANGER),
+	        amount_down: sc_gui_button_create("amount_down", 1010, 505, 42, 40, "-", GUIButtonStyle.STANDARD),
+	        amount_up: sc_gui_button_create("amount_up", 1170, 505, 42, 40, "+", GUIButtonStyle.STANDARD),
+	        process: sc_gui_button_create("process", 1375, 505, 165, 40, "PROCESS", GUIButtonStyle.PRIMARY),
+	        collect: sc_gui_button_create("collect", 1375, 820, 165, 40, "COLLECT ALL", GUIButtonStyle.PRIMARY)
+	    }
+	},
 
         inventory: {
             open: false,
