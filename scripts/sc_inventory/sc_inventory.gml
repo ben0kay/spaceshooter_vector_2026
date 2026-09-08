@@ -709,3 +709,44 @@ function sc_player_inventory_add(_player, _item_key, _amount)
     _result.remaining -= _accepted;
     return _result;
 }
+
+/// @description Returns the amount of one item stored across all cargo slots.
+function sc_player_inventory_item_count(_player, _item_key)
+{
+    var _slots = _player.inventory.slots;
+    var _amount = 0;
+
+    for (var _i = 0; _i < array_length(_slots); ++_i)
+    {
+        var _slot = _slots[_i];
+
+        if (!is_undefined(_slot) && _slot.key == _item_key)
+            _amount += _slot.amount;
+    }
+
+    return _amount;
+}
+
+/// @description Removes one item amount across multiple cargo slots.
+function sc_player_inventory_item_remove(_player, _item_key, _amount)
+{
+    var _remaining = max(0, floor(_amount));
+    var _slots = _player.inventory.slots;
+
+    for (var _i = 0; _i < array_length(_slots) && _remaining > 0; ++_i)
+    {
+        var _slot = _slots[_i];
+
+        if (is_undefined(_slot) || _slot.key != _item_key) continue;
+
+        var _removed = sc_player_inventory_slot_remove(
+            _player,
+            _i,
+            _remaining
+        );
+
+        _remaining -= _removed.amount;
+    }
+
+    return _amount - _remaining;
+}

@@ -1,0 +1,723 @@
+/*
+WORLD FACILITIES
+
+Optional facility controllers allow world structures to host processing services.
+Each processor owns one active job and an independent waiting queue.
+*/
+
+/// @description Creates one structure facility runtime.
+function sc_facility_runtime_create(_structure, _definition)
+{
+    var _processors = [];
+
+    for (var _i = 0; _i < array_length(_definition.processors); ++_i)
+    {
+        var _processor = _definition.processors[_i];
+
+        array_push(_processors, {
+            type: _processor.type,
+            speed: _processor.speed,
+            queue_max: _processor.queue_max,
+            active: undefined,
+            queue: []
+        });
+    }
+
+    return {
+        definition: variable_clone(_definition),
+        processors: _processors,
+        output: []
+    };
+}
+
+/// @description Returns one facility's world-space interaction terminal.
+function sc_facility_terminal_position_get(_structure)
+{
+    var _interaction = _structure.structure.facility.definition.interaction;
+    var _angle = _structure.draw_angle;
+
+    return {
+        x: _structure.x
+            + lengthdir_x(_interaction.forward, _angle)
+            + lengthdir_x(_interaction.side, _angle - 90),
+
+        y: _structure.y
+            + lengthdir_y(_interaction.forward, _angle)
+            + lengthdir_y(_interaction.side, _angle - 90)
+    };
+}
+
+/// @description Returns one processor from a facility.
+function sc_facility_processor_get(_facility, _service)
+{
+    var _processors = _facility.processors;
+
+    for (var _i = 0; _i < array_length(_processors); ++_i)
+        if (_processors[_i].type == _service)
+            return _processors[_i];
+
+    return undefined;
+}
+
+/// @description Returns whether a facility provides one processing service.
+function sc_facility_service_has(_facility, _service)
+{
+    return is_struct(sc_facility_processor_get(_facility, _service));
+}
+
+/// @description Returns the maximum recipe batches currently available.
+function sc_recipe_player_amount_get(_player, _recipe)
+{
+    var _amount = 999999;
+
+    for (var _i = 0; _i < array_length(_recipe.inputs); ++_i)
+    {
+        var _input = _recipe.inputs[_i];
+        var _stored = sc_player_inventory_item_count(_player, _input[0]);
+        _amount = min(_amount, floor(_stored / _input[1]));
+    }
+
+    return max(0, _amount);
+}
+
+/// @description Consumes all inputs required for a recipe batch.
+function sc_recipe_inputs_remove(_player, _recipe, _amount)
+{
+    for (var _i = 0; _i < array_length(_recipe.inputs); ++_i)
+    {
+        var _input = _recipe.inputs[_i];
+
+        sc_player_inventory_item_remove(
+            _player,
+            _input[0],
+            _input[1] * _amount
+        );
+    }
+}
+
+/// @description Adds completed recipe output to facility storage.
+function sc_facility_output_add(_facility, _item_key, _amount)
+{
+    var _output = _facility.output;
+
+    for (var _i = 0; _i < array_length(_output); ++_i)
+    {
+        if (_output[_i].key != _item_key) continue;
+
+        _output[_i].amount += _amount;
+        return true;
+    }
+
+    var _definition = variable_struct_get(global.data.items, _item_key);
+
+    array_push(_output, {
+        key: _item_key,
+        name: _definition.identity.name,
+        amount: _amount
+    });
+
+    return true;
+}
+
+/// @description Begins a queued job when its processor becomes available.
+function sc_facility_processor_begin_next(_processor)
+{
+    if (!is_undefined(_processor.active)
+    || array_length(_processor.queue) <= 0)
+        return false;
+
+    _processor.active = _processor.queue[0];
+    array_delete(_processor.queue, 0, 1);
+    return true;
+}
+
+/// @description Starts or queues one recipe at a facility.
+function sc_facility_job_add(_structure, _recipe_key, _amount, _player)
+{
+    var _facility = _structure.structure.facility;
+    var _recipe = sc_recipe_get(_recipe_key);
+    var _processor = sc_facility_processor_get(_facility, _recipe.service);
+    var _amount_max = sc_recipe_player_amount_get(_player, _recipe);
+
+    _amount = clamp(floor(_amount), 1, _amount_max);
+
+    if (!is_struct(_processor)
+    || _amount_max <= 0
+    || array_length(_processor.queue) >= _processor.queue_max)
+        return false;
+
+    sc_recipe_inputs_remove(_player, _recipe, _amount);
+
+    var _job = {
+        recipe_key: _recipe_key,
+        amount: _amount,
+        duration: max(1, ceil(_recipe.duration * _amount / _processor.speed)),
+        remaining: max(1, ceil(_recipe.duration * _amount / _processor.speed))
+    };
+
+    array_push(_processor.queue, _job);
+    sc_facility_processor_begin_next(_processor);
+    return true;
+}
+
+/// @description Completes one processing job into facility output storage.
+function sc_facility_job_complete(_facility, _processor)
+{
+    var _job = _processor.active;
+    var _recipe = sc_recipe_get(_job.recipe_key);
+
+    for (var _i = 0; _i < array_length(_recipe.outputs); ++_i)
+    {
+        var _output = _recipe.outputs[_i];
+
+        sc_facility_output_add(
+            _facility,
+            _output[0],
+            _output[1] * _job.amount
+        );
+    }
+
+    _processor.active = undefined;
+    sc_facility_processor_begin_next(_processor);
+}
+
+/// @description Advances all active processors belonging to one facility.
+function sc_facility_update(_structure)
+{
+    var _facility = _structure.structure.facility;
+    var _processors = _facility.processors;
+
+    for (var _i = 0; _i < array_length(_processors); ++_i)
+    {
+        var _processor = _processors[_i];
+
+        sc_facility_processor_begin_next(_processor);
+        if (is_undefined(_processor.active)) continue;
+
+        _processor.active.remaining--;
+
+        if (_processor.active.remaining <= 0)
+            sc_facility_job_complete(_facility, _processor);
+    }
+}
+
+/// @description Collects all currently fitting facility output.
+function sc_facility_output_collect(_structure, _player)
+{
+    var _output = _structure.structure.facility.output;
+
+    for (var _i = array_length(_output) - 1; _i >= 0; --_i)
+    {
+        var _entry = _output[_i];
+        var _result = sc_player_inventory_add(
+            _player,
+            _entry.key,
+            _entry.amount
+        );
+
+        _entry.amount = _result.remaining;
+
+        if (_entry.amount <= 0)
+            array_delete(_output, _i, 1);
+    }
+}
+
+/// @description Returns a readable processor name.
+function sc_facility_service_name_get(_service)
+{
+    switch (_service)
+    {
+        case FacilityService.REFINERY: return "REFINERY";
+        case FacilityService.FABRICATOR: return "FABRICATOR";
+        case FacilityService.REPAIR: return "REPAIR";
+    }
+
+    return "UNKNOWN";
+}
+
+/// @description Finds the nearest usable facility to the player.
+function sc_facility_nearest_find(_player)
+{
+    var _nearest = noone;
+    var _nearest_distance = 999999999999;
+    var _count = instance_number(o_world_structure);
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _structure = instance_find(o_world_structure, _i);
+        if (!is_struct(_structure.structure.facility)) continue;
+
+        var _facility = _structure.structure.facility;
+        var _interaction = _facility.definition.interaction;
+        var _terminal = sc_facility_terminal_position_get(_structure);
+        var _dx = _terminal.x - _player.x;
+        var _dy = _terminal.y - _player.y;
+        var _distance = _dx * _dx + _dy * _dy;
+
+        if (_distance > sqr(_interaction.radius)
+        || _distance >= _nearest_distance)
+            continue;
+
+        _nearest = _structure;
+        _nearest_distance = _distance;
+    }
+
+    return _nearest;
+}
+
+/// @description Builds the recipe list supported by one facility.
+function sc_facility_recipe_keys_get(_structure)
+{
+    var _facility = _structure.structure.facility;
+    var _keys = variable_struct_get_names(global.data.recipes);
+    var _recipes = [];
+
+    for (var _i = 0; _i < array_length(_keys); ++_i)
+    {
+        var _recipe = variable_struct_get(global.data.recipes, _keys[_i]);
+
+        if (sc_facility_service_has(_facility, _recipe.service))
+            array_push(_recipes, _keys[_i]);
+    }
+
+    return _recipes;
+}
+
+/// @description Opens one nearby facility interface.
+function sc_facility_interface_open(_hud, _structure)
+{
+    var _runtime = _hud.facility;
+
+    sc_player_control_suspend(global.player_id);
+
+    _runtime.open = true;
+    _runtime.active_id = _structure;
+    _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure);
+    _runtime.selected_recipe = 0;
+    _runtime.amount = 1;
+
+    global.PlayerState = PlayerState.FACILITY;
+    return true;
+}
+
+/// @description Closes the facility interface while allowing jobs to continue.
+function sc_facility_interface_close(_hud)
+{
+    var _runtime = _hud.facility;
+
+    _runtime.open = false;
+    _runtime.active_id = noone;
+    _runtime.recipe_keys = [];
+    _runtime.selected_recipe = 0;
+    _runtime.amount = 1;
+
+    global.PlayerState = PlayerState.ACTIVE;
+    sc_player_combat_permission_update(global.player_id);
+    return true;
+}
+
+/// @description Updates nearby facility detection and interaction.
+function sc_facility_interaction_update(_hud)
+{
+    var _runtime = _hud.facility;
+
+    if (global.PlayerState == PlayerState.FACILITY)
+    {
+        sc_facility_interface_update(_hud);
+        return;
+    }
+
+    if (global.PlayerState != PlayerState.ACTIVE
+    || !instance_exists(global.player_id))
+        return;
+
+    if (GAME_TICK >= _runtime.next_scan_tick)
+    {
+        _runtime.nearby_id = sc_facility_nearest_find(global.player_id);
+        _runtime.next_scan_tick = GAME_TICK + _runtime.scan_interval;
+    }
+
+    if (global.input.action.interact_pressed
+    && instance_exists(_runtime.nearby_id))
+        sc_facility_interface_open(_hud, _runtime.nearby_id);
+}
+
+/// @description Updates facility recipe selection and processing buttons.
+function sc_facility_interface_update(_hud)
+{
+    var _runtime = _hud.facility;
+
+    if (!instance_exists(_runtime.active_id)
+    || global.input.action.interact_pressed
+    || global.input.action.inventory_pressed)
+    {
+        sc_facility_interface_close(_hud);
+        return;
+    }
+
+    var _data = _hud.data.facility;
+    var _buttons = _runtime.buttons;
+    var _panel_x = floor((display_get_gui_width() - _data.width) * 0.5);
+    var _panel_y = floor((display_get_gui_height() - _data.height) * 0.5);
+    var _mouse_x = device_mouse_x_to_gui(0) - _panel_x;
+    var _mouse_y = device_mouse_y_to_gui(0) - _panel_y;
+    var _pressed = global.input.action.ui_select_pressed;
+
+    if (sc_gui_button_update(_buttons.close, _mouse_x, _mouse_y, _pressed))
+    {
+        sc_facility_interface_close(_hud);
+        return;
+    }
+
+    for (var _i = 0; _i < array_length(_runtime.recipe_keys); ++_i)
+    {
+        var _y = _data.recipe_y + _i * _data.recipe_height;
+
+        if (_pressed && point_in_rectangle(
+            _mouse_x,
+            _mouse_y,
+            _data.recipe_x,
+            _y,
+            _data.recipe_x + _data.recipe_width,
+            _y + _data.recipe_height - 6
+        ))
+        {
+            _runtime.selected_recipe = _i;
+            _runtime.amount = 1;
+            return;
+        }
+    }
+
+    if (sc_gui_button_update(_buttons.amount_down, _mouse_x, _mouse_y, _pressed))
+        _runtime.amount = max(1, _runtime.amount - 1);
+
+    if (sc_gui_button_update(_buttons.amount_up, _mouse_x, _mouse_y, _pressed))
+        _runtime.amount = min(99, _runtime.amount + 1);
+
+    var _recipe_available = array_length(_runtime.recipe_keys) > 0;
+    _buttons.process.enabled = false;
+
+    if (_recipe_available)
+    {
+        var _recipe_key = _runtime.recipe_keys[_runtime.selected_recipe];
+        var _recipe = sc_recipe_get(_recipe_key);
+        var _processor = sc_facility_processor_get(
+            _runtime.active_id.structure.facility,
+            _recipe.service
+        );
+
+        var _amount_max = sc_recipe_player_amount_get(
+            global.player_id,
+            _recipe
+        );
+
+        _runtime.amount = min(_runtime.amount, max(1, _amount_max));
+
+        _buttons.process.enabled =
+            _amount_max >= _runtime.amount
+            && array_length(_processor.queue) < _processor.queue_max;
+    }
+
+    if (sc_gui_button_update(_buttons.process, _mouse_x, _mouse_y, _pressed))
+    {
+        sc_facility_job_add(
+            _runtime.active_id,
+            _runtime.recipe_keys[_runtime.selected_recipe],
+            _runtime.amount,
+            global.player_id
+        );
+
+        _runtime.amount = 1;
+    }
+
+    var _output = _runtime.active_id.structure.facility.output;
+    _buttons.collect.enabled = array_length(_output) > 0;
+
+    if (sc_gui_button_update(_buttons.collect, _mouse_x, _mouse_y, _pressed))
+        sc_facility_output_collect(_runtime.active_id, global.player_id);
+}
+
+/// @description Draws the nearby facility interaction prompt.
+function sc_facility_prompt_draw(_hud)
+{
+    var _runtime = _hud.facility;
+
+    if (global.PlayerState != PlayerState.ACTIVE
+    || !instance_exists(_runtime.nearby_id))
+        return;
+
+    var _structure = _runtime.nearby_id;
+    var _interaction = _structure.structure.facility.definition.interaction;
+    var _terminal = sc_facility_terminal_position_get(_structure);
+    var _camera = view_camera[0];
+    var _view_x = camera_get_view_x(_camera);
+    var _view_y = camera_get_view_y(_camera);
+    var _view_width = camera_get_view_width(_camera);
+    var _view_height = camera_get_view_height(_camera);
+    var _gui_width = display_get_gui_width();
+    var _gui_height = display_get_gui_height();
+    var _x = (_terminal.x - _view_x) / _view_width * _gui_width;
+    var _y = (_terminal.y - _view_y) / _view_height * _gui_height - 54;
+    var _palette = _hud.data.palette;
+
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+
+    draw_set_colour(_palette.void);
+    draw_set_alpha(0.92);
+    draw_rectangle(_x - 145, _y - 18, _x + 145, _y + 18, false);
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(1);
+    draw_rectangle(_x - 145, _y - 18, _x + 145, _y + 18, true);
+
+    draw_set_colour(_palette.core);
+    draw_text(_x, _y, "[F]  " + _interaction.prompt);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
+
+/// @description Draws one compact inventory list inside the facility interface.
+function sc_facility_inventory_draw(_hud, _x, _y)
+{
+    var _slots = global.player_id.inventory.slots;
+    var _palette = _hud.data.palette;
+    var _draw_y = _y + 142;
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 42, _y + 102, "SHIP CARGO");
+
+    for (var _i = 0; _i < array_length(_slots); ++_i)
+    {
+        var _slot = _slots[_i];
+        if (is_undefined(_slot)) continue;
+
+        var _definition = variable_struct_get(global.data.items, _slot.key);
+        var _sprite = sc_resource_pickup_visual_cache_get(_slot.key, _i mod 4);
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite, 0, _x + 65, _draw_y, 0.9, 0.9, 0, c_white, 1);
+
+        draw_set_colour(_palette.text);
+        draw_text(_x + 100, _draw_y - 8, _slot.name);
+
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _x + 100,
+            _draw_y + 10,
+            "x" + string(_slot.amount)
+            + "   MASS "
+            + string(_slot.amount * _definition.cargo.weight)
+        );
+
+        _draw_y += 43;
+        if (_draw_y > _y + 610) break;
+    }
+}
+
+/// @description Draws processor activity and completed facility output.
+function sc_facility_status_draw(_hud, _structure, _x, _y)
+{
+    var _facility = _structure.structure.facility;
+    var _palette = _hud.data.palette;
+    var _processors = _facility.processors;
+    var _draw_y = _y;
+
+    for (var _i = 0; _i < array_length(_processors); ++_i)
+    {
+        var _processor = _processors[_i];
+
+        draw_set_halign(fa_left);
+        draw_set_colour(_palette.accent);
+        draw_text(_x, _draw_y, sc_facility_service_name_get(_processor.type));
+
+        if (is_undefined(_processor.active))
+        {
+            draw_set_colour(_palette.muted);
+            draw_text(_x + 120, _draw_y, "IDLE");
+        }
+        else
+        {
+            var _job = _processor.active;
+            var _recipe = sc_recipe_get(_job.recipe_key);
+            var _ratio = 1 - _job.remaining / max(1, _job.duration);
+
+            draw_set_colour(_palette.text);
+            draw_text(_x + 120, _draw_y, _recipe.identity.name + " x" + string(_job.amount));
+
+            draw_set_colour(_palette.background);
+            draw_rectangle(_x + 120, _draw_y + 15, _x + 350, _draw_y + 22, false);
+
+            draw_set_colour(_palette.accent);
+            draw_rectangle(_x + 120, _draw_y + 15, _x + 120 + 230 * _ratio, _draw_y + 22, false);
+        }
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_palette.muted);
+        draw_text(_x + 410, _draw_y, "QUEUE " + string(array_length(_processor.queue)));
+
+        _draw_y += 48;
+    }
+
+    draw_set_halign(fa_left);
+    draw_set_colour(_palette.accent);
+    draw_text(_x, _draw_y + 8, "COMPLETED OUTPUT");
+
+    _draw_y += 38;
+
+    for (var _i = 0; _i < array_length(_facility.output); ++_i)
+    {
+        var _entry = _facility.output[_i];
+
+        draw_set_colour(_palette.text);
+        draw_text(_x, _draw_y, _entry.name);
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_palette.core);
+        draw_text(_x + 410, _draw_y, "x" + string(_entry.amount));
+
+        draw_set_halign(fa_left);
+        _draw_y += 25;
+    }
+}
+
+/// @description Draws the complete facility interface.
+function sc_facility_interface_draw(_hud)
+{
+    var _runtime = _hud.facility;
+
+    if (!_runtime.open
+    || global.PlayerState != PlayerState.FACILITY
+    || !instance_exists(_runtime.active_id))
+        return;
+
+    var _data = _hud.data.facility;
+    var _palette = _hud.data.palette;
+    var _structure = _runtime.active_id;
+    var _panel_x = floor((display_get_gui_width() - _data.width) * 0.5);
+    var _panel_y = floor((display_get_gui_height() - _data.height) * 0.5);
+
+    draw_set_colour(c_black);
+    draw_set_alpha(0.68);
+    draw_rectangle(0, 0, display_get_gui_width(), display_get_gui_height(), false);
+
+    draw_set_alpha(1);
+    matrix_set(matrix_world, matrix_build(_panel_x, _panel_y, 0, 0, 0, 0, 1, 1, 1));
+    sc_hud_panel_primitive_draw(_data.width, _data.height, 28, _palette);
+    matrix_set(matrix_world, matrix_build_identity());
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_palette.core);
+    draw_text(_panel_x + 42, _panel_y + 40, string_upper(_structure.structure.data.identity.name));
+
+    draw_set_colour(_palette.accent);
+    draw_text(_panel_x + 42, _panel_y + 68, "INDUSTRIAL PROCESSING");
+
+    draw_set_colour(_palette.outline);
+    draw_line(_panel_x + 515, _panel_y + 90, _panel_x + 515, _panel_y + _data.height - 35);
+
+    sc_facility_inventory_draw(_hud, _panel_x, _panel_y);
+
+    draw_set_halign(fa_left);
+    draw_set_colour(_palette.accent);
+    draw_text(_panel_x + 550, _panel_y + 102, "AVAILABLE RECIPES");
+
+    for (var _i = 0; _i < array_length(_runtime.recipe_keys); ++_i)
+    {
+        var _recipe = sc_recipe_get(_runtime.recipe_keys[_i]);
+        var _row_y = _panel_y + _data.recipe_y + _i * _data.recipe_height;
+        var _selected = _runtime.selected_recipe == _i;
+
+        draw_set_colour(_selected ? _palette.panel_light : _palette.void);
+        draw_rectangle(
+            _panel_x + _data.recipe_x,
+            _row_y,
+            _panel_x + _data.recipe_x + _data.recipe_width,
+            _row_y + _data.recipe_height - 6,
+            false
+        );
+
+        draw_set_colour(_selected ? _palette.accent : _palette.outline);
+        draw_rectangle(
+            _panel_x + _data.recipe_x,
+            _row_y,
+            _panel_x + _data.recipe_x + _data.recipe_width,
+            _row_y + _data.recipe_height - 6,
+            true
+        );
+
+        draw_set_colour(_selected ? _palette.core : _palette.text);
+        draw_text(_panel_x + _data.recipe_x + 14, _row_y + 17, _recipe.identity.name);
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _panel_x + _data.recipe_x + _data.recipe_width - 14,
+            _row_y + 17,
+            sc_facility_service_name_get(_recipe.service)
+        );
+
+        draw_set_halign(fa_left);
+    }
+
+    if (array_length(_runtime.recipe_keys) > 0)
+    {
+        var _recipe = sc_recipe_get(_runtime.recipe_keys[_runtime.selected_recipe]);
+        var _detail_y = _panel_y + 285;
+
+        draw_set_colour(_palette.accent);
+        draw_text(_panel_x + 550, _detail_y, "REQUIREMENTS");
+
+        for (var _i = 0; _i < array_length(_recipe.inputs); ++_i)
+        {
+            var _input = _recipe.inputs[_i];
+            var _item = variable_struct_get(global.data.items, _input[0]);
+            var _stored = sc_player_inventory_item_count(global.player_id, _input[0]);
+            var _needed = _input[1] * _runtime.amount;
+
+            draw_set_colour(_stored >= _needed ? _palette.text : make_colour_rgb(255, 75, 90));
+            draw_text(
+                _panel_x + 550,
+                _detail_y + 30 + _i * 24,
+                _item.identity.name + "   " + string(_stored) + " / " + string(_needed)
+            );
+        }
+
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _panel_x + 550,
+            _detail_y + 88,
+            "PROCESS TIME // "
+            + string(ceil(_recipe.duration * _runtime.amount / 60))
+            + " SEC"
+        );
+    }
+
+    sc_facility_status_draw(
+        _hud,
+        _structure,
+        _panel_x + 550,
+        _panel_y + 405
+    );
+
+    sc_gui_button_draw(_runtime.buttons.close, _panel_x, _panel_y, _palette);
+    sc_gui_button_draw(_runtime.buttons.amount_down, _panel_x, _panel_y, _palette);
+    sc_gui_button_draw(_runtime.buttons.amount_up, _panel_x, _panel_y, _palette);
+    sc_gui_button_draw(_runtime.buttons.process, _panel_x, _panel_y, _palette);
+    sc_gui_button_draw(_runtime.buttons.collect, _panel_x, _panel_y, _palette);
+
+    draw_set_halign(fa_center);
+    draw_set_colour(_palette.core);
+    draw_text(_panel_x + 830, _panel_y + 363, "BATCH x" + string(_runtime.amount));
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}

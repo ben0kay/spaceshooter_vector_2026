@@ -23,6 +23,10 @@ switch (global.PlayerState)
     case PlayerState.INVENTORY:
         sc_player_combat_permission_update(id);
     break;
+	
+	case PlayerState.FACILITY:
+        sc_player_combat_permission_update(id);
+    break;
 
     case PlayerState.DASHING:
         sc_player_update_dashing(id);

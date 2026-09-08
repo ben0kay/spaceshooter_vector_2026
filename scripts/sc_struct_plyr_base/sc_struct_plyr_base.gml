@@ -6,6 +6,20 @@ function sc_world_structure_register_player_base()
             key: "player_starting_base",
             name: "Frontier Haven"
         },
+		
+		facility_controller: {
+            interaction: {
+                forward: 1120,
+                side: 0,
+                radius: 320,
+                prompt: "ACCESS FRONTIER HAVEN"
+            },
+
+            processors: [
+                { type: FacilityService.REFINERY, speed: 1, queue_max: 3 },
+                { type: FacilityService.FABRICATOR, speed: 1, queue_max: 3 }
+            ]
+        },
 
         visual: {
     canvas_width: 2304,

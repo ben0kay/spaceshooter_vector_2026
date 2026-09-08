@@ -3,7 +3,7 @@
 //==================================================
 enum GameState { BOOT, MENU, PLAYING, PAUSED, GAME_OVER }
 enum LevelState { NONE, INITIALIZING, SHIP_SELECT, PLAYING, DEBUG, COMPLETE, FAILED, EXITING }
-enum PlayerState { INITIALIZING, ACTIVE, DASHING, STUNNED, INVENTORY, DISABLED, DESTROYED }
+enum PlayerState { INITIALIZING, ACTIVE, DASHING, STUNNED, INVENTORY, FACILITY, DISABLED, DESTROYED }
 enum BossEncounterState { WAITING, APPROACH, WAVE, BOSS, VICTORY }
 //==================================================
 // UI / MENU

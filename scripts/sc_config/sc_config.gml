@@ -299,6 +299,7 @@ function sc_input_init()
             mine: mb_middle,
             fire_secondary: mb_right,
             inventory: ord("E"),
+			interact: ord("F"),
             dash: vk_shift,
 
             weapon_1: ord("1"),
@@ -329,6 +330,7 @@ function sc_input_init()
 
             fullscreen_pressed: false,
             inventory_pressed: false,
+			interact_pressed: false,
             dash_held: false,
             dash_pressed: false,
 
@@ -368,6 +370,7 @@ function sc_input_update()
     _action.ui_select_released = mouse_check_button_released(mb_left);
 
     _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
+	_action.interact_pressed = keyboard_check_pressed(_binding.interact);
     _action.dash_held = keyboard_check(_binding.dash);
     _action.dash_pressed = keyboard_check_pressed(_binding.dash);
 

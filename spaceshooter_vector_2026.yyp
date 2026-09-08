@@ -162,6 +162,7 @@
     {"id":{"name":"sc_enemy","path":"scripts/sc_enemy/sc_enemy.yy",},},
     {"id":{"name":"sc_entity","path":"scripts/sc_entity/sc_entity.yy",},},
     {"id":{"name":"sc_Enums","path":"scripts/sc_Enums/sc_Enums.yy",},},
+    {"id":{"name":"sc_facility","path":"scripts/sc_facility/sc_facility.yy",},},
     {"id":{"name":"sc_faction_device_bake","path":"scripts/sc_faction_device_bake/sc_faction_device_bake.yy",},},
     {"id":{"name":"sc_faction_device","path":"scripts/sc_faction_device/sc_faction_device.yy",},},
     {"id":{"name":"sc_faction_register","path":"scripts/sc_faction_register/sc_faction_register.yy",},},

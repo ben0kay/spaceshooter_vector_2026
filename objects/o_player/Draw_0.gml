@@ -9,6 +9,7 @@ switch (global.PlayerState)
 
     case PlayerState.ACTIVE:
     case PlayerState.INVENTORY:
+	case PlayerState.FACILITY:
         sc_player_draw_ship(id, c_white, 1, true, true);
     break;
 

@@ -1,4 +1,4 @@
-/// @description Updates HUD, inventory and debug interfaces.
+/// @description Updates HUD, inventory, facilities and debug interfaces.
 if (global.LevelState != LevelState.PLAYING
 && global.LevelState != LevelState.DEBUG)
     exit;
@@ -39,6 +39,7 @@ if (global.LevelState == LevelState.DEBUG)
 
 sc_hud_level_update(hud);
 sc_hud_minimap_update(hud);
+sc_facility_interaction_update(hud);
 
 switch (global.PlayerState)
 {
@@ -49,5 +50,9 @@ switch (global.PlayerState)
 
     case PlayerState.INVENTORY:
         sc_inventory_update(hud);
+    break;
+
+    case PlayerState.FACILITY:
+        // Facility input is handled by sc_facility_interaction_update().
     break;
 }

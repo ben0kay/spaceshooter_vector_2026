@@ -86,7 +86,17 @@ function sc_hud_level_data()
             detection_width: 1.5
         },
 			
-		        inventory: {
+		facility: {
+            width: 1120,
+            height: 680,
+
+            recipe_x: 550,
+            recipe_y: 132,
+            recipe_width: 525,
+            recipe_height: 48
+        },			
+			
+		inventory: {
             width: 1280,
             height: 720,
 
@@ -179,6 +189,26 @@ function sc_hud_level_init(_hud_object)
 
             enemy_contacts: [],
             asteroid_contacts: []
+        },
+			
+		facility: {
+            open: false,
+            nearby_id: noone,
+            active_id: noone,
+            next_scan_tick: GAME_TICK,
+            scan_interval: 10,
+
+            recipe_keys: [],
+            selected_recipe: 0,
+            amount: 1,
+
+            buttons: {
+                close: sc_gui_button_create("close", 1060, 24, 34, 34, "X", GUIButtonStyle.DANGER),
+                amount_down: sc_gui_button_create("amount_down", 730, 340, 42, 38, "-", GUIButtonStyle.STANDARD),
+                amount_up: sc_gui_button_create("amount_up", 888, 340, 42, 38, "+", GUIButtonStyle.STANDARD),
+                process: sc_gui_button_create("process", 950, 340, 125, 38, "PROCESS", GUIButtonStyle.PRIMARY),
+                collect: sc_gui_button_create("collect", 930, 605, 145, 40, "COLLECT ALL", GUIButtonStyle.PRIMARY)
+            }
         },
 
         inventory: {

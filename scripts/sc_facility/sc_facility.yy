@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_facility",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_facility",
+  "parent":{
+    "name":"SCRIPTS---",
+    "path":"folders/SCRIPTS---.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

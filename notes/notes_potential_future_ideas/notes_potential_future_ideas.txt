@@ -624,3 +624,309 @@ Future pipeline:
 - Add optional resistances/immunities later.
 - Status fields should scan nearby targets at staggered intervals instead of every target searching every Step.
 - Wire modifiers into shared movement, rotation, weapon and projectile update functions.
+
+
+
+
+Refining — Turn raw ores into processed materials at refinery facilities.
+Fabrication — Convert processed materials into plates, wires, boards and other components.
+Assemblies — Combine modules into complete drones, weapons, generators or deployables.
+Recipe discovery — Unlock recipes by scanning unfamiliar ships, wrecks or equipment.
+Reverse engineering — Sacrifice rare equipment to permanently learn how to manufacture it.
+Blueprint fragments — Collect several blueprint pieces before unlocking advanced recipes.
+Faction blueprints — Corp, Rebel and Simulant equipment could require faction-specific schematics.
+Recipe quality tiers — Better blueprints could produce lighter or stronger versions of the same item.
+Alternative recipes — Let players substitute scarce materials with less-efficient alternatives.
+Experimental recipes — Rare facilities could expose dangerous but powerful prototype recipes.
+Bulk crafting — Queue large batches of ammunition, plates or components.
+Parallel fabrication — Upgraded facilities could process several jobs simultaneously.
+Facility efficiency — Better stations could consume fewer resources per completed recipe.
+Facility speed upgrades — Advanced machinery could dramatically reduce processing times.
+Facility power requirement — Some large machines could need an active reactor before operating.
+Overclocking — Push a facility faster at the cost of energy, heat or breakdown risk.
+Facility damage — Old abandoned machinery could require repairs before becoming usable.
+Portable fabricator — A late-game ship module could craft a limited recipe set anywhere.
+Portable refinery — A heavy ship module could slowly refine ore while travelling.
+Industrial base expansion — Add refinery, forge, electronics and munitions sections to the player base.
+Cargo mass — You already have item mass foundations, so heavier cargo can affect handling and acceleration.
+Cargo compression — Rare storage modules could reduce effective mass of specific resource categories.
+Specialized cargo holds — Ore holds, ammunition magazines and volatile-material tanks could have bonuses.
+Cargo jettison — Dump heavy cargo instantly when you desperately need acceleration.
+Cargo damage — Explosive cargo could become dangerous if the hull takes severe damage.
+Cargo insurance — Pay credits to recover some lost materials after death.
+Hidden cargo compartments — Smuggling modules could conceal goods from faction scans.
+Resource contamination — Damaged or ancient ore deposits could refine inefficiently until purified.
+Rare ore variants — Occasionally spawn unusually pure deposits that yield extra refined material.
+Deep-core mining — Huge asteroids could contain protected resource nodes beneath their outer shell.
+Asteroid prospecting — Scanner upgrades could reveal likely resource composition before mining.
+Volatile asteroids — Some mineral bodies could explode or split when mined carelessly.
+Asteroid cavities — Breaking certain rocks could reveal hidden wrecks, caches or enemies.
+Moving asteroid fields — Large fields could slowly drift through sectors and alter travel routes.
+Resource depletion — Frequently mined local regions could temporarily become less productive.
+Mining claims — Corp-controlled resource zones could become hostile if you mine without permission.
+Automated mining drones — Deploy small drones to extract nearby rocks while you defend the area.
+Mining barges — Add slow civilian ships carrying valuable processed resources.
+Ore convoys — Factions could transport mined resources between extraction sites and bases.
+Convoy escorts — Protect friendly or neutral cargo ships for payment.
+Convoy raiding — Attack supply fleets to steal resources and disrupt faction logistics.
+Faction supply levels — Destroying convoys could temporarily reduce that faction's local ship quality.
+Faction reinforcements — Existing alert systems could escalate from nearby fighters to heavier response ships.
+Threat escalation — Repeated aggression in one sector could steadily increase response strength.
+Wanted level — Factions could remember major attacks and dispatch hunters after you.
+Bounty hunters — Named elite enemies could periodically track the player across sectors.
+Faction ceasefire — High reputation could make normally suspicious patrols ignore you.
+Faction reputation — Missions, attacks and rescues could change standing independently with each faction.
+Faction hostility thresholds — Reputation could progress from allied to neutral to suspicious to hostile.
+Faction docking rights — Reputation could determine which stations let you dock or fabricate.
+Faction discounts — Friendly factions could offer cheaper repairs, ammunition and components.
+Faction-exclusive upgrades — High standing could unlock specialized Corp, Rebel or other technology.
+Faction betrayal — Attacking allies could rapidly destroy reputation and trigger retaliation.
+Faction diplomacy events — Temporary wars or truces could alter who fights whom in certain sectors.
+Dynamic battles — Spawn ongoing faction-vs-faction fights the player can ignore or join.
+Battle salvage — Wait until two factions weaken each other and collect the wreckage.
+Distress signals — Random broadcasts could lead to survivors, traps, wrecks or battles.
+False distress signals — Rebels or pirates could deliberately lure the player into ambushes.
+Emergency beacons — Damaged civilian ships could request fuel, repairs or escort.
+Abandoned stations — Sparse derelict facilities could contain processing machinery, loot and hazards.
+Station restoration — Repair abandoned facilities and permanently reactivate their services.
+Temporary safehouses — Restored outposts could become local repair/refuel points.
+Station ownership — Eventually claim certain abandoned installations for yourself.
+Station storage — Owned facilities could maintain persistent local resource stockpiles.
+Remote facility status — Navigation UI could show whether your distant processing jobs are complete.
+Facility attacks — Hostile factions could occasionally raid player-controlled infrastructure.
+Automated defence turrets — Construct turrets around reclaimed facilities.
+Shield generators — Deploy structures that protect nearby facilities or ships.
+Sensor arrays — Structures could reveal enemy contacts or POIs over a large radius.
+Jamming arrays — Enemy installations could distort your minimap and targeting systems.
+Communications relays — Activating relays could reveal more of the sector map.
+Navigation beacons — Discoverable beacons could permanently mark safe routes or POIs.
+Hidden sectors — Special coordinates could remain inaccessible until discovered through scanning.
+Anomaly signals — Scanner contacts with unusual signatures could lead to rare encounters.
+Long-range scanning — Upgrade the current navigation/minimap foundation into active sector surveying.
+Scanner pulse — Trigger a temporary radial scan that reveals hidden contacts.
+Signature strength — Large engines, weapons and reactors could make ships easier to detect.
+Silent running — Reduce signature at the cost of speed, shields or weapon availability.
+Sensor ghosts — Certain anomalies or enemies could create false radar contacts.
+Faction radar profiles — Different factions could have recognizably different contact signatures.
+Unknown contacts — Distant ships could display only approximate size until properly scanned.
+Ship identification — Maintain a database of scanned enemy classes and their known weapons.
+Bestiary/intelligence log — Your existing LOG inventory/tab concept could catalogue discovered enemies and structures.
+Enemy weapon knowledge — Scanning enough examples could reveal damage types and ranges.
+Weak-point discovery — Detailed scans could reveal vulnerable systems on larger ships.
+Subsystem damage — Larger enemies could have engines, weapons, shields or sensors independently disabled.
+Engine destruction — Destroyed engines could reduce enemy speed and alter movement behaviour.
+Weapon destruction — Individual hardpoints could become valid damageable targets.
+Sensor destruction — Damaging sensors could shorten enemy detection and targeting range.
+Reactor destruction — A destroyed reactor could cause catastrophic delayed explosions.
+Shield emitters — Large ships could physically expose shield components the player can target.
+Armour sections — Capital ships could lose armour independently across different regions.
+Directional armour — Front, side and rear armour could have different protection values.
+Critical hits — Penetrating hull damage could occasionally disable internal systems.
+Fire propagation — Thermal damage could create internal fires that continue damaging subsystems.
+Electrical disruption — Your existing damage-effect structure could temporarily disable weapons or shields.
+Corrosion — Corrosive attacks could permanently reduce armour until repaired.
+Stagger weapons — Heavy kinetic hits could briefly disrupt turning or aiming.
+Enemy field repairs — You already have critical-response repair behaviour that could evolve into visible repair drones or welding effects.
+Repair ships — Support vessels could actively restore nearby allied armour or hull.
+Shield support ships — Dedicated ships could project shields over nearby allies.
+Ammo support ships — Large fleet tenders could replenish missiles or ammunition.
+Electronic warfare ships — Add support enemies that jam targeting, radar or missile guidance.
+Command ships — Nearby enemies could gain accuracy, morale or coordination while a command ship survives.
+Formation leaders — Existing role/doctrine systems could let leader ships control group spacing and tactics.
+Formation bonuses — Corp fleets could gain defensive benefits while maintaining precise formations.
+Formation breaking — Destroying a leader could make remaining ships scatter or retreat.
+Wingmen — Elite enemies could spawn with dedicated escorts that protect them.
+Interceptor screens — Fighters could prioritize incoming missiles or ships approaching capital vessels.
+Carrier ships — Large enemies could launch fighters or combat drones during battle.
+Drone bays — Destroying a carrier's bay could stop further drone launches.
+Repair drones — Ships could deploy tiny maintenance units when critically damaged.
+Shield drones — Drones could orbit larger ships and contribute segmented shields.
+Suicide drones — Rebel or automated factions could deploy kamikaze units.
+Recon drones — Small fast units could locate the player and call reinforcements rather than fight.
+Mine-layer ships — Enemies could exploit your deployable/mine architecture to reshape combat spaces.
+Defensive minefields — Important stations could be surrounded by persistent mine clusters.
+Smart mines — Advanced mines could distinguish friend from foe and reposition slightly.
+EMP mines — Mines could disable shields or systems instead of dealing raw damage.
+Decoy mines — Some devices could generate false radar contacts.
+Proximity alarms — Entering defended territory could trigger escalating warnings before combat begins.
+Surrender behaviour — Certain civilian or damaged enemies could stop fighting instead of fleeing.
+Boarding opportunities — Disabled large ships could become lootable rather than immediately exploding.
+Capture instead of kill — Certain missions could reward disabling engines and weapons without destroying hull.
+Escape pods — Destroyed ships could occasionally launch survivors or valuable officers.
+Pilot recovery — Rescue pods could grant reputation, credits or information.
+Named captains — Rare enemies could have persistent names and unique combat traits.
+Enemy veterans — Ships that escape the player could later return with increased rank.
+Nemesis ships — A repeatedly surviving enemy could evolve into a personalized rival.
+Enemy scars — Returning ships could visually retain damage or replacement armour.
+Affixes — Random elites could gain modifiers like Armoured, Overcharged, Rapid-Fire or Regenerative.
+Faction-specific affixes — Rebels could get unstable improvised modifiers while Corp gets disciplined technical upgrades.
+Elite equipment drops — Rare enemies could drop intact modules rather than only raw resources.
+Salvage rarity — Wrecks could contain common scrap, intact components or rare technology.
+Salvage beam — Add a dedicated tool for extracting useful parts from wrecks.
+Wreck decay — Salvageable debris could slowly become less valuable after destruction.
+Exploding wrecks — Unstable reactors could make approaching fresh wreckage dangerous.
+Wreck towing — Later ships could tow valuable derelicts back to a base.
+Ship dismantling — Break captured or abandoned ships into materials and modules.
+Black box recovery — Destroyed vessels could drop data containing maps, recipes or faction intel.
+Data caches — Hidden containers could unlock lore, coordinates or manufacturing technology.
+Encrypted data — Advanced caches could require processing at a computer facility before use.
+Signal triangulation — Multiple discovered signals could reveal a hidden base or boss location.
+Sector POIs — Add wreck fields, abandoned depots, asteroid caves, listening posts and battlefields.
+Sector personality — Each sector could get a dominant hazard/resource/faction identity.
+Radiation zones — Certain regions could slowly damage hull or electronics without protection.
+Ion storms — Temporary storms could weaken shields and interfere with sensors.
+Nebula concealment — Dense nebulae could shorten everybody's detection range.
+Gravity anomalies — Areas could distort movement vectors and projectile trajectories.
+Solar flares — Periodic events could temporarily make open space hazardous.
+Debris clouds — Dense wreckage could provide physical cover during fights.
+Moving hazards — Storms or debris fronts could slowly cross a sector over time.
+Environmental weapons — Shoot unstable asteroids or reactors to damage nearby enemies.
+Hazard-resistant modules — Craft equipment specifically for radiation, heat or electrical environments.
+Sector weather forecast — Upgraded sensors could warn about incoming environmental events.
+Patrol routes — Factions could have recognizable recurring routes between installations.
+Trade lanes — Civilian and cargo traffic could naturally follow routes through sectors.
+Pirate interception points — Rebels could camp high-traffic routes instead of spawning randomly.
+Border zones — Faction edges could naturally contain more patrols and skirmishes.
+Faction capitals — Deep territory could contain enormous defended headquarters.
+Shipyards — Destroying or capturing shipyards could affect local reinforcement composition.
+Repair yards — Damaged enemies could physically retreat to facilities to recover.
+Ammo depots — Destroying storage facilities could create spectacular chain explosions.
+Fuel depots — Fuel-rich installations could become valuable raid targets.
+Sensor stations — Destroying radar facilities could reduce enemy awareness in that region.
+Reinforcement beacons — Certain structures could continuously call additional enemies until destroyed.
+Shielded bases — Require destroying external generators before damaging the central installation.
+Multi-stage installations — Large bases could function like miniature boss encounters with several objectives.
+Boss approach sequences — Your existing boss encounter states can support waves before the boss actually enters.
+Boss phases — Damage thresholds could swap attacks, movement patterns and exposed weak points.
+Boss armour break — Damage-layer code could physically strip armour off bosses during combat.
+Boss weapon destruction — Let players permanently eliminate specific boss attacks by destroying mounts.
+Boss retreat phases — A boss could temporarily withdraw behind escorts or station defences.
+Boss reinforcements — Phase changes could launch fighters, drones or support ships.
+Boss environmental attacks — Giant enemies could weaponize mines, debris or sector hazards.
+Boss desperation mode — Low hull could trigger reckless speed, overcharged weapons or reactor instability.
+Boss loot choice — Let players choose one of several rare modules after victory.
+Boss blueprints — First kills could unlock advanced assembly recipes.
+Boss remnants — Defeated bosses could leave persistent wreck POIs for later salvage.
+Ship upgrades through modules — Crafted modules could modify engines, armour, weapons, cargo or sensors.
+Module slots — Give ships a limited number of general-purpose system slots.
+Hardpoint upgrades — Improve traverse speed, cooling, accuracy or ammunition efficiency per mount.
+Weapon cooling — Powerful weapons could accumulate heat instead of relying only on cooldown.
+Ship heat — Engines, shields and weapons could contribute to a shared thermal budget.
+Overheating penalties — High heat could reduce weapon rate, shields or engine efficiency.
+Heat sinks — Craft modules that improve cooling or temporarily dump heat.
+Emergency venting — Rapidly cool the ship while becoming highly visible on sensors.
+Power allocation — Shift reactor output between weapons, engines and shields.
+Emergency power — Temporarily exceed normal reactor limits at the risk of system damage.
+Damaged modules — Equipment could become impaired instead of disappearing when heavily damaged.
+Field module replacement — Install replacement components while stationary in space.
+Repair kits — Craft consumables that speed up field repairs.
+Advanced armour plates — Later recipes could combine metal, ceramics and composites.
+Reactive armour — Specialized plates could reduce explosive damage but degrade when triggered.
+Thermal armour — Different armour materials could resist specific damage types.
+Shield frequency modules — Tune shields toward particular damage types before difficult encounters.
+Backup generator — A module could restore limited power when the main reactor is disabled.
+Emergency thrusters — Sacrifice fuel efficiency for temporary escape acceleration.
+Afterburner damage — Extreme boost use could gradually damage engines without upgrades.
+Fuel grades — Refined fuels could provide different thrust efficiency or performance.
+Ammo manufacturing — Fabricate bullet crates from plates and chemical components.
+Missile manufacturing — Combine casings, explosives and guidance modules into rockets.
+Special ammunition — Craft armour-piercing, incendiary, EMP or corrosive rounds.
+Limited missile magazines — Heavy weapons could require carried ammunition rather than infinite cooldowns.
+Magazine explosions — Destroyed ammo storage on large ships could trigger secondary blasts.
+Weapon prototypes — Experimental weapons could be powerful but unreliable or expensive.
+Faction weapon variants — Use your weapon registry to create several technologies from the same base delivery system.
+Weapon salvage — Rarely recover intact enemy hardpoints and install or dismantle them.
+Weapon research — Repeatedly using or scanning a weapon could unlock improved variants.
+Turret targeting modes — Let automated player turrets choose nearest, weakest, missile or largest targets.
+Point defence — Dedicated turrets could automatically intercept incoming rockets and drones.
+Missile countermeasures — Add flares, chaff or ECM modules.
+Decoy drones — Deploy drones that imitate the player's sensor signature.
+Tractor beam — Pull pickups, wreck fragments or small objects toward the ship.
+Grappling system — Attach to disabled ships, cargo or debris for towing interactions.
+Deployable turret — Your DEPLOYABLE weapon delivery already gives you a natural route to temporary player defences.
+Deployable shield beacon — Drop a temporary defensive bubble during difficult fights.
+Deployable repair drone — Create a stationary drone that slowly repairs nearby friendly ships.
+Deployable sensor buoy — Leave temporary radar coverage in an unexplored area.
+Deployable refinery drone — Late-game machinery could slowly process ore in the field.
+Combat drone assembly — Your proposed ASSEMBLY tier fits perfectly for complete autonomous drones.
+Drone loadouts — Craft mining, repair, interceptor, missile and electronic-warfare variants.
+Drone command limit — Ship modules could determine how many drones can operate simultaneously.
+Drone recovery — Surviving drones could dock again instead of being disposable.
+Drone damage — Damaged drones could require components to repair between deployments.
+Drone carrier ship — Eventually let the player own a hull focused almost entirely around drone capacity.
+Ship construction projects — Full ships should probably sit above normal inventory assemblies as base construction projects.
+Ship blueprints — Major progression rewards could unlock entirely new player hulls.
+Hull specialization — Scouts, miners, interceptors, freighters and combat ships could each emphasize different systems.
+Ship manufacturing — A late-game shipyard could consume huge quantities of assemblies over several minutes.
+Capital construction — Extremely late game could let the player construct a genuinely enormous vessel or station.
+Base expansion projects — Large modules could physically add new wings or structures to the player base.
+Base reactor upgrades — Better reactors could unlock advanced fabrication and ship construction.
+Base defence events — Occasionally force the player to defend the home base from a faction raid.
+Base damage persistence — Important structures could remain damaged until repaired with crafted components.
+Base personnel abstraction — Crew could exist as a simple resource/upgrade without turning the game into colony management.
+Research lab — Build a base module that converts recovered data into technology unlocks.
+Engineering lab — Improve manufacturing recipes or module stats through investment.
+Automated factory — Endgame production could manufacture common components continuously from stored materials.
+Logistics drones — Owned facilities could automatically move resources between nearby station modules.
+Sector caches — Players could build small storage caches for long expeditions.
+Emergency fuel stations — Construct basic refuelling depots far from home.
+Player sensor network — Multiple deployed buoys could gradually reveal a persistent region-wide picture.
+Player-controlled territory — Repaired stations and sensor coverage could slowly make remote space feel owned.
+Faction counterattacks — Expanding into hostile territory could provoke targeted attacks on your infrastructure.
+Sector control meter — Destroying or capturing installations could shift local faction influence.
+Liberated sectors — Sufficiently reducing hostile influence could make a sector safer for mining and trade.
+Enemy occupation — Neglected friendly sectors could later be retaken by hostile forces.
+Procedural missions — Build missions directly from existing enemies, structures, cargo and sector systems.
+Escort missions — Protect a vulnerable ship until it reaches a location.
+Interception missions — Destroy a target before it leaves the map.
+Salvage contracts — Recover specific components from dangerous wreck fields.
+Mining contracts — Deliver a requested amount of a specific resource.
+Repair contracts — Bring armour plates or components to damaged stations.
+Recon missions — Scan specified locations without necessarily fighting.
+Assassination contracts — Hunt a named elite enemy.
+Convoy disruption — Destroy supply ships while leaving escorts optional.
+Station sabotage — Disable specific structures instead of simply destroying everything.
+Boss intel missions — Complete several smaller objectives to reveal a boss location.
+Timed extraction — Grab valuable cargo and escape before reinforcements arrive.
+Mission reputation choice — Completing work for one faction could anger another.
+Optional objectives — Missions could reward bonuses for rescuing ships, preserving cargo or avoiding civilian losses.
+Dynamic rewards — Pay in credits, materials, recipes, modules, reputation or coordinates.
+Rare merchants — Travelling ships could occasionally sell unusual modules and blueprints.
+Scrap traders — Exchange unwanted components for raw materials or credits.
+Faction markets — Different territories could value different materials.
+Price fluctuations — Local wars or resource shortages could alter commodity values.
+Smuggling — Illegal or faction-restricted technology could become lucrative high-risk cargo.
+Ship scanning by authorities — Corp patrols could inspect cargo near secured facilities.
+Bribery — Spend credits to avoid inspection or hostility in questionable situations.
+Black markets — Hidden Rebel stations could trade contraband and experimental gear.
+Rare travelling engineer — An NPC ship could offer unique upgrades when encountered.
+Wandering repair vessel — Occasionally encounter neutral support ships offering expensive field repairs.
+Ship distress dialogue — Simple communication choices could add personality without needing full NPC conversations.
+Faction radio chatter — Display short contextual messages during alerts, retreats and reinforcements.
+Enemy morale — Groups could become more likely to flee as allies die.
+Confidence bonuses — Large groups could become more aggressive while they maintain numerical superiority.
+Panic propagation — One retreating ship could increase flee probability for nearby allies.
+Corp disciplined withdrawal — Extend your current critical-response system into coordinated fleet retreats.
+Rebel desperation — Critically damaged Rebels could switch to reckless attacks or kamikaze behaviour.
+Simulant self-preservation logic — Simulants could retreat only when continued combat is mathematically pointless.
+Alien rage behaviour — Alien units could become more aggressive when nearby swarm members die.
+Automated protocol switching — Machines could change combat modes when command nodes are destroyed.
+Berserk response — Add an aggressive alternative alongside your existing critical retreat/flee system.
+Self-destruct response — Certain enemies could arm themselves when critically damaged and chase nearby targets.
+Emergency shield response — Critical ships could divert power into a temporary shield burst.
+Smoke-screen equivalent — Spacecraft could vent charged particles to break missile locks.
+Call-for-help response — Critical ships could broadcast specifically for support instead of fleeing.
+Protect-the-leader behaviour — Escorts could dynamically reposition around damaged leaders.
+Retreat repair visuals — Sheltered ships could visibly deploy welding sparks and repair drones.
+Return-to-combat behaviour — Your current sheltered/returning runtime can support repaired enemies rejoining battles.
+Enemy docking — Critically damaged ships could physically dock at repair stations.
+Enemy ammunition limits — Missile ships could eventually disengage when their magazines are empty.
+Enemy fuel limits — Long pursuits could force some civilian or older ships to retreat.
+Ambush posture — Some enemies could remain powered down until the player approaches.
+Stealth enemies — Contacts could appear only intermittently until revealed by advanced sensors.
+Cloaked minefields — High-tech traps could require scanner upgrades to detect safely.
+Holographic decoys — Elite enemies could generate fake copies on the minimap.
+Warp-in reinforcements — High-level factions could arrive through dramatic short-range jumps.
+Emergency extraction — The player could eventually trigger an expensive emergency jump to escape disaster.
+
+The strongest ones for building directly on what you already have, rather than starting huge new subsystems, are probably: critical-response variants, faction reinforcement escalation, destructible hardpoints/subsystems, repair/support ships, carrier/drone deployment, scanner/recipe discovery, facility processing, salvage/blueprints, deployables, sector POIs, and faction installations. Your repo is already structured in a way that makes most of those natural extensions rather than rewrites.

@@ -89,13 +89,14 @@ function sc_world_structure_colliders_create(_structure,_layer)
     return _colliders;
 }
 
-/// @description Initializes one static world structure.
+/// @description Initializes one static world structure and its optional facility.
 function sc_world_structure_init(_structure, _create)
 {
     var _data = sc_world_structure_get(_create.key);
     if (!is_struct(_data)) return false;
 
     var _sprite = sc_world_structure_visual_cache_get(_create.key);
+
     if (!sprite_exists(_sprite))
     {
         show_debug_message("WORLD STRUCTURE ERROR - visual cache missing: " + _create.key);
@@ -107,8 +108,17 @@ function sc_world_structure_init(_structure, _create)
         key: _create.key,
         data: _data,
         sprite: _sprite,
-        colliders: []
+        colliders: [],
+        facility: undefined
     };
+
+    if (variable_struct_exists(_data, "facility_controller"))
+    {
+        _structure.structure.facility = sc_facility_runtime_create(
+            _structure,
+            _data.facility_controller
+        );
+    }
 
     _structure.structure.colliders = sc_world_structure_colliders_create(
         _structure,
