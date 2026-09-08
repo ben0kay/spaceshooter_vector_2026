@@ -145,7 +145,7 @@ function sc_faction_register_corporation()
     sensor: make_colour_rgb(78, 170, 255),
     core: make_colour_rgb(220, 241, 255),
     glow: make_colour_rgb(16, 74, 220)
-}
+},
 
         palette_elite: {
     void: make_colour_rgb(3, 7, 12),
@@ -170,7 +170,7 @@ function sc_faction_register_corporation()
     sensor: make_colour_rgb(90, 182, 255),
     core: make_colour_rgb(230, 246, 255),
     glow: make_colour_rgb(14, 82, 228)
-}
+},
 
         damage_fx: {
             emit_script: sc_particles_enemy_damage_smoke_emit,
