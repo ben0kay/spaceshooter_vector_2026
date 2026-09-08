@@ -63,14 +63,27 @@ function sc_hud_level_data()
         },
 
         minimap: {
-            width: 224,
-            height: 224,
-            x: 24,
-            y: 88,
-            visible: false,
-            dragging: false,
-            drag_offset_x: 0,
-            drag_offset_y: 0
+            width: 244,
+            height: 270,
+            header_height: 30,
+            radar_centre_x: 122,
+            radar_centre_y: 139,
+            radar_radius: 96,
+
+            minimized_width: 108,
+            minimized_height: 28,
+
+            range_levels: [1500, 3000, 4500, 6000],
+            range_index: 1,
+
+            enemy_update_interval: 6,
+            asteroid_update_interval: 30,
+            contact_fade_duration: 180,
+
+            sweep_speed: 1.5,
+            sweep_trails: 5,
+            sweep_trail_spacing: 3,
+            detection_width: 1.5
         },
 			
 		        inventory: {
@@ -139,6 +152,33 @@ function sc_hud_level_init(_hud_object)
             credits_display: global.profile.credits,
             credit_gain: 0,
             credit_pulse: 0
+        },
+
+		minimap: {
+            x: max(12, display_get_gui_width() - _data.minimap.width - 24),
+            y: 88,
+            minimized: false,
+
+            dragging: false,
+            drag_offset_x: 0,
+            drag_offset_y: 0,
+
+            range_levels: _data.minimap.range_levels,
+            range_index: _data.minimap.range_index,
+            range: _data.minimap.range_levels[_data.minimap.range_index],
+
+            enemy_update_interval: _data.minimap.enemy_update_interval,
+            asteroid_update_interval: _data.minimap.asteroid_update_interval,
+            next_enemy_update_tick: GAME_TICK,
+            next_asteroid_update_tick: GAME_TICK,
+
+            sweep_angle: 0,
+            sweep_speed: _data.minimap.sweep_speed,
+            detection_width: _data.minimap.detection_width,
+            contact_fade_duration: _data.minimap.contact_fade_duration,
+
+            enemy_contacts: [],
+            asteroid_contacts: []
         },
 
         inventory: {
@@ -411,25 +451,68 @@ function sc_hud_top_effect_primitive_draw(_data, _frame)
     draw_set_colour(c_white);
 }
 
-/// @description Draws the future movable minimap dock before baking.
+/// @description Draws the movable tactical-radar dock before baking.
 function sc_hud_minimap_dock_primitive_draw(_data)
 {
     var _minimap = _data.minimap;
     var _palette = _data.palette;
     var _width = _minimap.width;
     var _height = _minimap.height;
+    var _centre_x = _minimap.radar_centre_x;
+    var _centre_y = _minimap.radar_centre_y;
+    var _radius = _minimap.radar_radius;
 
-    sc_hud_panel_primitive_draw(_width, _height, 20, _palette);
+    sc_hud_panel_primitive_draw(_width, _height, 18, _palette);
 
     draw_set_colour(_palette.void);
-    draw_circle(_width * 0.5, _height * 0.5, min(_width, _height) * 0.42, false);
+    draw_set_alpha(0.96);
+    draw_rectangle(8, 7, _width - 8, _minimap.header_height, false);
+    draw_circle(_centre_x, _centre_y, _radius, false);
 
     draw_set_colour(_palette.panel_light);
-    draw_circle(_width * 0.5, _height * 0.5, min(_width, _height) * 0.42, true);
+    draw_set_alpha(0.65);
+    draw_rectangle(8, 7, _width - 8, _minimap.header_height, true);
+    draw_circle(_centre_x, _centre_y, _radius, true);
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.38);
+
+    draw_circle(_centre_x, _centre_y, _radius * 0.33, true);
+    draw_circle(_centre_x, _centre_y, _radius * 0.66, true);
+
+    draw_line(
+        _centre_x - _radius,
+        _centre_y,
+        _centre_x + _radius,
+        _centre_y
+    );
+
+    draw_line(
+        _centre_x,
+        _centre_y - _radius,
+        _centre_x,
+        _centre_y + _radius
+    );
 
     draw_set_colour(_palette.accent);
-    draw_line_width(_width * 0.5 - 24, 9, _width * 0.5 + 24, 9, 2);
+    draw_set_alpha(0.85);
+    draw_arc(
+        _centre_x - _radius,
+        _centre_y - _radius,
+        _centre_x + _radius,
+        _centre_y + _radius,
+        200,
+        340
+    );
 
+    draw_line_width(14, 4, 64, 4, 2);
+    draw_line_width(_width - 64, 4, _width - 14, 4, 2);
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.7);
+    draw_line(10, _height - 34, _width - 10, _height - 34);
+
+    draw_set_alpha(1);
     draw_set_colour(c_white);
 }
 
@@ -615,8 +698,7 @@ function sc_hud_level_draw(_hud)
     draw_sprite(_cache.bottom_effects[_bottom_frame], 0, _bottom_x, _bottom_y);
     gpu_set_blendmode(bm_normal);
 
-    if (_data.minimap.visible)
-        draw_sprite(_cache.minimap_dock, 0, _data.minimap.x, _data.minimap.y);
+    sc_hud_minimap_draw(_hud);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

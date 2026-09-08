@@ -122,7 +122,7 @@ function sc_faction_register_corporation()
     return sc_faction_register(Faction.CORPORATION, {
         identity: { name: "Corp Syndicate" },
 
-        palette_standard: {
+        palette: {
     void: make_colour_rgb(4, 8, 13),
 
     hull_dark: make_colour_rgb(22, 31, 42),

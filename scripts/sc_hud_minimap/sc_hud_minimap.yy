@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_hud_level",
+  "%Name":"sc_hud_minimap",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_hud_level",
+  "name":"sc_hud_minimap",
   "parent":{
     "name":"HUD",
     "path":"folders/SCRIPTS---/HUD.yy",

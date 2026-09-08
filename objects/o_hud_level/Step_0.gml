@@ -38,6 +38,7 @@ if (global.LevelState == LevelState.DEBUG)
 }
 
 sc_hud_level_update(hud);
+sc_hud_minimap_update(hud);
 
 switch (global.PlayerState)
 {
