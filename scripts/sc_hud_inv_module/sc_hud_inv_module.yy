@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_inventory",
+  "%Name":"sc_hud_inv_module",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_inventory",
+  "name":"sc_hud_inv_module",
   "parent":{
     "name":"INVENTORY",
     "path":"folders/SCRIPTS---/HUD/INVENTORY.yy",

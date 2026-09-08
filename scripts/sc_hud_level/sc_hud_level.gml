@@ -242,6 +242,11 @@ function sc_hud_level_init(_hud_object)
                 active: false,
                 source_slot: -1
             },
+			
+			replace: {
+			    active: false,
+			    source_slot: -1
+			},
 
             buttons: {
                 tabs: _tabs,
