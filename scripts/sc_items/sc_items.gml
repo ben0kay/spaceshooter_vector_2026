@@ -56,21 +56,6 @@ function sc_item_grade_supported(_item)
     return false;
 }
 
-/// @description Returns whether one item type supports grades.
-function sc_item_grade_supported(_item)
-{
-    switch (_item.type)
-    {
-        case ItemType.MODULE:
-        case ItemType.DRONE:
-        case ItemType.WEAPON:
-        case ItemType.DEVICE:
-            return true;
-    }
-
-    return false;
-}
-
 /// @description Rolls the grade of one crafted graded item.
 function sc_item_crafted_grade_roll(_item)
 {

@@ -17,14 +17,14 @@ function sc_inventory_module_indices_get(_player)
 }
 
 /// @description Begins installing or replacing one module from cargo.
-function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
+function sc_player_module_install_begin(_player, _slot_index, _replacing = false)
 {
     var _installation = _player.inventory.installation;
     var _slot = _player.inventory.slots[_slot_index];
 
     if (_installation.active || is_undefined(_slot)) return false;
 
-    var _definition = variable_struct_get(global.data.items,_slot.key);
+    var _definition = variable_struct_get(global.data.items, _slot.key);
     if (_definition.type != ItemType.MODULE) return false;
 
     var _module = _definition.module;
@@ -38,23 +38,22 @@ function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
         default: return false;
     }
 
-    var _item = { key: _slot.key, name: _slot.name, grade: _slot.grade };
-    var _removed = sc_player_inventory_slot_remove(_player,_slot_index,1);
+    var _item = {
+        key: _slot.key,
+        name: _slot.name,
+        grade: _slot.grade
+    };
+
+    var _removed = sc_player_inventory_slot_remove(_player, _slot_index, 1);
     if (_removed.amount <= 0) return false;
 
-    sc_player_control_suspend(_player);
-
     _installation.active = true;
-    _installation.item = _item;
-    _installation.definition = _definition;
     _installation.replacing = _replacing;
+    _installation.slot = _module.slot;
+    _installation.item = _item;
     _installation.duration = _module.install_duration;
     _installation.remaining = _module.install_duration;
-    _installation.start_x = _player.x;
-    _installation.start_y = _player.y;
-    _installation.cancel_flash = 0;
-
-    global.PlayerState = PlayerState.ACTIVE;
+    _installation.cancelled_remaining = 0;
     return true;
 }
 
