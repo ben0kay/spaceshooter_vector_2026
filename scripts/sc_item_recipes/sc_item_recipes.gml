@@ -35,18 +35,26 @@ function sc_recipe_get(_key)
 /// @description Registers the initial industrial production tree.
 function sc_recipe_register_all()
 {
-    return sc_recipe_register({ identity: { key: "recipe_refined_iron", name: "Refined Iron" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_iron", 4]], outputs: [["item_refined_iron", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_refined_copper", name: "Refined Copper" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_copper", 4]], outputs: [["item_refined_copper", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_silicon_wafer", name: "Silicon Wafer" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_silicon", 3]], outputs: [["item_silicon_wafer", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_carbon_composite", name: "Carbon Composite" }, service: FacilityService.REFINERY, duration: 210, inputs: [["item_carbon", 4]], outputs: [["item_carbon_composite", 1]] })
+    return sc_recipe_register({ identity: { key: "recipe_refined_iron", name: "Refined Iron" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_iron",4]], outputs: [["item_refined_iron",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_refined_copper", name: "Refined Copper" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_copper",4]], outputs: [["item_refined_copper",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_silicon_wafer", name: "Silicon Wafer" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_silicon",3]], outputs: [["item_silicon_wafer",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_industrial_carbon", name: "Industrial Carbon" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_carbon",4]], outputs: [["item_industrial_carbon",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_industrial_sulfur", name: "Industrial Sulfur" }, service: FacilityService.REFINERY, duration: 180, inputs: [["item_sulfur",4]], outputs: [["item_industrial_sulfur",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_refined_titanium", name: "Refined Titanium" }, service: FacilityService.REFINERY, duration: 270, inputs: [["item_titanium",5]], outputs: [["item_refined_titanium",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_resonant_crystal", name: "Resonant Crystal" }, service: FacilityService.REFINERY, duration: 300, inputs: [["item_crystal",4]], outputs: [["item_resonant_crystal",1]] })
 
-    && sc_recipe_register({ identity: { key: "recipe_iron_plate", name: "Iron Plate" }, service: FacilityService.FABRICATOR, duration: 240, inputs: [["item_refined_iron", 2]], outputs: [["item_iron_plate", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_copper_wire", name: "Copper Wire" }, service: FacilityService.FABRICATOR, duration: 150, inputs: [["item_refined_copper", 1]], outputs: [["item_copper_wire", 2]] })
-    && sc_recipe_register({ identity: { key: "recipe_copper_coil", name: "Copper Coil" }, service: FacilityService.FABRICATOR, duration: 210, inputs: [["item_refined_copper", 2]], outputs: [["item_copper_coil", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_circuit_board", name: "Circuit Board" }, service: FacilityService.FABRICATOR, duration: 270, inputs: [["item_copper_wire", 2], ["item_silicon_wafer", 1]], outputs: [["item_circuit_board", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_motor", name: "Motor" }, service: FacilityService.FABRICATOR, duration: 300, inputs: [["item_refined_iron", 1], ["item_copper_coil", 1]], outputs: [["item_motor", 1]] })
+    && sc_recipe_register({ identity: { key: "recipe_carbon_composite", name: "Carbon Composite" }, service: FacilityService.FABRICATOR, duration: 240, inputs: [["item_industrial_carbon",2]], outputs: [["item_carbon_composite",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_steel_alloy", name: "Steel Alloy" }, service: FacilityService.FABRICATOR, duration: 300, inputs: [["item_refined_iron",2],["item_industrial_carbon",1]], outputs: [["item_steel_alloy",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_titanium_alloy", name: "Titanium Alloy" }, service: FacilityService.FABRICATOR, duration: 420, inputs: [["item_refined_titanium",2],["item_carbon_composite",1]], outputs: [["item_titanium_alloy",1]] })
 
-    && sc_recipe_register({ identity: { key: "recipe_armour_plate", name: "Armour Plate" }, service: FacilityService.FABRICATOR, duration: 360, inputs: [["item_iron_plate", 3]], outputs: [["item_armour_plate", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_lightweight_armour_plate", name: "Lightweight Armour Plate" }, service: FacilityService.FABRICATOR, duration: 420, inputs: [["item_carbon_composite", 2], ["item_iron_plate", 1]], outputs: [["item_lightweight_armour_plate", 1]] })
-    && sc_recipe_register({ identity: { key: "recipe_radar_array", name: "Radar Array" }, service: FacilityService.FABRICATOR, duration: 420, inputs: [["item_iron_plate", 1], ["item_circuit_board", 1]], outputs: [["item_radar_array", 1]] });
+    && sc_recipe_register({ identity: { key: "recipe_iron_plate", name: "Iron Plate" }, service: FacilityService.FABRICATOR, duration: 240, inputs: [["item_refined_iron",2]], outputs: [["item_iron_plate",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_copper_wire", name: "Copper Wire" }, service: FacilityService.FABRICATOR, duration: 150, inputs: [["item_refined_copper",1]], outputs: [["item_copper_wire",2]] })
+    && sc_recipe_register({ identity: { key: "recipe_copper_coil", name: "Copper Coil" }, service: FacilityService.FABRICATOR, duration: 210, inputs: [["item_refined_copper",2]], outputs: [["item_copper_coil",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_circuit_board", name: "Circuit Board" }, service: FacilityService.FABRICATOR, duration: 270, inputs: [["item_copper_wire",2],["item_silicon_wafer",1]], outputs: [["item_circuit_board",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_motor", name: "Motor" }, service: FacilityService.FABRICATOR, duration: 300, inputs: [["item_refined_iron",1],["item_copper_coil",1]], outputs: [["item_motor",1]] })
+
+    && sc_recipe_register({ identity: { key: "recipe_armour_plate", name: "Armour Plate" }, service: FacilityService.FABRICATOR, duration: 360, inputs: [["item_iron_plate",3]], outputs: [["item_armour_plate",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_lightweight_armour_plate", name: "Lightweight Armour Plate" }, service: FacilityService.FABRICATOR, duration: 420, inputs: [["item_carbon_composite",2],["item_iron_plate",1]], outputs: [["item_lightweight_armour_plate",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_radar_array", name: "Radar Array" }, service: FacilityService.FABRICATOR, duration: 420, inputs: [["item_iron_plate",1],["item_circuit_board",1]], outputs: [["item_radar_array",1]] })
+    && sc_recipe_register({ identity: { key: "recipe_scanning_drone", name: "Scanning Drone" }, service: FacilityService.FABRICATOR, duration: 540, inputs: [["item_motor",1],["item_circuit_board",1],["item_iron_plate",2],["item_copper_wire",2]], outputs: [["item_scanning_drone",1]] });
 }

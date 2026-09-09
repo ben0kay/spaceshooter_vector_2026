@@ -29,7 +29,8 @@ function sc_asteroid_register_all()
         && sc_asteroid_register_silicon()
         && sc_asteroid_register_titanium()
         && sc_asteroid_register_crystal()
-        && sc_asteroid_register_ice();
+        && sc_asteroid_register_ice()
+        && sc_asteroid_register_sulfur();
 }
 
 /// @description Registers carbon-bearing asteroids.
@@ -133,6 +134,21 @@ function sc_asteroid_register_ice()
             void: make_colour_rgb(6, 12, 18), dark: make_colour_rgb(21, 43, 57),
             mid: make_colour_rgb(49, 89, 109), light: make_colour_rgb(121, 179, 197),
             resource: make_colour_rgb(214, 252, 255), glow: make_colour_rgb(45, 188, 229)
+        }
+    });
+}
+
+/// @description Registers sulfur-bearing asteroids.
+function sc_asteroid_register_sulfur()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_sulfur", name: "Sulfur Asteroid" },
+        item_key: "item_sulfur",
+        stats: { health_multiplier: 0.9, yield_multiplier: 0.9 },
+        palette: {
+            void: make_colour_rgb(13,10,4), dark: make_colour_rgb(43,34,13),
+            mid: make_colour_rgb(89,70,23), light: make_colour_rgb(151,119,38),
+            resource: make_colour_rgb(214,184,61), glow: make_colour_rgb(255,119,32)
         }
     });
 }

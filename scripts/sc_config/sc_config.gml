@@ -130,16 +130,34 @@ function sc_config_init()
             edge_spawn_padding: 640,
 
             asteroid_fields: {
-                amount_min: 5,
-                amount_max: 8,
-                radius_min: 1100,
-                radius_max: 2200,
-                asteroids_min: 16,
-                asteroids_max: 32,
-                centre_padding: 2800,
-                centre_separation: 4400,
-                spawn_clear_radius: 2200
-            },
+			    amount_min: 5,
+			    amount_max: 8,
+			    radius_min: 1100,
+			    radius_max: 2200,
+			    asteroids_min: 16,
+			    asteroids_max: 32,
+			    centre_padding: 2800,
+			    centre_separation: 4400,
+			    spawn_clear_radius: 2200,
+
+			    materials: [
+			        { key: "asteroid_carbon", weight: 22 },
+			        { key: "asteroid_iron", weight: 22 },
+			        { key: "asteroid_copper", weight: 15 },
+			        { key: "asteroid_silicon", weight: 12 },
+			        { key: "asteroid_titanium", weight: 7 },
+			        { key: "asteroid_crystal", weight: 7 },
+			        { key: "asteroid_ice", weight: 9 },
+			        { key: "asteroid_sulfur", weight: 6 }
+			    ],
+
+			    sizes: [
+			        { size: AsteroidSize.SMALL, weight: 12 },
+			        { size: AsteroidSize.MEDIUM, weight: 46 },
+			        { size: AsteroidSize.LARGE, weight: 34 },
+			        { size: AsteroidSize.HUGE, weight: 8 }
+			    ]
+			}
         },
 
         projectile: {

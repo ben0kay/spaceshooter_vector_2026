@@ -95,7 +95,7 @@ function sc_hud_level_data()
     category_x: 30,
     category_y: 145,
     category_width: 290,
-    category_height: 145,
+    category_height: 194,
     category_gap: 14,
 
     recipe_x: 350,
@@ -108,11 +108,10 @@ function sc_hud_level_data()
     detail_width: 590,
 
     categories: [
-        { layer: ItemLayer.MATERIAL, name: "MATERIALS", description: "RAW RESOURCES TO REFINED MATERIALS" },
-        { layer: ItemLayer.COMPONENT, name: "COMPONENTS", description: "MECHANICAL, ELECTRONIC AND STRUCTURAL PARTS" },
-        { layer: ItemLayer.MODULE, name: "MODULES", description: "FUNCTIONAL SHIP SYSTEMS AND UPGRADES" },
-        { layer: ItemLayer.ASSEMBLY, name: "ASSEMBLIES", description: "COMPLETE DEVICES, WEAPONS AND MACHINES" }
-    ]
+    { layer: ItemLayer.MATERIAL, name: "MATERIALS", description: "REFINED RESOURCES, COMPOSITES AND ALLOYS" },
+    { layer: ItemLayer.PART, name: "PARTS", description: "MECHANICAL, ELECTRICAL AND STRUCTURAL PARTS" },
+    { layer: ItemLayer.PRODUCT, name: "PRODUCTS", description: "MODULES, WEAPONS, DRONES AND DEVICES" }
+]
 },
 			
 		inventory: {

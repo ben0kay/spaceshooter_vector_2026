@@ -11,10 +11,10 @@ function sc_asteroid_size_data(_size)
 {
     switch (_size)
     {
-        case AsteroidSize.SMALL: return { radius: 30, health: 45, yield_min: 1, yield_max: 3 };
-        case AsteroidSize.MEDIUM: return { radius: 58, health: 130, yield_min: 4, yield_max: 8 };
-        case AsteroidSize.LARGE: return { radius: 105, health: 340, yield_min: 8, yield_max: 18 };
-		case AsteroidSize.HUGE: return { radius: 256, health: 768, yield_min: 15, yield_max: 35 };
+        case AsteroidSize.SMALL: return { radius: 40, health: 30, yield_min: 1, yield_max: 3 };
+        case AsteroidSize.MEDIUM: return { radius: 58, health: 80, yield_min: 4, yield_max: 8 };
+        case AsteroidSize.LARGE: return { radius: 105, health: 160, yield_min: 8, yield_max: 18 };
+		case AsteroidSize.HUGE: return { radius: 256, health: 400, yield_min: 15, yield_max: 35 };
     }
 
     return undefined;
@@ -331,33 +331,13 @@ function sc_asteroid_weighted_choose(_entries)
     return _entries[array_length(_entries) - 1];
 }
 
-/// @description Spawns one temporary mixed asteroid field with guaranteed huge asteroids.
-function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer)
+/// @description Spawns one configurable mixed asteroid field.
+function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer,_forced_sizes = [])
 {
-    var _materials = [
-        { key: "asteroid_carbon", weight: 24 },
-        { key: "asteroid_iron", weight: 22 },
-        { key: "asteroid_copper", weight: 16 },
-        { key: "asteroid_silicon", weight: 13 },
-        { key: "asteroid_titanium", weight: 7 },
-        { key: "asteroid_crystal", weight: 8 },
-        { key: "asteroid_ice", weight: 10 }
-    ];
-
-    var _sizes = [
-        { size: AsteroidSize.SMALL, weight: 42 },
-        { size: AsteroidSize.MEDIUM, weight: 34 },
-        { size: AsteroidSize.LARGE, weight: 19 },
-        { size: AsteroidSize.HUGE, weight: 5 }
-    ];
-
-    // Spawn largest first so smaller rocks cannot occupy all available space.
-    var _forced_sizes = [
-        AsteroidSize.HUGE,
-        AsteroidSize.HUGE
-    ];
-
-    var _target_amount = max(2,_amount);
+    var _config = global.config.sector.asteroid_fields;
+    var _materials = _config.materials;
+    var _sizes = _config.sizes;
+    var _target_amount = max(array_length(_forced_sizes),_amount);
     var _spawned = 0;
     var _attempts = 0;
     var _attempts_max = _target_amount*80;
@@ -384,19 +364,13 @@ function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer
         || _y > room_height-_edge_margin)
             continue;
 
-        if (collision_circle(
-            _x,_y,_spawn_clearance,
-            o_asteroid,false,true
-        ) != noone)
+        if (collision_circle(_x,_y,_spawn_clearance,o_asteroid,false,true) != noone)
             continue;
 
         var _material = sc_asteroid_weighted_choose(_materials);
 
         instance_create_layer(_x,_y,_layer,o_asteroid,{
-            asteroid_create: {
-                key: _material.key,
-                size: _size
-            }
+            asteroid_create: { key: _material.key, size: _size }
         });
 
         _spawned++;

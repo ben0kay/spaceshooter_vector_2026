@@ -964,17 +964,17 @@ function sc_inventory_cargo_draw(_hud, _origin_x, _origin_y)
 }
 
 /// @description Returns how many units of an item and grade the player's cargo can accept.
-function sc_player_inventory_space_get(_player, _item_key, _grade = ItemGrade.COMMON)
+function sc_player_inventory_space_get(_player,_item_key,_grade = ItemGrade.COMMON)
 {
-    if (!instance_exists(_player) || !variable_struct_exists(global.data.items, _item_key)) return 0;
+    if (!instance_exists(_player) || !variable_struct_exists(global.data.items,_item_key)) return 0;
 
-    var _definition = variable_struct_get(global.data.items, _item_key);
+    var _definition = variable_struct_get(global.data.items,_item_key);
     var _inventory = _player.inventory;
-    var _graded = _definition.layer >= ItemLayer.MODULE;
+    var _graded = sc_item_grade_supported(_definition);
     var _item_grade = _graded ? _grade : undefined;
     var _weight = _definition.cargo.weight;
     var _stack_max = _definition.cargo.stack_max;
-    var _weight_space = floor((_player.resources.cargo.capacity - _player.resources.cargo.weight) / max(0.001, _weight));
+    var _weight_space = floor((_player.resources.cargo.capacity-_player.resources.cargo.weight)/max(0.001,_weight));
     var _slot_space = 0;
 
     for (var _i = 0; _i < array_length(_inventory.slots); ++_i)
@@ -984,27 +984,27 @@ function sc_player_inventory_space_get(_player, _item_key, _grade = ItemGrade.CO
         if (is_undefined(_slot))
             _slot_space += _stack_max;
         else if (_slot.key == _item_key && _slot.grade == _item_grade)
-            _slot_space += max(0, _stack_max - _slot.amount);
+            _slot_space += max(0,_stack_max-_slot.amount);
     }
 
-    return max(0, min(_weight_space, _slot_space));
+    return max(0,min(_weight_space,_slot_space));
 }
 
 /// @description Adds one item and grade to existing stacks and then empty cargo slots.
-function sc_player_inventory_add(_player, _item_key, _amount, _grade = ItemGrade.COMMON)
+function sc_player_inventory_add(_player,_item_key,_amount,_grade = ItemGrade.COMMON)
 {
-    var _result = { accepted: 0, remaining: max(0, floor(_amount)) };
+    var _result = { accepted: 0, remaining: max(0,floor(_amount)) };
 
     if (!instance_exists(_player)
     || _result.remaining <= 0
-    || !variable_struct_exists(global.data.items, _item_key))
+    || !variable_struct_exists(global.data.items,_item_key))
         return _result;
 
-    var _definition = variable_struct_get(global.data.items, _item_key);
+    var _definition = variable_struct_get(global.data.items,_item_key);
     var _inventory = _player.inventory;
     var _stack_max = _definition.cargo.stack_max;
-    var _item_grade = _definition.layer >= ItemLayer.MODULE ? _grade : undefined;
-    var _accepted = min(_result.remaining, sc_player_inventory_space_get(_player, _item_key, _item_grade));
+    var _item_grade = sc_item_grade_supported(_definition) ? _grade : undefined;
+    var _accepted = min(_result.remaining,sc_player_inventory_space_get(_player,_item_key,_item_grade));
     var _placing = _accepted;
 
     for (var _i = 0; _i < array_length(_inventory.slots) && _placing > 0; ++_i)
@@ -1016,7 +1016,7 @@ function sc_player_inventory_add(_player, _item_key, _amount, _grade = ItemGrade
         || _slot.grade != _item_grade)
             continue;
 
-        var _added = min(_placing, _stack_max - _slot.amount);
+        var _added = min(_placing,_stack_max-_slot.amount);
         _slot.amount += _added;
         _placing -= _added;
     }
@@ -1025,7 +1025,7 @@ function sc_player_inventory_add(_player, _item_key, _amount, _grade = ItemGrade
     {
         if (!is_undefined(_inventory.slots[_i])) continue;
 
-        var _added = min(_placing, _stack_max);
+        var _added = min(_placing,_stack_max);
 
         _inventory.slots[_i] = {
             key: _item_key,
@@ -1038,7 +1038,7 @@ function sc_player_inventory_add(_player, _item_key, _amount, _grade = ItemGrade
     }
 
     _player.resources.cargo.amount += _accepted;
-    _player.resources.cargo.weight += _accepted * _definition.cargo.weight;
+    _player.resources.cargo.weight += _accepted*_definition.cargo.weight;
 
     _result.accepted = _accepted;
     _result.remaining -= _accepted;
