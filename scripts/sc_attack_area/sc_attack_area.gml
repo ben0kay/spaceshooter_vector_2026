@@ -357,7 +357,7 @@ function sc_attack_area_target_inside(_area, _target)
 }
 
 /// @description Returns an area damage packet scaled by distance.
-function sc_attack_area_damage_packet_get(_area, _target)
+function sc_attack_area_damage_packet_get(_area,_target)
 {
     var _data = _area.attack_area;
 
@@ -391,18 +391,10 @@ function sc_attack_area_damage_packet_get(_area, _target)
         )
     );
 
-    return {
-        amount: _data.damage.amount * _falloff,
-        type: _data.damage.type,
-
-        knockback_force:
-            _data.damage.knockback_force
-            * _falloff,
-
-        effect: _data.damage.effect,
-        extraction: _data.damage.extraction,
-        source: _data.damage.source
-    };
+    return sc_damage_packet_scaled(
+        _data.damage,
+        _falloff
+    );
 }
 
 /// @description Applies one damage tick to opposing entities inside the area.

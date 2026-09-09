@@ -63,6 +63,18 @@ function sc_damage_packet_amount_get(_packet)
     return _packet.amount * _packet.source.damage_multiplier;
 }
 
+/// @description Returns a cloned damage packet with scaled damage and knockback.
+function sc_damage_packet_scaled(_packet,_scale)
+{
+    var _result = variable_clone(_packet);
+    var _resolved_scale = max(0,_scale);
+
+    _result.amount *= _resolved_scale;
+    _result.knockback_force *= _resolved_scale;
+
+    return _result;
+}
+
 /// @description Returns the multiplier for a damage type against one defence layer.
 function sc_damage_layer_multiplier_get(_type, _layer)
 {
