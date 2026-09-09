@@ -2,9 +2,11 @@
 var _camera = camera_data;
 var _camera_id = _camera.camera_id;
 
-if (mouse_wheel_down()) _camera.zoom.target += _camera.zoom.step;
-if (mouse_wheel_up()) _camera.zoom.target -= _camera.zoom.step;
-
+if (keyboard_check(vk_control))
+{
+    if (mouse_wheel_down()) _camera.zoom.target += _camera.zoom.step;
+    if (mouse_wheel_up()) _camera.zoom.target -= _camera.zoom.step;
+}
 _camera.zoom.target = clamp(_camera.zoom.target, _camera.zoom.minimum, _camera.zoom.maximum);
 
 if (abs(_camera.zoom.current - _camera.zoom.target) > 0.0001)

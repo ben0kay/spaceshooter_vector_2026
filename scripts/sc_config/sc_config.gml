@@ -4,7 +4,8 @@ function sc_config_init()
     global.config = {
 		
 		debug: {
-		    structure_collision: true
+		    structure_collision: true,
+			player_full_loadout: true,
 		},
 		
         visual: {
@@ -349,17 +350,12 @@ function sc_input_init()
             move_down: vk_down,
 
             fire_primary: mb_left,
-            mine: mb_middle,
-            fire_secondary: mb_right,
+			fire_secondary: mb_middle,
+			shield_focus: mb_right,
+			equipment: ord("Q"),
             inventory: ord("E"),
 			interact: ord("F"),
             dash: vk_shift,
-
-            weapon_1: ord("1"),
-            weapon_2: ord("2"),
-            weapon_3: ord("3"),
-            weapon_4: ord("4"),
-			weapon_5: ord("5"),
 			
 			debug_enemy_spawn: vk_f1,
 			debug_weapon_test: vk_f2,
@@ -374,8 +370,12 @@ function sc_input_init()
             move_down: false,
 
             fire_primary: false,
-            mine: false,
-            fire_secondary: false,
+			fire_secondary: false,
+			shield_focus: false,
+			equipment_pressed: false,
+
+			primary_cycle: 0,
+			secondary_cycle: 0,
 
             ui_select_held: false,
             ui_select_pressed: false,
@@ -386,12 +386,6 @@ function sc_input_init()
 			interact_pressed: false,
             dash_held: false,
             dash_pressed: false,
-
-            weapon_1_pressed: false,
-            weapon_2_pressed: false,
-            weapon_3_pressed: false,
-            weapon_4_pressed: false,
-			weapon_5_pressed: false,
 			
 			debug_enemy_spawn_pressed: false,
 			debug_weapon_test_pressed: false,
@@ -415,24 +409,32 @@ function sc_input_update()
     _action.move_down = keyboard_check(_binding.move_down);
 
     _action.fire_primary = mouse_check_button(_binding.fire_primary);
-    _action.mine = mouse_check_button(_binding.mine);
     _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
+    _action.shield_focus = mouse_check_button(_binding.shield_focus);
+    _action.equipment_pressed = keyboard_check_pressed(_binding.equipment);
+
+    _action.primary_cycle = 0;
+    _action.secondary_cycle = 0;
+
+    var _wheel = mouse_wheel_down() - mouse_wheel_up();
+
+    if (_wheel != 0 && !keyboard_check(vk_control))
+    {
+        if (keyboard_check(vk_shift))
+            _action.secondary_cycle = _wheel;
+        else
+            _action.primary_cycle = _wheel;
+    }
 
     _action.ui_select_held = mouse_check_button(mb_left);
     _action.ui_select_pressed = mouse_check_button_pressed(mb_left);
     _action.ui_select_released = mouse_check_button_released(mb_left);
 
     _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
-	_action.interact_pressed = keyboard_check_pressed(_binding.interact);
+    _action.interact_pressed = keyboard_check_pressed(_binding.interact);
     _action.dash_held = keyboard_check(_binding.dash);
     _action.dash_pressed = keyboard_check_pressed(_binding.dash);
 
-    _action.weapon_1_pressed = keyboard_check_pressed(_binding.weapon_1);
-    _action.weapon_2_pressed = keyboard_check_pressed(_binding.weapon_2);
-    _action.weapon_3_pressed = keyboard_check_pressed(_binding.weapon_3);
-    _action.weapon_4_pressed = keyboard_check_pressed(_binding.weapon_4);
-    _action.weapon_5_pressed = keyboard_check_pressed(_binding.weapon_5);
-	
-	_action.debug_enemy_spawn_pressed = keyboard_check_pressed(_binding.debug_enemy_spawn);
-	_action.debug_weapon_test_pressed = keyboard_check_pressed(_binding.debug_weapon_test);
+    _action.debug_enemy_spawn_pressed = keyboard_check_pressed(_binding.debug_enemy_spawn);
+    _action.debug_weapon_test_pressed = keyboard_check_pressed(_binding.debug_weapon_test);
 }

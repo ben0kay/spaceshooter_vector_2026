@@ -14,6 +14,12 @@ function sc_player_init(_player, _ship_key)
     }
 
     var _definition = variable_struct_get(global.data.ships, _ship_key);
+	var _campaign_loadout = variable_clone(_definition.starting_loadout);
+	var _active_loadout = _campaign_loadout;
+
+	if (global.config.debug.player_full_loadout
+	&& variable_struct_exists(_definition,"debug_loadout"))
+	    _active_loadout = variable_clone(_definition.debug_loadout);
     var _cache = sc_ship_visual_cache_get(_ship_key);
 
     _player.ship = {
@@ -23,7 +29,8 @@ function sc_player_init(_player, _ship_key)
 		systems: sc_ship_systems_runtime_create(_definition.systems),
         visual: variable_clone(_definition.visual),
         hardpoints: variable_clone(_definition.hardpoints),
-        loadout: variable_clone(_definition.starting_loadout),
+        loadout: _active_loadout,
+		visual_loadout: _campaign_loadout,
         stats: undefined
     };
 
@@ -154,16 +161,23 @@ function sc_player_init(_player, _ship_key)
 	        active_delivery_id: noone
 	    },
 
+	    secondary: {
+	        hardpoint_cursor: 0,
+	        next_fire_tick: 0,
+	        active_delivery_id: noone
+	    },
+
+	    equipment: {
+	        hardpoint_cursor: 0,
+	        next_fire_tick: 0,
+	        active_delivery_id: noone
+	    },
+
 	    debug_weapon: {
 	        enabled: false,
 	        weapon_key: "",
 	        shot: undefined,
 	        firing: undefined
-	    },
-
-	    mining: {
-	        next_fire_tick: 0,
-	        active_delivery_id: noone
 	    },
 
 	    shield_focus: {

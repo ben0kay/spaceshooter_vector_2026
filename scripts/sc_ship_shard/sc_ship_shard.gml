@@ -47,21 +47,39 @@ function sc_ship_register_shard()
         },
 
         starting_loadout: {
-            primary: "weapon_shard_pulse",
-            primary_slot: 0,
+		    primary: "weapon_shard_pulse",
+		    primary_slot: 0,
+		    primary_slots: [
+		        "weapon_shard_pulse"
+		    ],
 
-            primary_slots: [
-                "weapon_shard_pulse",
-                "weapon_minigun",
-                "weapon_shard_laser",
-                "weapon_shard_rocket",
-				    "weapon_shard_mine"
+		    secondary: "weapon_shard_mining_beam",
+		    secondary_slot: 0,
+		    secondary_slots: [
+		        "weapon_shard_mining_beam"
+		    ],
 
-            ],
+		    equipment: undefined
+		},
 
-            mining: "weapon_shard_mining_beam",
-			secondary: undefined
-        }
+		debug_loadout: {
+		    primary: "weapon_shard_pulse",
+		    primary_slot: 0,
+		    primary_slots: [
+		        "weapon_shard_pulse",
+		        "weapon_minigun"
+		    ],
+
+		    secondary: "weapon_shard_mining_beam",
+		    secondary_slot: 0,
+		    secondary_slots: [
+		        "weapon_shard_mining_beam",
+		        "weapon_shard_rocket",
+		        "weapon_shard_laser"
+		    ],
+
+		    equipment: "weapon_shard_mine"
+		}
     });
 }
 
