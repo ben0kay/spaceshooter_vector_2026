@@ -506,7 +506,6 @@ function sc_enemy_corporation_artillery_cruiser_armour_draw(_x,_y,_r,_a,_v,_stag
     var _p = _v.palette;
 
     // Permanent centre armour.
- armour.
     sc_visual_quad(_x,_y,_r,_a,
         1.28,-0.1,
         0.56,-0.18,
