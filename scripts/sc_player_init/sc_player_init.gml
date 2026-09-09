@@ -1,39 +1,38 @@
-/// @description Initializes a player instance from a registered ship key.
-function sc_player_init(_player, _ship_key)
+/// @description Creates the campaign and currently active player loadouts.
+function sc_player_init_loadout_create(_definition)
 {
-    if (!instance_exists(_player) || !is_string(_ship_key))
-    {
-        show_debug_message("PLAYER INITIALIZATION ERROR - invalid player or ship key");
-        return false;
-    }
+    var _campaign = variable_clone(_definition.starting_loadout);
+    var _active = _campaign;
 
-    if (!variable_struct_exists(global.data.ships, _ship_key))
-    {
-        show_debug_message("PLAYER INITIALIZATION ERROR - unknown ship key: " + _ship_key);
-        return false;
-    }
+    if (global.config.debug.player_full_loadout
+    && variable_struct_exists(_definition, "debug_loadout"))
+        _active = variable_clone(_definition.debug_loadout);
 
-    var _definition = variable_struct_get(global.data.ships, _ship_key);
-	var _campaign_loadout = variable_clone(_definition.starting_loadout);
-	var _active_loadout = _campaign_loadout;
+    return {
+        campaign: _campaign,
+        active: _active
+    };
+}
 
-	if (global.config.debug.player_full_loadout
-	&& variable_struct_exists(_definition,"debug_loadout"))
-	    _active_loadout = variable_clone(_definition.debug_loadout);
-    var _cache = sc_ship_visual_cache_get(_ship_key);
-
-    _player.ship = {
+/// @description Creates the registered ship runtime owned by the player.
+function sc_player_init_ship_create(_ship_key, _definition, _loadout)
+{
+    return {
         key: _ship_key,
         identity: variable_clone(_definition.identity),
         collision: variable_clone(_definition.collision),
-		systems: sc_ship_systems_runtime_create(_definition.systems),
+        systems: sc_ship_systems_runtime_create(_definition.systems),
         visual: variable_clone(_definition.visual),
         hardpoints: variable_clone(_definition.hardpoints),
-        loadout: _active_loadout,
-		visual_loadout: _campaign_loadout,
+        loadout: _loadout.active,
+        visual_loadout: _loadout.campaign,
         stats: undefined
     };
+}
 
+/// @description Connects cached sprites and animation values to the ship visual runtime.
+function sc_player_init_visual_runtime(_player, _definition, _cache)
+{
     _player.ship.visual.runtime = {
         cache: _cache,
         thrust_power: 0,
@@ -43,32 +42,27 @@ function sc_player_init(_player, _ship_key)
         core_angle: 0,
         core_speed: _definition.visual.core.idle_speed
     };
+}
 
-    var _primary_hardpoints = _player.ship.hardpoints.primary;
+/// @description Initializes runtime firing visuals for the primary hardpoints.
+function sc_player_init_hardpoints(_player)
+{
+    var _hardpoints = _player.ship.hardpoints.primary;
 
-    for (var _i = 0; _i < array_length(_primary_hardpoints); _i++)
+    for (var _i = 0; _i < array_length(_hardpoints); ++_i)
     {
-        _primary_hardpoints[_i].runtime = {
+        _hardpoints[_i].runtime = {
             recoil: 0,
             muzzle_flash: 0,
             muzzle_flash_max: 1
         };
     }
+}
 
-    if (!sc_player_stats_init(_player, _definition.stats_base)) return false;
-
+/// @description Initializes the player's layered defence from final ship stats.
+function sc_player_init_defence(_player)
+{
     var _final = _player.ship.stats.final;
-    _player.draw_angle = 0;
-
-    if (!sc_entity_init(
-	    _player,
-	    Faction.PLAYER,
-	    sc_player_damage,
-	    _player.ship.collision,
-	    true,
-	    sc_player_knockback_apply
-	))
-	    return false;
 
     _player.defence = {
         shield: {
@@ -87,6 +81,12 @@ function sc_player_init(_player, _ship_key)
             maximum: _final.hull_max
         }
     };
+}
+
+/// @description Initializes energy, fuel, ammunition and cargo from final stats.
+function sc_player_init_resources(_player)
+{
+    var _final = _player.ship.stats.final;
 
     _player.resources = {
         energy: {
@@ -94,7 +94,6 @@ function sc_player_init(_player, _ship_key)
             maximum: _final.energy_max,
             recharge_delay_remaining: 0
         },
-	
 
         fuel: {
             current: _final.fuel_max,
@@ -117,10 +116,23 @@ function sc_player_init(_player, _ship_key)
             capacity: _final.cargo_capacity
         }
     };
-		
-	_player.inventory = sc_player_inventory_create();
-	sc_player_inventory_add(_player, "item_scanning_drone", 3, ItemGrade.COMMON);
+}
 
+/// @description Creates the starting inventory and initial campaign items.
+function sc_player_init_inventory(_player)
+{
+    _player.inventory = sc_player_inventory_create();
+    sc_player_inventory_add(
+        _player,
+        "item_scanning_drone",
+        3,
+        ItemGrade.COMMON
+    );
+}
+
+/// @description Creates player movement, boost and dash runtime values.
+function sc_player_init_movement(_player)
+{
     _player.movement = {
         input_x: 0,
         input_y: 0,
@@ -128,8 +140,8 @@ function sc_player_init(_player, _ship_key)
         velocity_y: 0,
         speed: 0,
         moving: false,
-		safe_x: _player.x,
-		safe_y: _player.y,
+        safe_x: _player.x,
+        safe_y: _player.y,
 
         boost: {
             active: false
@@ -151,53 +163,132 @@ function sc_player_init(_player, _ship_key)
             ghost_alpha_max: 0.78
         }
     };
+}
 
+/// @description Creates player weapon-channel and focused-shield runtime values.
+function sc_player_init_combat(_player)
+{
     _player.combat = {
-	    weapons_allowed: true,
+        weapons_allowed: true,
 
-	    primary: {
-	        hardpoint_cursor: 0,
-	        next_fire_tick: 0,
-	        active_delivery_id: noone
-	    },
+        primary: {
+            hardpoint_cursor: 0,
+            next_fire_tick: 0,
+            active_delivery_id: noone
+        },
 
-	    secondary: {
-	        hardpoint_cursor: 0,
-	        next_fire_tick: 0,
-	        active_delivery_id: noone
-	    },
+        secondary: {
+            hardpoint_cursor: 0,
+            next_fire_tick: 0,
+            active_delivery_id: noone
+        },
 
-	    equipment: {
-	        hardpoint_cursor: 0,
-	        next_fire_tick: 0,
-	        active_delivery_id: noone
-	    },
+        equipment: {
+            hardpoint_cursor: 0,
+            next_fire_tick: 0,
+            active_delivery_id: noone
+        },
 
-	    debug_weapon: {
-	        enabled: false,
-	        weapon_key: "",
-	        shot: undefined,
-	        firing: undefined
-	    },
+        debug_weapon: {
+            enabled: false,
+            weapon_key: "",
+            shot: undefined,
+            firing: undefined
+        },
 
-	    shield_focus: {
-	        active: false,
-	        protected_impact: false,
-	        impact_direction: 0
-	    }
-	};
+        shield_focus: {
+            active: false,
+            protected_impact: false,
+            impact_direction: 0
+        }
+    };
+}
 
+/// @description Creates the initial world-space player aiming values.
+function sc_player_init_aim(_player)
+{
     _player.aim = {
         world_x: _player.x,
         world_y: _player.y,
         direction: 0
     };
+}
+
+/// @description Initializes a player instance from a registered ship key.
+function sc_player_init(_player, _ship_key)
+{
+    // Validate the player instance and requested registered ship.
+    if (!instance_exists(_player) || !is_string(_ship_key))
+    {
+        show_debug_message(
+            "PLAYER INITIALIZATION ERROR - invalid player or ship key"
+        );
+
+        return false;
+    }
+
+    if (!variable_struct_exists(global.data.ships, _ship_key))
+    {
+        show_debug_message(
+            "PLAYER INITIALIZATION ERROR - unknown ship key: "
+            + _ship_key
+        );
+
+        return false;
+    }
+
+    var _definition = variable_struct_get(global.data.ships, _ship_key);
+    var _loadout = sc_player_init_loadout_create(_definition);
+    var _cache = sc_ship_visual_cache_get(_ship_key);
+
+    // Create the ship and its cached visual/hardpoint runtime.
+    _player.ship = sc_player_init_ship_create(
+        _ship_key,
+        _definition,
+        _loadout
+    );
+
+    sc_player_init_visual_runtime(
+        _player,
+        _definition,
+        _cache
+    );
+
+    sc_player_init_hardpoints(_player);
+
+    // Final stats must exist before defence and resources are created.
+    if (!sc_player_stats_init(_player, _definition.stats_base))
+        return false;
+
+    _player.draw_angle = 0;
+
+    if (!sc_entity_init(
+        _player,
+        Faction.PLAYER,
+        sc_player_damage,
+        _player.ship.collision,
+        true,
+        sc_player_knockback_apply
+    ))
+        return false;
+
+    // Create the player's gameplay runtime in its original order.
+    sc_player_init_defence(_player);
+    sc_player_init_resources(_player);
+    sc_player_init_inventory(_player);
+    sc_player_init_movement(_player);
+    sc_player_init_combat(_player);
+    sc_player_init_aim(_player);
 
     _player.initialized = true;
 
     global.player_id = _player;
     global.PlayerState = PlayerState.ACTIVE;
 
-    show_debug_message("PLAYER INITIALIZED - " + _player.ship.identity.name);
+    show_debug_message(
+        "PLAYER INITIALIZED - "
+        + _player.ship.identity.name
+    );
+
     return true;
 }
