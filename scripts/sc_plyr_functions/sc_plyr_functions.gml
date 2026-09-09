@@ -408,47 +408,6 @@ function sc_player_normal_movement_update(_player)
     sc_player_solid_move(_player);
 }
 
-/// @description Releases one active continuous weapon delivery.
-function sc_player_weapon_runtime_release(_runtime)
-{
-    var _active = _runtime.active_delivery_id;
-
-    if (!instance_exists(_active))
-    {
-        _runtime.active_delivery_id = noone;
-        return false;
-    }
-
-    sc_beam_release(_active);
-    _runtime.active_delivery_id = noone;
-    return true;
-}
-
-/// @description Releases the player's active Primary delivery.
-function sc_player_continuous_weapon_release(_player)
-{
-    return sc_player_weapon_runtime_release(
-        _player.combat.primary
-    );
-}
-
-/// @description Releases every continuously maintained player delivery.
-function sc_player_continuous_weapons_release(_player)
-{
-    var _released = false;
-
-    if (sc_player_weapon_runtime_release(_player.combat.primary))
-        _released = true;
-
-    if (sc_player_weapon_runtime_release(_player.combat.secondary))
-        _released = true;
-
-    if (sc_player_weapon_runtime_release(_player.combat.equipment))
-        _released = true;
-
-    return _released;
-}
-
 /// @description Immediately stops player movement and active propulsion.
 function sc_player_movement_stop(_player)
 {
