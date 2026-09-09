@@ -23,7 +23,8 @@ function sc_asteroid_register(_data)
 /// @description Registers all initial asteroid materials.
 function sc_asteroid_register_all()
 {
-    return sc_asteroid_register_carbon()
+    return sc_asteroid_register_rock()
+		&& sc_asteroid_register_carbon()
         && sc_asteroid_register_iron()
         && sc_asteroid_register_copper()
         && sc_asteroid_register_silicon()
@@ -32,6 +33,21 @@ function sc_asteroid_register_all()
         && sc_asteroid_register_ice()
         && sc_asteroid_register_sulfur();
 }
+
+function sc_asteroid_register_rock()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_rock", name: "Rock Asteroid" },
+        item_key: "item_rock",
+        stats: { health_multiplier: 0.7, yield_multiplier: 1 },
+        palette: {
+            void: make_colour_rgb(6, 8, 10), dark: make_colour_rgb(18, 22, 25),
+            mid: make_colour_rgb(42, 48, 52), light: make_colour_rgb(84, 94, 98),
+            resource: make_colour_rgb(128, 150, 158), glow: make_colour_rgb(39, 89, 106)
+        }
+    });
+}
+
 
 /// @description Registers carbon-bearing asteroids.
 function sc_asteroid_register_carbon()
