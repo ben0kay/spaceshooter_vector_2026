@@ -23,6 +23,7 @@ function sc_resource_pickup_spawn(
     var _config = global.config.asteroid.pickup;
     var _direction = random(360);
     var _speed_multiplier = 1;
+	var _lifetime_multiplier = 1;
 
     if (is_struct(_launch))
     {
@@ -31,6 +32,9 @@ function sc_resource_pickup_spawn(
 
         if (variable_struct_exists(_launch, "speed_multiplier"))
             _speed_multiplier = max(0, _launch.speed_multiplier);
+		
+		if (variable_struct_exists(_launch, "lifetime_multiplier"))
+			_lifetime_multiplier = max(1, _launch.lifetime_multiplier);
     }
 
     var _speed = random_range(
@@ -44,7 +48,8 @@ function sc_resource_pickup_spawn(
             grade: _grade,
             amount: max(1, floor(_amount)),
             velocity_x: lengthdir_x(_speed, _direction),
-            velocity_y: lengthdir_y(_speed, _direction)
+            velocity_y: lengthdir_y(_speed, _direction),
+			lifetime_multiplier: _lifetime_multiplier,
         }
     });
 }
@@ -82,8 +87,10 @@ function sc_resource_pickup_init(_pickup, _create)
         phase: random(360),
         spin_speed: random_range(-0.9, 0.9),
         attraction_tick: GAME_TICK + _config.attraction_delay,
-        expire_tick: GAME_TICK + _config.lifetime,
-        full_feedback_tick: 0
+        expire_tick: GAME_TICK + round(
+	    _config.lifetime * _create.lifetime_multiplier
+	),
+        full_feedback_tick: 0,
     };
 
     _pickup.initialized = true;
@@ -373,8 +380,8 @@ function sc_particles_resource_pickup_trail_emit(_pickup)
     var _data = _pickup.resource_pickup;
     var _config = global.config.asteroid.pickup;
 
-    if ((GAME_TICK + _pickup.id) mod _config.trail_interval != 0)
-        return;
+    if (!sc_update_due(_pickup, _config.trail_interval))
+    return;
 
     var _speed = point_distance(
         0,

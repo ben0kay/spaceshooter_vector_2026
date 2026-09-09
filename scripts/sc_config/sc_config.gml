@@ -292,7 +292,8 @@ function sc_config_init()
 
 			    scale_base: 0.92,
 			    scale_per_decade: 0.1,
-			    scale_max: 1.25
+			    scale_max: 1.25,
+				player_drop_lifetime_multiplier: 3
 			}
 		},
 			
