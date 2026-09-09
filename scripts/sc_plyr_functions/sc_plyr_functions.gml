@@ -431,66 +431,6 @@ function sc_player_control_suspend(_player)
     _player.combat.weapons_allowed = false;
 }
 
-/// @description Creates or maintains the player's held-MMB mining beam.
-function sc_player_mining_beam_update(_player)
-{
-    var _runtime = _player.combat.mining;
-
-    if (!_player.combat.weapons_allowed
-    || !global.input.action.mine
-    || !variable_struct_exists(_player.ship.loadout, "mining"))
-    {
-        sc_player_mining_beam_release(_player);
-        return false;
-    }
-
-    var _weapon_key = _player.ship.loadout.mining;
-    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
-    var _angle = _player.draw_angle;
-    var _centre_forward = _weapon.firing.centre_forward * _player.ship.visual.radius;
-    var _muzzle_x = _player.x + lengthdir_x(_centre_forward, _angle);
-    var _muzzle_y = _player.y + lengthdir_y(_centre_forward, _angle);
-
-    if (instance_exists(_runtime.active_delivery_id))
-    {
-        if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
-        {
-            sc_player_mining_beam_release(_player);
-            return false;
-        }
-
-        return sc_beam_sustain(
-            _runtime.active_delivery_id,
-            _muzzle_x,
-            _muzzle_y,
-            _angle
-        );
-    }
-
-    if (GAME_TICK < _runtime.next_fire_tick) return false;
-
-    if (!sc_player_resource_spend(_player, _weapon.resource.type, _weapon.resource.cost))
-        return false;
-
-    var _beam = sc_weapon_fire(
-        _player,
-        _weapon_key,
-        _weapon.shot,
-        _muzzle_x,
-        _muzzle_y,
-        _angle,
-        _player.ship.stats.final.damage_multiplier
-    );
-
-    if (!instance_exists(_beam)) return false;
-
-    _runtime.active_delivery_id = _beam;
-    _runtime.next_fire_tick =
-        GAME_TICK
-        + max(1, round(_weapon.firing.interval));
-
-    return true;
-}
 
 /// @description Updates active player movement, weapons and abilities.
 function sc_player_update_active(_player)
