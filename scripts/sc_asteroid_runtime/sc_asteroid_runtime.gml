@@ -219,6 +219,75 @@ function sc_asteroid_yield_destruction_release(_asteroid, _packet)
     );
 }
 
+/// @description Creates the smoke and shockwave for one destroyed asteroid.
+function sc_asteroid_death_effect_create(_asteroid)
+{
+    var _data = _asteroid.asteroid;
+    var _radius = _data.visual.radius;
+    var _config = global.config.asteroid.death;
+
+    if (!sc_optimization_circle_visible(
+        _asteroid.x,
+        _asteroid.y,
+        _radius,
+        _config.visibility_padding
+    ))
+        return false;
+
+    var _definition = variable_struct_get(global.data.asteroids, _data.key);
+    var _palette = _definition.palette;
+    var _smoke = _config.smoke;
+
+    var _amount = clamp(
+        round(_radius / _smoke.size_reference) + _smoke.amount_min,
+        _smoke.amount_min,
+        _smoke.amount_max
+    );
+
+    var _scale = clamp(
+        _radius / _smoke.size_reference,
+        _smoke.size_min,
+        _smoke.size_max
+    );
+
+    for (var _i = 0; _i < _amount; ++_i)
+    {
+        var _direction = random(360);
+        var _distance = random(_radius * _smoke.radius_scale);
+
+        sc_particles_enemy_damage_smoke_emit(
+            _asteroid.x + lengthdir_x(_distance, _direction),
+            _asteroid.y + lengthdir_y(_distance, _direction),
+            _scale,
+            1,
+            {
+                colour_light: _palette.light,
+                colour_dark: _palette.dark
+            }
+        );
+    }
+
+    sc_shockwave_create(
+        _asteroid.x,
+        _asteroid.y,
+        _asteroid.layer,
+        _config.shockwave,
+        _radius
+    );
+
+    return true;
+}
+
+/// @description Handles the complete death lifecycle of one asteroid.
+function sc_asteroid_die(_asteroid, _packet)
+{
+    sc_asteroid_death_effect_create(_asteroid);
+    sc_asteroid_yield_destruction_release(_asteroid, _packet);
+
+    instance_destroy(_asteroid);
+    return true;
+}
+
 /// @description Applies damage, enemy demolition power, resource release and damage stages.
 function sc_asteroid_damage(_asteroid, _packet)
 {
@@ -277,16 +346,10 @@ function sc_asteroid_damage(_asteroid, _packet)
     };
 
     if (_health.current <= 0)
-    {
-        _health.current = 0;
-
-        sc_asteroid_yield_destruction_release(
-            _asteroid,
-            _packet
-        );
-
-        instance_destroy(_asteroid);
-    }
+		{
+		    _health.current = 0;
+		    sc_asteroid_die(_asteroid, _packet);
+		}
 
     return _result;
 }

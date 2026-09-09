@@ -51,7 +51,7 @@ function sc_enemy_register_corporation_support_battleship()
         },
 
         movement_controller: {
-            asteroid_response: AsteroidResponse.AVOID,
+            asteroid_response: AsteroidResponse.IGNORE,
             idle_script: sc_enemy_movement_hold,
             chase_script: sc_enemy_movement_chase,
             combat_script: sc_enemy_movement_hold_line_of_sight,
@@ -131,6 +131,42 @@ function sc_enemy_register_corporation_support_battleship()
                 rotation: { mode: HardpointRotation.FIXED, turn_speed: 0, arc: 0, return_to_rest: true },
                 draw_script: sc_enemy_corporation_battleship_rocket_pod_draw
             },
+			{
+			    key: "clearance_left",
+			    group: "clearance_left",
+			    forward: 0.3,
+			    side: -0.34,
+			    angle: 0,
+			    muzzle_forward: 0.1,
+
+			    rotation: {
+			        mode: HardpointRotation.TARGET,
+			        turn_speed: 5,
+			        arc: 360,
+			        return_to_rest: true
+			    },
+
+			    draw_script:
+			        sc_enemy_corporation_battleship_clearance_emitter_draw
+			},
+			{
+			    key: "clearance_right",
+			    group: "clearance_right",
+			    forward: 0.3,
+			    side: 0.34,
+			    angle: 0,
+			    muzzle_forward: 0.1,
+
+			    rotation: {
+			        mode: HardpointRotation.TARGET,
+			        turn_speed: 5,
+			        arc: 360,
+			        return_to_rest: true
+			    },
+
+			    draw_script:
+			        sc_enemy_corporation_battleship_clearance_emitter_draw
+			},
             {
                 key: "repair_centre", group: "repair_beam",
                 forward: 0, side: 0, angle: 0, muzzle_forward: 0.42,
@@ -288,7 +324,142 @@ function sc_enemy_register_corporation_support_battleship()
 					        source_flare_alpha: 0.8
 					    }
 					}
-                }
+                },
+				
+				{
+				    key: "clearance_left",
+				    hardpoint_group: "clearance_left",
+
+				    target_script:
+				        sc_enemy_utility_target_nearby_asteroid,
+
+				    valid_script:
+				        sc_enemy_utility_target_asteroid_valid,
+
+				    action_script:
+				        sc_enemy_utility_action_asteroid_clearance,
+
+				    draw_script:
+				        sc_enemy_utility_clearance_beam_draw,
+
+				    acquire_range: 760,
+				    release_range: 880,
+				    retarget_interval: 12,
+				    action_interval: 5,
+				    aim_tolerance: 8,
+
+				    damage: {
+				        amount: 12,
+				        type: DamageType.THERMAL,
+				        effect: DamageEffect.NONE
+				    },
+
+				    visual: {
+				        width: 3,
+
+				        style: {
+				            segment_length: 65,
+				            width_start: 0.8,
+				            width_end: 1,
+				            pulse_amount: 0.08,
+				            pulse_speed: 0.3,
+				            pulse_secondary_amount: 0,
+				            pulse_secondary_speed: 0,
+				            wobble_amount: 0.08,
+				            wobble_speed: 0.24,
+				            wobble_step: 0.8,
+
+				            glow_width: 3,
+				            glow_alpha: 0.18,
+				            body_width: 1.8,
+				            body_alpha: 0.55,
+				            inner_width: 0.8,
+				            inner_alpha: 0.95,
+				            hot_width: 0.25,
+				            hot_alpha: 1,
+
+				            body_colour_mix: 0,
+				            inner_colour_mix: 0,
+				            hot_colour_mix: 0,
+
+				            band_spacing: 75,
+				            band_length: 12,
+				            band_speed: 4,
+				            band_width: 0.2,
+				            band_alpha: 0.2,
+
+				            source_flare_radius: 0.65,
+				            source_flare_alpha: 0.85
+				        }
+				    }
+				},
+				{
+				    key: "clearance_right",
+				    hardpoint_group: "clearance_right",
+
+				    target_script:
+				        sc_enemy_utility_target_nearby_asteroid,
+
+				    valid_script:
+				        sc_enemy_utility_target_asteroid_valid,
+
+				    action_script:
+				        sc_enemy_utility_action_asteroid_clearance,
+
+				    draw_script:
+				        sc_enemy_utility_clearance_beam_draw,
+
+				    acquire_range: 760,
+				    release_range: 880,
+				    retarget_interval: 12,
+				    action_interval: 5,
+				    aim_tolerance: 8,
+
+				    damage: {
+				        amount: 12,
+				        type: DamageType.THERMAL,
+				        effect: DamageEffect.NONE
+				    },
+
+				    visual: {
+				        width: 3,
+
+				        style: {
+				            segment_length: 65,
+				            width_start: 0.8,
+				            width_end: 1,
+				            pulse_amount: 0.08,
+				            pulse_speed: 0.3,
+				            pulse_secondary_amount: 0,
+				            pulse_secondary_speed: 0,
+				            wobble_amount: 0.08,
+				            wobble_speed: 0.24,
+				            wobble_step: 0.8,
+
+				            glow_width: 3,
+				            glow_alpha: 0.18,
+				            body_width: 1.8,
+				            body_alpha: 0.55,
+				            inner_width: 0.8,
+				            inner_alpha: 0.95,
+				            hot_width: 0.25,
+				            hot_alpha: 1,
+
+				            body_colour_mix: 0,
+				            inner_colour_mix: 0,
+				            hot_colour_mix: 0,
+
+				            band_spacing: 75,
+				            band_length: 12,
+				            band_speed: 4,
+				            band_width: 0.2,
+				            band_alpha: 0.2,
+
+				            source_flare_radius: 0.65,
+				            source_flare_alpha: 0.85
+				        }
+				    }
+				}
             ]
         }
     });
@@ -542,6 +713,37 @@ function sc_enemy_corporation_support_battleship_core_draw(_x, _y, _r, _a, _v, _
     draw_circle(_x,_y,_r*0.025,false);
 
     draw_set_alpha(1);
+}
+
+/// @description Draws one small automated asteroid-clearance emitter.
+function sc_enemy_corporation_battleship_clearance_emitter_draw(
+    _x,
+    _y,
+    _r,
+    _a,
+    _v,
+    _alpha
+)
+{
+    var _p = _v.palette;
+    var _size = _r * 0.055;
+
+    draw_set_alpha(_alpha);
+
+    draw_set_colour(_p.void);
+    draw_circle(_x,_y,_size + 4,false);
+
+    draw_set_colour(_p.hull_dark);
+    draw_circle(_x,_y,_size,false);
+
+    draw_set_colour(_p.energy);
+    draw_circle(_x,_y,_size * 0.55,false);
+
+    draw_set_colour(_p.core);
+    draw_circle(_x,_y,_size * 0.2,false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Creates the Support Battleship destruction fragments.

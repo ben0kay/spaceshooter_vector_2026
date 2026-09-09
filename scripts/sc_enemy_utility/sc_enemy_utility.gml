@@ -12,7 +12,9 @@ function sc_enemy_utility_controller_init(_enemy)
 
         for (var _h = 0; _h < array_length(_data.hardpoints); _h++)
         {
-            if (_data.hardpoints[_h].group != _channel.hardpoint_group) continue;
+            if (_data.hardpoints[_h].group != _channel.hardpoint_group)
+                continue;
+
             _hardpoint_index = _h;
             break;
         }
@@ -21,10 +23,26 @@ function sc_enemy_utility_controller_init(_enemy)
         {
             show_debug_message(
                 "ENEMY UTILITY ERROR - no hardpoint group "
-                + _channel.hardpoint_group + " on " + _data.key
+                + _channel.hardpoint_group
+                + " on "
+                + _data.key
             );
 
             return false;
+        }
+
+        var _damage_packet = undefined;
+
+        if (variable_struct_exists(_channel,"damage"))
+        {
+            _damage_packet = sc_damage_packet_create(
+                _channel.damage,
+                {
+                    owner_id: _enemy,
+                    faction: _data.identity.faction,
+                    damage_multiplier: _data.stats.final.damage_multiplier
+                }
+            );
         }
 
         _channel.runtime = {
@@ -32,6 +50,7 @@ function sc_enemy_utility_controller_init(_enemy)
             hardpoint_index: _hardpoint_index,
             next_target_tick: GAME_TICK,
             next_action_tick: GAME_TICK,
+            damage_packet: _damage_packet,
             active: false,
             aligned: false
         };
@@ -134,6 +153,153 @@ function sc_enemy_utility_target_damaged_ally(_enemy, _channel)
 
     ds_list_destroy(_list);
     return _target;
+}
+
+/// @description Returns whether another utility channel has claimed a target.
+function sc_enemy_utility_target_claimed(_enemy,_channel,_target)
+{
+    var _channels = _enemy.enemy.utility_controller.channels;
+
+    for (var _i = 0; _i < array_length(_channels); ++_i)
+    {
+        var _other = _channels[_i];
+
+        if (_other == _channel) continue;
+
+        if (_other.runtime.target_id == _target)
+            return true;
+    }
+
+    return false;
+}
+
+/// @description Returns whether an asteroid-clearance target remains valid.
+function sc_enemy_utility_target_asteroid_valid(_enemy,_channel,_target)
+{
+    if (!instance_exists(_target)
+    || !_target.initialized)
+        return false;
+
+    return sc_point_distance_sq(
+        _enemy.x,
+        _enemy.y,
+        _target.x,
+        _target.y
+    ) <= sqr(_channel.release_range);
+}
+
+/// @description Selects the nearest unclaimed asteroid for automated clearance.
+function sc_enemy_utility_target_nearby_asteroid(_enemy,_channel)
+{
+    var _list = ds_list_create();
+
+    collision_circle_list(
+        _enemy.x,
+        _enemy.y,
+        _channel.acquire_range,
+        o_asteroid,
+        false,
+        true,
+        _list,
+        false
+    );
+
+    var _target = noone;
+    var _best_distance_sq = sqr(_channel.acquire_range);
+
+    for (var _i = 0; _i < ds_list_size(_list); ++_i)
+    {
+        var _candidate = _list[| _i];
+
+        if (!instance_exists(_candidate)
+        || !_candidate.initialized
+        || sc_enemy_utility_target_claimed(
+            _enemy,
+            _channel,
+            _candidate
+        ))
+            continue;
+
+        var _distance_sq = sc_point_distance_sq(
+            _enemy.x,
+            _enemy.y,
+            _candidate.x,
+            _candidate.y
+        );
+
+        if (_distance_sq >= _best_distance_sq)
+            continue;
+
+        _target = _candidate;
+        _best_distance_sq = _distance_sq;
+    }
+
+    ds_list_destroy(_list);
+    return _target;
+}
+
+/// @description Applies one automated asteroid-clearance damage tick.
+function sc_enemy_utility_action_asteroid_clearance(_enemy,_channel,_target)
+{
+    if (!instance_exists(_target))
+        return false;
+
+    sc_asteroid_damage(
+        _target,
+        _channel.runtime.damage_packet
+    );
+
+    return true;
+}
+
+/// @description Draws one automated asteroid-clearance beam.
+function sc_enemy_utility_clearance_beam_draw(
+    _x,
+    _y,
+    _target_x,
+    _target_y,
+    _channel,
+    _palette
+)
+{
+    sc_visual_beam_layered_draw(
+        _x,
+        _y,
+        _target_x,
+        _target_y,
+        _channel.visual.width,
+        _channel.visual.style,
+        _palette,
+        1,
+        real(_channel.runtime.target_id)
+    );
+
+    var _pulse = 0.85
+        + sin(GAME_TICK * 0.32) * 0.15;
+
+    gpu_set_blendmode(bm_add);
+
+    draw_set_alpha(0.3);
+    draw_set_colour(_palette.energy);
+    draw_circle(
+        _target_x,
+        _target_y,
+        15 * _pulse,
+        false
+    );
+
+    draw_set_alpha(0.9);
+    draw_set_colour(_palette.core);
+    draw_circle(
+        _target_x,
+        _target_y,
+        4 * _pulse,
+        false
+    );
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Aims one utility hardpoint independently from combat targeting.

@@ -57,6 +57,26 @@ function sc_shockwave_create(_x, _y, _layer, _definition, _radius)
 function sc_shockwave_init(_shockwave, _create)
 {
     var _definition = _create.definition;
+    var _shape = {
+        scale_forward: 1,
+        scale_side: 1,
+        angle: 0
+    };
+
+    if (variable_struct_exists(_definition, "shape"))
+    {
+        _shape.scale_forward = random_range(
+            _definition.shape.forward_min,
+            _definition.shape.forward_max
+        );
+
+        _shape.scale_side = random_range(
+            _definition.shape.side_min,
+            _definition.shape.side_max
+        );
+
+        _shape.angle = random(360);
+    }
 
     _shockwave.shockwave = {
         radius_current: 0,
@@ -66,6 +86,7 @@ function sc_shockwave_init(_shockwave, _create)
         fade_speed: _definition.fade_speed,
         thickness: _definition.thickness,
         colour: _definition.colour,
+        shape: _shape,
 
         particles: {
             enabled: _definition.particles_enabled,
@@ -93,6 +114,7 @@ function sc_shockwave_particles_emit(_shockwave)
 {
     var _data = _shockwave.shockwave;
     var _particles = _data.particles;
+    var _shape = _data.shape;
     var _types = sc_particles_group_get("shockwave");
 
     if (!is_struct(_types)) return false;
@@ -102,29 +124,58 @@ function sc_shockwave_particles_emit(_shockwave)
 
     if (_particles.smoke_enabled)
     {
-        part_type_colour2(_types.smoke, _particles.smoke_colour, merge_colour(_particles.smoke_colour, c_black, 0.7));
+        part_type_colour2(
+            _types.smoke,
+            _particles.smoke_colour,
+            merge_colour(_particles.smoke_colour, c_black, 0.7)
+        );
 
-        for (var _i = 0; _i < _smoke_amount; _i++)
+        for (var _i = 0; _i < _smoke_amount; ++_i)
         {
-            var _angle = random(360);
-            var _radius = _data.radius_current + random_range(-_data.thickness * 2, _data.thickness * 2);
-            var _x = _shockwave.x + lengthdir_x(_radius, _angle);
-            var _y = _shockwave.y + lengthdir_y(_radius, _angle);
+            var _direction = random(360);
+            var _radius = _data.radius_current
+                + random_range(-_data.thickness * 2, _data.thickness * 2);
 
-            part_type_direction(_types.smoke, _angle - 18, _angle + 18, 0, 0);
+            var _local_x = dcos(_direction) * _radius * _shape.scale_forward;
+            var _local_y = dsin(_direction) * _radius * _shape.scale_side;
+
+            var _x = _shockwave.x
+                + lengthdir_x(_local_x, _shape.angle)
+                + lengthdir_x(_local_y, _shape.angle + 90);
+
+            var _y = _shockwave.y
+                + lengthdir_y(_local_x, _shape.angle)
+                + lengthdir_y(_local_y, _shape.angle + 90);
+
+            var _outward = point_direction(_shockwave.x, _shockwave.y, _x, _y);
+
+            part_type_direction(_types.smoke, _outward - 18, _outward + 18, 0, 0);
             part_particles_create(global.particles.impact_system, _x, _y, _types.smoke, 1);
         }
     }
 
-    if (_particles.fragments_enabled && random(1) < _particles.fragment_chance * lerp(0.65, 1, _radius_progress))
+    if (_particles.fragments_enabled
+    && random(1) < _particles.fragment_chance * lerp(0.65, 1, _radius_progress))
     {
-        var _angle = random(360);
-        var _radius = _data.radius_current + random_range(-_data.thickness, _data.thickness);
-        var _x = _shockwave.x + lengthdir_x(_radius, _angle);
-        var _y = _shockwave.y + lengthdir_y(_radius, _angle);
+        var _direction = random(360);
+        var _radius = _data.radius_current
+            + random_range(-_data.thickness, _data.thickness);
+
+        var _local_x = dcos(_direction) * _radius * _shape.scale_forward;
+        var _local_y = dsin(_direction) * _radius * _shape.scale_side;
+
+        var _x = _shockwave.x
+            + lengthdir_x(_local_x, _shape.angle)
+            + lengthdir_x(_local_y, _shape.angle + 90);
+
+        var _y = _shockwave.y
+            + lengthdir_y(_local_x, _shape.angle)
+            + lengthdir_y(_local_y, _shape.angle + 90);
+
+        var _outward = point_direction(_shockwave.x, _shockwave.y, _x, _y);
 
         part_type_colour2(_types.fragment, c_white, _particles.fragment_colour);
-        part_type_direction(_types.fragment, _angle - 12, _angle + 12, 0, 0);
+        part_type_direction(_types.fragment, _outward - 12, _outward + 12, 0, 0);
         part_particles_create(global.particles.impact_system, _x, _y, _types.fragment, 1);
     }
 
@@ -158,32 +209,57 @@ function sc_shockwave_update(_shockwave)
         instance_destroy(_shockwave);
 }
 
-/// @description Draws one layered glowing shockwave ring.
+/// @description Draws one layered glowing circular or elliptical shockwave ring.
 function sc_shockwave_draw(_shockwave)
 {
     var _data = _shockwave.shockwave;
+    var _shape = _data.shape;
     var _radius = max(0, _data.radius_current);
     var _thickness = max(1, round(_data.thickness));
+    var _forward = _radius * _shape.scale_forward;
+    var _side = _radius * _shape.scale_side;
 
     gpu_set_blendmode(bm_add);
-    draw_set_colour(_data.colour);
 
-    draw_set_alpha(_data.alpha * 0.1);
-    draw_circle(_shockwave.x, _shockwave.y, _radius + _thickness * 3, true);
+    sc_visual_ellipse_outline(
+        _shockwave.x, _shockwave.y,
+        _forward + _thickness * 3,
+        _side + _thickness * 3,
+        _shape.angle, 48,
+        _thickness * 2,
+        _data.colour,
+        _data.alpha * 0.1
+    );
 
-    draw_set_alpha(_data.alpha * 0.2);
-    draw_circle(_shockwave.x, _shockwave.y, _radius + _thickness * 2, true);
+    sc_visual_ellipse_outline(
+        _shockwave.x, _shockwave.y,
+        _forward + _thickness,
+        _side + _thickness,
+        _shape.angle, 48,
+        _thickness,
+        _data.colour,
+        _data.alpha * 0.38
+    );
 
-    draw_set_alpha(_data.alpha * 0.38);
-    draw_circle(_shockwave.x, _shockwave.y, _radius + _thickness, true);
+    sc_visual_ellipse_outline(
+        _shockwave.x, _shockwave.y,
+        _forward,
+        _side,
+        _shape.angle, 48,
+        _thickness,
+        _data.colour,
+        _data.alpha
+    );
 
-    draw_set_alpha(_data.alpha);
-
-    for (var _i = 0; _i < _thickness; _i++)
-        draw_circle(_shockwave.x, _shockwave.y, max(0, _radius - _i), true);
-
-    draw_set_alpha(_data.alpha * 0.28);
-    draw_circle(_shockwave.x, _shockwave.y, max(0, _radius - _thickness), true);
+    sc_visual_ellipse_outline(
+        _shockwave.x, _shockwave.y,
+        max(0, _forward - _thickness),
+        max(0, _side - _thickness),
+        _shape.angle, 48,
+        1,
+        _data.colour,
+        _data.alpha * 0.28
+    );
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);

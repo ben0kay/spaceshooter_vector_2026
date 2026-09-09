@@ -295,8 +295,49 @@ function sc_config_init()
 			    scale_per_decade: 0.1,
 			    scale_max: 1.25,
 				player_drop_lifetime_multiplier: 3
-			}
+			},
+				
+			death: {
+		        visibility_padding: 192,
+
+		        smoke: {
+		            amount_min: 4,
+		            amount_max: 10,
+		            radius_scale: 0.65,
+		            size_reference: 58,
+		            size_min: 0.8,
+		            size_max: 3
+		        },
+
+		        shockwave: {
+		            radius_scale: 1.1,
+		            expansion_response: 0.18,
+		            fade_speed: 0.045,
+		            thickness: 4,
+		            colour: make_colour_rgb(170,190,200),
+
+		            particles_enabled: true,
+		            particle_interval: 2,
+		            particle_min_radius: 8,
+
+		            smoke_enabled: true,
+		            smoke_amount_max: 4,
+		            smoke_colour: make_colour_rgb(80,90,95),
+
+		            fragments_enabled: true,
+		            fragment_chance: 0.3,
+		            fragment_colour: make_colour_rgb(190,210,220),
+
+		            shape: {
+		                forward_min: 1.05,
+		                forward_max: 1.35,
+		                side_min: 0.6,
+		                side_max: 0.9
+		            }
+		        }
+    }
 		},
+		
 			
 		crafting: {
 		    grades: [
