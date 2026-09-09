@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_weapon_functions",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_weapon_functions",
+  "parent":{
+    "name":"PLAYER",
+    "path":"folders/SCRIPTS---/PLAYER.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

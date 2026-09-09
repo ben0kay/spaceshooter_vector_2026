@@ -200,6 +200,7 @@
     {"id":{"name":"sc_plyr_mining_beam","path":"scripts/sc_plyr_mining_beam/sc_plyr_mining_beam.yy",},},
     {"id":{"name":"sc_plyr_register","path":"scripts/sc_plyr_register/sc_plyr_register.yy",},},
     {"id":{"name":"sc_plyr_ship_bake","path":"scripts/sc_plyr_ship_bake/sc_plyr_ship_bake.yy",},},
+    {"id":{"name":"sc_plyr_weapon_functions","path":"scripts/sc_plyr_weapon_functions/sc_plyr_weapon_functions.yy",},},
     {"id":{"name":"sc_profile","path":"scripts/sc_profile/sc_profile.yy",},},
     {"id":{"name":"sc_projectile_bake","path":"scripts/sc_projectile_bake/sc_projectile_bake.yy",},},
     {"id":{"name":"sc_projectile_emission","path":"scripts/sc_projectile_emission/sc_projectile_emission.yy",},},
