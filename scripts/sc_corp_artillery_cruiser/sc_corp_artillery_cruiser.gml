@@ -40,7 +40,7 @@ function sc_enemy_register_corporation_artillery_cruiser()
             },
 
             range: {
-                detection: 4400,
+                detection: 2200,
                 combat: 4200,
                 backaway: 0,
                 forget: 5600,
@@ -111,7 +111,7 @@ function sc_enemy_register_corporation_artillery_cruiser()
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
-                    turn_speed: 1.15,
+                    turn_speed: 0.6,
                     arc: 360,
                     return_to_rest: true
                 },
@@ -128,7 +128,7 @@ function sc_enemy_register_corporation_artillery_cruiser()
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
-                    turn_speed: 1.15,
+                    turn_speed: 0.6,
                     arc: 360,
                     return_to_rest: true
                 },

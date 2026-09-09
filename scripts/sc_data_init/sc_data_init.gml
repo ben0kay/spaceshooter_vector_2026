@@ -65,37 +65,37 @@ function sc_enemy_register(_data)
 {
     var _key = _data.identity.key;
 
-    if (variable_struct_exists(global.data.enemies, _key))
+    if (variable_struct_exists(global.data.enemies,_key))
     {
-        show_debug_message("ENEMY REGISTRATION ERROR - duplicate key: " + _key);
+        show_debug_message("ENEMY REGISTRATION ERROR - duplicate key: "+_key);
         return false;
     }
 
-    if (!variable_struct_exists(_data.identity, "threat_value")
+    if (!variable_struct_exists(_data.identity,"threat_value")
     || _data.identity.threat_value < 0)
     {
-        show_debug_message("ENEMY REGISTRATION ERROR - invalid threat value: " + _key);
+        show_debug_message("ENEMY REGISTRATION ERROR - invalid threat value: "+_key);
         return false;
     }
 
-    if (!variable_struct_exists(_data.stats_base, "mass")
+    if (!variable_struct_exists(_data.stats_base,"mass")
     || _data.stats_base.mass <= 0)
     {
-        show_debug_message("ENEMY REGISTRATION ERROR - invalid mass: " + _key);
+        show_debug_message("ENEMY REGISTRATION ERROR - invalid mass: "+_key);
         return false;
     }
 
     var _range = _data.stats_base.range;
 
     if (_range.backaway > _range.combat
-    || _range.combat > _range.detection
-    || _range.detection > _range.forget)
+    || _range.detection > _range.forget
+    || _range.combat > _range.forget)
     {
-        show_debug_message("ENEMY REGISTRATION ERROR - invalid range order: " + _key);
+        show_debug_message("ENEMY REGISTRATION ERROR - invalid range order: "+_key);
         return false;
     }
 
-    variable_struct_set(global.data.enemies, _key, _data);
+    variable_struct_set(global.data.enemies,_key,_data);
     return true;
 }
 

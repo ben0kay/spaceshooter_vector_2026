@@ -273,18 +273,26 @@ function sc_config_init()
 			    spawn_clearance: 14,
 
 			    movement_decay: 0.965,
-			    attraction_range: 150,
-			    attraction_strength: 0.32,
-			    attraction_speed_max: 7,
-			    collect_range: 30,
+			    attraction_delay: 20,
+			    attraction_range: 420,
+			    attraction_strength_min: 0.18,
+			    attraction_strength_max: 0.75,
+			    attraction_speed_max: 11,
+			    collect_range: 72,
+
+			    lifetime: 5400,
+			    fade_duration: 300,
+
+			    trail_interval: 2,
+			    trail_speed_min: 0.35,
 
 			    merge_interval: 16,
-			    merge_range: 42,
+			    merge_range: 70,
 			    merge_amount_max: 999,
 
-			    scale_base: 0.86,
-			    scale_per_decade: 0.08,
-			    scale_max: 1.14
+			    scale_base: 0.92,
+			    scale_per_decade: 0.1,
+			    scale_max: 1.25
 			}
 		},
 			

@@ -176,7 +176,7 @@ function sc_player_inventory_sort(_player)
 /// @description Removes an amount from one cargo slot and updates cargo totals.
 function sc_player_inventory_slot_remove(_player, _slot_index, _amount)
 {
-    var _result = { key: "", amount: 0 };
+    var _result = { key: "", grade: undefined, amount: 0 };
 
     if (!instance_exists(_player)
     || _slot_index < 0
@@ -205,8 +205,9 @@ function sc_player_inventory_slot_remove(_player, _slot_index, _amount)
 
     _player.inventory.slots[_slot_index] = _slot.amount > 0 ? _slot : undefined;
 
-    _result.key = _slot.key;
-    _result.amount = _removed;
+	_result.key = _slot.key;
+	_result.grade = _slot.grade;
+	_result.amount = _removed;
     return _result;
 }
 
@@ -237,12 +238,19 @@ function sc_inventory_selected_drop(_hud)
         _player.y + lengthdir_y(_distance, _direction),
         _player.layer,
         _removed.key,
-        _removed.amount
+        _removed.amount,
+        undefined,
+        _removed.grade
     );
 
     if (!instance_exists(_pickup))
     {
-        sc_player_inventory_add(_player, _removed.key, _removed.amount);
+        sc_player_inventory_add(
+            _player,
+            _removed.key,
+            _removed.amount,
+            _removed.grade
+        );
         return false;
     }
 

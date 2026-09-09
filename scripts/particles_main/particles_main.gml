@@ -25,6 +25,7 @@ function sc_particles_init()
     || !sc_particles_register_shard()
     || !sc_particles_register_shockwave()
     || !sc_particles_register_beam_impact()
+	|| !sc_particles_resource_pickup_register()
     || !sc_particles_register_projectile_content()
     || !sc_particles_register_weapon_content())
     {

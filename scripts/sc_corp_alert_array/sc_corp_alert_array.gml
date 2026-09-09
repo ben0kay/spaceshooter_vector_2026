@@ -23,35 +23,33 @@ function sc_faction_device_register_corporation_alert_array()
         },
 
         controllers: {
-            sensor: {
-                start_angle: 0,
-                sweep_speed: 0.8,
-                detection_width: 1.5,
-                detection_radius: 1500,
-                alert_radius: 3600,
-                alert_cooldown: 300,
-                alert_pulse_radius: 320,
+	            sensor: {
+	                start_angle: 0,
+	                sweep_speed: 0.8,
+	                detection_width: 1.5,
+	                detection_radius: 1700,
+	                alert_radius: 6000,
+	                alert_cooldown: 300,
+	                alert_pulse_radius: 512,
 
-                signal: {
-    duration: 180,
-    arc_amount: 12,
-    launch_spacing: 0.055,
-    start_distance: 54,
-    radius_min: 16,
-    radius_max: 62,
-    arc_angle: 120,
-    segments: 12,
-    thickness: 3,
-    alpha: 0.85
-},
+	                signal: {
+					    duration: 180,
+					    arc_amount: 12,
+					    launch_spacing: 0.055,
+					    start_distance: 54,
+					    radius_min: 16,
+					    radius_max: 62,
+					    arc_angle: 120,
+					    segments: 12,
+					    thickness: 3,
+					    alpha: 0.85
+					},
 
-                trail_lines: 9,
-
-                trail_lines: 9,
-                trail_spacing: 1.8,
-                trail_alpha: 0.34,
-                sweep_width: 2
-            },
+	                trail_lines: 9,
+	                trail_spacing: 1.8,
+	                trail_alpha: 0.34,
+	                sweep_width: 2
+	            },
 
             attack: undefined,
             defence: undefined,
