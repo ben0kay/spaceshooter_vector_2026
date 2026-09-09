@@ -75,6 +75,95 @@ function sc_enemy_movement_hold_line_of_sight(_enemy)
     sc_enemy_movement_chase(_enemy);
 }
 
+/// @description Runs an enemy's normal combat movement outside asteroid fields.
+function sc_enemy_movement_bombard_fallback(_enemy)
+{
+    _enemy.enemy.movement_controller.bombard.fallback_script(_enemy);
+}
+
+/// @description Tracks a target around the closest safe edge of its asteroid field.
+function sc_enemy_movement_bombard_asteroid_field(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _target = _data.target_id;
+    if (!instance_exists(_target)) return;
+
+    var _movement = _data.movement;
+    var _runtime = _movement.behaviour_runtime.bombard;
+    var _config = global.config.enemy.asteroid;
+
+    if (GAME_TICK >= _runtime.next_field_check_tick)
+    {
+        _runtime.next_field_check_tick = GAME_TICK+max(
+            1,
+            round(_config.bombard_field_check_interval*_data.optimization.lazy_factor)
+        );
+
+        _runtime.field_index = sc_sector_asteroid_field_index_at(
+            _target.x,
+            _target.y
+        );
+    }
+
+    if (_runtime.field_index < 0)
+    {
+        sc_enemy_movement_bombard_fallback(_enemy);
+        return;
+    }
+
+    var _field = global.game.sector.asteroid_fields[_runtime.field_index];
+    var _extent = max(_data.collision.radius_forward,_data.collision.radius_side);
+    var _safe_radius = _field.radius+_extent+_config.bombard_field_clearance;
+
+    var _enemy_dx = _enemy.x-_field.x;
+    var _enemy_dy = _enemy.y-_field.y;
+    var _enemy_distance = max(1,sqrt(_enemy_dx*_enemy_dx+_enemy_dy*_enemy_dy));
+    var _enemy_direction = point_direction(_field.x,_field.y,_enemy.x,_enemy.y);
+    var _target_direction = point_direction(_field.x,_field.y,_target.x,_target.y);
+    var _angle_difference = angle_difference(_target_direction,_enemy_direction);
+    var _radial_error = _enemy_distance-_safe_radius;
+
+    var _command = _movement.command;
+    _command.face_direction = point_direction(_enemy.x,_enemy.y,_target.x,_target.y);
+    _command.facing_mode = EnemyFacingMode.TARGET;
+
+    if (abs(_angle_difference) <= 2
+    && abs(_radial_error) <= _config.bombard_arrival_radius)
+        return;
+
+    var _orbit_side = sign(_angle_difference);
+    var _tangent_strength = clamp(abs(_angle_difference)/45,0,1);
+    var _radial_strength = clamp(
+        _radial_error/max(1,_config.bombard_field_clearance),
+        -1,
+        1
+    );
+
+    var _move_x = lengthdir_x(
+        _tangent_strength,
+        _enemy_direction+90*_orbit_side
+    )+lengthdir_x(
+        _radial_strength,
+        _enemy_direction+180
+    );
+
+    var _move_y = lengthdir_y(
+        _tangent_strength,
+        _enemy_direction+90*_orbit_side
+    )+lengthdir_y(
+        _radial_strength,
+        _enemy_direction+180
+    );
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0,0,_move_x,_move_y);
+    _command.speed_scale = min(
+        _config.bombard_speed_scale,
+        point_distance(0,0,_move_x,_move_y)
+    );
+}
+
 /// @description Selects a cached attack line passing beside and beyond the target.
 function sc_enemy_flyby_run_select(_enemy)
 {

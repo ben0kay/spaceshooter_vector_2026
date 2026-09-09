@@ -317,24 +317,6 @@ function sc_facility_interface_open(_hud, _structure)
     return true;
 }
 
-/// @description Opens one nearby industrial-processing interface.
-function sc_facility_interface_open(_hud, _structure)
-{
-    var _runtime = _hud.facility;
-
-    sc_player_control_suspend(global.player_id);
-
-    _runtime.open = true;
-    _runtime.active_id = _structure;
-    _runtime.selected_layer = ItemLayer.MATERIAL;
-    _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure, _runtime.selected_layer);
-    _runtime.selected_recipe = 0;
-    _runtime.amount = 1;
-
-    global.PlayerState = PlayerState.FACILITY;
-    return true;
-}
-
 /// @description Closes the facility interface while allowing jobs to continue.
 function sc_facility_interface_close(_hud)
 {

@@ -289,14 +289,6 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
 }
 
-/// @description Returns whether an attack requires an unobstructed target view.
-function sc_enemy_attack_line_of_sight_required(_attack)
-{
-    return variable_struct_exists(_attack, "conditions")
-        && variable_struct_exists(_attack.conditions, "line_of_sight")
-        && _attack.conditions.line_of_sight;
-}
-
 /// @description Returns the current combat target without replacing the strategic player target.
 function sc_enemy_attack_target_get(_enemy)
 {
@@ -306,17 +298,35 @@ function sc_enemy_attack_target_get(_enemy)
     return _enemy.enemy.target_id;
 }
 
-/// @description Checks a broad three-line corridor to one supplied target.
-function sc_enemy_attack_line_of_sight_clear_to(_enemy, _target)
+/// @description Returns whether an attack requires any unobstructed target view.
+function sc_enemy_attack_line_of_sight_required(_attack)
+{
+    if (!variable_struct_exists(_attack,"conditions")
+    || !variable_struct_exists(_attack.conditions,"line_of_sight"))
+        return false;
+
+    return _attack.conditions.line_of_sight != false;
+}
+
+/// @description Checks a broad three-line corridor using supplied LOS rules.
+function sc_enemy_attack_line_of_sight_clear_to(_enemy,_target,_line_of_sight = true)
 {
     if (!instance_exists(_target)) return false;
-    if (global.level.asteroids_alive <= 0) return true;
+
+    var _check_solids = true;
+    var _check_asteroids = true;
+
+    if (is_struct(_line_of_sight))
+    {
+        _check_solids = _line_of_sight.solids;
+        _check_asteroids = _line_of_sight.asteroids;
+    }
 
     var _target_collision = _target.entity.collision;
     var _width = min(
         _target_collision.radius_forward,
         _target_collision.radius_side
-    ) * global.config.enemy.asteroid.line_of_sight_width_scale;
+    )*global.config.enemy.asteroid.line_of_sight_width_scale;
 
     var _direction = point_direction(
         _enemy.x,
@@ -325,25 +335,28 @@ function sc_enemy_attack_line_of_sight_clear_to(_enemy, _target)
         _target.y
     );
 
-    for (var _side = -1; _side <= 1; _side++)
+    for (var _side = -1; _side <= 1; ++_side)
     {
-        var _offset = _width * _side;
-        var _start_x = _enemy.x + lengthdir_x(_offset, _direction + 90);
-        var _start_y = _enemy.y + lengthdir_y(_offset, _direction + 90);
-        var _end_x = _target.x + lengthdir_x(_offset, _direction + 90);
-        var _end_y = _target.y + lengthdir_y(_offset, _direction + 90);
+        var _offset = _width*_side;
+        var _start_x = _enemy.x+lengthdir_x(_offset,_direction+90);
+        var _start_y = _enemy.y+lengthdir_y(_offset,_direction+90);
+        var _end_x = _target.x+lengthdir_x(_offset,_direction+90);
+        var _end_y = _target.y+lengthdir_y(_offset,_direction+90);
 
-        if (collision_line(
-            _start_x, _start_y,
-            _end_x, _end_y,
-            o_asteroid, false, true
+        if (_check_asteroids
+        && global.level.asteroids_alive > 0
+        && collision_line(
+            _start_x,_start_y,
+            _end_x,_end_y,
+            o_asteroid,false,true
         ) != noone)
             return false;
 
-        if (collision_line(
-            _start_x, _start_y,
-            _end_x, _end_y,
-            o_solid, false, true
+        if (_check_solids
+        && collision_line(
+            _start_x,_start_y,
+            _end_x,_end_y,
+            o_solid,false,true
         ) != noone)
             return false;
     }
@@ -352,18 +365,20 @@ function sc_enemy_attack_line_of_sight_clear_to(_enemy, _target)
 }
 
 /// @description Checks line of sight to the enemy's current attack target.
-function sc_enemy_attack_line_of_sight_clear(_enemy)
+function sc_enemy_attack_line_of_sight_clear(_enemy,_attack = undefined)
 {
     var _target = sc_enemy_attack_target_get(_enemy);
     if (!instance_exists(_target)) return false;
+    if (sc_enemy_asteroid_destroy_active(_enemy)) return true;
 
-    // The blocking asteroid is itself the intended target.
-    if (sc_enemy_asteroid_destroy_active(_enemy))
-        return true;
+    var _line_of_sight = is_struct(_attack)
+        ? _attack.conditions.line_of_sight
+        : true;
 
     return sc_enemy_attack_line_of_sight_clear_to(
         _enemy,
-        _target
+        _target,
+        _line_of_sight
     );
 }
 
@@ -470,7 +485,7 @@ function sc_enemy_attack_can_use(_enemy, _attack)
                 return false;
 
             if (sc_enemy_attack_line_of_sight_required(_attack)
-            && !sc_enemy_attack_line_of_sight_clear(_enemy))
+            && !sc_enemy_attack_line_of_sight_clear(_enemy,_attack))
                 return false;
         }
 
@@ -648,8 +663,8 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
         if (!sc_enemy_attack_hardpoint_aligned(_enemy, _attack, _hardpoint_index))
             return noone;
 
-        if (sc_enemy_attack_line_of_sight_required(_attack)
-        && !sc_enemy_attack_line_of_sight_clear(_enemy))
+                if (sc_enemy_attack_line_of_sight_required(_attack)
+        && !sc_enemy_attack_line_of_sight_clear(_enemy,_attack))
             return noone;
     }
 

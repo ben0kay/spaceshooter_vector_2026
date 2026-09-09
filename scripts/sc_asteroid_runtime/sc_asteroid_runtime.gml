@@ -42,6 +42,7 @@ function sc_asteroid_init(_asteroid, _create)
         key: _create.key,
         item_key: _definition.item_key,
         size: _create.size,
+		field_index: _create.field_index,
 
         health: {
             current: _health,
@@ -332,7 +333,15 @@ function sc_asteroid_weighted_choose(_entries)
 }
 
 /// @description Spawns one configurable mixed asteroid field.
-function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer,_forced_sizes = [])
+function sc_asteroid_test_field_spawn(
+    _centre_x,
+    _centre_y,
+    _radius,
+    _amount,
+    _layer,
+    _forced_sizes = [],
+    _field_index = -1
+)
 {
     var _config = global.config.sector.asteroid_fields;
     var _materials = _config.materials;
@@ -370,7 +379,11 @@ function sc_asteroid_test_field_spawn(_centre_x,_centre_y,_radius,_amount,_layer
         var _material = sc_asteroid_weighted_choose(_materials);
 
         instance_create_layer(_x,_y,_layer,o_asteroid,{
-            asteroid_create: { key: _material.key, size: _size }
+            asteroid_create: {
+                key: _material.key,
+                size: _size,
+                field_index: _field_index
+            }
         });
 
         _spawned++;

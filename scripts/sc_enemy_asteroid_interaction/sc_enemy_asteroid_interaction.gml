@@ -141,35 +141,51 @@ function sc_enemy_obstacle_overlap_resolve(_enemy,_include_asteroids)
     return true;
 }
 
+/// @description Returns whether one asteroid belongs to a generated sector field.
+function sc_enemy_asteroid_field_member(_asteroid)
+{
+    return sc_enemy_obstacle_is_asteroid(_asteroid)
+        && _asteroid.asteroid.field_index >= 0;
+}
+
+/// @description Returns whether the enemy should destroy one blocking asteroid.
+function sc_enemy_asteroid_destroy_required(_enemy,_asteroid)
+{
+    var _response = _enemy.enemy.movement_controller.asteroid_response;
+
+    return _response == AsteroidResponse.DESTROY
+        || (_response == AsteroidResponse.BOMBARD
+        && !sc_enemy_asteroid_field_member(_asteroid));
+}
+
 /// @description Returns whether an enemy is committed to destroying a blocking asteroid.
 function sc_enemy_asteroid_destroy_active(_enemy)
 {
-    var _data=_enemy.enemy;
-    var _runtime=_data.movement.obstacle;
+    var _runtime = _enemy.enemy.movement.obstacle;
 
-    return _data.movement_controller.asteroid_response==AsteroidResponse.DESTROY
-        && _runtime.active
-        && sc_enemy_obstacle_is_asteroid(_runtime.target_id);
+    return _runtime.active
+        && sc_enemy_obstacle_is_asteroid(_runtime.target_id)
+        && sc_enemy_asteroid_destroy_required(_enemy,_runtime.target_id);
 }
 
 /// @description Stops at an asteroid while periodically checking whether its combat target is visible.
 function sc_enemy_asteroid_destroy_hold(_enemy)
 {
-    var _data=_enemy.enemy;
-    var _runtime=_data.movement.obstacle;
-    var _movement=_data.movement;
-    var _command=_movement.command;
-    var _target=_runtime.target_id;
+    var _data = _enemy.enemy;
+    var _runtime = _data.movement.obstacle;
+    var _movement = _data.movement;
+    var _command = _movement.command;
+    var _target = _runtime.target_id;
 
     if (!sc_enemy_obstacle_is_asteroid(_target))
         return false;
 
-    var _config=global.config.enemy.asteroid;
+    var _config = global.config.enemy.asteroid;
 
-    if (GAME_TICK>=_runtime.next_check_tick)
+    if (GAME_TICK >= _runtime.next_check_tick)
     {
-        var _lazy=_data.optimization.lazy_factor;
-        _runtime.next_check_tick=GAME_TICK+max(
+        var _lazy = _data.optimization.lazy_factor;
+        _runtime.next_check_tick = GAME_TICK+max(
             1,
             round(_config.destroy_visibility_interval*_lazy)
         );
@@ -178,19 +194,19 @@ function sc_enemy_asteroid_destroy_hold(_enemy)
         && sc_enemy_attack_line_of_sight_clear_to(_enemy,_data.target_id))
         {
             sc_enemy_attack_cancel(_enemy);
-            _runtime.active=false;
-            _runtime.target_id=noone;
+            _runtime.active = false;
+            _runtime.target_id = noone;
             return false;
         }
     }
 
     sc_enemy_obstacle_stop(_enemy);
 
-    _movement.velocity_x*=0.55;
-    _movement.velocity_y*=0.55;
+    _movement.velocity_x *= 0.55;
+    _movement.velocity_y *= 0.55;
 
-    _command.facing_mode=EnemyFacingMode.COMMAND;
-    _command.face_direction=point_direction(
+    _command.facing_mode = EnemyFacingMode.COMMAND;
+    _command.face_direction = point_direction(
         _enemy.x,
         _enemy.y,
         _target.x,
@@ -203,16 +219,16 @@ function sc_enemy_asteroid_destroy_hold(_enemy)
 /// @description Applies navigation behaviour around structures and asteroids.
 function sc_enemy_obstacle_response_apply(_enemy)
 {
-    var _data=_enemy.enemy;
-    var _command=_data.movement.command;
-    var _movement=_data.movement;
-    var _runtime=_movement.obstacle;
-    var _response=_data.movement_controller.asteroid_response;
-    var _include_asteroids=_response!=AsteroidResponse.IGNORE;
+    var _data = _enemy.enemy;
+    var _command = _data.movement.command;
+    var _movement = _data.movement;
+    var _runtime = _movement.obstacle;
+    var _response = _data.movement_controller.asteroid_response;
+    var _include_asteroids = _response != AsteroidResponse.IGNORE;
 
     if (_runtime.active
     && sc_enemy_obstacle_is_asteroid(_runtime.target_id)
-    && _response==AsteroidResponse.DESTROY)
+    && sc_enemy_asteroid_destroy_required(_enemy,_runtime.target_id))
     {
         if (instance_exists(_runtime.target_id))
         {
@@ -221,66 +237,65 @@ function sc_enemy_obstacle_response_apply(_enemy)
         }
 
         sc_enemy_attack_cancel(_enemy);
-        _runtime.active=false;
-        _runtime.target_id=noone;
+        _runtime.active = false;
+        _runtime.target_id = noone;
     }
 
-    var _speed=point_distance(
+    var _speed = point_distance(
         0,0,
         _movement.velocity_x,
         _movement.velocity_y
     );
 
-    if (!_command.active && _speed<=0.01)
+    if (!_command.active && _speed <= 0.01)
     {
-        _runtime.active=false;
-        _runtime.target_id=noone;
+        _runtime.active = false;
+        _runtime.target_id = noone;
         return;
     }
 
-    if (GAME_TICK<_runtime.next_check_tick)
+    if (GAME_TICK < _runtime.next_check_tick)
     {
-        if (!_runtime.active)
-            return;
+        if (!_runtime.active) return;
 
-        var _target_is_asteroid=sc_enemy_obstacle_is_asteroid(
+        var _target_is_asteroid = sc_enemy_obstacle_is_asteroid(
             _runtime.target_id
         );
 
         if (_target_is_asteroid
-        && _response!=AsteroidResponse.AVOID)
+        && sc_enemy_asteroid_destroy_required(_enemy,_runtime.target_id))
             sc_enemy_obstacle_stop(_enemy);
         else if (_command.active)
-            _command.direction=_runtime.direction;
+            _command.direction = _runtime.direction;
 
         return;
     }
 
-    var _config=global.config.enemy.asteroid;
-    var _lazy=_data.optimization.lazy_factor;
+    var _config = global.config.enemy.asteroid;
+    var _lazy = _data.optimization.lazy_factor;
 
-    _runtime.next_check_tick=GAME_TICK+max(
+    _runtime.next_check_tick = GAME_TICK+max(
         1,
         round(_config.check_interval*_lazy)
     );
 
     if (sc_enemy_obstacle_overlap_resolve(_enemy,_include_asteroids))
     {
-        _runtime.active=false;
-        _runtime.target_id=noone;
+        _runtime.active = false;
+        _runtime.target_id = noone;
         return;
     }
 
-    var _clearance=max(
+    var _clearance = max(
         _data.collision.radius_forward,
         _data.collision.radius_side
     )+_config.clearance_margin;
 
-    var _look_ahead=_clearance
+    var _look_ahead = _clearance
         +_config.look_ahead_base
         +_speed*_config.look_ahead_speed;
 
-    var _desired_direction=_command.active
+    var _desired_direction = _command.active
         ? _command.direction
         : point_direction(
             0,0,
@@ -288,7 +303,7 @@ function sc_enemy_obstacle_response_apply(_enemy)
             _movement.velocity_y
         );
 
-    var _obstacle=sc_enemy_obstacle_route_probe(
+    var _obstacle = sc_enemy_obstacle_route_probe(
         _enemy,
         _desired_direction,
         _look_ahead,
@@ -297,27 +312,27 @@ function sc_enemy_obstacle_response_apply(_enemy)
 
     if (!instance_exists(_obstacle))
     {
-        _runtime.active=false;
-        _runtime.target_id=noone;
-        _runtime.direction=_desired_direction;
+        _runtime.active = false;
+        _runtime.target_id = noone;
+        _runtime.direction = _desired_direction;
         return;
     }
 
-    _runtime.active=true;
-    _runtime.target_id=_obstacle;
+    _runtime.active = true;
+    _runtime.target_id = _obstacle;
 
-    var _target_is_asteroid=sc_enemy_obstacle_is_asteroid(_obstacle);
+    var _target_is_asteroid = sc_enemy_obstacle_is_asteroid(_obstacle);
 
     if (!_command.active)
     {
-        _movement.velocity_x=0;
-        _movement.velocity_y=0;
+        _movement.velocity_x = 0;
+        _movement.velocity_y = 0;
 
         if (!_target_is_asteroid
-        || _response!=AsteroidResponse.DESTROY)
+        || !sc_enemy_asteroid_destroy_required(_enemy,_obstacle))
         {
-            _runtime.active=false;
-            _runtime.target_id=noone;
+            _runtime.active = false;
+            _runtime.target_id = noone;
         }
 
         return;
@@ -355,6 +370,24 @@ function sc_enemy_obstacle_response_apply(_enemy)
         case AsteroidResponse.DESTROY:
             sc_enemy_attack_cancel(_enemy);
             sc_enemy_asteroid_destroy_hold(_enemy);
+        break;
+
+        case AsteroidResponse.BOMBARD:
+            if (sc_enemy_asteroid_field_member(_obstacle))
+            {
+                if (!sc_enemy_obstacle_avoid_direction_select(
+                    _enemy,
+                    _desired_direction,
+                    _look_ahead,
+                    true
+                ))
+                    sc_enemy_obstacle_stop(_enemy);
+            }
+            else
+            {
+                sc_enemy_attack_cancel(_enemy);
+                sc_enemy_asteroid_destroy_hold(_enemy);
+            }
         break;
     }
 }

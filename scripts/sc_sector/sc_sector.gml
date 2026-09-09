@@ -48,59 +48,34 @@ function sc_sector_field_centre_valid(_centres, _x, _y, _separation)
     return true;
 }
 
-/// @description Generates several separated asteroid clusters throughout the sector.
+/// @description Generates and preserves several separated asteroid clusters throughout the sector.
 function sc_sector_asteroid_fields_spawn(_layer)
 {
+    var _sector = global.game.sector;
     var _config = global.config.sector.asteroid_fields;
-    var _field_amount = irandom_range(
-        _config.amount_min,
-        _config.amount_max
-    );
-
-    var _centres = [];
+    var _field_amount = irandom_range(_config.amount_min,_config.amount_max);
+    var _fields = [];
     var _attempts = 0;
 
-    while (array_length(_centres) < _field_amount
-    && _attempts < _field_amount * 40)
+    while (array_length(_fields) < _field_amount
+    && _attempts < _field_amount*40)
     {
         _attempts++;
 
-        var _x = random_range(
-            _config.centre_padding,
-            room_width - _config.centre_padding
-        );
+        var _x = random_range(_config.centre_padding,room_width-_config.centre_padding);
+        var _y = random_range(_config.centre_padding,room_height-_config.centre_padding);
 
-        var _y = random_range(
-            _config.centre_padding,
-            room_height - _config.centre_padding
-        );
-
-        if (point_distance(
-            _x, _y,
-            room_width * 0.5,
-            room_height * 0.5
-        ) < _config.spawn_clear_radius)
+        if (point_distance(_x,_y,room_width*0.5,room_height*0.5) < _config.spawn_clear_radius)
             continue;
 
-        if (!sc_sector_field_centre_valid(
-            _centres,
-            _x,
-            _y,
-            _config.centre_separation
-        ))
+        if (!sc_sector_field_centre_valid(_fields,_x,_y,_config.centre_separation))
             continue;
 
-        var _radius = random_range(
-            _config.radius_min,
-            _config.radius_max
-        );
+        var _radius = random_range(_config.radius_min,_config.radius_max);
+        var _amount = irandom_range(_config.asteroids_min,_config.asteroids_max);
+        var _field_index = array_length(_fields);
 
-        var _amount = irandom_range(
-            _config.asteroids_min,
-            _config.asteroids_max
-        );
-
-        array_push(_centres, {
+        array_push(_fields,{
             x: _x,
             y: _y,
             radius: _radius,
@@ -112,11 +87,34 @@ function sc_sector_asteroid_fields_spawn(_layer)
             _y,
             _radius,
             _amount,
-            _layer
+            _layer,
+            [],
+            _field_index
         );
     }
 
-    return array_length(_centres);
+    _sector.asteroid_fields = _fields;
+    return array_length(_fields);
+}
+
+/// @description Returns the asteroid field containing one world position.
+function sc_sector_asteroid_field_index_at(_x,_y)
+{
+    if (!sc_sector_campaign_active()) return -1;
+
+    var _fields = global.game.sector.asteroid_fields;
+
+    for (var _i = 0; _i < array_length(_fields); ++_i)
+    {
+        var _field = _fields[_i];
+        var _dx = _x-_field.x;
+        var _dy = _y-_field.y;
+
+        if (_dx*_dx+_dy*_dy <= sqr(_field.radius))
+            return _i;
+    }
+
+    return -1;
 }
 
 /// @description Places a carried player at the correct sector entrance.
