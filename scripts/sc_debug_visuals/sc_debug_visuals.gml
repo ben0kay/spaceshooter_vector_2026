@@ -64,3 +64,77 @@ function sc_entity_collision_debug_draw(_entity)
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
+
+/// @description Draws asteroid-clearance acquisition ranges and current targets.
+function sc_enemy_utility_asteroid_debug_draw(_enemy)
+{
+    if (!global.config.debug.asteroid_clearance) return;
+
+    var _data = _enemy.enemy;
+    var _controller = _data.utility_controller;
+    if (!is_struct(_controller)) return;
+
+    for (var _c = 0; _c < array_length(_controller.channels); ++_c)
+    {
+        var _channel = _controller.channels[_c];
+
+        if (_channel.action_script != sc_enemy_utility_action_asteroid_clearance)
+            continue;
+
+        var _runtime = _channel.runtime;
+        var _hardpoint = _data.hardpoints[_runtime.hardpoint_index];
+        var _radius = _data.visual.radius;
+        var _angle = _enemy.draw_angle;
+
+        var _mount_x = _enemy.x
+            + lengthdir_x(_hardpoint.forward * _radius, _angle)
+            + lengthdir_x(_hardpoint.side * _radius, _angle + 90);
+
+        var _mount_y = _enemy.y
+            + lengthdir_y(_hardpoint.forward * _radius, _angle)
+            + lengthdir_y(_hardpoint.side * _radius, _angle + 90);
+
+        draw_set_alpha(0.7);
+        draw_set_colour(c_lime);
+        draw_circle(
+            _enemy.x,
+            _enemy.y,
+            _channel.acquire_range,
+            true
+        );
+
+        draw_set_alpha(0.4);
+        draw_set_colour(c_yellow);
+        draw_circle(
+            _enemy.x,
+            _enemy.y,
+            _channel.release_range,
+            true
+        );
+
+        draw_set_alpha(1);
+        draw_set_colour(_runtime.active ? c_lime : c_red);
+        draw_circle(_mount_x, _mount_y, 9, false);
+
+        if (instance_exists(_runtime.target_id))
+        {
+            draw_set_colour(c_aqua);
+            draw_line(
+                _mount_x,
+                _mount_y,
+                _runtime.target_id.x,
+                _runtime.target_id.y
+            );
+
+            draw_circle(
+                _runtime.target_id.x,
+                _runtime.target_id.y,
+                18,
+                false
+            );
+        }
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

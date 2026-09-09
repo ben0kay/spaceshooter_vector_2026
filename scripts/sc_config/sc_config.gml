@@ -6,6 +6,7 @@ function sc_config_init()
 		debug: {
 		    structure_collision: true,
 			player_full_loadout: true,
+			asteroid_clearance: true,
 		},
 		
         visual: {

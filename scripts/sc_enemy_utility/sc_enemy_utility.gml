@@ -30,6 +30,8 @@ function sc_enemy_utility_controller_init(_enemy)
 
             return false;
         }
+		
+		_data.hardpoints[_hardpoint_index].runtime.utility_controlled = true;
 
         var _damage_packet = undefined;
 
