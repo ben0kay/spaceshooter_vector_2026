@@ -13,30 +13,41 @@ function sc_damage_effect_config_get(_effect)
 }
 
 /// @description Creates one immutable damage packet when an attack is spawned.
-function sc_damage_packet_create(_definition, _source)
+function sc_damage_packet_create(_definition,_source,_projectile = false)
 {
     var _type_config = sc_damage_type_config_get(_definition.type);
-    var _effect = variable_struct_exists(_definition, "effect") ? _definition.effect : _type_config.default_effect;
+    var _effect = variable_struct_exists(_definition,"effect") ? _definition.effect : _type_config.default_effect;
     var _effect_config = sc_damage_effect_config_get(_effect);
+    var _critical_config = global.config.player.critical_hit.projectile.kinetic;
+
+    var _critical_eligible = _projectile
+        && _source.faction == Faction.PLAYER
+        && _definition.type == DamageType.KINETIC;
 
     return {
-        amount: max(0, _definition.amount),
+        amount: max(0,_definition.amount),
         type: _definition.type,
-        knockback_force: variable_struct_exists(_definition, "knockback_force")
-            ? max(0, _definition.knockback_force)
+        knockback_force: variable_struct_exists(_definition,"knockback_force")
+            ? max(0,_definition.knockback_force)
             : 0,
 
         effect: {
             type: _effect,
-            chance: variable_struct_exists(_definition, "effect_chance") ? _definition.effect_chance : _effect_config.chance,
-            duration: variable_struct_exists(_definition, "effect_duration") ? _definition.effect_duration : _effect_config.duration,
-            strength: variable_struct_exists(_definition, "effect_strength") ? _definition.effect_strength : _effect_config.strength,
-            tick_interval: variable_struct_exists(_definition, "effect_tick_interval") ? _definition.effect_tick_interval : _effect_config.tick_interval
+            chance: variable_struct_exists(_definition,"effect_chance") ? _definition.effect_chance : _effect_config.chance,
+            duration: variable_struct_exists(_definition,"effect_duration") ? _definition.effect_duration : _effect_config.duration,
+            strength: variable_struct_exists(_definition,"effect_strength") ? _definition.effect_strength : _effect_config.strength,
+            tick_interval: variable_struct_exists(_definition,"effect_tick_interval") ? _definition.effect_tick_interval : _effect_config.tick_interval
         },
 
-        extraction: variable_struct_exists(_definition, "extraction")
+        extraction: variable_struct_exists(_definition,"extraction")
             ? variable_clone(_definition.extraction)
             : undefined,
+
+        critical_hit: {
+            triggered: _critical_eligible && random(1) < _critical_config.chance,
+            multiplier: max(1,_critical_config.multiplier),
+            armour_enabled: _critical_config.armour_enabled
+        },
 
         source: {
             owner_id: _source.owner_id,
@@ -68,37 +79,56 @@ function sc_damage_layer_multiplier_get(_type, _layer)
 }
 
 /// @description Resolves one damage packet through shield, armour and hull.
-function sc_damage_resolve(_packet, _shield, _armour, _hull, _armour_hull_multiplier = 1)
+function sc_damage_resolve(_packet,_shield,_armour,_hull,_armour_hull_multiplier = 1)
 {
     var _remaining = sc_damage_packet_amount_get(_packet);
-    var _names = ["shield", "armour", "hull"];
-    var _layers = [DefenceLayer.SHIELD, DefenceLayer.ARMOUR, DefenceLayer.HULL];
-    var _current = [max(0, _shield), max(0, _armour), max(0, _hull)];
-    var _dealt = [0, 0, 0];
+    var _names = ["shield","armour","hull"];
+    var _layers = [DefenceLayer.SHIELD,DefenceLayer.ARMOUR,DefenceLayer.HULL];
+    var _current = [max(0,_shield),max(0,_armour),max(0,_hull)];
+    var _dealt = [0,0,0];
     var _impact_layer = DefenceLayer.NONE;
 
     for (var _i = 0; _i < 3 && _remaining > 0; ++_i)
     {
         if (_current[_i] <= 0) continue;
 
-        var _multiplier = sc_damage_layer_multiplier_get(_packet.type, _names[_i]);
+        var _multiplier = sc_damage_layer_multiplier_get(_packet.type,_names[_i]);
         if (_i > 0) _multiplier *= _armour_hull_multiplier;
-        if (_multiplier <= 0) { _remaining = 0; break; }
 
-        var _damage = min(_current[_i], _remaining * _multiplier);
+        var _critical_layer = _i == 2
+            || (_i == 1 && _packet.critical_hit.armour_enabled);
+
+        if (_packet.critical_hit.triggered && _critical_layer)
+            _multiplier *= _packet.critical_hit.multiplier;
+
+        if (_multiplier <= 0)
+        {
+            _remaining = 0;
+            break;
+        }
+
+        var _damage = min(_current[_i],_remaining * _multiplier);
         _current[_i] -= _damage;
         _dealt[_i] = _damage;
-        _remaining = max(0, _remaining - _damage / _multiplier);
+        _remaining = max(0,_remaining - _damage / _multiplier);
 
         if (_damage > 0 && _impact_layer == DefenceLayer.NONE)
             _impact_layer = _layers[_i];
     }
+
+    var _critical_applied = _packet.critical_hit.triggered
+        && (_dealt[2] > 0
+        || (_packet.critical_hit.armour_enabled && _dealt[1] > 0));
 
     return {
         shield: _current[0],
         armour: _current[1],
         hull: _current[2],
         impact_layer: _impact_layer,
+        critical_hit: _critical_applied,
+        critical_multiplier: _critical_applied
+            ? _packet.critical_hit.multiplier
+            : 1,
 
         dealt: {
             shield: _dealt[0],

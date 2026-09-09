@@ -104,7 +104,7 @@ function sc_projectile_init(_projectile, _create)
         },
 
         guidance: variable_clone(_delivery.guidance),
-        damage: sc_damage_packet_create(_delivery.damage, _create.source),
+        damage: sc_damage_packet_create(_delivery.damage,_create.source,true),
         collision: _collision,
         visual: _visual,
         defence: _defence,

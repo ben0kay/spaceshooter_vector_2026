@@ -739,6 +739,18 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
     _defence.hull.current = _result.hull;
 
     if (_result.dealt.total <= 0) return false;
+	
+	if (_result.critical_hit)
+	{
+	    sc_world_feedback_create(
+	        _enemy.x + random_range(-18,18),
+	        _enemy.y - _enemy.enemy.visual.radius * 0.7,
+	        _enemy.layer,
+	        "CRITICAL X" + string(_result.critical_multiplier),
+	        make_colour_rgb(255,190,55),
+	        1.15
+	    );
+	}
 
     sc_health_bar_damage_show(_enemy.health_bar);
 

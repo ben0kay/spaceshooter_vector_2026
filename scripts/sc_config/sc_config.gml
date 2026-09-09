@@ -307,6 +307,18 @@ function sc_config_init()
 		    ]
 		},
 			
+		player: {
+		    critical_hit: {
+		        projectile: {
+		            kinetic: {
+		                chance: 0.05,
+		                multiplier: 5,
+						armour_enabled: false
+		            }
+		        }
+		    }
+		},
+			
 		player_collision: {
 		    asteroid_bounce: 0.38,
 		    asteroid_bounce_min: 1.2,
