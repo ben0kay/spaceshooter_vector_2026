@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_background_space",
+  "%Name":"sc_nebulae",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_background_space",
+  "name":"sc_nebulae",
   "parent":{
-    "name":"SECTORS",
-    "path":"folders/SCRIPTS---/SECTORS.yy",
+    "name":"ENVIRONMENT",
+    "path":"folders/SCRIPTS---/SECTORS/ENVIRONMENT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
