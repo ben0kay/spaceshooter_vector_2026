@@ -382,12 +382,21 @@ function sc_config_init()
 		},
 			
 		player: {
+		    heat_signature: {
+		        maximum_range: 4000,
+
+		        mining: {
+		            interval: 45,
+		            strength: 1
+		        }
+		    },
+
 		    critical_hit: {
 		        projectile: {
 		            kinetic: {
 		                chance: 0.05,
 		                multiplier: 5,
-						armour_enabled: false
+		                armour_enabled: false
 		            }
 		        }
 		    }

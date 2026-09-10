@@ -4,7 +4,7 @@ function sc_heat_signature_emit(_source, _x, _y, _strength)
     if (!instance_exists(_source) || _strength <= 0)
         return 0;
 
-    var _config = global.config.heat_signature;
+    var _config = global.config.player.heat_signature;
     var _list = ds_list_create();
 
     var _count = collision_circle_list(
@@ -68,13 +68,14 @@ function sc_heat_signature_mining_try(_area, _target, _packet)
         return false;
 
     var _source = _packet.source;
+
     if (_source.faction != Faction.PLAYER
     || !instance_exists(_source.owner_id))
         return false;
 
     var _player = _source.owner_id;
     var _runtime = _player.combat.heat_signature;
-    var _config = global.config.heat_signature.mining;
+    var _config = global.config.player.heat_signature.mining;
 
     if (GAME_TICK < _runtime.next_mining_tick)
         return false;

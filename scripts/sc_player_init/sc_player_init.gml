@@ -165,7 +165,7 @@ function sc_player_init_movement(_player)
     };
 }
 
-/// @description Creates player weapon-channel and focused-shield runtime values.
+/// @description Creates player weapon-channel, heat and focused-shield runtime values.
 function sc_player_init_combat(_player)
 {
     _player.combat = {
@@ -194,6 +194,10 @@ function sc_player_init_combat(_player)
             weapon_key: "",
             shot: undefined,
             firing: undefined
+        },
+
+        heat_signature: {
+            next_mining_tick: 0
         },
 
         shield_focus: {

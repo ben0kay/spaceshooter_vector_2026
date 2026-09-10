@@ -66,6 +66,7 @@ function sc_asteroid_spawn_register_lone()
 
         weight: 8,
         field: false,
+        density: 0,
 
         radius: {
             minimum: 120,
@@ -87,7 +88,6 @@ function sc_asteroid_spawn_register_lone()
         },
 
         spacing_scale: 1.3,
-		density: 0,
         pockets: []
     });
 }
@@ -103,6 +103,7 @@ function sc_asteroid_spawn_register_small_dense()
 
         weight: 24,
         field: true,
+        density: 0.85,
 
         radius: {
             minimum: 850,
@@ -124,7 +125,6 @@ function sc_asteroid_spawn_register_small_dense()
         },
 
         spacing_scale: 1,
-		density: 0.85,
         pockets: []
     });
 }
@@ -140,6 +140,7 @@ function sc_asteroid_spawn_register_small_sparse()
 
         weight: 20,
         field: true,
+        density: 0.3,
 
         radius: {
             minimum: 1400,
@@ -176,6 +177,7 @@ function sc_asteroid_spawn_register_large_sparse()
 
         weight: 28,
         field: true,
+        density: 0.38,
 
         radius: {
             minimum: 6200,
@@ -212,6 +214,7 @@ function sc_asteroid_spawn_register_large_sparse_pockets()
 
         weight: 20,
         field: true,
+        density: 0.48,
 
         radius: {
             minimum: 6500,
