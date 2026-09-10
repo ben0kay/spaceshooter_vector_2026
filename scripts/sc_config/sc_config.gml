@@ -437,6 +437,7 @@ function sc_input_init()
 			equipment: ord("Q"),
             inventory: ord("E"),
 			interact: ord("F"),
+			map: ord("M"),
             dash: vk_shift,
 			
 			debug_enemy_spawn: vk_f1,
@@ -471,6 +472,8 @@ function sc_input_init()
 			
 			debug_enemy_spawn_pressed: false,
 			debug_weapon_test_pressed: false,
+			
+			map_pressed: false,
         }
     };
 
@@ -494,6 +497,7 @@ function sc_input_update()
     _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
     _action.shield_focus = mouse_check_button(_binding.shield_focus);
     _action.equipment_pressed = keyboard_check_pressed(_binding.equipment);
+	_action.map_pressed = keyboard_check_pressed(_binding.map);
 
     _action.primary_cycle = 0;
     _action.secondary_cycle = 0;

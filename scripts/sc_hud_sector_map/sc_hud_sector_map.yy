@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_sector",
+  "%Name":"sc_hud_sector_map",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_sector",
+  "name":"sc_hud_sector_map",
   "parent":{
-    "name":"SECTORS",
-    "path":"folders/SCRIPTS---/SECTORS.yy",
+    "name":"HUD",
+    "path":"folders/SCRIPTS---/HUD.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

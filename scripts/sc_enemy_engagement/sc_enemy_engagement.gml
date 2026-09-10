@@ -141,14 +141,12 @@ function sc_asteroid_concealment_score_get(
     _observer_x,
     _observer_y,
     _target_x,
-    _target_y
+    _target_y,
+    _config
 )
 {
     if (global.level.asteroids_alive <= 0)
         return 0;
-
-    var _config =
-        global.config.enemy.perception.asteroid_concealment;
 
     if (collision_circle(
         _target_x,
@@ -167,7 +165,11 @@ function sc_asteroid_concealment_score_get(
         _target_y
     );
 
-    var _amount = max(3, round(_config.sample_amount));
+    var _amount = max(
+        3,
+        round(_config.sample_amount)
+    );
+
     var _blocked = 0;
 
     for (var _i = 0; _i < _amount; ++_i)
@@ -215,7 +217,11 @@ function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
     var _config =
         global.config.enemy.perception.asteroid_concealment;
 
-    var _amount = max(3, round(_config.sample_amount));
+    var _amount = max(
+        3,
+        round(_config.sample_amount)
+    );
+
     var _threshold = clamp(
         round(_config.blocked_required) / _amount,
         0,
@@ -226,7 +232,8 @@ function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
         _enemy.x,
         _enemy.y,
         _candidate.x,
-        _candidate.y
+        _candidate.y,
+        _config
     ) < _threshold;
 }
 

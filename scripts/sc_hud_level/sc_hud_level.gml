@@ -88,11 +88,32 @@ function sc_hud_level_data()
             sweep_trail_spacing: 3,
             detection_width: 1.5,
 			
-			concealment_update_interval: 30,
-			concealment_alpha_min: 0.08,
-			concealment_alpha_max: 0.6,
-			concealment_distance_power: 2,
+			concealment: {
+			    nearby_radius: 460,
+			    sample_radius: 320,
+			    sample_amount: 7,
+
+			    update_interval: 30,
+			    alpha_min: 0.05,
+			    alpha_max: 0.3,
+			    distance_power: 2
+			},
         },
+			
+		sector_map: {
+		    margin_x: 48,
+		    margin_top: 70,
+		    margin_bottom: 48,
+		    header_height: 42,
+
+		    asteroid_alpha: 0.52,
+		    field_alpha: 0.42,
+		    grid_alpha: 0.12,
+		    structure_size: 7,
+		    player_size: 10,
+
+		    cache_check_interval: 30
+		},	
 			
 		facility: {
     width: 1600,
@@ -244,18 +265,21 @@ function sc_hud_level_init(_hud_object)
             enemy_contacts: [],
             asteroid_contacts: [],
 			
-			concealment_update_interval:
-		    _data.minimap.concealment_update_interval,
-
-		concealment_alpha_min:
-		    _data.minimap.concealment_alpha_min,
-
-		concealment_alpha_max:
-		    _data.minimap.concealment_alpha_max,
-
-		concealment_distance_power:
-		    _data.minimap.concealment_distance_power,
+			concealment: variable_clone(
+		    _data.minimap.concealment
+			),
         },
+			
+		sector_map: {
+		    open: false,
+
+		    asteroid_contacts: [],
+		    structure_contacts: [],
+
+		    cached_asteroid_count: -1,
+		    cached_structure_count: -1,
+		    next_cache_check_tick: GAME_TICK
+		},	
 			
 		facility: {
     open: false,

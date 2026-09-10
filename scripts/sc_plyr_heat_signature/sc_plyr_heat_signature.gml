@@ -63,7 +63,8 @@ function sc_heat_signature_emit(_source, _x, _y, _strength)
 /// @description Periodically emits mining heat when a player beam damages an asteroid.
 function sc_heat_signature_mining_try(_area, _target, _packet)
 {
-    if (!is_struct(_packet.extraction)
+    if (!instance_exists(_target)
+    || !is_struct(_packet.extraction)
     || _target.object_index != o_asteroid)
         return false;
 

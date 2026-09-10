@@ -8,3 +8,4 @@ sc_derelict_prompt_draw(hud);
 sc_derelict_interface_draw(hud);
 sc_debug_enemy_spawn_draw(hud);
 sc_debug_weapon_test_draw(hud);
+sc_hud_sector_map_draw(hud);

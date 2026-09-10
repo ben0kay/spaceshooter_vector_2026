@@ -55,7 +55,7 @@ function sc_hud_minimap_refresh_force(_minimap)
     _minimap.next_asteroid_update_tick = GAME_TICK;
 }
 
-/// @description Caches enemy contacts and periodically evaluates asteroid concealment.
+/// @description Caches enemy contacts and evaluates radar-specific asteroid concealment.
 function sc_hud_minimap_enemies_refresh(_minimap, _player)
 {
     var _list = ds_list_create();
@@ -73,6 +73,7 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
 
     var _previous = _minimap.enemy_contacts;
     var _contacts = [];
+    var _concealment = _minimap.concealment;
 
     for (var _i = 0; _i < _count; ++_i)
     {
@@ -116,11 +117,13 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
                     _player.x,
                     _player.y,
                     _target.x,
-                    _target.y
+                    _target.y,
+                    _concealment
                 );
 
             _contact.next_concealment_tick =
-                GAME_TICK + _minimap.concealment_update_interval;
+                GAME_TICK
+                + max(1, round(_concealment.update_interval));
         }
 
         var _distance = point_distance(
@@ -137,11 +140,11 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
         );
 
         var _concealed_alpha = lerp(
-            _minimap.concealment_alpha_min,
-            _minimap.concealment_alpha_max,
+            _concealment.alpha_min,
+            _concealment.alpha_max,
             power(
                 _closeness,
-                _minimap.concealment_distance_power
+                _concealment.distance_power
             )
         );
 
@@ -450,6 +453,52 @@ function sc_hud_minimap_asteroids_draw(_hud, _player)
     }
 }
 
+/// @description Draws cached world structures within radar range.
+function sc_hud_minimap_structures_draw(_hud, _player)
+{
+    var _data = _hud.data.minimap;
+    var _palette = _hud.data.palette;
+    var _minimap = _hud.minimap;
+    var _contacts = _hud.sector_map.structure_contacts;
+
+    draw_set_alpha(0.9);
+
+    for (var _i = 0; _i < array_length(_contacts); ++_i)
+    {
+        var _contact = _contacts[_i];
+
+        if (sc_point_distance_sq(
+            _player.x,
+            _player.y,
+            _contact.world_x,
+            _contact.world_y
+        ) > sqr(_minimap.range))
+            continue;
+
+        var _position = sc_hud_minimap_position_get(
+            _minimap,
+            _data,
+            _player,
+            _contact.world_x,
+            _contact.world_y
+        );
+
+        var _dx = _position.x - _data.radar_centre_x;
+        var _dy = _position.y - _data.radar_centre_y;
+
+        if (_dx * _dx + _dy * _dy > sqr(_data.radar_radius))
+            continue;
+
+        sc_hud_map_structure_symbol_draw(
+            _minimap.x + _position.x,
+            _minimap.y + _position.y,
+            4,
+            _contact.type,
+            _palette
+        );
+    }
+}
+
 /// @description Draws fading red enemy contacts.
 function sc_hud_minimap_enemies_draw(_hud, _player)
 {
@@ -561,6 +610,7 @@ function sc_hud_minimap_draw(_hud)
         var _player = global.player_id;
 
         sc_hud_minimap_asteroids_draw(_hud, _player);
+		sc_hud_minimap_structures_draw(_hud, _player);
         sc_hud_minimap_enemies_draw(_hud, _player);
         sc_hud_minimap_sweep_draw(_hud);
 
