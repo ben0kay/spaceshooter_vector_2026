@@ -29,6 +29,25 @@ function sc_enemy_init_rear_damage_create(_data)
     return _rear_damage;
 }
 
+/// @description Creates awareness settings with normalized perception defaults.
+function sc_enemy_init_awareness_controller_create(_data)
+{
+    var _awareness = variable_clone(_data.awareness_controller);
+    var _config = global.config.enemy.perception;
+
+    _awareness.detection_line_of_sight =
+        variable_struct_exists(_awareness, "detection_line_of_sight")
+        ? _awareness.detection_line_of_sight
+        : _config.line_of_sight.enabled;
+
+    _awareness.asteroid_concealment =
+        variable_struct_exists(_awareness, "asteroid_concealment")
+        ? _awareness.asteroid_concealment
+        : _config.asteroid_concealment.enabled;
+
+    return _awareness;
+}
+
 /// @description Creates the main runtime structure shared by every enemy.
 function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
 {
@@ -49,7 +68,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
 
         // Controllers define how this enemy moves and responds to awareness.
         movement_controller: variable_clone(_data.movement_controller),
-        awareness_controller: variable_clone(_data.awareness_controller),
+        awareness_controller: sc_enemy_init_awareness_controller_create(_data),
 
         movement: {
             velocity_x: 0,

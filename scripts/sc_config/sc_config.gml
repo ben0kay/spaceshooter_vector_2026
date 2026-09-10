@@ -132,8 +132,8 @@ function sc_config_init()
             edge_spawn_padding: 640,
 
             asteroid_fields: {
-			    amount_min: 5,
-			    amount_max: 8,
+			    amount_min: 3,
+			    amount_max: 5,
 			    radius_min: 1100,
 			    radius_max: 2200,
 			    asteroids_min: 16,
@@ -211,6 +211,22 @@ function sc_config_init()
         },
 
         enemy: {
+			
+			perception: {
+			    line_of_sight: {
+			        enabled: true,
+			        solids: true,
+			        asteroids: true
+			    },
+
+			    asteroid_concealment: {
+			        enabled: true,
+			        nearby_radius: 320,
+			        sample_radius: 190,
+			        sample_amount: 7,
+			        blocked_required: 2
+			    }
+			},
 			
 			rear_damage: {
 			    arc: 40,

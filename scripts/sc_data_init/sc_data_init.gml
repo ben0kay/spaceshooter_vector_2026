@@ -12,6 +12,8 @@ function sc_data_init()
         items: {},
 		recipes: {},
         asteroids: {},
+		asteroid_spawns: {},
+		asteroid_spawn_pool: [],
 		structures: {},
 		devices: {},
     };
@@ -20,6 +22,7 @@ function sc_data_init()
     if (!sc_item_register_all()) return false;
 	if (!sc_recipe_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
+	if (!sc_asteroid_spawn_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
 	if (!sc_faction_device_register_all()) return false;

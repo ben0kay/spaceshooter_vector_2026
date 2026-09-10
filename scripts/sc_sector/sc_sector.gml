@@ -34,63 +34,120 @@ function sc_sector_seed_get(_sector_x, _sector_y)
     return max(1, floor(_seed));
 }
 
-/// @description Returns whether a proposed field centre is sufficiently separated.
-function sc_sector_field_centre_valid(_centres, _x, _y, _separation)
+/// @description Returns whether a proposed asteroid spawn is sufficiently separated.
+function sc_sector_field_centre_valid(
+    _centres,
+    _x,
+    _y,
+    _radius,
+    _separation
+)
 {
-    for (var _i = 0; _i < array_length(_centres); _i++)
+    for (var _i = 0; _i < array_length(_centres); ++_i)
     {
         var _centre = _centres[_i];
+        var _required = max(
+            _separation,
+            (_centre.radius + _radius) * 0.55
+        );
 
-        if (point_distance(_x, _y, _centre.x, _centre.y) < _separation)
+        if (sc_point_distance_sq(
+            _x,
+            _y,
+            _centre.x,
+            _centre.y
+        ) < sqr(_required))
             return false;
     }
 
     return true;
 }
 
-/// @description Generates and preserves several separated asteroid clusters throughout the sector.
+/// @description Generates varied asteroid formations throughout the sector.
 function sc_sector_asteroid_fields_spawn(_layer)
 {
     var _sector = global.game.sector;
     var _config = global.config.sector.asteroid_fields;
-    var _field_amount = irandom_range(_config.amount_min,_config.amount_max);
-    var _fields = [];
-    var _attempts = 0;
+    var _spawn_amount = irandom_range(
+        _config.amount_min,
+        _config.amount_max
+    );
 
-    while (array_length(_fields) < _field_amount
-    && _attempts < _field_amount*40)
+    var _fields = [];
+    var _centres = [];
+    var _spawned = 0;
+    var _attempts = 0;
+    var _attempts_max = _spawn_amount * 60;
+
+    while (_spawned < _spawn_amount
+    && _attempts < _attempts_max)
     {
         _attempts++;
 
-        var _x = random_range(_config.centre_padding,room_width-_config.centre_padding);
-        var _y = random_range(_config.centre_padding,room_height-_config.centre_padding);
+        var _definition = sc_asteroid_spawn_weighted_choose();
+        var _radius = random_range(
+            _definition.radius.minimum,
+            _definition.radius.maximum
+        );
 
-        if (point_distance(_x,_y,room_width*0.5,room_height*0.5) < _config.spawn_clear_radius)
+        var _padding = max(
+            _config.centre_padding,
+            _radius * 0.8
+        );
+
+        if (_padding * 2 >= room_width
+        || _padding * 2 >= room_height)
             continue;
 
-        if (!sc_sector_field_centre_valid(_fields,_x,_y,_config.centre_separation))
+        var _x = random_range(
+            _padding,
+            room_width - _padding
+        );
+
+        var _y = random_range(
+            _padding,
+            room_height - _padding
+        );
+
+        if (sc_point_distance_sq(
+            _x,
+            _y,
+            room_width * 0.5,
+            room_height * 0.5
+        ) < sqr(_config.spawn_clear_radius))
             continue;
 
-        var _radius = random_range(_config.radius_min,_config.radius_max);
-        var _amount = irandom_range(_config.asteroids_min,_config.asteroids_max);
-        var _field_index = array_length(_fields);
-
-        array_push(_fields,{
-            x: _x,
-            y: _y,
-            radius: _radius,
-            amount: _amount
-        });
-
-        sc_asteroid_test_field_spawn(
+        if (!sc_sector_field_centre_valid(
+            _centres,
             _x,
             _y,
             _radius,
-            _amount,
+            _config.centre_separation
+        ))
+            continue;
+
+        var _field_index = _definition.field
+            ? array_length(_fields)
+            : -1;
+
+        var _spawn = sc_asteroid_spawn_create(
+            _x,
+            _y,
             _layer,
-            [],
+            _definition.identity.key,
             _field_index
         );
+
+        array_push(_centres, {
+            x: _x,
+            y: _y,
+            radius: _radius
+        });
+
+        if (_spawn.field)
+            array_push(_fields, _spawn);
+
+        _spawned++;
     }
 
     _sector.asteroid_fields = _fields;
@@ -98,7 +155,7 @@ function sc_sector_asteroid_fields_spawn(_layer)
 }
 
 /// @description Returns the asteroid field containing one world position.
-function sc_sector_asteroid_field_index_at(_x,_y)
+function sc_sector_asteroid_field_index_at(_x, _y)
 {
     if (!sc_sector_campaign_active()) return -1;
 
@@ -107,10 +164,32 @@ function sc_sector_asteroid_field_index_at(_x,_y)
     for (var _i = 0; _i < array_length(_fields); ++_i)
     {
         var _field = _fields[_i];
-        var _dx = _x-_field.x;
-        var _dy = _y-_field.y;
+        var _shape = _field.shape;
+        var _direction = point_direction(
+            _shape.x,
+            _shape.y,
+            _x,
+            _y
+        );
 
-        if (_dx*_dx+_dy*_dy <= sqr(_field.radius))
+        var _local_direction = _direction - _shape.angle;
+        var _wave = 1 + dsin(
+            _local_direction * _shape.lobes
+            + _shape.phase
+        ) * _shape.irregularity;
+
+        var _dx = lengthdir_x(
+            point_distance(_shape.x, _shape.y, _x, _y),
+            _local_direction
+        );
+
+        var _dy = lengthdir_y(
+            point_distance(_shape.x, _shape.y, _x, _y),
+            _local_direction
+        ) / _shape.aspect;
+
+        if (_dx * _dx + _dy * _dy
+        <= sqr(_shape.radius * _wave))
             return _i;
     }
 

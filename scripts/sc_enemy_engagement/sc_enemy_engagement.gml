@@ -99,28 +99,199 @@ function sc_enemy_engagement_candidate_reject(_enemy,_candidate)
     });
 }
 
-/// @description Considers one valid entity for nearest-target acquisition.
-function sc_enemy_engagement_candidate_consider(_enemy,_candidate,_range_sq,_current,_current_distance_sq)
+/// @description Checks direct acquisition LOS against configured solid types.
+function sc_enemy_perception_line_of_sight_clear(_enemy, _candidate)
 {
-    if (!sc_enemy_engagement_target_valid(_enemy,_candidate))
-        return { target_id: _current, distance_sq: _current_distance_sq };
+    var _awareness = _enemy.enemy.awareness_controller;
+    var _config = global.config.enemy.perception.line_of_sight;
+
+    if (!_awareness.detection_line_of_sight)
+        return true;
+
+    if (_config.solids
+    && collision_line(
+        _enemy.x,
+        _enemy.y,
+        _candidate.x,
+        _candidate.y,
+        o_solid,
+        false,
+        true
+    ) != noone)
+        return false;
+
+    if (_config.asteroids
+    && global.level.asteroids_alive > 0
+    && collision_line(
+        _enemy.x,
+        _enemy.y,
+        _candidate.x,
+        _candidate.y,
+        o_asteroid,
+        false,
+        true
+    ) != noone)
+        return false;
+
+    return true;
+}
+
+/// @description Checks whether nearby asteroids conceal the player from this observer.
+function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
+{
+    var _awareness = _enemy.enemy.awareness_controller;
+    if (!_awareness.asteroid_concealment) return true;
+    if (_candidate.entity.faction != Faction.PLAYER) return true;
+    if (global.level.asteroids_alive <= 0) return true;
+
+    var _config = global.config.enemy.perception.asteroid_concealment;
+
+    // Avoid the multi-line test unless the player is actually near asteroid cover.
+    if (collision_circle(
+        _candidate.x,
+        _candidate.y,
+        _config.nearby_radius,
+        o_asteroid,
+        false,
+        true
+    ) == noone)
+        return true;
+
+    var _direction = point_direction(
+        _enemy.x,
+        _enemy.y,
+        _candidate.x,
+        _candidate.y
+    );
+
+    var _sample_amount = max(
+        3,
+        round(_config.sample_amount)
+    );
+
+    var _blocked_required = clamp(
+        round(_config.blocked_required),
+        1,
+        _sample_amount
+    );
+
+    var _blocked = 0;
+
+    for (var _i = 0; _i < _sample_amount; ++_i)
+    {
+        var _progress = _sample_amount <= 1
+            ? 0.5
+            : _i / (_sample_amount - 1);
+
+        var _offset = lerp(
+            -_config.sample_radius,
+            _config.sample_radius,
+            _progress
+        );
+
+        var _end_x = _candidate.x
+            + lengthdir_x(_offset, _direction + 90);
+
+        var _end_y = _candidate.y
+            + lengthdir_y(_offset, _direction + 90);
+
+        if (collision_line(
+            _enemy.x,
+            _enemy.y,
+            _end_x,
+            _end_y,
+            o_asteroid,
+            false,
+            true
+        ) == noone)
+            continue;
+
+        _blocked++;
+
+        // Stop as soon as enough visibility samples are obstructed.
+        if (_blocked >= _blocked_required)
+            return false;
+    }
+
+    return true;
+}
+
+/// @description Returns whether a candidate can be visually acquired.
+function sc_enemy_perception_candidate_visible(_enemy, _candidate)
+{
+    if (!sc_enemy_perception_line_of_sight_clear(
+        _enemy,
+        _candidate
+    ))
+        return false;
+
+    if (!sc_enemy_perception_asteroid_concealment_clear(
+        _enemy,
+        _candidate
+    ))
+        return false;
+
+    return true;
+}
+
+/// @description Considers one visible, eligible entity for nearest-target acquisition.
+function sc_enemy_engagement_candidate_consider(
+    _enemy,
+    _candidate,
+    _range_sq,
+    _current,
+    _current_distance_sq
+)
+{
+    if (!sc_enemy_engagement_target_valid(_enemy, _candidate))
+        return {
+            target_id: _current,
+            distance_sq: _current_distance_sq
+        };
 
     var _observer_faction = _enemy.entity.faction;
     var _target_faction = _candidate.entity.faction;
-    var _hostility = sc_faction_hostility_get(_observer_faction,_target_faction);
+    var _hostility = sc_faction_hostility_get(
+        _observer_faction,
+        _target_faction
+    );
 
     if (_hostility <= 0
-    || sc_enemy_engagement_candidate_rejected(_enemy,_candidate))
-        return { target_id: _current, distance_sq: _current_distance_sq };
+    || sc_enemy_engagement_candidate_rejected(_enemy, _candidate))
+    {
+        return {
+            target_id: _current,
+            distance_sq: _current_distance_sq
+        };
+    }
 
     var _distance_sq = sc_point_distance_sq(
-        _enemy.x,_enemy.y,
-        _candidate.x,_candidate.y
+        _enemy.x,
+        _enemy.y,
+        _candidate.x,
+        _candidate.y
     );
 
     if (_distance_sq > _range_sq
     || _distance_sq >= _current_distance_sq)
-        return { target_id: _current, distance_sq: _current_distance_sq };
+    {
+        return {
+            target_id: _current,
+            distance_sq: _current_distance_sq
+        };
+    }
+
+    // Visibility is only tested after cheap eligibility and distance checks.
+    if (!sc_enemy_perception_candidate_visible(
+        _enemy,
+        _candidate
+    ))
+    {
+        return {
+            target_id: _current,
+            distance_sq: _current_distance_sq
+        };
+    }
 
     return {
         target_id: _candidate,
