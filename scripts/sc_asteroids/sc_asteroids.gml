@@ -98,13 +98,25 @@ function sc_asteroid_register_copper()
 function sc_asteroid_register_silicon()
 {
     return sc_asteroid_register({
-        identity: { key: "asteroid_silicon", name: "Silicon Asteroid" },
+        identity: {
+            key: "asteroid_silicon",
+            name: "Silicon Asteroid"
+        },
+
         item_key: "item_silicon",
-        stats: { health_multiplier: 1.05, yield_multiplier: 0.9 },
+
+        stats: {
+            health_multiplier: 1.05,
+            yield_multiplier: 0.9
+        },
+
         palette: {
-            void: make_colour_rgb(7, 11, 10), dark: make_colour_rgb(24, 35, 31),
-            mid: make_colour_rgb(49, 68, 59), light: make_colour_rgb(94, 119, 104),
-            resource: make_colour_rgb(119, 225, 184), glow: make_colour_rgb(41, 155, 112)
+            void: make_colour_rgb(7, 11, 10),
+            dark: make_colour_rgb(24, 35, 31),
+            mid: make_colour_rgb(49, 68, 59),
+            light: make_colour_rgb(94, 119, 104),
+            resource: make_colour_rgb(119, 225, 184),
+            glow: make_colour_rgb(41, 155, 112)
         }
     });
 }

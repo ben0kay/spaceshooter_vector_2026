@@ -23,32 +23,52 @@ function sc_asteroid_size_data(_size)
 /// @description Initializes one generic factionless asteroid.
 function sc_asteroid_init(_asteroid, _create)
 {
-    if (!is_struct(_create) || !variable_struct_exists(global.data.asteroids, _create.key))
+    if (!is_struct(_create)
+    || !variable_struct_exists(global.data.asteroids, _create.key))
         return false;
 
-    var _definition = variable_struct_get(global.data.asteroids, _create.key);
+    var _definition = variable_struct_get(
+        global.data.asteroids,
+        _create.key
+    );
+
     var _size = sc_asteroid_size_data(_create.size);
-    if (!is_struct(_size)) return false;
+
+    if (!is_struct(_size))
+        return false;
 
     var _radius = _size.radius * random_range(0.9, 1.1);
-    var _health = round(_size.health * _definition.stats.health_multiplier);
-    var _yield = max(1, round(
-        irandom_range(_size.yield_min, _size.yield_max)
-        * _definition.stats.yield_multiplier
-    ));
+    var _health = round(
+        _size.health
+        * _definition.stats.health_multiplier
+    );
+
+    var _yield = max(
+        1,
+        round(
+            irandom_range(
+                _size.yield_min,
+                _size.yield_max
+            ) * _definition.stats.yield_multiplier
+        )
+    );
 
     _asteroid.draw_angle = random(360);
+
     _asteroid.asteroid = {
         key: _create.key,
         item_key: _definition.item_key,
         size: _create.size,
-		field_index: variable_struct_exists(_create, "field_index")
-	    ? _create.field_index
-	    : -1,
 
-		zone_index: variable_struct_exists(_create, "zone_index")
-	    ? _create.zone_index
-	    : -1,
+        field_index: variable_struct_exists(
+            _create,
+            "field_index"
+        ) ? _create.field_index : -1,
+
+        zone_index: variable_struct_exists(
+            _create,
+            "zone_index"
+        ) ? _create.zone_index : -1,
 
         health: {
             current: _health,
@@ -81,7 +101,13 @@ function sc_asteroid_init(_asteroid, _create)
         radius_side: _asteroid.asteroid.collision.radius
     };
 
-    if (!sc_entity_init(_asteroid, noone, sc_asteroid_damage, _collision, false))
+    if (!sc_entity_init(
+        _asteroid,
+        noone,
+        sc_asteroid_damage,
+        _collision,
+        false
+    ))
         return false;
 
     _asteroid.initialized = true;
@@ -368,20 +394,42 @@ function sc_asteroid_draw(_asteroid)
 {
     var _data = _asteroid.asteroid;
     var _visual = _data.visual;
-    var _extent = _visual.radius * max(abs(_visual.scale_x), abs(_visual.scale_y));
 
-    if (!sc_optimization_circle_visible(_asteroid.x, _asteroid.y, _extent, 128))
+    var _extent = _visual.radius * max(
+        abs(_visual.scale_x),
+        abs(_visual.scale_y)
+    );
+
+    if (!sc_optimization_circle_visible(
+        _asteroid.x,
+        _asteroid.y,
+        _extent,
+        128
+    ))
         return;
 
-    var _sprite = sc_asteroid_visual_cache_get(_data.key, _visual.variant, _data.health.stage);
+    var _sprite = sc_asteroid_visual_cache_get(
+        _data.key,
+        _visual.variant,
+        _data.health.stage
+    );
+
     var _scale = _visual.radius / 108;
-    var _angle = (_visual.start_angle + GAME_TICK * _visual.rotation_speed) mod 360;
+    var _angle = (
+        _visual.start_angle
+        + GAME_TICK * _visual.rotation_speed
+    ) mod 360;
 
     draw_sprite_ext(
-        _sprite, 0, _asteroid.x, _asteroid.y,
+        _sprite,
+        0,
+        _asteroid.x,
+        _asteroid.y,
         _scale * _visual.scale_x,
         _scale * _visual.scale_y,
-        _angle, c_white, 1
+        _angle,
+        c_white,
+        1
     );
 }
 
