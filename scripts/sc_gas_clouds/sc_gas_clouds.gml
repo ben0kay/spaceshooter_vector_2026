@@ -76,12 +76,62 @@ function sc_gas_cloud_register_all()
     return true;
 }
 
+/// @description Generates visual patches throughout one environmental field.
+function sc_gas_cloud_patches_create(_seed, _amount)
+{
+    var _patches = [];
+
+    for (var _i = 0; _i < _amount; ++_i)
+    {
+        var _direction = sc_space_hash(_seed + _i * 19.31) * 360;
+        var _distance = power(
+            sc_space_hash(_seed + _i * 43.77),
+            0.72
+        ) * 0.72;
+
+        array_push(
+            _patches,
+            {
+                local_x: lengthdir_x(_distance, _direction),
+                local_y: lengthdir_y(_distance, _direction),
+
+                scale_x: lerp(
+                    0.14,
+                    0.27,
+                    sc_space_hash(_seed + _i * 67.93)
+                ),
+
+                scale_y: lerp(
+                    0.16,
+                    0.31,
+                    sc_space_hash(_seed + _i * 89.17)
+                ),
+
+                angle: sc_space_hash(_seed + _i * 103.41) * 360,
+
+                alpha: lerp(
+                    0.52,
+                    1,
+                    sc_space_hash(_seed + _i * 127.59)
+                ),
+
+                phase: sc_space_hash(_seed + _i * 149.83) * 360
+            }
+        );
+    }
+
+    return _patches;
+}
+
 /// @description Initializes one generic environmental-field instance.
 function sc_environment_field_init(_field, _create)
 {
     if (!is_struct(_create)
     || !variable_struct_exists(_create, "key")
-    || !variable_struct_exists(global.data.environment_fields, _create.key))
+    || !variable_struct_exists(
+        global.data.environment_fields,
+        _create.key
+    ))
     {
         show_debug_message("ENVIRONMENT FIELD INITIALIZATION ERROR");
         return false;
@@ -96,9 +146,26 @@ function sc_environment_field_init(_field, _create)
 
     if (!is_struct(_cache))
     {
-        show_debug_message("ENVIRONMENT FIELD CACHE ERROR - " + _create.key);
+        show_debug_message(
+            "ENVIRONMENT FIELD CACHE ERROR - " + _create.key
+        );
+
         return false;
     }
+
+    var _phase = variable_struct_exists(_create, "phase")
+        ? _create.phase
+        : random(360);
+
+    var _patch_amount = clamp(
+        round(
+            10
+            + max(_create.radius_x, _create.radius_y) / 2500
+            + _create.density * 5
+        ),
+        12,
+        22
+    );
 
     _field.environment_field = {
         key: _create.key,
@@ -108,15 +175,21 @@ function sc_environment_field_init(_field, _create)
 
         radius_x: max(64, _create.radius_x),
         radius_y: max(64, _create.radius_y),
-        angle: variable_struct_exists(_create, "angle") ? _create.angle : 0,
+        angle: variable_struct_exists(_create, "angle")
+            ? _create.angle
+            : 0,
+
         density: clamp(_create.density, 0, 1),
 
         runtime: {
             sprite: _cache.sprite,
             canvas_size: _cache.canvas_size,
-            phase: variable_struct_exists(_create, "phase")
-                ? _create.phase
-                : random(360)
+            phase: _phase,
+
+            patches: sc_gas_cloud_patches_create(
+                _definition.visual.seed + _phase * 17.31,
+                _patch_amount
+            )
         }
     };
 
@@ -155,7 +228,7 @@ function sc_environment_field_visible(_field)
     var _camera_y = camera_get_view_y(_camera);
     var _view_w = camera_get_view_width(_camera);
     var _view_h = camera_get_view_height(_camera);
-    var _padding = max(_data.radius_x, _data.radius_y) * 1.3;
+    var _padding = max(_data.radius_x, _data.radius_y) * 1.15;
 
     return _field.x + _padding >= _camera_x
         && _field.x - _padding <= _camera_x + _view_w
@@ -163,7 +236,22 @@ function sc_environment_field_visible(_field)
         && _field.y - _padding <= _camera_y + _view_h;
 }
 
-/// @description Draws one visible baked gas cloud using three drifting layers.
+/// @description Returns whether one gas-cloud patch overlaps the camera.
+function sc_gas_cloud_patch_visible(_x, _y, _radius)
+{
+    var _camera = view_camera[0];
+    var _camera_x = camera_get_view_x(_camera);
+    var _camera_y = camera_get_view_y(_camera);
+    var _view_w = camera_get_view_width(_camera);
+    var _view_h = camera_get_view_height(_camera);
+
+    return _x + _radius >= _camera_x
+        && _x - _radius <= _camera_x + _view_w
+        && _y + _radius >= _camera_y
+        && _y - _radius <= _camera_y + _view_h;
+}
+
+/// @description Draws one visible gas field as several smaller cloud patches.
 function sc_gas_cloud_draw(_field)
 {
     if (!sc_environment_field_visible(_field))
@@ -172,13 +260,7 @@ function sc_gas_cloud_draw(_field)
     var _data = _field.environment_field;
     var _visual = _data.visual;
     var _runtime = _data.runtime;
-    var _scale_x = (_data.radius_x * 2) / _runtime.canvas_size;
-    var _scale_y = (_data.radius_y * 2) / _runtime.canvas_size;
-    var _time = current_time * _visual.drift_speed;
-    var _pulse = 1 + dsin(
-        current_time * _visual.pulse_speed
-        + _runtime.phase
-    ) * _visual.pulse_amount;
+    var _patches = _runtime.patches;
 
     var _alpha = lerp(
         _visual.alpha_min,
@@ -186,44 +268,56 @@ function sc_gas_cloud_draw(_field)
         _data.density
     );
 
-    // Broad stationary foundation.
-    draw_sprite_ext(
-        _runtime.sprite, 0,
-        _field.x,
-        _field.y,
-        _scale_x,
-        _scale_y,
-        _data.angle,
-        c_white,
-        _alpha * 0.72
-    );
+    var _time = current_time * _visual.drift_speed;
 
-    // Slowly drifting middle layer.
-    draw_sprite_ext(
-        _runtime.sprite, 0,
-        _field.x + dcos(_runtime.phase + _time) * _data.radius_x * _visual.drift_amount,
-        _field.y + dsin(_runtime.phase + _time) * _data.radius_y * _visual.drift_amount,
-        _scale_x * _visual.layer_scale_middle * _pulse,
-        _scale_y * _visual.layer_scale_middle,
-        _data.angle + 41,
-        c_white,
-        _alpha * 0.34
-    );
+    for (var _i = 0; _i < array_length(_patches); ++_i)
+    {
+        var _patch = _patches[_i];
 
-    // Smaller counter-rotated inner layer.
-    draw_sprite_ext(
-        _runtime.sprite, 0,
-        _field.x + dcos(_runtime.phase + 180 - _time * 0.7) * _data.radius_x * _visual.drift_amount,
-        _field.y + dsin(_runtime.phase + 180 - _time * 0.7) * _data.radius_y * _visual.drift_amount,
-        _scale_x * _visual.layer_scale_inner,
-        _scale_y * _visual.layer_scale_inner * _pulse,
-        _data.angle - 57,
-        c_white,
-        _alpha * 0.27
-    );
+        // Convert the patch's normalized local position through field rotation.
+        var _local_x = _patch.local_x * _data.radius_x;
+        var _local_y = _patch.local_y * _data.radius_y;
+
+        var _x = _field.x
+            + lengthdir_x(_local_x, _data.angle)
+            + lengthdir_x(_local_y, _data.angle + 90);
+
+        var _y = _field.y
+            + lengthdir_y(_local_x, _data.angle)
+            + lengthdir_y(_local_y, _data.angle + 90);
+
+        // Every patch drifts slightly without moving its gameplay field.
+        _x += dcos(_patch.phase + _time) * _data.radius_x * 0.012;
+        _y += dsin(_patch.phase + _time) * _data.radius_y * 0.012;
+
+        var _patch_width = _data.radius_x * 2 * _patch.scale_x;
+        var _patch_height = _data.radius_y * 2 * _patch.scale_y;
+        var _patch_radius = max(_patch_width, _patch_height) * 0.6;
+
+        if (!sc_gas_cloud_patch_visible(_x, _y, _patch_radius))
+            continue;
+
+        var _pulse = 1 + dsin(
+            current_time * _visual.pulse_speed
+            + _patch.phase
+        ) * _visual.pulse_amount;
+
+        draw_sprite_ext(
+            _runtime.sprite,
+            0,
+            _x,
+            _y,
+            (_patch_width / _runtime.canvas_size) * _pulse,
+            _patch_height / _runtime.canvas_size,
+            _data.angle + _patch.angle,
+            c_white,
+            _alpha * _patch.alpha
+        );
+    }
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
+    gpu_set_blendmode(bm_normal);
 }
 
 /// @description Draws one generic environmental field using its registered type.

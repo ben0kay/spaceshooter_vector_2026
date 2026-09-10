@@ -1,4 +1,20 @@
-/// @description Generates one reusable soft gas-cloud sprite filling its canvas.
+/// @description Draws one source sprite at a requested size during a gas-cloud bake.
+function sc_gas_cloud_source_draw(_sprite, _x, _y, _width, _height, _angle, _colour, _alpha)
+{
+    draw_sprite_ext(
+        _sprite,
+        0,
+        _x,
+        _y,
+        _width / max(1, sprite_get_width(_sprite)),
+        _height / max(1, sprite_get_height(_sprite)),
+        _angle,
+        _colour,
+        _alpha
+    );
+}
+
+/// @description Generates one reusable detailed gas-cloud patch.
 function sc_gas_cloud_sprite_create(_visual)
 {
     var _size = _visual.canvas_size;
@@ -8,140 +24,142 @@ function sc_gas_cloud_sprite_create(_visual)
     if (!surface_exists(_surface))
         return -1;
 
-    var _blur_width = max(1, sprite_get_width(s_blur));
-    var _blur_height = max(1, sprite_get_height(s_blur));
     var _seed = _visual.seed;
 
     surface_set_target(_surface);
     draw_clear_alpha(c_black, 0);
 
-    // Large cloud masses are distributed across almost the entire canvas.
-    for (var _i = 0; _i < _visual.body_amount; ++_i)
+    // Large high-resolution blurs establish a smooth foundation.
+    for (var _i = 0; _i < 18; ++_i)
     {
         var _direction = sc_space_hash(_seed + _i * 17.31) * 360;
-
-        // Power below one pushes more blobs away from the centre.
         var _distance = power(
             sc_space_hash(_seed + _i * 43.73),
-            0.78
-        ) * _size * 0.39;
+            1.55
+        ) * _size * 0.25;
 
         var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.82, _direction);
-
+        var _y = _centre + lengthdir_y(_distance * 0.74, _direction);
         var _diameter = lerp(
-            _size * 0.17,
-            _size * 0.43,
+            _size * 0.28,
+            _size * 0.68,
             sc_space_hash(_seed + _i * 67.91)
         );
 
         var _stretch = lerp(
-            0.72,
-            1.75,
+            0.75,
+            1.65,
             sc_space_hash(_seed + _i * 89.17)
         );
 
-        var _angle = sc_space_hash(_seed + _i * 101.39) * 360;
-        var _mix = sc_space_hash(_seed + _i * 127.53);
-
-        var _colour = merge_colour(
-            _visual.colour_dark,
-            _visual.colour_mid,
-            _mix
-        );
-
-        draw_sprite_ext(
-            s_blur, 0,
-            _x, _y,
-            (_diameter / _blur_width) * _stretch,
-            (_diameter / _blur_height) / _stretch,
-            _angle,
-            _colour,
+        sc_gas_cloud_source_draw(
+            s_particle_blur_1024,
+            _x,
+            _y,
+            _diameter * _stretch,
+            _diameter / _stretch,
+            sc_space_hash(_seed + _i * 101.39) * 360,
+            merge_colour(
+                _visual.colour_dark,
+                _visual.colour_mid,
+                sc_space_hash(_seed + _i * 127.53)
+            ),
             lerp(
-                0.14,
-                0.3,
+                0.1,
+                0.22,
                 sc_space_hash(_seed + _i * 149.21)
             )
         );
     }
 
-    // A second collection of broad, faint peripheral clouds softens the edge.
+    // Irregular cloud sprites break up the smooth circular foundation.
     for (var _i = 0; _i < 24; ++_i)
     {
-        var _direction = sc_space_hash(_seed + _i * 281.17) * 360;
-        var _distance = lerp(
-            _size * 0.27,
-            _size * 0.43,
-            sc_space_hash(_seed + _i * 307.41)
-        );
+        var _sprite = sc_space_hash(_seed + _i * 167.91) < 0.5
+            ? s_particle_cloud_002
+            : s_particle_cloud_003;
+
+        var _direction = sc_space_hash(_seed + _i * 181.37) * 360;
+        var _distance = power(
+            sc_space_hash(_seed + _i * 199.73),
+            1.15
+        ) * _size * 0.34;
 
         var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.84, _direction);
-
-        var _diameter = lerp(
+        var _y = _centre + lengthdir_y(_distance * 0.72, _direction);
+        var _width = lerp(
             _size * 0.16,
-            _size * 0.31,
-            sc_space_hash(_seed + _i * 331.69)
+            _size * 0.38,
+            sc_space_hash(_seed + _i * 223.11)
         );
 
-        var _stretch = lerp(
-            0.8,
-            1.55,
-            sc_space_hash(_seed + _i * 353.23)
+        var _height = _width * lerp(
+            0.38,
+            0.72,
+            sc_space_hash(_seed + _i * 241.57)
         );
 
-        draw_sprite_ext(
-            s_blur, 0,
-            _x, _y,
-            (_diameter / _blur_width) * _stretch,
-            (_diameter / _blur_height) / _stretch,
-            sc_space_hash(_seed + _i * 379.57) * 360,
-            _visual.colour_dark,
+        sc_gas_cloud_source_draw(
+            _sprite,
+            _x,
+            _y,
+            _width,
+            _height,
+            sc_space_hash(_seed + _i * 263.17) * 360,
+            merge_colour(
+                _visual.colour_dark,
+                _visual.colour_mid,
+                sc_space_hash(_seed + _i * 281.49)
+            ),
             lerp(
-                0.08,
-                0.18,
-                sc_space_hash(_seed + _i * 397.81)
+                0.07,
+                0.17,
+                sc_space_hash(_seed + _i * 307.83)
             )
         );
     }
 
-    // Brighter ionized wisps are spread through the larger cloud body.
+    // Fine smoky wisps join neighbouring cloud masses.
     gpu_set_blendmode(bm_add);
 
     for (var _i = 0; _i < _visual.wisp_amount; ++_i)
     {
-        var _direction = sc_space_hash(_seed + _i * 173.11) * 360;
+        var _direction = sc_space_hash(_seed + _i * 331.19) * 360;
         var _distance = power(
-            sc_space_hash(_seed + _i * 191.37),
-            1.15
-        ) * _size * 0.35;
+            sc_space_hash(_seed + _i * 353.61),
+            1.25
+        ) * _size * 0.32;
 
         var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.78, _direction);
-
-        var _diameter = lerp(
-            _size * 0.045,
-            _size * 0.15,
-            sc_space_hash(_seed + _i * 211.63)
+        var _y = _centre + lengthdir_y(_distance * 0.72, _direction);
+        var _width = lerp(
+            _size * 0.11,
+            _size * 0.3,
+            sc_space_hash(_seed + _i * 379.27)
         );
 
-        var _stretch = lerp(
-            1.2,
-            2.9,
-            sc_space_hash(_seed + _i * 229.87)
+        var _height = _width * lerp(
+            0.22,
+            0.46,
+            sc_space_hash(_seed + _i * 397.53)
         );
 
-        draw_sprite_ext(
-            s_blur, 0,
-            _x, _y,
-            (_diameter / _blur_width) * _stretch,
-            (_diameter / _blur_height) / _stretch,
-            sc_space_hash(_seed + _i * 251.43) * 360,
+        sc_gas_cloud_source_draw(
+            s_particle_smokey_wisp_001,
+            _x,
+            _y,
+            _width,
+            _height,
+            _direction + lerp(
+                -55,
+                55,
+                sc_space_hash(_seed + _i * 419.71)
+            ),
             _visual.colour_glow,
             lerp(
-                0.07,
-                0.17,
-                sc_space_hash(_seed + _i * 269.71)
+                0.035,
+                0.11,
+                sc_space_hash(_seed + _i * 443.37)
             )
         );
     }
@@ -153,10 +171,14 @@ function sc_gas_cloud_sprite_create(_visual)
 
     var _sprite = sprite_create_from_surface(
         _surface,
-        0, 0,
-        _size, _size,
-        false, false,
-        _centre, _centre
+        0,
+        0,
+        _size,
+        _size,
+        false,
+        false,
+        _centre,
+        _centre
     );
 
     surface_free(_surface);
@@ -173,12 +195,19 @@ function sc_environment_field_visual_cache_init()
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
         var _key = _keys[_i];
-        var _definition = variable_struct_get(global.data.environment_fields, _key);
+        var _definition = variable_struct_get(
+            global.data.environment_fields,
+            _key
+        );
+
         var _sprite = sc_gas_cloud_sprite_create(_definition.visual);
 
         if (_sprite == -1)
         {
-            show_debug_message("ENVIRONMENT FIELD BAKE ERROR - " + _key);
+            show_debug_message(
+                "ENVIRONMENT FIELD BAKE ERROR - " + _key
+            );
+
             return false;
         }
 
@@ -198,10 +227,16 @@ function sc_environment_field_visual_cache_init()
 /// @description Returns one baked environmental-field visual.
 function sc_environment_field_visual_cache_get(_key)
 {
-    if (!variable_struct_exists(global.environment_field_visual_cache, _key))
+    if (!variable_struct_exists(
+        global.environment_field_visual_cache,
+        _key
+    ))
         return undefined;
 
-    return variable_struct_get(global.environment_field_visual_cache, _key);
+    return variable_struct_get(
+        global.environment_field_visual_cache,
+        _key
+    );
 }
 
 /// @description Deletes every runtime-generated environmental-field sprite.
@@ -210,7 +245,9 @@ function sc_environment_field_visual_cache_destroy()
     if (!is_struct(global.environment_field_visual_cache))
         return;
 
-    var _keys = variable_struct_get_names(global.environment_field_visual_cache);
+    var _keys = variable_struct_get_names(
+        global.environment_field_visual_cache
+    );
 
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
