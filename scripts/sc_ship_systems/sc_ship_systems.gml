@@ -1,4 +1,44 @@
 /// @description Returns the standard internal-system foundation for a ship.
+
+
+/// @description Creates the player's persistent cargo and equipment foundation.
+function sc_player_inventory_create()
+{
+    var _columns = 8;
+    var _rows = 5;
+
+    return {
+        columns: _columns,
+        rows: _rows,
+        slots: array_create(_columns * _rows, undefined),
+
+        equipment: {
+            armour: {
+                key: "item_armour_plate",
+                name: "Armour Plate",
+                grade: ItemGrade.COMMON
+            },
+
+            shield: undefined,
+            reactor: undefined,
+            thruster: undefined,
+            targeting: undefined,
+            utility: undefined,
+            auxiliary: undefined
+        },
+
+        installation: {
+		    active: false,
+		    replacing: false,
+		    slot: -1,
+		    item: undefined,
+		    duration: 0,
+		    remaining: 0,
+		    cancelled_remaining: 0
+		}
+    };
+}
+
 /// These records are currently dormant. Hull damage, penalties, repairs and physical rooms can use them later.
 function sc_ship_systems_standard()
 {

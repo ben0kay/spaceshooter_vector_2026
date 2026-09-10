@@ -413,3 +413,192 @@ function sc_attack_area_shard_rocket_explosion_draw(_area, _data)
     draw_set_colour(c_white);
     draw_circle(_area.x, _area.y, _radius, true);
 }
+
+/// @description Registers the Shard's large non-homing demolition rocket.
+function sc_projectile_register_shard_demolition_rocket()
+{
+    var _palette = variable_struct_get(
+        global.data.ships,
+        "ship_shard"
+    ).visual.palette;
+
+    return sc_projectile_register({
+        identity: {
+            key: "projectile_shard_demolition_rocket",
+            name: "Shard Demolition Rocket"
+        },
+
+        projectile_motion: ProjectileMotion.ROCKET,
+        projectile_class: ProjectileClass.HEAVY,
+
+        collision: {
+            radius: 12
+        },
+
+        detonation: {
+            area: {
+                shape: AttackAreaShape.CIRCLE,
+
+                geometry: {
+                    radius: 82
+                },
+
+                behaviour: {
+                    duration: 28,
+                    tick_interval: 0,
+                    hit_once: true,
+                    max_targets: 0,
+                    falloff_minimum: 0.45,
+                    falloff_exponent: 0.75
+                },
+
+                visual: {
+                    palette: _palette,
+                    draw_script: sc_attack_area_shard_rocket_explosion_draw,
+
+                    shockwave: {
+                        radius_scale: 1.15,
+                        expansion_response: 0.12,
+                        fade_speed: 0.035,
+                        thickness: 7,
+                        colour: _palette.energy,
+
+                        particles_enabled: true,
+                        particle_interval: 1,
+                        particle_min_radius: 12,
+
+                        smoke_enabled: true,
+                        smoke_amount_max: 8,
+                        smoke_colour: make_colour_rgb(55, 80, 90),
+
+                        fragments_enabled: true,
+                        fragment_chance: 0.7,
+                        fragment_colour: _palette.energy
+                    }
+                }
+            }
+        },
+
+        // Reuses the standard Shard rocket drawing and particle groups.
+        visual: {
+            radius: 14,
+            length: 52,
+            palette: _palette,
+            draw_script: sc_projectile_shard_rocket_draw,
+            impact_script: sc_projectile_shard_rocket_impact,
+            trail_script: sc_projectile_particle_trail_emit,
+
+            particle_trail: {
+                group: "trail_shard_rocket",
+                interval: 1,
+                amount: 2,
+                rear_scale: 0.5,
+                spread: 13,
+                size_min: 0.18,
+                size_max: 0.3,
+                size_growth: 0.009,
+                size_wiggle: 0
+            },
+
+            trail: {
+                enabled: true,
+                length: 125,
+                width: 5,
+                glow_width: 16,
+                alpha: 0.9,
+                glow_alpha: 0.25
+            },
+
+            bake: {
+                canvas_size: 192,
+                frames: 4,
+                frame_speed: 2
+            }
+        }
+    });
+}
+
+/// @description Registers the Shard's asteroid demolition launcher.
+function sc_weapon_register_shard_demolition_rocket()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_shard_demolition_rocket",
+            name: "Demolition Rocket"
+        },
+
+        resource: {
+            type: ResourceType.EXPLOSIVES,
+            cost: 3
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_shard_demolition_rocket",
+
+            projectile: {
+                scale: 2.2,
+                speed: 10,
+                life: 300
+            },
+
+            // Direct impact can destroy the asteroid the rocket strikes.
+            damage: {
+                amount: 35,
+                type: DamageType.EXPLOSIVE,
+                effect: DamageEffect.STAGGER,
+
+                extraction: {
+                    efficiency: 0.15,
+                    yield_multiplier: 1,
+                    asteroid_damage_multiplier: 30
+                }
+            },
+
+            // Completely unguided.
+            guidance: {
+                homing: 0,
+                acquire_range: 0,
+                turn_speed: 0,
+                reacquire_interval: 30
+            },
+
+            detonation: {
+                // 82 × 7.5 produces an approximately 615-pixel radius.
+                scale: 7.5,
+
+                damage: {
+                    amount: 28,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.STAGGER,
+                    knockback_force: 12,
+
+                    extraction: {
+                        efficiency: 0.15,
+                        yield_multiplier: 1,
+                        asteroid_damage_multiplier: 30
+                    }
+                }
+            }
+        },
+
+        shot: {
+            pattern: ShotPattern.SINGLE,
+            amount: 1,
+            angle_total: 0
+        },
+
+        firing: {
+            mount_mode: WeaponMountMode.HARDPOINT,
+            interval: 90,
+            recoil: 16,
+            muzzle_flash_duration: 12
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.8,
+            pitch_range: 0.03
+        }
+    });
+}

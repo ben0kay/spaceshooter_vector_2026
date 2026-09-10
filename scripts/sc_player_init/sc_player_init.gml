@@ -296,3 +296,4 @@ function sc_player_init(_player, _ship_key)
 
     return true;
 }
+
