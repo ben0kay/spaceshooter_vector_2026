@@ -1,66 +1,184 @@
 IMMEDIATE TODO
 
-1. ITEM DATA FOUNDATION
-Register reusable item definitions with:
-key, name, description, category, stack_max, weight, colour and optional sprite.
+1. ASTEROID FIELD COMPLETION
 
-Initial resources:
-Carbon, Silicon, Copper, Iron, Titanium, Crystal and Ice.
+Finish and test the procedural asteroid-field system:
 
-2. CARGO INVENTORY
-Implement:
-- Add items with automatic stack merging
-- Remove items
-- Move and swap stacks
-- Split stacks later
-- Calculate occupied slots, total amount and cargo weight
-- Respect ship cargo capacity
+* Small, medium and large field scales
+* Sparse, standard and dense populations
+* Standard, belt, dense-core and archipelago layouts
+* Large-field dense pockets
+* Local density and enemy movement penalties
+* Density reduction as asteroids are destroyed
+* Field population limits and sector asteroid budgets
+* Starting-base exclusion zone
+* Resource-composition hooks for later sector progression
+* Updated full-sector debug-map information
 
-3. WORLD ITEM DROPS
-Create one generic world-pickup object driven by registered item data.
-Allow pickups to merge nearby and enter player cargo when collected.
-Allow inventory items to be dropped back into the world.
+Test belts, dense cores and archipelagos with different seeds using `R`.
 
-4. ASTEROID FOUNDATION
-Register asteroid types with:
-- Size, health, collision and visual
-- Resource drop table
-- Drop amount/range
-- Mining resistance or required tool later
+2. PROCEDURAL SECTOR ENEMY TESTING
 
-Initial drops:
-Carbon, Silicon, Copper, Iron, Titanium, Crystal and Ice.
+Add a debug population system for the 65,000-pixel campaign sector:
 
-5. INVENTORY INTERACTION
-Add item icons, quantities, selection details and click-drag movement.
-Add Drop, Split and Use actions only when their item type supports them.
+* Spawn enemies throughout the sector in procedural groups
+* Support lone ships, patrols, escorts and contested areas
+* Keep encounters away from the player starting base
+* Avoid spawning enemies inside asteroids or structures
+* Add configurable population sizes for ordinary and stress testing
+* Preserve distant-engagement prevention
+* Show enemy positions on the full-sector debug map
+* Reuse registered enemy data rather than hardcoding object types
 
-6. FUTURE SHIP COMMAND TABS
-Equipment: installed weapons and modules.
-Systems: internal ship condition and repairs.
-Upgrades: permanent ship and weapon improvements.
-Navigation: sector map and destinations.
-Log: discoveries, factions and resources.
+Keep `F1` for spawning specific enemies near the player. Use a separate debug control or configuration for full-sector population.
 
-IMPLEMENTATION ORDER
+3. NEW SIMULANT SUPERHEAVY
 
-1. Asteroid and item registration
-2. Generic asteroid damage/destruction
-3. Generic world resource drops
-4. Cargo add/remove/stack functions
-5. Display collected resources in the existing inventory
-6. Add inventory movement and dropping
-7. Equipment, systems and upgrades later
+Design and implement a new `SUPERHEAVY` Simulant enemy:
 
-WORKING RULES
+* New baked primitive ship design
+* Simulant-specific movement and combat behaviour
+* New weapon family
+* New projectile type or delivery behaviour
+* Appropriate armour, hull, threat value and detection ranges
+* Distinctive telegraphing and attack visuals
+* Compatibility with asteroid navigation and concealment
+* Add it to F1 enemy testing before procedural sector spawning
 
-Keep item, asteroid and drop data registered and reusable.
-Use one generic asteroid object and one generic pickup object.
-Do not create separate objects for every resource.
-Keep actual items on the player; keep only interface state in the HUD.
-Avoid Step-event inventory work while Ship Command is closed.
-Keep static inventory artwork baked and draw changing content dynamically.
+The enemy should introduce a new combat problem rather than being only a larger existing Simulant.
 
+4. WORLD STRUCTURE EXPANSION
 
-enemy role specific flee / alert parameters 
-MINIMAP spoof blip causing ambush
+Continue developing `o_world_structure` as the reusable stationary-world foundation:
+
+* Add map identity and faction information
+* Support neutral, player, hostile and abandoned structures
+* Continue using configurable collision pieces
+* Support optional refinery, fabricator and repair services
+* Add structure damage and destruction where appropriate
+* Add faction hardpoints or attached `o_faction_device` instances
+* Add additional structure types beyond the starting base
+* Reserve procedural asteroid-free space around important structures
+* Improve minimap and full-sector-map structure symbols
+
+Potential early structures:
+
+* Small processing station
+* Abandoned relay
+* Corp checkpoint
+* Automated defence platform
+* Derelict mining platform
+* Refuelling or repair outpost
+
+5. ASTEROID COMBAT INTERACTIONS
+
+Expand the gameplay value of asteroid cover:
+
+* Allow asteroids to block explosion damage
+* Add configurable attack-area occlusion
+* Support full, partial or reduced damage behind cover
+* Preserve asteroid damage from the explosion itself
+* Ensure cleared fields stop affecting relevant enemy behaviour
+* Continue testing capital-ship asteroid-clearance utilities
+* Add asteroid collision destruction for suitably massive ships later
+
+6. ENEMY DOCTRINE AND ROLE BEHAVIOUR
+
+Move more faction behaviour into reusable doctrine data:
+
+* Role-specific alert sharing
+* Role-specific retreat and flee preferences
+* Different responses for fighters, support ships, miners and cargo ships
+* Per-faction critical-response weighting
+* Better group reactions when a major allied ship is destroyed
+* Optional asteroid-concealment bypass for advanced sensors
+* Persistent target behaviour after initial detection
+* Keep suicide, kamikaze and berserk responses dormant until explicitly implemented
+
+7. RADAR DECEPTION AND AMBUSHES
+
+Add spoofed minimap contacts as an enemy or environmental mechanic:
+
+* Create temporary false radar blips
+* Make false contacts behave like normal radar sweeps initially
+* Allow uncertainty or flickering to hint that something is wrong
+* Remove or transform the spoof when the player approaches
+* Trigger an ambush, dormant enemy activation or automated defence
+* Give advanced radar equipment a chance to identify spoofed contacts
+* Keep spoof contacts separate from real enemy instances
+
+This would work especially well for Simulant, Automated and derelict encounters.
+
+8. CAMPAIGN WORLD POPULATION
+
+Begin turning empty procedural sectors into playable spaces:
+
+* Asteroid formations
+* Enemy patrols and encounters
+* Derelicts
+* Processing and repair structures
+* Resource distribution
+* Sparse safe regions
+* Dangerous contested regions
+* Chapter-appropriate faction and material weighting
+
+Keep generation procedural for now, but preserve hooks for authored or chapter-specific sector profiles later.
+
+9. PLAYER PROGRESSION CONTINUATION
+
+Build on the existing gathering, crafting and module systems:
+
+* Continue the early resource tree
+* Add more useful field-crafted parts and products
+* Expand armour-module replacement and installation
+* Add ammunition and explosive crafting
+* Add fuel and energy replenishment methods
+* Add weapon and ship-module installation
+* Connect item grade multipliers to actual module effectiveness
+* Continue refining field repair feedback and visuals
+
+10. DEBUGGING AND STABILITY
+
+Before expanding sector content heavily:
+
+* Test multiple procedural seeds
+* Monitor current and averaged FPS
+* Test 65,000-pixel room performance
+* Test asteroid budgets with large archipelagos
+* Verify map caches after asteroid and structure destruction
+* Verify enemies do not become stuck inside dense fields
+* Verify target destruction cannot leave invalid instance references
+* Consolidate repeated validation in damage and attack-area pipelines
+* Keep debug systems removable through global configuration
+
+CURRENT FOUNDATION ALREADY WORKING
+
+* Registered reusable items, recipes, asteroids, weapons and enemies
+* Generic asteroid damage, mining, resource drops and collection
+* Cargo inventory, stacking, dragging and world dropping
+* Refining and fabrication facility
+* Item grades and configurable crafting chances
+* Armour-module installation and replacement
+* World structures and configurable collision pieces
+* Faction devices, alert radar and attached combat potential
+* Derelicts, scanning drones and salvage interface
+* Enemy asteroid avoidance, bombardment and clearance utilities
+* Asteroid concealment and mining heat signatures
+* Dockable tactical minimap
+* Full-sector debug map
+* Procedural asteroid layouts and density zones
+* Player primary, secondary and equipment weapon controls
+* F1 enemy spawning and F2 weapon testing
+
+RECOMMENDED IMPLEMENTATION ORDER
+
+1. Finish testing and stabilizing asteroid-field Pass 2
+2. Add enemies to the full-sector debug map
+3. Implement procedural debug enemy population
+4. Design and implement the new Simulant superheavy
+5. Expand world structures and procedural placement
+6. Add asteroid explosion shielding
+7. Add enemy doctrine and role-specific behaviour
+8. Add radar spoofing and ambush encounters
+9. Continue player crafting, modules and campaign progression
+10. Convert procedural debug systems into proper campaign-generation systems

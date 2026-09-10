@@ -38,7 +38,7 @@ function sc_asteroid_spawn_generation_data()
                 radius_min_scale: 0.09,
                 radius_max_scale: 0.16,
                 amount_min: 40,
-                amount_max: 70
+                amount_max: 65
             },
             {
                 scale: AsteroidFieldScale.LARGE,
@@ -47,8 +47,8 @@ function sc_asteroid_spawn_generation_data()
                 fixed_radius: false,
                 radius_min_scale: 0.25,
                 radius_max_scale: 0.37,
-                amount_min: 75,
-                amount_max: 120
+                amount_min: 85,
+                amount_max: 140
             }
         ],
 
@@ -58,7 +58,7 @@ function sc_asteroid_spawn_generation_data()
                 name: "SPARSE",
                 weights: [20, 45, 85],
                 amount_multiplier: 0.68,
-                spacing_scale: 1.3,
+                spacing_scale: 1.2,
                 navigation_density: 0.3
             },
             {
@@ -66,7 +66,7 @@ function sc_asteroid_spawn_generation_data()
                 name: "STANDARD",
                 weights: [35, 45, 15],
                 amount_multiplier: 1,
-                spacing_scale: 1.08,
+                spacing_scale: 1.04,
                 navigation_density: 0.55
             },
             {

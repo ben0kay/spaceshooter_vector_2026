@@ -563,7 +563,7 @@ function sc_enemy_movement_alignment(_enemy, _move_direction)
     return (dcos(angle_difference(_move_direction, _enemy.draw_angle)) + 1) * 0.5;
 }
 
-/// @description Periodically caches the field-density movement penalty.
+/// @description Periodically caches the local field-density movement penalty.
 function sc_enemy_movement_field_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -574,7 +574,10 @@ function sc_enemy_movement_field_update(_enemy)
         return;
 
     _runtime.next_check_tick =
-        GAME_TICK + max(1, round(_config.check_interval));
+        GAME_TICK + max(
+            1,
+            round(_config.check_interval)
+        );
 
     if (!sc_sector_campaign_active())
     {
@@ -589,22 +592,21 @@ function sc_enemy_movement_field_update(_enemy)
         _enemy.y
     );
 
-    _runtime.index = _index;
+    var _density = _index >= 0
+        ? sc_sector_asteroid_field_density_at(
+            _enemy.x,
+            _enemy.y,
+            _index
+        )
+        : 0;
 
-    if (_index < 0)
-    {
-        _runtime.density = 0;
-        _runtime.speed_multiplier = 1;
-        return;
-    }
-
-    var _field = global.game.sector.asteroid_fields[_index];
     var _class = _data.identity.ship_class;
     var _penalty = _config.class_penalty[_class];
 
-    _runtime.density = clamp(_field.density, 0, 1);
+    _runtime.index = _index;
+    _runtime.density = _density;
     _runtime.speed_multiplier = clamp(
-        1 - _runtime.density * _penalty,
+        1 - _density * _penalty,
         0,
         1
     );

@@ -176,29 +176,40 @@ function sc_hud_sector_map_grid_draw(_hud, _layout)
     }
 }
 
-/// @description Draws the organic boundary of one generated asteroid field.
-function sc_hud_sector_map_field_draw(_hud, _layout, _field)
+/// @description Draws one scaled organic shape boundary.
+function sc_hud_sector_map_shape_draw(
+    _hud,
+    _layout,
+    _shape,
+    _radius_scale,
+    _colour,
+    _alpha
+)
 {
-    var _palette = _hud.data.palette;
-    var _config = _hud.data.sector_map;
-    var _shape = _field.shape;
     var _segments = 64;
     var _previous_x = 0;
     var _previous_y = 0;
 
-    draw_set_colour(_palette.warning);
-    draw_set_alpha(_config.field_alpha);
+    draw_set_colour(_colour);
+    draw_set_alpha(_alpha);
 
     for (var _i = 0; _i <= _segments; ++_i)
     {
         var _direction = _i / _segments * 360;
         var _wave = 1 + dsin(
-            _direction * _shape.lobes + _shape.phase
+            _direction * _shape.lobes
+            + _shape.phase
         ) * _shape.irregularity;
 
-        var _distance = _shape.radius * _wave;
+        var _distance =
+            _shape.radius
+            * _radius_scale
+            * _wave;
+
         var _forward = dcos(_direction) * _distance;
-        var _side = dsin(_direction) * _distance * _shape.aspect;
+        var _side = dsin(_direction)
+            * _distance
+            * _shape.aspect;
 
         var _world_x = _shape.x
             + lengthdir_x(_forward, _shape.angle)
@@ -215,21 +226,92 @@ function sc_hud_sector_map_field_draw(_hud, _layout, _field)
         );
 
         if (_i > 0)
-            draw_line(_previous_x, _previous_y, _position.x, _position.y);
+        {
+            draw_line(
+                _previous_x,
+                _previous_y,
+                _position.x,
+                _position.y
+            );
+        }
 
         _previous_x = _position.x;
         _previous_y = _position.y;
     }
+}
+
+/// @description Draws boundaries and runtime information for one field.
+function sc_hud_sector_map_field_draw(_hud, _layout, _field)
+{
+    var _palette = _hud.data.palette;
+    var _config = _hud.data.sector_map;
+    var _zones = _field.zones;
+
+    sc_hud_sector_map_shape_draw(
+        _hud,
+        _layout,
+        _field.shape,
+        1,
+        _palette.warning,
+        _config.field_alpha
+    );
+
+    // Belts show the edge of their hollow central region.
+    if (_field.layout == AsteroidFieldLayout.BELT
+    && array_length(_zones) > 0)
+    {
+        sc_hud_sector_map_shape_draw(
+            _hud,
+            _layout,
+            _field.shape,
+            _zones[0].distribution.inner_radius_scale,
+            _palette.warning,
+            _config.field_alpha * 0.65
+        );
+    }
+
+    // Additional zones represent generated dense pockets.
+    for (var _i = 1; _i < array_length(_zones); ++_i)
+    {
+        var _zone = _zones[_i];
+
+        if (_zone.remaining_amount <= 0)
+            continue;
+
+        sc_hud_sector_map_shape_draw(
+            _hud,
+            _layout,
+            _zone.shape,
+            1,
+            _palette.accent,
+            0.3
+        );
+    }
 
     var _centre = sc_hud_sector_map_position_get(
         _layout,
-        _shape.x,
-        _shape.y
+        _field.shape.x,
+        _field.shape.y
     );
 
-    draw_set_alpha(0.8);
+    var _remaining_ratio = _field.initial_amount > 0
+        ? _field.remaining_amount / _field.initial_amount
+        : 0;
+
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
+    draw_set_colour(
+        _field.remaining_amount > 0
+            ? _palette.warning
+            : _palette.muted
+    );
+
+    draw_set_alpha(
+        _field.remaining_amount > 0
+            ? 0.8
+            : 0.35
+    );
+
     draw_text(
         _centre.x,
         _centre.y,
@@ -237,7 +319,14 @@ function sc_hud_sector_map_field_draw(_hud, _layout, _field)
         + "\nDENSITY "
         + string_format(_field.density, 1, 2)
         + " // "
-        + string(_field.amount)
+        + string(_field.remaining_amount)
+        + " / "
+        + string(_field.initial_amount)
+        + "\nZONES "
+        + string(array_length(_zones))
+        + " // REMAINING "
+        + string(round(_remaining_ratio * 100))
+        + "%"
     );
 }
 

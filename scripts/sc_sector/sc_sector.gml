@@ -212,6 +212,55 @@ function sc_sector_asteroid_fields_spawn(_layer)
     return array_length(_fields);
 }
 
+/// @description Returns normalized distance from an organic shape centre.
+function sc_sector_asteroid_shape_distance_get(_shape, _x, _y)
+{
+    var _distance = point_distance(
+        _shape.x,
+        _shape.y,
+        _x,
+        _y
+    );
+
+    var _direction = point_direction(
+        _shape.x,
+        _shape.y,
+        _x,
+        _y
+    );
+
+    var _local_direction = _direction - _shape.angle;
+    var _wave = 1 + dsin(
+        _local_direction * _shape.lobes
+        + _shape.phase
+    ) * _shape.irregularity;
+
+    var _forward = lengthdir_x(
+        _distance,
+        _local_direction
+    );
+
+    var _side = lengthdir_y(
+        _distance,
+        _local_direction
+    ) / max(0.01, _shape.aspect);
+
+    return sqrt(
+        _forward * _forward
+        + _side * _side
+    ) / max(1, _shape.radius * _wave);
+}
+
+/// @description Returns whether a position is inside one organic shape.
+function sc_sector_asteroid_shape_contains(_shape, _x, _y)
+{
+    return sc_sector_asteroid_shape_distance_get(
+        _shape,
+        _x,
+        _y
+    ) <= 1;
+}
+
 /// @description Returns the asteroid field containing one world position.
 function sc_sector_asteroid_field_index_at(_x, _y)
 {
@@ -222,36 +271,171 @@ function sc_sector_asteroid_field_index_at(_x, _y)
     for (var _i = 0; _i < array_length(_fields); ++_i)
     {
         var _field = _fields[_i];
-        var _shape = _field.shape;
-        var _direction = point_direction(
-            _shape.x,
-            _shape.y,
+
+        // Completely cleared fields no longer influence gameplay.
+        if (_field.remaining_amount <= 0)
+            continue;
+
+        if (sc_sector_asteroid_shape_contains(
+            _field.shape,
             _x,
             _y
-        );
-
-        var _local_direction = _direction - _shape.angle;
-        var _wave = 1 + dsin(
-            _local_direction * _shape.lobes
-            + _shape.phase
-        ) * _shape.irregularity;
-
-        var _dx = lengthdir_x(
-            point_distance(_shape.x, _shape.y, _x, _y),
-            _local_direction
-        );
-
-        var _dy = lengthdir_y(
-            point_distance(_shape.x, _shape.y, _x, _y),
-            _local_direction
-        ) / _shape.aspect;
-
-        if (_dx * _dx + _dy * _dy
-        <= sqr(_shape.radius * _wave))
+        ))
             return _i;
     }
 
     return -1;
+}
+
+/// @description Returns one zone's depleted local navigation density.
+function sc_sector_asteroid_zone_density_get(_zone, _x, _y)
+{
+    if (_zone.initial_amount <= 0
+    || _zone.remaining_amount <= 0)
+        return 0;
+
+    var _normalized = sc_sector_asteroid_shape_distance_get(
+        _zone.shape,
+        _x,
+        _y
+    );
+
+    if (_normalized > 1)
+        return 0;
+
+    var _distribution = _zone.distribution;
+    var _local_density = _zone.density;
+
+    switch (_distribution.local_mode)
+    {
+        case "belt":
+            var _inner = clamp(
+                _distribution.inner_radius_scale,
+                0,
+                0.98
+            );
+
+            if (_normalized < _inner)
+                return 0;
+        break;
+
+        case "core":
+            var _core_strength = power(
+                1 - clamp(_normalized, 0, 1),
+                0.7
+            );
+
+            _local_density = lerp(
+                _zone.density * 0.25,
+                _zone.density,
+                _core_strength
+            );
+        break;
+    }
+
+    var _remaining_ratio = clamp(
+        _zone.remaining_amount
+            / _zone.initial_amount,
+        0,
+        1
+    );
+
+    var _depletion_power =
+        global.config.sector.asteroid_fields
+            .density_depletion_power;
+
+    return clamp(
+        _local_density
+            * power(
+                _remaining_ratio,
+                _depletion_power
+            ),
+        0,
+        1
+    );
+}
+
+/// @description Returns effective asteroid density at one world position.
+function sc_sector_asteroid_field_density_at(
+    _x,
+    _y,
+    _field_index = -1
+)
+{
+    if (!sc_sector_campaign_active()) return 0;
+
+    if (_field_index < 0)
+    {
+        _field_index = sc_sector_asteroid_field_index_at(
+            _x,
+            _y
+        );
+    }
+
+    var _fields = global.game.sector.asteroid_fields;
+
+    if (_field_index < 0
+    || _field_index >= array_length(_fields))
+        return 0;
+
+    var _field = _fields[_field_index];
+    var _zones = _field.zones;
+    var _density = 0;
+
+    for (var _i = 0; _i < array_length(_zones); ++_i)
+    {
+        _density = max(
+            _density,
+            sc_sector_asteroid_zone_density_get(
+                _zones[_i],
+                _x,
+                _y
+            )
+        );
+    }
+
+    return clamp(_density, 0, 1);
+}
+
+/// @description Removes one destroyed asteroid from its field and density zone.
+function sc_sector_asteroid_field_population_remove(_asteroid)
+{
+    if (!sc_sector_campaign_active()
+    || !instance_exists(_asteroid))
+        return false;
+
+    var _asteroid_data = _asteroid.asteroid;
+    var _field_index = _asteroid_data.field_index;
+    var _zone_index = _asteroid_data.zone_index;
+    var _fields = global.game.sector.asteroid_fields;
+
+    if (_field_index < 0
+    || _field_index >= array_length(_fields))
+        return false;
+
+    var _field = _fields[_field_index];
+
+    _field.remaining_amount = max(
+        0,
+        _field.remaining_amount - 1
+    );
+
+    if (_zone_index >= 0
+    && _zone_index < array_length(_field.zones))
+    {
+        var _zone = _field.zones[_zone_index];
+
+        _zone.remaining_amount = max(
+            0,
+            _zone.remaining_amount - 1
+        );
+    }
+
+    // Prevent accidental double removal.
+    _asteroid_data.field_index = -1;
+    _asteroid_data.zone_index = -1;
+
+    return true;
 }
 
 /// @description Places a carried player at the correct sector entrance.

@@ -287,6 +287,9 @@ function sc_asteroid_death_effect_create(_asteroid)
 /// @description Handles the complete death lifecycle of one asteroid.
 function sc_asteroid_die(_asteroid, _packet)
 {
+    // Remove it from procedural field density before destroying the instance.
+    sc_sector_asteroid_field_population_remove(_asteroid);
+
     sc_asteroid_death_effect_create(_asteroid);
     sc_asteroid_yield_destruction_release(_asteroid, _packet);
 

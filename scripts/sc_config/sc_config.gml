@@ -142,6 +142,7 @@ function sc_config_init()
 				budget_min: 180,
 				budget_max: 320,
 				structure_clearance: 1200,
+				density_depletion_power: 0.65,
 
 			    materials: [
 			        { key: "asteroid_carbon", weight: 22 },
