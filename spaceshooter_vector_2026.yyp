@@ -246,6 +246,7 @@
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_sim_visual_helper","path":"scripts/sc_sim_visual_helper/sc_sim_visual_helper.yy",},},
+    {"id":{"name":"sc_sim_voidlance","path":"scripts/sc_sim_voidlance/sc_sim_voidlance.yy",},},
     {"id":{"name":"sc_simulant_beam","path":"scripts/sc_simulant_beam/sc_simulant_beam.yy",},},
     {"id":{"name":"sc_simulant_register","path":"scripts/sc_simulant_register/sc_simulant_register.yy",},},
     {"id":{"name":"sc_simulant_weapons","path":"scripts/sc_simulant_weapons/sc_simulant_weapons.yy",},},

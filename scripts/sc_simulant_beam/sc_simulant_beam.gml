@@ -160,3 +160,181 @@ function sc_enemy_simulant_thin_beam_emitter_draw(_x, _y, _radius, _angle, _visu
 
     draw_set_alpha(1);
 }
+
+/// @description Registers the Voidlance's fixed sustained siege beam.
+function sc_weapon_register_simulant_super_beam()
+{
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_simulant_super_beam",
+            name: "Simulant Super Beam"
+        },
+
+        delivery: {
+            type: AttackDelivery.BEAM,
+            scale: 1,
+
+            damage: {
+                amount: 7,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.DISRUPTION,
+                effect_chance: 0.12
+            },
+
+            beam: {
+                shape: AttackAreaShape.CAPSULE,
+
+                geometry: {
+                    length: 2400,
+                    radius: 13
+                },
+
+                behaviour: {
+                    growth_speed: 85,
+                    release_duration: 18,
+                    tick_interval: 6,
+                    piercing: false,
+                    blocks_on_solids: true,
+                    max_targets: 1
+                },
+
+                visual: {
+                    palette: _palette,
+
+                    style: {
+                        segment_length: 130,
+                        width_start: 1.18,
+                        width_end: 0.88,
+
+                        pulse_amount: 0.17,
+                        pulse_speed: 0.34,
+                        pulse_secondary_amount: 0.08,
+                        pulse_secondary_speed: 0.13,
+
+                        wobble_amount: 0.22,
+                        wobble_speed: 0.31,
+                        wobble_step: 0.68,
+
+                        glow_width: 14,
+                        glow_alpha: 0.24,
+                        body_width: 7,
+                        body_alpha: 0.68,
+                        inner_width: 3.1,
+                        inner_alpha: 0.96,
+                        hot_width: 1.1,
+                        hot_alpha: 1,
+
+                        body_colour_mix: 0,
+                        inner_colour_mix: 0,
+                        hot_colour_mix: 0,
+
+                        band_spacing: 145,
+                        band_length: 30,
+                        band_speed: 10,
+                        band_width: 0.45,
+                        band_alpha: 0.48,
+
+                        source_flare_radius: 1.45,
+                        source_flare_alpha: 1
+                    },
+
+                    impact: {
+                        overlap_ratio: 0.3,
+                        overlap_max: 120,
+                        solid_overlap: 18,
+                        radius_scale: 1.7,
+                        particles_enabled: true,
+                        particle_interval: 2
+                    },
+
+                    draw_script: sc_attack_area_beam_layered_draw,
+
+                    // The normal beam registers this shared particle group first.
+                    particle_script: sc_simulant_thin_beam_particles_emit
+                }
+            }
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.9,
+            pitch_range: 0.015
+        }
+    });
+}
+
+/// @description Draws the Voidlance's complete cannon charge over the baked ship.
+function sc_enemy_sim_voidlance_beam_telegraph_draw(
+    _enemy,
+    _attack,
+    _transform,
+    _progress,
+    _palette,
+    _config
+)
+{
+    var _radius = _enemy.enemy.visual.radius;
+    var _charge = _progress * _progress * (3 - 2 * _progress);
+    var _pulse = 0.82 + sin(GAME_TICK * lerp(0.12, 0.62, _charge)) * lerp(0.08, 0.18, _charge);
+    var _direction = _transform.direction;
+
+    // The muzzle transform lets this remain correct during camera shake.
+    var _rear_distance = _radius * 1.28;
+    var _rear_x = _transform.x + lengthdir_x(-_rear_distance, _direction);
+    var _rear_y = _transform.y + lengthdir_y(-_rear_distance, _direction);
+    var _mid_x = _transform.x + lengthdir_x(-_radius * 0.55, _direction);
+    var _mid_y = _transform.y + lengthdir_y(-_radius * 0.55, _direction);
+    var _width = lerp(3, 13, _charge) * _pulse;
+    var _ball_radius = lerp(_radius * 0.025, _radius * 0.12, _charge) * _pulse;
+
+    gpu_set_blendmode(bm_add);
+
+    // The full embedded cannon progressively illuminates.
+    draw_set_colour(_palette.glow);
+    draw_set_alpha(lerp(0.04, 0.3, _charge));
+    draw_line_width(_rear_x, _rear_y, _transform.x, _transform.y, _width * 3.2);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(lerp(0.1, 0.72, _charge));
+    draw_line_width(_rear_x, _rear_y, _transform.x, _transform.y, _width * 1.45);
+
+    draw_set_colour(_palette.energy);
+    draw_set_alpha(lerp(0.18, 0.95, _charge));
+    draw_line_width(_mid_x, _mid_y, _transform.x, _transform.y, _width);
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(_charge);
+    draw_line_width(_mid_x, _mid_y, _transform.x, _transform.y, max(1, _width * 0.25));
+
+    // A concentrated energy sphere forms at the muzzle.
+    draw_set_colour(_palette.glow);
+    draw_set_alpha(lerp(0.1, 0.38, _charge));
+    draw_circle(_transform.x, _transform.y, _ball_radius * 3.2, false);
+
+    draw_set_colour(_palette.energy);
+    draw_set_alpha(lerp(0.3, 0.95, _charge));
+    draw_circle(_transform.x, _transform.y, _ball_radius, false);
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(_charge);
+    draw_circle(_transform.x, _transform.y, max(2, _ball_radius * 0.3), false);
+
+    // Energy packets move from the reactor toward the muzzle.
+    for (var _i = 0; _i < 5; _i++)
+    {
+        var _travel = frac(_charge * 2.8 + _i / 5);
+        var _packet_x = lerp(_rear_x, _transform.x, _travel);
+        var _packet_y = lerp(_rear_y, _transform.y, _travel);
+        var _packet_radius = lerp(2, 5, _charge);
+
+        draw_set_colour(_palette.core);
+        draw_set_alpha(_charge * (0.45 + _travel * 0.55));
+        draw_circle(_packet_x, _packet_y, _packet_radius, false);
+    }
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

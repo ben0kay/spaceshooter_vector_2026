@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_voidlance",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_voidlance",
+  "parent":{
+    "name":"enemies",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
