@@ -20,18 +20,20 @@ function sc_asteroid_register(_data)
     return true;
 }
 
-/// @description Registers all initial asteroid materials.
+/// @description Registers all asteroid materials.
 function sc_asteroid_register_all()
 {
     return sc_asteroid_register_rock()
-		&& sc_asteroid_register_carbon()
+        && sc_asteroid_register_carbon()
         && sc_asteroid_register_iron()
         && sc_asteroid_register_copper()
         && sc_asteroid_register_silicon()
+        && sc_asteroid_register_quartz()
         && sc_asteroid_register_titanium()
         && sc_asteroid_register_crystal()
         && sc_asteroid_register_ice()
-        && sc_asteroid_register_sulfur();
+        && sc_asteroid_register_sulfur()
+        && sc_asteroid_register_uranium();
 }
 
 function sc_asteroid_register_rock()
@@ -177,6 +179,60 @@ function sc_asteroid_register_sulfur()
             void: make_colour_rgb(13,10,4), dark: make_colour_rgb(43,34,13),
             mid: make_colour_rgb(89,70,23), light: make_colour_rgb(151,119,38),
             resource: make_colour_rgb(214,184,61), glow: make_colour_rgb(255,119,32)
+        }
+    });
+}
+
+/// @description Registers quartz-bearing asteroids.
+function sc_asteroid_register_quartz()
+{
+    return sc_asteroid_register({
+        identity: {
+            key: "asteroid_quartz",
+            name: "Quartz Asteroid"
+        },
+
+        item_key: "item_quartz",
+
+        stats: {
+            health_multiplier: 1,
+            yield_multiplier: 0.85
+        },
+
+        palette: {
+            void: make_colour_rgb(10,,18),
+            dark: make_colour_rgb(35,31,47),
+            mid: make_colour_rgb(76,68,96),
+            light: make_colour_rgb(155,143,181),
+            resource: make_colour_rgb(239,224,255),
+            glow: make_colour_rgb(178,112,232)
+        }
+    });
+}
+
+/// @description Registers uranium-bearing asteroids.
+function sc_asteroid_register_uranium()
+{
+    return sc_asteroid_register({
+        identity: {
+            key: "asteroid_uranium",
+            name: "Uranium Asteroid"
+        },
+
+        item_key: "item_uranium",
+
+        stats: {
+            health_multiplier: 1.3,
+            yield_multiplier: 0.55
+        },
+
+        palette: {
+            void: make_colour_rgb(6,12,5),
+            dark: make_colour_rgb(24,35,20),
+            mid: make_colour_rgb(53,75,42),
+            light: make_colour_rgb(112,137,83),
+            resource: make_colour_rgb(194,241,76),
+            glow: make_colour_rgb(101,255,48)
         }
     });
 }

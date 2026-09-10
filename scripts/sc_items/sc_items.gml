@@ -190,6 +190,54 @@ function sc_item_register_all()
         cargo: { weight: 1, stack_max: 99 },
         visual: { colour: make_colour_rgb(214,184,61), glow: make_colour_rgb(255,119,32), draw_script: sc_item_raw_primitive_draw }
     })
+	
+	    && sc_item_register({
+        identity: {
+            key: "item_quartz",
+            name: "Quartz Deposit"
+        },
+
+        layer: ItemLayer.RAW,
+        type: ItemType.RESOURCE,
+
+        description:
+            "Crystalline silica used in optical systems, sensors and precision electronics.",
+
+        cargo: {
+            weight: 1,
+            stack_max: 99
+        },
+
+        visual: {
+            colour: make_colour_rgb(239,224,255),
+            glow: make_colour_rgb(178,112,232),
+            draw_script: sc_item_raw_primitive_draw
+        }
+    })
+
+    && sc_item_register({
+        identity: {
+            key: "item_uranium",
+            name: "Uranium Ore"
+        },
+
+        layer: ItemLayer.RAW,
+        type: ItemType.RESOURCE,
+
+        description:
+            "Dense radioactive ore used in reactor fuel and high-output power systems.",
+
+        cargo: {
+            weight: 2,
+            stack_max: 50
+        },
+
+        visual: {
+            colour: make_colour_rgb(194,241,76),
+            glow: make_colour_rgb(101,255,48),
+            draw_script: sc_item_raw_primitive_draw
+        }
+    })
 
     && sc_item_register({
         identity: { key: "item_refined_iron", name: "Refined Iron" },

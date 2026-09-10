@@ -145,16 +145,18 @@ function sc_config_init()
 				density_depletion_power: 0.65,
 
 			    materials: [
-			    { key: "asteroid_rock", weight: 38 },
-			    { key: "asteroid_carbon", weight: 13 },
-			    { key: "asteroid_iron", weight: 11 },
-			    { key: "asteroid_copper", weight: 8 },
-			    { key: "asteroid_silicon", weight: 7 },
-			    { key: "asteroid_ice", weight: 10 },
-			    { key: "asteroid_titanium", weight: 3 },
-			    { key: "asteroid_crystal", weight: 2 },
-			    { key: "asteroid_sulfur", weight: 8 }
-			],
+		    { key: "asteroid_rock", weight: 33 },
+		    { key: "asteroid_carbon", weight: 13 },
+		    { key: "asteroid_iron", weight: 11 },
+		    { key: "asteroid_copper", weight: 8 },
+		    { key: "asteroid_silicon", weight: 7 },
+		    { key: "asteroid_quartz", weight: 4 },
+		    { key: "asteroid_ice", weight: 10 },
+		    { key: "asteroid_titanium", weight: 3 },
+		    { key: "asteroid_crystal", weight: 2 },
+		    { key: "asteroid_sulfur", weight: 8 },
+		    { key: "asteroid_uranium", weight: 1 }
+		],
 
 			    sizes: [
 			        { size: AsteroidSize.SMALL, weight: 12 },
