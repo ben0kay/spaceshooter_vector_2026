@@ -112,8 +112,16 @@ function sc_hud_level_data()
 		    structure_size: 7,
 		    player_size: 10,
 
+		    environment: {
+		        fill_alpha: 0.1,
+		        inner_alpha: 0.14,
+		        outline_alpha: 0.65,
+		        label_alpha: 0.8,
+		        segments: 48
+		    },
+
 		    cache_check_interval: 30
-		},	
+		},
 			
 		facility: {
     width: 1600,

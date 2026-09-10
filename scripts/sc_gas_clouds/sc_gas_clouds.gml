@@ -40,7 +40,7 @@ function sc_gas_cloud_register_all()
             type: EnvironmentFieldType.GAS
         },
 
-        // These values are unused until gameplay interference is connected.
+        // These values remain unused until interference is connected.
         interference: {
             detection_multiplier: 0.55,
             targeting_multiplier: 0.75,
@@ -56,14 +56,14 @@ function sc_gas_cloud_register_all()
             colour_mid: make_colour_rgb(18, 100, 122),
             colour_glow: make_colour_rgb(48, 190, 210),
 
-            body_amount: 48,
-            wisp_amount: 18,
+            body_amount: 72,
+            wisp_amount: 26,
 
-            alpha_min: 0.26,
-            alpha_max: 0.62,
+            alpha_min: 0.32,
+            alpha_max: 0.7,
 
-            layer_scale_inner: 0.72,
-            layer_scale_middle: 0.88,
+            layer_scale_inner: 0.9,
+            layer_scale_middle: 1.02,
 
             drift_amount: 0.055,
             drift_speed: 0.012,
@@ -75,7 +75,6 @@ function sc_gas_cloud_register_all()
 
     return true;
 }
-
 
 /// @description Initializes one generic environmental-field instance.
 function sc_environment_field_init(_field, _create)
@@ -242,7 +241,7 @@ function sc_environment_field_draw(_field)
     }
 }
 
-/// @description Spawns temporary visual test clouds near the sector centre.
+/// @description Spawns large temporary visual test clouds in the sector.
 function sc_gas_cloud_test_spawn(_layer)
 {
     var _centre_x = room_width * 0.5;
@@ -254,11 +253,14 @@ function sc_gas_cloud_test_spawn(_layer)
         global.game.sector.environment_fields,
         sc_environment_field_create(
             "environment_gas_ionized",
-            _centre_x + 3000,
-            _centre_y,
+            _centre_x + 12000,
+            _centre_y - 3000,
             _layer,
-            2200,
-            1450,
+
+            // Large elongated gas region.
+            11000,
+            7250,
+
             24,
             0.5
         )
@@ -268,11 +270,14 @@ function sc_gas_cloud_test_spawn(_layer)
         global.game.sector.environment_fields,
         sc_environment_field_create(
             "environment_gas_ionized",
-            _centre_x - 4200,
-            _centre_y + 3100,
+            _centre_x - 15000,
+            _centre_y + 10000,
             _layer,
-            3400,
-            1900,
+
+            // Very large dense gas region.
+            17000,
+            9500,
+
             -38,
             0.8
         )

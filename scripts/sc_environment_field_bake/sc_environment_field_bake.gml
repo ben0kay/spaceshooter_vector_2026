@@ -1,4 +1,4 @@
-/// @description Generates one reusable soft gas-cloud sprite.
+/// @description Generates one reusable soft gas-cloud sprite filling its canvas.
 function sc_gas_cloud_sprite_create(_visual)
 {
     var _size = _visual.canvas_size;
@@ -15,18 +15,40 @@ function sc_gas_cloud_sprite_create(_visual)
     surface_set_target(_surface);
     draw_clear_alpha(c_black, 0);
 
-    // Broad overlapping smoke masses form the cloud body.
+    // Large cloud masses are distributed across almost the entire canvas.
     for (var _i = 0; _i < _visual.body_amount; ++_i)
     {
         var _direction = sc_space_hash(_seed + _i * 17.31) * 360;
-        var _distance = power(sc_space_hash(_seed + _i * 43.73), 1.5) * _size * 0.31;
+
+        // Power below one pushes more blobs away from the centre.
+        var _distance = power(
+            sc_space_hash(_seed + _i * 43.73),
+            0.78
+        ) * _size * 0.39;
+
         var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.72, _direction);
-        var _diameter = lerp(_size * 0.13, _size * 0.36, sc_space_hash(_seed + _i * 67.91));
-        var _stretch = lerp(0.72, 1.7, sc_space_hash(_seed + _i * 89.17));
+        var _y = _centre + lengthdir_y(_distance * 0.82, _direction);
+
+        var _diameter = lerp(
+            _size * 0.17,
+            _size * 0.43,
+            sc_space_hash(_seed + _i * 67.91)
+        );
+
+        var _stretch = lerp(
+            0.72,
+            1.75,
+            sc_space_hash(_seed + _i * 89.17)
+        );
+
         var _angle = sc_space_hash(_seed + _i * 101.39) * 360;
         var _mix = sc_space_hash(_seed + _i * 127.53);
-        var _colour = merge_colour(_visual.colour_dark, _visual.colour_mid, _mix);
+
+        var _colour = merge_colour(
+            _visual.colour_dark,
+            _visual.colour_mid,
+            _mix
+        );
 
         draw_sprite_ext(
             s_blur, 0,
@@ -35,21 +57,79 @@ function sc_gas_cloud_sprite_create(_visual)
             (_diameter / _blur_height) / _stretch,
             _angle,
             _colour,
-            lerp(0.11, 0.25, sc_space_hash(_seed + _i * 149.21))
+            lerp(
+                0.14,
+                0.3,
+                sc_space_hash(_seed + _i * 149.21)
+            )
         );
     }
 
-    // Small additive wisps provide ionized detail inside the cloud.
+    // A second collection of broad, faint peripheral clouds softens the edge.
+    for (var _i = 0; _i < 24; ++_i)
+    {
+        var _direction = sc_space_hash(_seed + _i * 281.17) * 360;
+        var _distance = lerp(
+            _size * 0.27,
+            _size * 0.43,
+            sc_space_hash(_seed + _i * 307.41)
+        );
+
+        var _x = _centre + lengthdir_x(_distance, _direction);
+        var _y = _centre + lengthdir_y(_distance * 0.84, _direction);
+
+        var _diameter = lerp(
+            _size * 0.16,
+            _size * 0.31,
+            sc_space_hash(_seed + _i * 331.69)
+        );
+
+        var _stretch = lerp(
+            0.8,
+            1.55,
+            sc_space_hash(_seed + _i * 353.23)
+        );
+
+        draw_sprite_ext(
+            s_blur, 0,
+            _x, _y,
+            (_diameter / _blur_width) * _stretch,
+            (_diameter / _blur_height) / _stretch,
+            sc_space_hash(_seed + _i * 379.57) * 360,
+            _visual.colour_dark,
+            lerp(
+                0.08,
+                0.18,
+                sc_space_hash(_seed + _i * 397.81)
+            )
+        );
+    }
+
+    // Brighter ionized wisps are spread through the larger cloud body.
     gpu_set_blendmode(bm_add);
 
     for (var _i = 0; _i < _visual.wisp_amount; ++_i)
     {
         var _direction = sc_space_hash(_seed + _i * 173.11) * 360;
-        var _distance = power(sc_space_hash(_seed + _i * 191.37), 1.8) * _size * 0.27;
+        var _distance = power(
+            sc_space_hash(_seed + _i * 191.37),
+            1.15
+        ) * _size * 0.35;
+
         var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.68, _direction);
-        var _diameter = lerp(_size * 0.04, _size * 0.13, sc_space_hash(_seed + _i * 211.63));
-        var _stretch = lerp(1.2, 2.8, sc_space_hash(_seed + _i * 229.87));
+        var _y = _centre + lengthdir_y(_distance * 0.78, _direction);
+
+        var _diameter = lerp(
+            _size * 0.045,
+            _size * 0.15,
+            sc_space_hash(_seed + _i * 211.63)
+        );
+
+        var _stretch = lerp(
+            1.2,
+            2.9,
+            sc_space_hash(_seed + _i * 229.87)
+        );
 
         draw_sprite_ext(
             s_blur, 0,
@@ -58,7 +138,11 @@ function sc_gas_cloud_sprite_create(_visual)
             (_diameter / _blur_height) / _stretch,
             sc_space_hash(_seed + _i * 251.43) * 360,
             _visual.colour_glow,
-            lerp(0.07, 0.17, sc_space_hash(_seed + _i * 269.71))
+            lerp(
+                0.07,
+                0.17,
+                sc_space_hash(_seed + _i * 269.71)
+            )
         );
     }
 

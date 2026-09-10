@@ -341,6 +341,164 @@ function sc_hud_sector_map_fields_draw(_hud, _layout)
         sc_hud_sector_map_field_draw(_hud, _layout, _fields[_i]);
 }
 
+/// @description Draws one environmental field on the full-sector map.
+function sc_hud_sector_map_environment_field_draw(_hud, _layout, _field)
+{
+    if (!instance_exists(_field) || !_field.initialized)
+        return;
+
+    var _data = _field.environment_field;
+    var _config = _hud.data.sector_map.environment;
+    var _colour = _data.visual.colour_mid;
+    var _outline = _data.visual.colour_glow;
+    var _segments = _config.segments;
+    var _centre = sc_hud_sector_map_position_get(
+        _layout,
+        _field.x,
+        _field.y
+    );
+
+    var _radius_x = _data.radius_x * _layout.scale;
+    var _radius_y = _data.radius_y * _layout.scale;
+    var _fill_alpha = _config.fill_alpha * lerp(0.5, 1, _data.density);
+
+    // Translucent rotated elliptical field interior.
+    draw_primitive_begin(pr_trianglefan);
+    draw_vertex_colour(
+        _centre.x,
+        _centre.y,
+        _colour,
+        _fill_alpha
+    );
+
+    for (var _i = 0; _i <= _segments; ++_i)
+    {
+        var _direction = _i / _segments * 360;
+        var _local_x = dcos(_direction) * _radius_x;
+        var _local_y = dsin(_direction) * _radius_y;
+
+        var _x = _centre.x
+            + lengthdir_x(_local_x, _data.angle)
+            + lengthdir_x(_local_y, _data.angle + 90);
+
+        var _y = _centre.y
+            + lengthdir_y(_local_x, _data.angle)
+            + lengthdir_y(_local_y, _data.angle + 90);
+
+        draw_vertex_colour(
+            _x,
+            _y,
+            _colour,
+            _fill_alpha * 0.4
+        );
+    }
+
+    draw_primitive_end();
+
+    // Inner density region.
+    draw_primitive_begin(pr_trianglefan);
+    draw_vertex_colour(
+        _centre.x,
+        _centre.y,
+        _outline,
+        _config.inner_alpha * _data.density
+    );
+
+    for (var _i = 0; _i <= _segments; ++_i)
+    {
+        var _direction = _i / _segments * 360;
+        var _local_x = dcos(_direction) * _radius_x * 0.62;
+        var _local_y = dsin(_direction) * _radius_y * 0.62;
+
+        var _x = _centre.x
+            + lengthdir_x(_local_x, _data.angle)
+            + lengthdir_x(_local_y, _data.angle + 90);
+
+        var _y = _centre.y
+            + lengthdir_y(_local_x, _data.angle)
+            + lengthdir_y(_local_y, _data.angle + 90);
+
+        draw_vertex_colour(
+            _x,
+            _y,
+            _outline,
+            0
+        );
+    }
+
+    draw_primitive_end();
+
+    // Rotated outer boundary.
+    draw_set_colour(_outline);
+    draw_set_alpha(_config.outline_alpha);
+
+    var _previous_x = 0;
+    var _previous_y = 0;
+
+    for (var _i = 0; _i <= _segments; ++_i)
+    {
+        var _direction = _i / _segments * 360;
+        var _local_x = dcos(_direction) * _radius_x;
+        var _local_y = dsin(_direction) * _radius_y;
+
+        var _x = _centre.x
+            + lengthdir_x(_local_x, _data.angle)
+            + lengthdir_x(_local_y, _data.angle + 90);
+
+        var _y = _centre.y
+            + lengthdir_y(_local_x, _data.angle)
+            + lengthdir_y(_local_y, _data.angle + 90);
+
+        if (_i > 0)
+            draw_line(_previous_x, _previous_y, _x, _y);
+
+        _previous_x = _x;
+        _previous_y = _y;
+    }
+
+    // Centre marker.
+    draw_set_alpha(0.85);
+    draw_circle(_centre.x, _centre.y, 3, true);
+    draw_line(_centre.x - 5, _centre.y, _centre.x + 5, _centre.y);
+    draw_line(_centre.x, _centre.y - 5, _centre.x, _centre.y + 5);
+
+    // Debug map identification.
+    draw_set_halign(fa_center);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_outline);
+    draw_set_alpha(_config.label_alpha);
+
+    draw_text(
+        _centre.x,
+        _centre.y + 14,
+        string_upper(_data.identity.name)
+        + "\nDENSITY "
+        + string_format(_data.density, 1, 2)
+    );
+}
+
+/// @description Draws every active environmental field on the sector map.
+function sc_hud_sector_map_environment_fields_draw(_hud, _layout)
+{
+    if (!sc_sector_campaign_active()
+    || !variable_struct_exists(global.game.sector, "environment_fields"))
+        return;
+
+    var _fields = global.game.sector.environment_fields;
+
+    for (var _i = 0; _i < array_length(_fields); ++_i)
+    {
+        sc_hud_sector_map_environment_field_draw(
+            _hud,
+            _layout,
+            _fields[_i]
+        );
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
 /// @description Draws cached individual asteroids.
 function sc_hud_sector_map_asteroids_draw(_hud, _layout)
 {
@@ -508,6 +666,10 @@ function sc_hud_sector_map_draw(_hud)
     );
 
     sc_hud_sector_map_grid_draw(_hud, _layout);
+
+    // Environmental regions sit beneath physical sector information.
+    sc_hud_sector_map_environment_fields_draw(_hud, _layout);
+
     sc_hud_sector_map_fields_draw(_hud, _layout);
     sc_hud_sector_map_asteroids_draw(_hud, _layout);
     sc_hud_sector_map_structures_draw(_hud, _layout);
@@ -526,7 +688,9 @@ function sc_hud_sector_map_draw(_hud)
         28,
         "M CLOSE // "
         + string(global.level.asteroids_alive)
-        + " ASTEROIDS"
+        + " ASTEROIDS // "
+        + string(instance_number(o_environment_field))
+        + " ENVIRONMENT FIELDS"
     );
 
     draw_set_halign(fa_left);
