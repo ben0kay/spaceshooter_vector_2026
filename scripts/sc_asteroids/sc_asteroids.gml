@@ -41,9 +41,9 @@ function sc_asteroid_register_rock()
         item_key: "item_rock",
         stats: { health_multiplier: 0.7, yield_multiplier: 1 },
         palette: {
-            void: make_colour_rgb(6, 8, 10), dark: make_colour_rgb(18, 22, 25),
-            mid: make_colour_rgb(42, 48, 52), light: make_colour_rgb(84, 94, 98),
-            resource: make_colour_rgb(128, 150, 158), glow: make_colour_rgb(39, 89, 106)
+            void: make_colour_rgb(8, 8, 8), dark: make_colour_rgb(28, 27, 25),
+            mid: make_colour_rgb(66, 63, 58), light: make_colour_rgb(126, 120, 110),
+            resource: make_colour_rgb(154, 147, 135), glow: make_colour_rgb(83, 78, 70)
         }
     });
 }

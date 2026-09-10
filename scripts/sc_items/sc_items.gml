@@ -126,12 +126,21 @@ function sc_item_type_name_get(_type)
 function sc_item_register_all()
 {
     return sc_item_register({
+	    identity: { key: "item_rock", name: "Rock" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE,
+	    description: "Common non-metallic asteroid material with basic industrial uses.",
+	    cargo: { weight: 1, stack_max: 99 },
+	    visual: { colour: make_colour_rgb(126,120,110), glow: make_colour_rgb(83,78,70), draw_script: sc_item_raw_primitive_draw }
+	})
+	
+	&& sc_item_register({
         identity: { key: "item_carbon", name: "Carbon Ore" },
         layer: ItemLayer.RAW, type: ItemType.RESOURCE,
         description: "Unprocessed carbon-rich material recovered from asteroid deposits.",
         cargo: { weight: 1, stack_max: 99 },
         visual: { colour: make_colour_rgb(104,143,158), glow: make_colour_rgb(39,118,150), draw_script: sc_item_raw_primitive_draw }
     })
+		
     && sc_item_register({
         identity: { key: "item_iron", name: "Iron Ore" },
         layer: ItemLayer.RAW, type: ItemType.RESOURCE,
