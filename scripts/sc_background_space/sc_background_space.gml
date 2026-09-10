@@ -110,72 +110,72 @@ function sc_space_background_create()
             }
         },
 
-        // Large visual landmarks distributed throughout the sector.
+        // Localized visual landmarks, generally around 4,000 pixels across.
         nebulas: [
             sc_space_nebula_create(
                 "violet_storm",
                 401,
-                room_width * 0.19,
-                room_height * 0.18,
-                room_width * 0.13,
-                room_height * 0.095,
+                room_width * 0.17,
+                room_height * 0.17,
+                4400,
+                1850,
                 -18,
-                0.7
+                0.92
             ),
 
             sc_space_nebula_create(
                 "crimson_rift",
                 502,
-                room_width * 0.73,
-                room_height * 0.2,
-                room_width * 0.155,
-                room_height * 0.075,
+                room_width * 0.72,
+                room_height * 0.18,
+                5000,
+                1450,
                 27,
-                0.68
+                0.9
             ),
 
             sc_space_nebula_create(
                 "cyan_veil",
                 603,
-                room_width * 0.48,
-                room_height * 0.43,
-                room_width * 0.17,
-                room_height * 0.105,
+                room_width * 0.46,
+                room_height * 0.4,
+                4300,
+                1900,
                 -31,
-                0.62
+                0.88
             ),
 
             sc_space_nebula_create(
                 "azure_tempest",
                 704,
                 room_width * 0.82,
-                room_height * 0.67,
-                room_width * 0.135,
-                room_height * 0.115,
+                room_height * 0.64,
+                3800,
+                2300,
                 14,
-                0.68
+                0.92
             ),
 
             sc_space_nebula_create(
                 "solar_bloom",
                 805,
-                room_width * 0.27,
-                room_height * 0.75,
-                room_width * 0.12,
-                room_height * 0.11,
+                room_width * 0.25,
+                room_height * 0.73,
+                3600,
+                2600,
                 -9,
-                0.64
+                0.88
             ),
 
             sc_space_nebula_create(
                 "ghost_cloud",
                 906,
                 room_width * 0.58,
-                room_height * 0.89,
-                room_width * 0.18,
-                room_height * 0.085,
+                room_height * 0.87,
+                4800,
+                1650,
                 38,
-                0.5
+                0.74
             )
         ],
 
