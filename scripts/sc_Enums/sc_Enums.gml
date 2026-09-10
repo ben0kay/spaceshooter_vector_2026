@@ -22,6 +22,7 @@ enum EnemyRole { FIGHTER, CARGO, MINER, SUPPORT }
 enum EnemyClass {TINY, LIGHT, STANDARD, HEAVY, SUPERHEAVY, CAPITAL, TITAN } 
 enum EnemyRank { COMMON, VETERAN, ELITE, CHAMPION, MINIBOSS, BOSS }
 enum EnemyRemovalReason { KILLED, ESCAPED, DESPAWNED }
+enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY, BOMBARD }
 
 //==================================================
 // ATTACK CONTROLLER
@@ -63,7 +64,9 @@ enum DefenceLayer { NONE, SHIELD, ARMOUR, HULL }
 enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 
 enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE}
-enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY, BOMBARD }
+enum AsteroidFieldScale { SMALL, MEDIUM, LARGE }
+enum AsteroidFieldDensity { SPARSE, STANDARD, DENSE }
+enum AsteroidFieldLayout { STANDARD, BELT, DENSE_CORE, ARCHIPELAGO }
 
 enum StructureCollisionShape { CIRCLE, RECTANGLE }
 

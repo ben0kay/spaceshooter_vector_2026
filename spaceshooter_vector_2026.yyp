@@ -156,6 +156,7 @@
     {"id":{"name":"sc_data_init","path":"scripts/sc_data_init/sc_data_init.yy",},},
     {"id":{"name":"sc_death_fragment","path":"scripts/sc_death_fragment/sc_death_fragment.yy",},},
     {"id":{"name":"sc_debug_enemy_spawn","path":"scripts/sc_debug_enemy_spawn/sc_debug_enemy_spawn.yy",},},
+    {"id":{"name":"sc_debug_hud","path":"scripts/sc_debug_hud/sc_debug_hud.yy",},},
     {"id":{"name":"sc_debug_visuals","path":"scripts/sc_debug_visuals/sc_debug_visuals.yy",},},
     {"id":{"name":"sc_debug_weapon_test","path":"scripts/sc_debug_weapon_test/sc_debug_weapon_test.yy",},},
     {"id":{"name":"sc_derelict","path":"scripts/sc_derelict/sc_derelict.yy",},},

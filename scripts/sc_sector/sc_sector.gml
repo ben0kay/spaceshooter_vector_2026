@@ -7,7 +7,8 @@ function sc_sector_campaign_begin()
         y: 0,
         entry_side: "centre",
         entry_axis: 0.5,
-        transitioning: false
+        transitioning: false,
+		debug_seed_offset: 0,
     };
 
     return true;
@@ -22,19 +23,22 @@ function sc_sector_campaign_active()
         && global.game.sector.active;
 }
 
-/// @description Creates one deterministic seed from the current sector coordinates.
+/// @description Creates one deterministic seed from sector coordinates and debug offset.
 function sc_sector_seed_get(_sector_x, _sector_y)
 {
     var _seed = global.config.sector.world_seed;
     _seed += _sector_x * 73856093;
     _seed += _sector_y * 19349663;
     _seed += _sector_x * _sector_y * 83492791;
-    _seed = abs(_seed mod 2147483647);
 
+    if (variable_struct_exists(global.game.sector, "debug_seed_offset"))
+        _seed += global.game.sector.debug_seed_offset * 2654435761;
+
+    _seed = abs(_seed mod 2147483647);
     return max(1, floor(_seed));
 }
 
-/// @description Returns whether a proposed asteroid spawn is sufficiently separated.
+/// @description Returns whether a proposed formation is separated from existing formations.
 function sc_sector_field_centre_valid(
     _centres,
     _x,
@@ -63,36 +67,69 @@ function sc_sector_field_centre_valid(
     return true;
 }
 
-/// @description Generates varied asteroid formations throughout the sector.
+/// @description Keeps generated asteroid formations clear of the starting base.
+function sc_sector_field_structure_clear(_x, _y, _radius)
+{
+    var _clearance =
+        global.config.sector.asteroid_fields.structure_clearance;
+
+    var _count = instance_number(o_world_structure);
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _structure = instance_find(o_world_structure, _i);
+        if (!instance_exists(_structure) || !_structure.initialized) continue;
+        if (_structure.structure.key != "player_starting_base") continue;
+
+        var _broad_radius =
+            _structure.structure.data.collision.broad_radius;
+
+        if (sc_point_distance_sq(
+            _x,
+            _y,
+            _structure.x,
+            _structure.y
+        ) < sqr(_radius + _broad_radius + _clearance))
+            return false;
+    }
+
+    return true;
+}
+
+/// @description Generates varied asteroid formations within count and instance budgets.
 function sc_sector_asteroid_fields_spawn(_layer)
 {
     var _sector = global.game.sector;
     var _config = global.config.sector.asteroid_fields;
-    var _spawn_amount = irandom_range(
+
+    var _formation_limit = irandom_range(
         _config.amount_min,
         _config.amount_max
     );
 
+    var _asteroid_budget = irandom_range(
+        _config.budget_min,
+        _config.budget_max
+    );
+
     var _fields = [];
     var _centres = [];
-    var _spawned = 0;
+    var _formations_spawned = 0;
+    var _asteroids_spawned = 0;
     var _attempts = 0;
-    var _attempts_max = _spawn_amount * 60;
+    var _attempts_max = _formation_limit * 80;
 
-    while (_spawned < _spawn_amount
+    while (_formations_spawned < _formation_limit
+    && _asteroids_spawned < _asteroid_budget
     && _attempts < _attempts_max)
     {
         _attempts++;
 
-        var _definition = sc_asteroid_spawn_weighted_choose();
-        var _radius = random_range(
-            _definition.radius.minimum,
-            _definition.radius.maximum
-        );
-
+        var _request = sc_asteroid_spawn_request_create();
+        var _radius = _request.radius;
         var _padding = max(
             _config.centre_padding,
-            _radius * 0.8
+            _radius + 320
         );
 
         if (_padding * 2 >= room_width
@@ -117,6 +154,13 @@ function sc_sector_asteroid_fields_spawn(_layer)
         ) < sqr(_config.spawn_clear_radius))
             continue;
 
+        if (!sc_sector_field_structure_clear(
+            _x,
+            _y,
+            _radius
+        ))
+            continue;
+
         if (!sc_sector_field_centre_valid(
             _centres,
             _x,
@@ -126,7 +170,7 @@ function sc_sector_asteroid_fields_spawn(_layer)
         ))
             continue;
 
-        var _field_index = _definition.field
+        var _field_index = _request.field
             ? array_length(_fields)
             : -1;
 
@@ -134,9 +178,12 @@ function sc_sector_asteroid_fields_spawn(_layer)
             _x,
             _y,
             _layer,
-            _definition.identity.key,
+            _request,
             _field_index
         );
+
+        if (_spawn.amount <= 0)
+            continue;
 
         array_push(_centres, {
             x: _x,
@@ -147,10 +194,21 @@ function sc_sector_asteroid_fields_spawn(_layer)
         if (_spawn.field)
             array_push(_fields, _spawn);
 
-        _spawned++;
+        _asteroids_spawned += _spawn.amount;
+        _formations_spawned++;
     }
 
     _sector.asteroid_fields = _fields;
+
+    show_debug_message(
+        "ASTEROID GENERATION - "
+        + string(_formations_spawned)
+        + " FORMATIONS // "
+        + string(_asteroids_spawned)
+        + " ASTEROIDS // BUDGET "
+        + string(_asteroid_budget)
+    );
+
     return array_length(_fields);
 }
 

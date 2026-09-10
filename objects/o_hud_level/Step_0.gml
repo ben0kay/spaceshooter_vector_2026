@@ -2,6 +2,9 @@
 if (global.LevelState != LevelState.PLAYING
 && global.LevelState != LevelState.DEBUG)
     exit;
+	
+	if (sc_debug_room_restart_update())
+    exit;
 
 if (global.input.action.debug_enemy_spawn_pressed)
 {

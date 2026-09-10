@@ -7,6 +7,8 @@ function sc_config_init()
 		    structure_collision: true,
 			player_full_loadout: true,
 			asteroid_clearance: true,
+			show_fps: true,
+			room_restart: true,
 		},
 		
         visual: {
@@ -134,13 +136,12 @@ function sc_config_init()
             asteroid_fields: {
 			    amount_min: 3,
 			    amount_max: 5,
-			    radius_min: 1100,
-			    radius_max: 2200,
-			    asteroids_min: 16,
-			    asteroids_max: 32,
 			    centre_padding: 2800,
 			    centre_separation: 4400,
 			    spawn_clear_radius: 2200,
+				budget_min: 180,
+				budget_max: 320,
+				structure_clearance: 1200,
 
 			    materials: [
 			        { key: "asteroid_carbon", weight: 22 },

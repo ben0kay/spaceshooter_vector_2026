@@ -42,7 +42,13 @@ function sc_asteroid_init(_asteroid, _create)
         key: _create.key,
         item_key: _definition.item_key,
         size: _create.size,
-		field_index: _create.field_index,
+		field_index: variable_struct_exists(_create, "field_index")
+	    ? _create.field_index
+	    : -1,
+
+		zone_index: variable_struct_exists(_create, "zone_index")
+	    ? _create.zone_index
+	    : -1,
 
         health: {
             current: _health,
