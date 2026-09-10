@@ -32,7 +32,7 @@ function sc_enemy_register_sim_siegebreaker()
                 speed_max: 2.8,
                 acceleration: 0.11,
                 friction_coeff: 0.992,
-                turn_speed: 0.9,
+                turn_speed: 1.5,
                 directional: true,
                 directional_speed_min: 0.3,
                 directional_thrust_min: 0.42
@@ -450,49 +450,43 @@ function sc_enemy_sim_siegebreaker_pulse_draw(_x, _y, _radius, _angle, _visual, 
     draw_set_alpha(1);
 }
 
-/// @description Draws the rotating Siegebreaker reactor.
+/// @description Draws the Siegebreaker's rotating reactor.
 function sc_enemy_sim_siegebreaker_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _p = _visual.palette;
-    var _outer = _radius * 0.22;
-    var _inner = _radius * 0.08;
 
-    draw_set_alpha(_alpha * 0.25);
-    draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _outer * 1.5, false);
+    sc_sim_visual_reactor(
+        _x, _y, _radius, _angle,
+        {
+            outer_scale: 0.22,
+            middle_scale: 0,
+            inner_scale: 0.08,
 
-    draw_set_alpha(_alpha);
-    draw_set_colour(_p.void);
-    draw_circle(_x, _y, _outer, false);
+            socket_enabled: true,
+            middle_colour: _p.hull_light,
+            middle_filled: false,
 
-    draw_set_colour(_p.metal);
-    draw_circle(_x, _y, _outer, true);
+            glow_alpha: 0.25,
+            glow_scale: 1.5,
+            secondary_glow_alpha: 0,
+            secondary_glow_scale: 1,
 
-    for (var _i = 0; _i < 6; _i++)
-    {
-        var _direction = _angle + _i * 60;
+            vane_amount: 6,
+            vane_start: 0,
+            vane_twist: 18,
+            vane_inner_scale: 1,
+            vane_outer_scale: 0.85,
+            vane_width: 3,
+            vane_secondary_colour: _p.outline,
 
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.outline);
-        draw_line_width(
-            _x + lengthdir_x(_inner, _direction),
-            _y + lengthdir_y(_inner, _direction),
-            _x + lengthdir_x(_outer * 0.85, _direction + 18),
-            _y + lengthdir_y(_outer * 0.85, _direction + 18),
-            3
-        );
-    }
-
-    draw_set_colour(_p.accent);
-    draw_circle(_x, _y, _inner * 1.55, true);
-
-    draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _inner, false);
-
-    draw_set_colour(_p.core);
-    draw_circle(_x, _y, _inner * 0.4, false);
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
+            accent_scale: 1.55,
+            accent_filled: false,
+            core_scale: 0.4,
+            additive: false
+        },
+        _p,
+        _alpha
+    );
 }
 
 /// @description Creates the complete Siegebreaker destruction visual.

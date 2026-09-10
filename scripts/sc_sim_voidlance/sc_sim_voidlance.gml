@@ -315,175 +315,313 @@ function sc_enemy_sim_voidlance_body_draw(_x, _y, _radius, _angle, _visual)
     sc_enemy_sim_voidlance_armour_draw(_x, _y, _radius, _angle, _visual, 0);
 }
 
-/// @description Draws the permanent dark mechanical Voidlance hull.
+/// @description Draws the permanent broad mechanical Voidlance hull.
 function sc_enemy_sim_voidlance_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // Long central mechanical body.
+    // ==================================================
+    // BROAD CENTRAL SHIP BODY
+    // ==================================================
+
+    // Upper half.
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -0.94, -0.28,
-        0.62, -0.19,
-        1.16, 0,
-        0.62, 0.19,
+        -1.03, 0,
+        -0.79, -0.39,
+        0.18, -0.42,
+        0.5, -0.13,
         _p.hull_dark
     );
 
+    sc_visual_triangle(
+        _x, _y, _radius, _angle,
+        -1.03, 0,
+        0.5, -0.13,
+        0.62, 0,
+        _p.hull_dark,
+        false
+    );
+
+    // Lower half.
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -0.94, -0.28,
-        0.62, 0.19,
-        -0.94, 0.28,
-        -1.05, 0,
+        -1.03, 0,
+        0.5, 0.13,
+        0.18, 0.42,
+        -0.79, 0.39,
         _p.hull_dark
     );
 
-    // Broad rear mechanical shoulders.
-    for (var _side = -1; _side <= 1; _side += 2)
-    {
-        sc_sim_visual_blade_panel(
-            _x, _y, _radius, _angle,
-            0.05, 0.17 * _side,
-            -0.18, 0.66 * _side,
-            -0.76, 0.81 * _side,
-            -0.64, 0.25 * _side,
-            _p.hull_mid, _p
-        );
-
-        sc_sim_visual_rear_fin(
-            _x, _y, _radius, _angle,
-            -0.34,
-            0.61 * _side,
-            0.82,
-            0.34,
-            _p
-        );
-
-        sc_sim_visual_rear_fin(
-            _x, _y, _radius, _angle,
-            -0.58,
-            0.46 * _side,
-            0.62,
-            0.25,
-            _p
-        );
-
-        // Internal structural ribs.
-        sc_visual_line(
-            _x, _y, _radius, _angle,
-            -0.61, 0.28 * _side,
-            -0.2, 0.62 * _side,
-            8, _p.void
-        );
-
-        sc_visual_line(
-            _x, _y, _radius, _angle,
-            -0.61, 0.28 * _side,
-            -0.2, 0.62 * _side,
-            2, _p.metal
-        );
-
-        sc_sim_visual_energy_conduit(
-            _x, _y, _radius, _angle,
-            -0.68, 0.34 * _side,
-            -0.14, 0.45 * _side,
-            3, _p
-        );
-    }
-
-    // Long weapon assembly running through the hull.
-    sc_sim_visual_beam_spine(
+    sc_visual_triangle(
         _x, _y, _radius, _angle,
-        -0.38,
-        1.08,
-        0.105,
-        _p
+        -1.03, 0,
+        0.62, 0,
+        0.5, 0.13,
+        _p.hull_dark,
+        false
     );
 
-    // Dark partitions prevent the ship from becoming one long triangle.
-    sc_visual_line(_x, _y, _radius, _angle, -0.09, -0.26, -0.09, 0.26, 8, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, -0.09, -0.23, -0.09, 0.23, 2, _p.outline);
-
-    sc_visual_line(_x, _y, _radius, _angle, 0.34, -0.18, 0.34, 0.18, 6, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.34, -0.15, 0.34, 0.15, 2, _p.metal);
-
-    // Permanent reactor housing.
-    sc_sim_visual_energy_socket(
+    // Inner mechanical deck gives the body visible mass.
+    sc_visual_quad(
         _x, _y, _radius, _angle,
-        -0.34, 0,
-        0.23,
+        -0.82, -0.27,
+        0.3, -0.28,
+        0.52, 0,
+        -0.82, 0,
+        _p.hull_mid
+    );
+
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        -0.82, 0,
+        0.52, 0,
+        0.3, 0.28,
+        -0.82, 0.27,
+        _p.hull_mid
+    );
+
+    // ==================================================
+	// THREE DETACHED SWEPT ARMOUR BLADES PER SIDE
+	// ==================================================
+
+	for (var _side = -1; _side <= 1; _side += 2)
+{
+    // Underlying attachment bed.
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        0.12, 0.25 * _side,
+        -0.66, 0.35 * _side,
+        -0.76, 0.52 * _side,
+        -0.05, 0.42 * _side,
+        _p.hull_dark
+    );
+
+    sc_visual_line(
+        _x, _y, _radius, _angle,
+        0.05, 0.32 * _side,
+        -0.72, 0.45 * _side,
+        9,
+        _p.void
+    );
+
+    sc_visual_line(
+        _x, _y, _radius, _angle,
+        0.05, 0.32 * _side,
+        -0.72, 0.45 * _side,
+        2,
+        _p.metal
+    );
+
+    // Three clearly separated swept armour blades.
+    sc_sim_visual_swept_blade_bank(
+        _x, _y, _radius, _angle,
+        _side,
+        {
+            amount: 3,
+
+            forward_start: -0.05,
+            forward_step: -0.27,
+
+            side_start: 0.36,
+            side_step: 0.13,
+
+            length_start: 0.66,
+            length_step: -0.035,
+
+            width_start: 0.2,
+            width_step: 0.035,
+
+            sweep_start: 0.14,
+            sweep_step: 0.065,
+
+            colour_primary: _p.hull_mid,
+            colour_secondary: _p.hull_dark,
+            energy_enabled: true
+        },
         _p
     );
 }
 
-/// @description Draws the Voidlance's removable angular armour.
+    // ==================================================
+    // LONG INTEGRATED FORWARD CANNON
+    // ==================================================
+
+    // Wider cannon root binds the lance to the broad hull.
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        -0.28, -0.16,
+        0.43, -0.13,
+        1.12, -0.035,
+        -0.28, 0,
+        _p.void
+    );
+
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        -0.28, 0,
+        1.12, 0.035,
+        0.43, 0.13,
+        -0.28, 0.16,
+        _p.void
+    );
+
+    sc_sim_visual_beam_spine(
+        _x, _y, _radius, _angle,
+        -0.3,
+        1.1,
+        0.095,
+        _p
+    );
+
+    // Segmented cannon braces.
+    for (var _i = 0; _i < 4; _i++)
+    {
+        var _forward = 0.08 + _i * 0.22;
+        var _half_width = lerp(0.13, 0.065, _i / 3);
+
+        sc_visual_line(
+            _x, _y, _radius, _angle,
+            _forward, -_half_width,
+            _forward, _half_width,
+            5, _p.void
+        );
+
+        sc_visual_line(
+            _x, _y, _radius, _angle,
+            _forward, -_half_width * 0.78,
+            _forward, _half_width * 0.78,
+            1, _p.metal
+        );
+    }
+
+    // Rear reactor housing.
+    sc_sim_visual_energy_socket(
+        _x, _y, _radius, _angle,
+        -0.34, 0,
+        0.25,
+        _p
+    );
+}
+
+/// @description Draws the Voidlance's removable layered armour.
 function sc_enemy_sim_voidlance_armour_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        // Inner lance armour remains through every stage.
+        // Inner body armour remains visible at every damage stage.
         sc_sim_visual_blade_panel(
             _x, _y, _radius, _angle,
-            0.94, 0.04 * _side,
-            0.48, 0.11 * _side,
-            0.05, 0.19 * _side,
-            0.18, 0.06 * _side,
+            0.38, 0.14 * _side,
+            0.11, 0.32 * _side,
+            -0.35, 0.37 * _side,
+            -0.17, 0.15 * _side,
             _p.hull_light, _p
         );
 
-        // Central shoulder armour.
+        // Forward blade armour.
         if (_stage <= 2)
         {
             sc_sim_visual_blade_panel(
                 _x, _y, _radius, _angle,
-                0.12, 0.2 * _side,
-                -0.15, 0.58 * _side,
-                -0.52, 0.66 * _side,
-                -0.35, 0.25 * _side,
+                0.2, 0.29 * _side,
+                -0.06, 0.52 * _side,
+                -0.51, 0.62 * _side,
+                -0.34, 0.39 * _side,
                 _p.metal, _p
             );
         }
 
-        // Rear inner blade.
+        // Middle swept armour blade.
         if (_stage <= 1)
         {
             sc_sim_visual_blade_panel(
                 _x, _y, _radius, _angle,
-                -0.2, 0.61 * _side,
-                -0.5, 0.94 * _side,
-                -0.82, 0.83 * _side,
-                -0.58, 0.53 * _side,
+                -0.12, 0.49 * _side,
+                -0.38, 0.76 * _side,
+                -0.78, 0.84 * _side,
+                -0.6, 0.55 * _side,
                 _p.hull_light, _p
             );
         }
 
-        // Widest exterior blade only exists at full armour.
+        // Large outer/rear blade armour.
         if (_stage == 0)
         {
             sc_sim_visual_blade_panel(
                 _x, _y, _radius, _angle,
-                -0.38, 0.88 * _side,
-                -0.67, 1.12 * _side,
-                -1.02, 0.92 * _side,
-                -0.69, 0.72 * _side,
+                -0.44, 0.63 * _side,
+                -0.69, 0.96 * _side,
+                -0.99, 1.02 * _side,
+                -0.82, 0.68 * _side,
                 _p.metal, _p
+            );
+        }
+    }
+
+    // Paired armour rails around the main weapon.
+    if (_stage <= 2)
+    {
+        for (var _side = -1; _side <= 1; _side += 2)
+        {
+            sc_visual_quad(
+                _x, _y, _radius, _angle,
+                -0.12, 0.12 * _side,
+                0.48, 0.1 * _side,
+                0.91, 0.045 * _side,
+                0.12, 0.055 * _side,
+                _p.hull_light
+            );
+
+            sc_visual_line(
+                _x, _y, _radius, _angle,
+                -0.05, 0.1 * _side,
+                0.87, 0.04 * _side,
+                1, _p.core
             );
         }
     }
 }
 
-/// @description Draws the independently animated central reactor.
+/// @description Draws the Voidlance reactor centred inside its positioned sprite.
 function sc_enemy_sim_voidlance_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
-    sc_sim_visual_core_ring(
+    var _p = _visual.palette;
+
+    // The runtime already positions this sprite at visual.core.forward/side.
+    // The reactor therefore remains centred on its local x/y.
+    sc_sim_visual_reactor(
         _x, _y, _radius, _angle,
-        -0.34, 0,
-        0.19,
-        GAME_TICK * 2.5,
-        _visual.palette,
+        {
+            outer_scale: 0.24,
+            middle_scale: 0.16,
+            inner_scale: 0.075,
+
+            socket_enabled: true,
+            middle_colour: _p.accent,
+            middle_filled: false,
+
+            glow_alpha: 0.28,
+            glow_scale: 1.55,
+            secondary_glow_alpha: 0,
+            secondary_glow_scale: 1,
+
+            vane_amount: 8,
+            vane_start: 0,
+            vane_twist: 12,
+            vane_inner_scale: 0.72,
+            vane_outer_scale: 0.9,
+            vane_width: 4,
+            vane_secondary_colour: _p.outline,
+
+            accent_scale: 1.65,
+            accent_filled: false,
+            core_scale: 0.42,
+            additive: false
+        },
+        _p,
         _alpha
     );
 }

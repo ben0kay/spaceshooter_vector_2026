@@ -78,39 +78,100 @@ function sc_sim_visual_energy_socket(_x, _y, _r, _a, _forward, _side, _size, _p,
     draw_set_alpha(1);
 }
 
-/// @description Draws a segmented Simulant reactor ring.
-function sc_sim_visual_core_ring(_x, _y, _r, _a, _forward, _side, _size, _rotation, _p, _alpha = 1)
+/// @description Draws one configurable rotating Simulant reactor.
+function sc_sim_visual_reactor(_x, _y, _radius, _angle, _config, _palette, _alpha = 1)
 {
+    var _outer = _radius * _config.outer_scale;
+    var _middle = _radius * _config.middle_scale;
+    var _inner = _radius * _config.inner_scale;
+    var _additive = _config.additive;
+
+    if (_additive)
+        gpu_set_blendmode(bm_add);
+
+    // Optional outer reactor glow.
+    if (_config.glow_alpha > 0)
+    {
+        draw_set_alpha(_alpha * _config.glow_alpha);
+        draw_set_colour(_palette.glow);
+        draw_circle(_x, _y, _outer * _config.glow_scale, false);
+    }
+
+    // Optional brighter secondary glow layer.
+    if (_config.secondary_glow_alpha > 0)
+    {
+        draw_set_alpha(_alpha * _config.secondary_glow_alpha);
+        draw_set_colour(_palette.accent);
+        draw_circle(_x, _y, _outer * _config.secondary_glow_scale, false);
+    }
+
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x, _y, _r, _a, _forward, _side, _size * 1.3, _p.void, false);
-    sc_visual_circle(_x, _y, _r, _a, _forward, _side, _size, _p.hull_dark, false);
-    sc_visual_circle(_x, _y, _r, _a, _forward, _side, _size * 0.78, _p.metal, true);
-    sc_visual_circle(_x, _y, _r, _a, _forward, _side, _size * 0.55, _p.accent, true);
-
-    var _cx = _x + lengthdir_x(_forward * _r, _a) + lengthdir_x(_side * _r, _a + 90);
-    var _cy = _y + lengthdir_y(_forward * _r, _a) + lengthdir_y(_side * _r, _a + 90);
-    var _outer = _r * _size;
-    var _inner = _outer * 0.69;
-
-    for (var _i = 0; _i < 8; _i++)
+    // The physical dark socket and metallic outer ring.
+    if (_config.socket_enabled)
     {
-        var _direction = _a + _rotation + _i * 45;
+        draw_set_colour(_palette.void);
+        draw_circle(_x, _y, _outer, false);
 
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.outline);
-        draw_line_width(
-            _cx + lengthdir_x(_inner, _direction),
-            _cy + lengthdir_y(_inner, _direction),
-            _cx + lengthdir_x(_outer, _direction + 9),
-            _cy + lengthdir_y(_outer, _direction + 9),
-            max(1, _r * 0.018)
+        draw_set_colour(_palette.metal);
+        draw_circle(_x, _y, _outer, true);
+    }
+
+    // Optional middle containment ring or filled energy layer.
+    if (_middle > 0)
+    {
+        draw_set_colour(_config.middle_colour);
+
+        draw_circle(
+            _x,
+            _y,
+            _middle,
+            !_config.middle_filled
         );
     }
 
-    draw_set_colour(_p.energy);
-    draw_circle(_cx, _cy, _outer * 0.48, false);
-    draw_set_colour(_p.core);
-    draw_circle(_cx, _cy, _outer * 0.2, false);
+    // Rotating mechanical/energy vanes.
+    var _step = 360 / max(1, _config.vane_amount);
+
+    for (var _i = 0; _i < _config.vane_amount; _i++)
+    {
+        var _direction = _angle + _config.vane_start + _i * _step;
+        var _inner_direction = _direction;
+        var _outer_direction = _direction + _config.vane_twist;
+
+        draw_set_colour(
+            (_i mod 2) == 0
+                ? _palette.energy
+                : _config.vane_secondary_colour
+        );
+
+        draw_line_width(
+            _x + lengthdir_x(_inner * _config.vane_inner_scale, _inner_direction),
+            _y + lengthdir_y(_inner * _config.vane_inner_scale, _inner_direction),
+            _x + lengthdir_x(_outer * _config.vane_outer_scale, _outer_direction),
+            _y + lengthdir_y(_outer * _config.vane_outer_scale, _outer_direction),
+            _config.vane_width
+        );
+    }
+
+    // Powered inner containment ring.
+    draw_set_colour(_palette.accent);
+    draw_circle(
+        _x,
+        _y,
+        _inner * _config.accent_scale,
+        !_config.accent_filled
+    );
+
+    // Active energy and white-hot centre.
+    draw_set_colour(_palette.energy);
+    draw_circle(_x, _y, _inner, false);
+
+    draw_set_colour(_palette.core);
+    draw_circle(_x, _y, _inner * _config.core_scale, false);
+
+    if (_additive)
+        gpu_set_blendmode(bm_normal);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
@@ -226,4 +287,92 @@ function sc_enemy_simulant_rocket_launcher_draw(_x, _y, _radius, _angle, _visual
         _visual.palette,
         _alpha
     );
+}
+
+/// @description Draws one detached swept Simulant armour blade.
+function sc_sim_visual_swept_blade(
+    _x, _y, _radius, _angle,
+    _forward, _side,
+    _length, _width, _sweep,
+    _fill, _palette,
+    _energy_enabled = true,
+    _alpha = 1
+)
+{
+    var _sign = sign(_side);
+    if (_sign == 0) _sign = 1;
+
+    var _inner_side = abs(_side);
+    var _outer_side = _inner_side + _width;
+
+    // Outer edge is shifted rearward to create the swept shape.
+    var _inner_front = _forward + _length * 0.5;
+    var _inner_rear = _forward - _length * 0.5;
+    var _outer_front = _inner_front - _sweep;
+    var _outer_rear = _inner_rear - _sweep;
+
+    sc_sim_visual_blade_panel(
+        _x, _y, _radius, _angle,
+
+        _inner_front, _inner_side * _sign,
+        _outer_front, _outer_side * _sign,
+        _outer_rear, _outer_side * _sign,
+        _inner_rear, _inner_side * _sign,
+
+        _fill,
+        _palette,
+        _alpha
+    );
+
+    if (_energy_enabled)
+    {
+        // Inset lighting follows the long outer section of the blade.
+        var _energy_side = lerp(_inner_side, _outer_side, 0.68) * _sign;
+        var _energy_front = lerp(_inner_front, _outer_front, 0.72) - _length * 0.13;
+        var _energy_rear = lerp(_inner_rear, _outer_rear, 0.72) + _length * 0.13;
+
+        sc_sim_visual_energy_conduit(
+            _x, _y, _radius, _angle,
+            _energy_rear, _energy_side,
+            _energy_front, _energy_side,
+            max(2, _radius * 0.014),
+            _palette,
+            _alpha
+        );
+    }
+}
+
+/// @description Draws one adjustable bank of separated swept Simulant blades.
+function sc_sim_visual_swept_blade_bank(
+    _x, _y, _radius, _angle,
+    _side_sign,
+    _config,
+    _palette,
+    _alpha = 1
+)
+{
+    var _amount = max(1, round(_config.amount));
+
+    for (var _i = 0; _i < _amount; _i++)
+    {
+        var _forward = _config.forward_start + _config.forward_step * _i;
+        var _side = (_config.side_start + _config.side_step * _i) * _side_sign;
+        var _length = max(0.05, _config.length_start + _config.length_step * _i);
+        var _width = max(0.03, _config.width_start + _config.width_step * _i);
+        var _sweep = _config.sweep_start + _config.sweep_step * _i;
+
+        var _fill = (_i mod 2) == 0
+            ? _config.colour_primary
+            : _config.colour_secondary;
+
+        sc_sim_visual_swept_blade(
+            _x, _y, _radius, _angle,
+            _forward, _side,
+            _length, _width, _sweep,
+            _fill,
+            _palette,
+            _config.energy_enabled,
+            _alpha
+        );
+    }
 }

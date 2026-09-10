@@ -387,46 +387,40 @@ function sc_enemy_sim_skirmisher_cannon_draw(_x, _y, _radius, _angle, _visual, _
 /// @description Draws the Skirmisher's rotating central reactor.
 function sc_enemy_sim_skirmisher_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
-    var _palette = _visual.palette;
-    var _outer_radius = _radius * 0.34;
-    var _middle_radius = _radius * 0.235;
-    var _inner_radius = _radius * 0.115;
+    var _p = _visual.palette;
 
-    draw_set_alpha(_alpha);
+    sc_sim_visual_reactor(
+        _x, _y, _radius, _angle,
+        {
+            outer_scale: 0.34,
+            middle_scale: 0.235,
+            inner_scale: 0.115,
 
-    // Dark reactor socket.
-    draw_set_colour(_palette.void);
-    draw_circle(_x, _y, _outer_radius, false);
+            socket_enabled: true,
+            middle_colour: _p.hull_light,
+            middle_filled: false,
 
-    draw_set_colour(_palette.metal);
-    draw_circle(_x, _y, _outer_radius, true);
+            glow_alpha: 0,
+            glow_scale: 1,
+            secondary_glow_alpha: 0,
+            secondary_glow_scale: 1,
 
-    draw_set_colour(_palette.hull_light);
-    draw_circle(_x, _y, _middle_radius, true);
+            vane_amount: 4,
+            vane_start: 45,
+            vane_twist: 12,
+            vane_inner_scale: 0.75,
+            vane_outer_scale: 1.08,
+            vane_width: 3,
+            vane_secondary_colour: _p.accent,
 
-    // Four rotating machine blades.
-    for (var _i = 0; _i < 4; _i++)
-    {
-        var _direction = _angle + 45 + _i * 90;
-        var _inner_x = _x + lengthdir_x(_inner_radius * 0.75, _direction);
-        var _inner_y = _y + lengthdir_y(_inner_radius * 0.75, _direction);
-        var _outer_x = _x + lengthdir_x(_outer_radius * 1.08, _direction + 12);
-        var _outer_y = _y + lengthdir_y(_outer_radius * 1.08, _direction + 12);
-
-        draw_set_colour((_i mod 2) == 0 ? _palette.energy : _palette.accent);
-        draw_line_width(_inner_x, _inner_y, _outer_x, _outer_y, 3);
-    }
-
-    draw_set_colour(_palette.accent);
-    draw_circle(_x, _y, _inner_radius * 1.5, true);
-
-    draw_set_colour(_palette.energy);
-    draw_circle(_x, _y, _inner_radius, false);
-
-    draw_set_colour(_palette.core);
-    draw_circle(_x, _y, _inner_radius * 0.45, false);
-
-    draw_set_alpha(1);
+            accent_scale: 1.5,
+            accent_filled: false,
+            core_scale: 0.45,
+            additive: false
+        },
+        _p,
+        _alpha
+    );
 }
 
 /// @description Creates the complete Simulant Skirmisher destruction visual.

@@ -716,51 +716,43 @@ function sc_enemy_sim_dreadwing_cannon_draw(_x, _y, _radius, _angle, _visual, _a
     draw_set_alpha(1);
 }
 
-/// @description Draws the Dreadwing's rotating central reactor centred inside its baked sprite.
+/// @description Draws the Dreadwing's rotating central reactor.
 function sc_enemy_sim_dreadwing_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _p = _visual.palette;
-    var _outer = _radius * 0.235;
-    var _middle = _radius * 0.16;
-    var _inner = _radius * 0.075;
 
-    draw_set_alpha(_alpha * 0.24);
-    draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _outer * 1.5, false);
+    sc_sim_visual_reactor(
+        _x, _y, _radius, _angle,
+        {
+            outer_scale: 0.235,
+            middle_scale: 0.16,
+            inner_scale: 0.075,
 
-    draw_set_alpha(_alpha);
-    draw_set_colour(_p.void);
-    draw_circle(_x, _y, _outer, false);
+            socket_enabled: true,
+            middle_colour: _p.hull_light,
+            middle_filled: false,
 
-    draw_set_colour(_p.metal);
-    draw_circle(_x, _y, _outer, true);
+            glow_alpha: 0.24,
+            glow_scale: 1.5,
+            secondary_glow_alpha: 0,
+            secondary_glow_scale: 1,
 
-    draw_set_colour(_p.hull_light);
-    draw_circle(_x, _y, _middle, true);
+            vane_amount: 8,
+            vane_start: 0,
+            vane_twist: 13,
+            vane_inner_scale: 0.7,
+            vane_outer_scale: 0.88,
+            vane_width: 3,
+            vane_secondary_colour: _p.outline,
 
-    for (var _i = 0; _i < 8; _i++)
-    {
-        var _direction = _angle + _i * 45;
-        var _x1 = _x + lengthdir_x(_inner * 0.7, _direction);
-        var _y1 = _y + lengthdir_y(_inner * 0.7, _direction);
-        var _x2 = _x + lengthdir_x(_outer * 0.88, _direction + 13);
-        var _y2 = _y + lengthdir_y(_outer * 0.88, _direction + 13);
-
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.outline);
-        draw_line_width(_x1, _y1, _x2, _y2, 3);
-    }
-
-    draw_set_colour(_p.accent);
-    draw_circle(_x, _y, _inner * 1.65, true);
-
-    draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _inner, false);
-
-    draw_set_colour(_p.core);
-    draw_circle(_x, _y, _inner * 0.42, false);
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
+            accent_scale: 1.65,
+            accent_filled: false,
+            core_scale: 0.42,
+            additive: false
+        },
+        _p,
+        _alpha
+    );
 }
 
 /// @description Creates the complete Dreadwing destruction visual.

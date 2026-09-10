@@ -725,50 +725,44 @@ function sc_enemy_sim_dreadnaught_core_mount_draw(_x, _y, _radius, _angle, _visu
     draw_set_colour(c_white);
 }
 
-/// @description Draws the rotating energy inside the central plasma hardpoint.
+/// @description Draws the Dreadnaught's enormous rotating energy reactor.
 function sc_enemy_sim_dreadnaught_core_energy_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _p = _visual.palette;
-    var _outer = _radius * 0.27;
-    var _middle = _radius * 0.18;
-    var _inner = _radius * 0.09;
 
-    gpu_set_blendmode(bm_add);
+    sc_sim_visual_reactor(
+        _x, _y, _radius, _angle,
+        {
+            outer_scale: 0.27,
+            middle_scale: 0.18,
+            inner_scale: 0.09,
 
-    draw_set_alpha(_alpha * 0.15);
-    draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _outer * 1.7, false);
+            // The separate hardpoint sprite already provides its housing.
+            socket_enabled: false,
+            middle_colour: _p.accent,
+            middle_filled: true,
 
-    draw_set_alpha(_alpha * 0.35);
-    draw_set_colour(_p.accent);
-    draw_circle(_x, _y, _outer * 1.25, false);
+            glow_alpha: 0.15,
+            glow_scale: 1.7,
+            secondary_glow_alpha: 0.35,
+            secondary_glow_scale: 1.25,
 
-    draw_set_alpha(_alpha);
+            vane_amount: 10,
+            vane_start: 0,
+            vane_twist: 14,
+            vane_inner_scale: 1,
+            vane_outer_scale: 1,
+            vane_width: 5,
+            vane_secondary_colour: _p.accent,
 
-    for (var _i = 0; _i < 10; _i++)
-    {
-        var _direction = _angle + _i * 36;
-        var _x1 = _x + lengthdir_x(_inner, _direction);
-        var _y1 = _y + lengthdir_y(_inner, _direction);
-        var _x2 = _x + lengthdir_x(_outer, _direction + 14);
-        var _y2 = _y + lengthdir_y(_outer, _direction + 14);
-
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.accent);
-        draw_line_width(_x1, _y1, _x2, _y2, 5);
-    }
-
-    draw_set_colour(_p.accent);
-    draw_circle(_x, _y, _middle, false);
-
-    draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _inner, false);
-
-    draw_set_colour(_p.core);
-    draw_circle(_x, _y, _inner * 0.42, false);
-
-    gpu_set_blendmode(bm_normal);
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
+            accent_scale: 2,
+            accent_filled: true,
+            core_scale: 0.42,
+            additive: true
+        },
+        _p,
+        _alpha
+    );
 }
 
 /// @description Creates the complete Dreadnaught destruction visual.

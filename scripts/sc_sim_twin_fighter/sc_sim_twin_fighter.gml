@@ -325,52 +325,43 @@ function sc_enemy_twin_fighter_cannon_draw(_x, _y, _radius, _angle, _visual, _al
     draw_set_alpha(1);
 }
 
-/// @description Draws the Twin Fighter's rear-set rotating mechanical energy core.
+/// @description Draws the Twin Fighter's rear-set rotating reactor.
 function sc_enemy_twin_fighter_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _p = _visual.palette;
-    var _outer = _radius * 0.32;
-    var _middle = _radius * 0.23;
-    var _inner = _radius * 0.105;
 
-    draw_set_alpha(_alpha * 0.28);
-    draw_set_colour(_p.glow);
-    draw_circle(_x, _y, _outer * 1.38, false);
+    sc_sim_visual_reactor(
+        _x, _y, _radius, _angle,
+        {
+            outer_scale: 0.32,
+            middle_scale: 0.23,
+            inner_scale: 0.105,
 
-    draw_set_alpha(_alpha);
-    draw_set_colour(_p.void);
-    draw_circle(_x, _y, _outer, false);
+            socket_enabled: true,
+            middle_colour: _p.hull_light,
+            middle_filled: false,
 
-    draw_set_colour(_p.metal);
-    draw_circle(_x, _y, _outer, true);
+            glow_alpha: 0.28,
+            glow_scale: 1.38,
+            secondary_glow_alpha: 0,
+            secondary_glow_scale: 1,
 
-    draw_set_colour(_p.hull_light);
-    draw_circle(_x, _y, _middle, true);
+            vane_amount: 6,
+            vane_start: 0,
+            vane_twist: 15,
+            vane_inner_scale: 0.7,
+            vane_outer_scale: 0.88,
+            vane_width: 2,
+            vane_secondary_colour: _p.outline,
 
-    // Rotating mechanical vanes.
-    for (var _i = 0; _i < 6; _i++)
-    {
-        var _dir = _angle + _i * 60;
-        var _x1 = _x + lengthdir_x(_inner * 0.7, _dir);
-        var _y1 = _y + lengthdir_y(_inner * 0.7, _dir);
-        var _x2 = _x + lengthdir_x(_outer * 0.88, _dir + 15);
-        var _y2 = _y + lengthdir_y(_outer * 0.88, _dir + 15);
-
-        draw_set_colour((_i mod 2) == 0 ? _p.energy : _p.outline);
-        draw_line_width(_x1, _y1, _x2, _y2, 2);
-    }
-
-    draw_set_colour(_p.accent);
-    draw_circle(_x, _y, _inner * 1.55, true);
-
-    draw_set_colour(_p.energy);
-    draw_circle(_x, _y, _inner, false);
-
-    draw_set_colour(_p.core);
-    draw_circle(_x, _y, _inner * 0.45, false);
-
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
+            accent_scale: 1.55,
+            accent_filled: false,
+            core_scale: 0.45,
+            additive: false
+        },
+        _p,
+        _alpha
+    );
 }
 
 /// @description Creates the complete Twin Fighter destruction visual.

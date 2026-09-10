@@ -188,7 +188,7 @@ function sc_weapon_register_simulant_super_beam()
 
                 geometry: {
                     length: 2400,
-                    radius: 13
+                    radius: 5
                 },
 
                 behaviour: {
@@ -204,41 +204,41 @@ function sc_weapon_register_simulant_super_beam()
                     palette: _palette,
 
                     style: {
-                        segment_length: 130,
-                        width_start: 1.18,
-                        width_end: 0.88,
+					    segment_length: 130,
+					    width_start: 1.05,
+					    width_end: 0.82,
 
-                        pulse_amount: 0.17,
-                        pulse_speed: 0.34,
-                        pulse_secondary_amount: 0.08,
-                        pulse_secondary_speed: 0.13,
+					    pulse_amount: 0.13,
+					    pulse_speed: 0.34,
+					    pulse_secondary_amount: 0.06,
+					    pulse_secondary_speed: 0.13,
 
-                        wobble_amount: 0.22,
-                        wobble_speed: 0.31,
-                        wobble_step: 0.68,
+					    wobble_amount: 0.12,
+					    wobble_speed: 0.31,
+					    wobble_step: 0.68,
 
-                        glow_width: 14,
-                        glow_alpha: 0.24,
-                        body_width: 7,
-                        body_alpha: 0.68,
-                        inner_width: 3.1,
-                        inner_alpha: 0.96,
-                        hot_width: 1.1,
-                        hot_alpha: 1,
+					    glow_width: 7,
+					    glow_alpha: 0.2,
+					    body_width: 3.2,
+					    body_alpha: 0.72,
+					    inner_width: 1.35,
+					    inner_alpha: 0.98,
+					    hot_width: 0.42,
+					    hot_alpha: 1,
 
-                        body_colour_mix: 0,
-                        inner_colour_mix: 0,
-                        hot_colour_mix: 0,
+					    body_colour_mix: 0,
+					    inner_colour_mix: 0,
+					    hot_colour_mix: 0,
 
-                        band_spacing: 145,
-                        band_length: 30,
-                        band_speed: 10,
-                        band_width: 0.45,
-                        band_alpha: 0.48,
+					    band_spacing: 145,
+					    band_length: 24,
+					    band_speed: 10,
+					    band_width: 0.22,
+					    band_alpha: 0.42,
 
-                        source_flare_radius: 1.45,
-                        source_flare_alpha: 1
-                    },
+					    source_flare_radius: 1.05,
+					    source_flare_alpha: 1
+					},
 
                     impact: {
                         overlap_ratio: 0.3,

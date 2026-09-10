@@ -1,0 +1,307 @@
+ASTEROID / WORLD GENERATION IDEAS
+
+ASTEROID FIELD ARCHETYPES
+
+- Lone Asteroids
+  Very uncommon isolated asteroid groups. Usually 1, 2, 3 or 5 asteroids with lots of empty surrounding space.
+
+- Small Dense Field
+  Compact field with many closely packed asteroids. Strong navigation/combat obstacle.
+
+- Large Sparse Field
+  Broad regional formation with lots of open space, but should still contain local clusters so asteroid slowdown/navigation mechanics remain relevant.
+
+- Mixed Scatter
+  Loose irregular collection with no strong central density.
+
+- Dense Core Field
+  Sparse outer edge, becoming progressively denser toward the centre.
+
+- Ring Field
+  Hollow centre with asteroids distributed around a broad circular or elliptical perimeter.
+
+- Crescent Field
+  Curved partial-ring formation that creates a natural open flank.
+
+- Broken Belt
+  Long stretched asteroid band with gaps, breaks and uneven density.
+
+- Twin Cluster
+  Two major asteroid concentrations separated by open space.
+
+- Archipelago Field
+  Large overall region made from multiple dense asteroid islands with open space between them.
+
+- Giant Anchor Field
+  One to three HUGE asteroids acting as anchors, surrounded by groups of smaller rocks.
+
+- Fragment Cloud
+  Lots of small asteroids surrounding one or more larger broken bodies.
+
+- Asteroid Chain
+  Long string or snaking sequence of asteroid groups, potentially crossing a sector diagonally.
+
+- Fractured Field
+  Several medium sub-clusters with clear navigable lanes between them.
+
+- Resource Vein
+  A narrow path or band through a normal field containing a strongly biased ore composition.
+
+- Rich Pocket Field
+  Normal asteroid field containing one or more small high-value mineral concentrations.
+
+- Mined-Out Field
+  Mostly ordinary rock and debris, with very low valuable-resource density.
+
+
+FIELD COMPOSITION / NESTING
+
+Fields should support reusable subformations so generation can mix and match rather than hardcoding every possible field.
+
+Example:
+
+LARGE SPARSE FIELD
+- loose background asteroid population
+- 2-5 small local clusters
+- optional SMALL DENSE pockets
+- rare rich mineral pocket
+- possible HUGE anchor asteroid
+
+This keeps the field macro-sparse while still producing meaningful local terrain.
+
+Possible optional subfeatures:
+- dense pocket
+- ore-rich pocket
+- huge asteroid anchor
+- rubble cloud
+- hollow clearing
+- narrow travel lane
+- small ring
+- rare lone valuable asteroid
+
+
+GENERATION VARIABLES
+
+Useful independent controls:
+- overall field radius
+- asteroid amount
+- local density
+- minimum spacing
+- asteroid size weighting
+- material weighting
+- field aspect ratio
+- rotation / orientation
+- radial distribution
+- irregularity
+- number of lobes
+- number of sub-pockets
+- sub-pocket chance
+- pocket radius
+- pocket distance from field centre
+- pocket composition
+- empty-space bias
+
+Potential field shapes:
+- circle
+- ellipse
+- long band
+- ring
+- crescent
+- wedge
+- arc
+- diagonal lane
+- hook
+- S-curve
+- multi-lobed organic blob
+
+
+LARGE + SPARSE DESIGN NOTE
+
+Large Sparse should not simply mean an enormous radius containing a low asteroid count. That can create gaps so huge that asteroid navigation and enemy slowdown mechanics barely matter.
+
+Better identity:
+- broad regional area
+- lots of open travel space
+- locally clustered asteroids
+- several navigational choke areas
+- optional dense pockets
+
+Large Sparse should feel open on the macro scale but still contain interesting terrain on the local scale.
+
+Avoid solving this only by adding hundreds more asteroids. Prefer deliberate clustering and smaller local formations.
+
+
+ASTEROID MATERIAL / RESOURCE IDEAS
+
+Current/general industrial-style resources can be mixed with rarer exotic deposits.
+
+Normal resource ideas:
+- Rock
+- Iron Ore
+- Copper Ore
+- Carbon Ore
+- Silicate Deposit
+- Titanium Ore
+- Sulfur Deposit
+- Nickel Ore
+- Cobalt Ore
+- Tungsten Ore
+- Lithium Deposit
+- Ice
+- Resonant Crystal Deposit
+
+Possible exotic resources later:
+- Phase Crystal
+- Voidstone
+- Plasma Quartz
+- Xenolith
+- Simulant Core Shard
+- Alien Organic Chitin
+
+Ordinary Rock should probably make up a large percentage of many natural fields so valuable ore-bearing asteroids stand out as deposits among common stone rather than every asteroid being valuable.
+
+
+NON-ASTEROID WORLD GENERATION
+
+- Dust Clouds
+  Large soft visual regions that add atmosphere and could later reduce visibility or sensor range.
+
+- Nebula Patches
+  Coloured environmental zones with different visual identities and potential future gameplay effects.
+
+- Ionized Zones
+  Flickering electrical regions with arcs, particles and possible future shield/sensor interference.
+
+- Gas Clouds
+  Large drifting-looking clouds or pockets. Could eventually interact with weapons or engines.
+
+- Micro-Debris Fields
+  Tiny decorative fragments that create visual density without needing collision.
+
+- Wreckage Fields
+  Broken ship hulls, panels, pipes, engines and cargo debris distributed procedurally.
+
+- Ice Expanse
+  Region dominated by ice bodies and frozen fragments, with relatively few metals.
+
+- Crystal Region
+  Rare area with unusually high crystal concentration and distinct environmental visuals.
+
+- Radiation Zone
+  Mostly atmospheric initially, potentially affecting shields or equipment later.
+
+- Magnetic Anomaly
+  Debris arranged into strange arcs/rings or suspended-looking patterns.
+
+- Gravity Anomaly
+  Strange spatial feature that could eventually alter movement or projectile trajectories.
+
+- Meteor Stream
+  Narrow directional stream of small asteroid bodies crossing a sector.
+
+- Comet Trail
+  Long icy debris trail cutting across otherwise empty space.
+
+- Empty Void Pocket
+  Deliberately generated large empty areas inside otherwise active regions.
+
+- Orbital Rubble
+  Ring-like debris distribution suggesting an unseen or distant planetary body.
+
+
+REGIONAL / MULTI-SECTOR GENERATION
+
+Instead of every sector being generated completely independently, generate larger eastward regions spanning several sectors.
+
+Possible region types:
+
+- Void Zone
+  3-5 or more sectors with almost no asteroids, resources or structures. Long-range scanner warns player before entry so they can fuel, repair and prepare.
+
+- Rich Belt
+  Several sectors with unusually high asteroid/resource density.
+
+- Shattered Region
+  Many small asteroid fields, rubble pockets and broken belts.
+
+- Ice Expanse
+  Several sectors biased heavily toward ice and volatile materials.
+
+- Crystal Region
+  Rare stretch with increased exotic/crystalline resources.
+
+- Dead Industrial Corridor
+  Mostly debris, exhausted rock fields and abandoned-looking space.
+
+- Dust Sea
+  Multiple sectors containing heavy ambient dust/nebula terrain.
+
+- Fracture Zone
+  Many isolated dense pockets separated by broad empty lanes.
+
+
+LONG-RANGE SCANNER EVENTS
+
+Regional generation can create scanner warnings before the player crosses east into unusual territory.
+
+Examples:
+
+LONG-RANGE SCAN
+No significant asteroid density, industrial signatures or recoverable material detected ahead.
+Estimated void span: 3-5 sectors.
+Resupply before proceeding.
+
+Other scanner messages:
+- DENSE MASS SIGNATURES DETECTED
+- INTERMITTENT ENERGY REFLECTIONS DETECTED
+- HIGH MINERAL CONCENTRATION AHEAD
+- NAVIGATION HAZARD: DENSE DEBRIS REGION
+- NO RETURNS DETECTED BEYOND NAVIGATION LIMIT
+
+Scanner upgrades could later improve the detail shown:
+- estimated region length
+- asteroid density
+- dominant resources
+- hazard level
+- anomalous signatures
+- unknown signals
+
+
+LAYERED SECTOR GENERATION IDEA
+
+Each sector can roll several independent generation layers instead of selecting one complete preset.
+
+Example:
+
+PRIMARY TERRAIN
+Large Sparse Asteroid Field
+
+SECONDARY TERRAIN
+2 Dense Ore Pockets
+
+AMBIENT
+Light Dust Cloud
+
+SPECIAL FEATURE
+Broken Wreckage Belt
+
+REGIONAL MODIFIER
+Void-adjacent / mineral-rich / fractured / etc.
+
+This creates lots of combinations without needing hundreds of authored sector presets.
+
+
+SMALL EXTRA IDEAS
+
+- Asteroid shadows or faint local dust halos around very dense groups.
+- Rare gigantic inert rock that contains little resource but acts as a navigation landmark.
+- Ore colour concentrated in cracks/veins rather than colouring the whole asteroid strongly.
+- Fields whose density visibly increases in one direction.
+- Rare perfectly clear corridor through a dense asteroid field.
+- Tiny satellite-rock groups orbiting visually around HUGE asteroids.
+- Resource pockets biased toward one ore but never guaranteed pure.
+- Certain field shapes more common near specific regional types.
+- Sector seed should make generated terrain reproducible for saves/debugging.
+- Scanner map could eventually display rough asteroid-density blobs before the player physically reaches them.
+- Large fields could have named/generated subzones internally for navigation and encounters later.
+- Empty sectors should sometimes remain genuinely empty so dense/resource-rich regions feel more meaningful.
