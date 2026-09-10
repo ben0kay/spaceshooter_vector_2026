@@ -1,3 +1,10 @@
+/*
+PROCEDURAL SPACE BACKGROUND
+
+Creates baked star tiles, places visual-only background nebulas and draws
+the navigation grid. Nebula construction lives inside sc_nebulae.
+*/
+
 /// @description Returns a deterministic value from 0–1 without affecting gameplay RNG.
 function sc_space_hash(_value)
 {
@@ -8,10 +15,14 @@ function sc_space_hash(_value)
 function sc_space_star_sprite_create(_size, _count, _seed, _radius_min, _radius_max, _colour, _bright_chance)
 {
     var _surface = surface_create(_size, _size);
+
+    if (!surface_exists(_surface))
+        return -1;
+
     surface_set_target(_surface);
     draw_clear_alpha(c_black, 0);
 
-    for (var _i = 0; _i < _count; _i++)
+    for (var _i = 0; _i < _count; ++_i)
     {
         var _x = sc_space_hash(_seed + _i * 11.17) * _size;
         var _y = sc_space_hash(_seed + _i * 37.91) * _size;
@@ -35,67 +46,22 @@ function sc_space_star_sprite_create(_size, _count, _seed, _radius_min, _radius_
     draw_set_colour(c_white);
     surface_reset_target();
 
-    var _sprite = sprite_create_from_surface(_surface, 0, 0, _size, _size, false, false, 0, 0);
+    var _sprite = sprite_create_from_surface(
+        _surface,
+        0, 0,
+        _size, _size,
+        false, false,
+        0, 0
+    );
+
     surface_free(_surface);
     return _sprite;
 }
-
 
 /// @description Creates one complete procedural combat-space background.
 function sc_space_background_create()
 {
     var _tile_size = 1024;
-
-    var _violet_visual = {
-        canvas_size: 1024,
-        seed: 401,
-
-        colour_dark: make_colour_rgb(10, 5, 34),
-        colour_primary: make_colour_rgb(57, 25, 145),
-        colour_secondary: make_colour_rgb(205, 45, 190),
-        colour_highlight: make_colour_rgb(95, 120, 255),
-        colour_core: make_colour_rgb(225, 235, 255),
-
-        body_amount: 75,
-        wisp_arms: 8,
-        wisp_points: 13,
-        glow_amount: 30,
-        core_amount: 7
-    };
-
-    var _crimson_visual = {
-        canvas_size: 1024,
-        seed: 502,
-
-        colour_dark: make_colour_rgb(32, 4, 25),
-        colour_primary: make_colour_rgb(130, 18, 70),
-        colour_secondary: make_colour_rgb(235, 38, 105),
-        colour_highlight: make_colour_rgb(255, 110, 170),
-        colour_core: make_colour_rgb(255, 225, 235),
-
-        body_amount: 78,
-        wisp_arms: 9,
-        wisp_points: 14,
-        glow_amount: 32,
-        core_amount: 8
-    };
-
-    var _cyan_visual = {
-        canvas_size: 1024,
-        seed: 603,
-
-        colour_dark: make_colour_rgb(3, 23, 38),
-        colour_primary: make_colour_rgb(10, 85, 130),
-        colour_secondary: make_colour_rgb(20, 195, 205),
-        colour_highlight: make_colour_rgb(80, 145, 255),
-        colour_core: make_colour_rgb(220, 250, 255),
-
-        body_amount: 72,
-        wisp_arms: 8,
-        wisp_points: 14,
-        glow_amount: 29,
-        core_amount: 6
-    };
 
     return {
         tile_size: _tile_size,
@@ -144,49 +110,73 @@ function sc_space_background_create()
             }
         },
 
-        // Purely visual background artwork, positioned in world space.
+        // Large visual landmarks distributed throughout the sector.
         nebulas: [
-            {
-                sprite: sc_space_nebula_sprite_create(_violet_visual),
-                canvas_size: _violet_visual.canvas_size,
+            sc_space_nebula_create(
+                "violet_storm",
+                401,
+                room_width * 0.19,
+                room_height * 0.18,
+                room_width * 0.13,
+                room_height * 0.095,
+                -18,
+                0.7
+            ),
 
-                x: room_width * 0.23,
-                y: room_height * 0.22,
-                radius_x: room_width * 0.17,
-                radius_y: room_height * 0.12,
+            sc_space_nebula_create(
+                "crimson_rift",
+                502,
+                room_width * 0.73,
+                room_height * 0.2,
+                room_width * 0.155,
+                room_height * 0.075,
+                27,
+                0.68
+            ),
 
-                angle: -16,
-                alpha: 0.72,
-                phase: 37
-            },
+            sc_space_nebula_create(
+                "cyan_veil",
+                603,
+                room_width * 0.48,
+                room_height * 0.43,
+                room_width * 0.17,
+                room_height * 0.105,
+                -31,
+                0.62
+            ),
 
-            {
-                sprite: sc_space_nebula_sprite_create(_crimson_visual),
-                canvas_size: _crimson_visual.canvas_size,
+            sc_space_nebula_create(
+                "azure_tempest",
+                704,
+                room_width * 0.82,
+                room_height * 0.67,
+                room_width * 0.135,
+                room_height * 0.115,
+                14,
+                0.68
+            ),
 
-                x: room_width * 0.76,
-                y: room_height * 0.37,
-                radius_x: room_width * 0.2,
-                radius_y: room_height * 0.14,
+            sc_space_nebula_create(
+                "solar_bloom",
+                805,
+                room_width * 0.27,
+                room_height * 0.75,
+                room_width * 0.12,
+                room_height * 0.11,
+                -9,
+                0.64
+            ),
 
-                angle: 23,
-                alpha: 0.68,
-                phase: 151
-            },
-
-            {
-                sprite: sc_space_nebula_sprite_create(_cyan_visual),
-                canvas_size: _cyan_visual.canvas_size,
-
-                x: room_width * 0.48,
-                y: room_height * 0.79,
-                radius_x: room_width * 0.19,
-                radius_y: room_height * 0.13,
-
-                angle: -31,
-                alpha: 0.64,
-                phase: 263
-            }
+            sc_space_nebula_create(
+                "ghost_cloud",
+                906,
+                room_width * 0.58,
+                room_height * 0.89,
+                room_width * 0.18,
+                room_height * 0.085,
+                38,
+                0.5
+            )
         ],
 
         grid: {
@@ -212,7 +202,19 @@ function sc_space_star_layer_draw(_layer, _tile_size, _camera_x, _camera_y, _vie
     for (var _x = _start_x; _x <= _end_x; _x += _tile_size)
     {
         for (var _y = _start_y; _y <= _end_y; _y += _tile_size)
-            draw_sprite_ext(_layer.sprite, 0, _x, _y, 1, 1, 0, c_white, _layer.alpha);
+        {
+            draw_sprite_ext(
+                _layer.sprite,
+                0,
+                _x,
+                _y,
+                1,
+                1,
+                0,
+                c_white,
+                _layer.alpha
+            );
+        }
     }
 }
 
@@ -254,39 +256,7 @@ function sc_space_background_draw(_field)
     var _view_w = camera_get_view_width(_camera);
     var _view_h = camera_get_view_height(_camera);
 
-    for (var _i = 0; _i < array_length(_field.nebulas); _i++)
-    {
-        var _nebula = _field.nebulas[_i];
-        draw_sprite_ext(_nebula.sprite, 0, _nebula.x, _nebula.y, _nebula.scale_x, _nebula.scale_y, _nebula.angle, c_white, _nebula.alpha);
-    }
-
-    sc_space_star_layer_draw(_field.stars.far, _field.tile_size, _camera_x, _camera_y, _view_w, _view_h);
-    sc_space_grid_draw(_field.grid, _camera_x, _camera_y, _view_w, _view_h);
-    sc_space_star_layer_draw(_field.stars.middle, _field.tile_size, _camera_x, _camera_y, _view_w, _view_h);
-    sc_space_star_layer_draw(_field.stars.near, _field.tile_size, _camera_x, _camera_y, _view_w, _view_h);
-}
-
-/// @description Deletes runtime-generated background sprites.
-function sc_space_background_destroy(_field)
-{
-    sprite_delete(_field.stars.far.sprite);
-    sprite_delete(_field.stars.middle.sprite);
-    sprite_delete(_field.stars.near.sprite);
-
-    for (var _i = 0; _i < array_length(_field.nebulas); _i++)
-        sprite_delete(_field.nebulas[_i].sprite);
-}
-
-
-/// @description Draws the procedural space background.
-function sc_space_background_draw(_field)
-{
-    var _camera = view_camera[0];
-    var _camera_x = camera_get_view_x(_camera);
-    var _camera_y = camera_get_view_y(_camera);
-    var _view_w = camera_get_view_width(_camera);
-    var _view_h = camera_get_view_height(_camera);
-
+    // Nebulas sit behind every star and grid layer.
     for (var _i = 0; _i < array_length(_field.nebulas); ++_i)
     {
         sc_space_nebula_draw(
@@ -336,4 +306,23 @@ function sc_space_background_draw(_field)
     draw_set_alpha(1);
     draw_set_colour(c_white);
     gpu_set_blendmode(bm_normal);
+}
+
+/// @description Deletes runtime-generated background sprites.
+function sc_space_background_destroy(_field)
+{
+    if (sprite_exists(_field.stars.far.sprite))
+        sprite_delete(_field.stars.far.sprite);
+
+    if (sprite_exists(_field.stars.middle.sprite))
+        sprite_delete(_field.stars.middle.sprite);
+
+    if (sprite_exists(_field.stars.near.sprite))
+        sprite_delete(_field.stars.near.sprite);
+
+    for (var _i = 0; _i < array_length(_field.nebulas); ++_i)
+    {
+        if (sprite_exists(_field.nebulas[_i].sprite))
+            sprite_delete(_field.nebulas[_i].sprite);
+    }
 }
