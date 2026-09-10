@@ -40,7 +40,6 @@ function sc_gas_cloud_register_all()
             type: EnvironmentFieldType.GAS
         },
 
-        // These values remain unused until interference is connected.
         interference: {
             detection_multiplier: 0.55,
             targeting_multiplier: 0.75,
@@ -59,15 +58,34 @@ function sc_gas_cloud_register_all()
             body_amount: 72,
             wisp_amount: 26,
 
-            alpha_min: 0.32,
-            alpha_max: 0.7,
+            alpha_min: 0.25,
+            alpha_max: 0.62,
 
-            layer_scale_inner: 0.9,
-            layer_scale_middle: 1.02,
+            // Four differently seeded versions prevent visible repetition.
+            sprite_variants: 4,
 
-            drift_amount: 0.055,
+            // Overlapping world-cloud layers provide continuous coverage.
+            patch_spacing_sparse: 1850,
+            patch_spacing_dense: 1350,
+            patch_size_min: 2800,
+            patch_size_max: 4200,
+            patch_aspect_min: 0.72,
+            patch_aspect_max: 1.28,
+
+            formation_chance_min: 0.08,
+            formation_chance_max: 0.28,
+            formation_scale: 1.35,
+
+            field_haze_alpha_min: 0.035,
+            field_haze_alpha_max: 0.11,
+
+            player_haze_size: 2400,
+            player_haze_alpha_min: 0.018,
+            player_haze_alpha_max: 0.065,
+
+            drift_amount: 0.035,
             drift_speed: 0.012,
-            pulse_amount: 0.045,
+            pulse_amount: 0.035,
             pulse_speed: 0.01
         }
     }))
@@ -76,48 +94,121 @@ function sc_gas_cloud_register_all()
     return true;
 }
 
-/// @description Generates visual patches throughout one environmental field.
-function sc_gas_cloud_patches_create(_seed, _amount)
+/// @description Creates overlapping cloud layers throughout one gas ellipse.
+function sc_gas_cloud_patches_create(_seed, _radius_x, _radius_y, _density, _visual, _variant_amount)
 {
     var _patches = [];
+    var _spacing = lerp(
+        _visual.patch_spacing_sparse,
+        _visual.patch_spacing_dense,
+        _density
+    );
 
-    for (var _i = 0; _i < _amount; ++_i)
+    var _columns = ceil((_radius_x * 2) / _spacing);
+    var _rows = ceil((_radius_y * 2) / _spacing);
+    var _start_x = -_columns * _spacing * 0.5;
+    var _start_y = -_rows * _spacing * 0.5;
+    var _index = 0;
+
+    for (var _column = 0; _column <= _columns; ++_column)
     {
-        var _direction = sc_space_hash(_seed + _i * 19.31) * 360;
-        var _distance = power(
-            sc_space_hash(_seed + _i * 43.77),
-            0.72
-        ) * 0.72;
+        for (var _row = 0; _row <= _rows; ++_row)
+        {
+            var _local_x = _start_x + _column * _spacing;
+            var _local_y = _start_y + _row * _spacing;
 
-        array_push(
-            _patches,
+            // Offset alternate rows to prevent obvious square placement.
+            if (_row mod 2 == 1)
+                _local_x += _spacing * 0.5;
+
+            var _jitter_x = lerp(
+                -_spacing * 0.27,
+                _spacing * 0.27,
+                sc_space_hash(_seed + _index * 19.31)
+            );
+
+            var _jitter_y = lerp(
+                -_spacing * 0.27,
+                _spacing * 0.27,
+                sc_space_hash(_seed + _index * 43.77)
+            );
+
+            _local_x += _jitter_x;
+            _local_y += _jitter_y;
+
+            var _normalized_x = _local_x / max(1, _radius_x);
+            var _normalized_y = _local_y / max(1, _radius_y);
+            var _distance_sq = _normalized_x * _normalized_x
+                + _normalized_y * _normalized_y;
+
+            // Slightly exceed the logical boundary to avoid a hard visual edge.
+            if (_distance_sq <= 1.08)
             {
-                local_x: lengthdir_x(_distance, _direction),
-                local_y: lengthdir_y(_distance, _direction),
+                var _formation_chance = lerp(
+                    _visual.formation_chance_min,
+                    _visual.formation_chance_max,
+                    _density
+                );
 
-                scale_x: lerp(
-                    0.14,
-                    0.27,
-                    sc_space_hash(_seed + _i * 67.93)
-                ),
+                var _formation = sc_space_hash(
+                    _seed + _index * 67.93
+                ) <= _formation_chance;
 
-                scale_y: lerp(
-                    0.16,
-                    0.31,
-                    sc_space_hash(_seed + _i * 89.17)
-                ),
+                var _size = lerp(
+                    _visual.patch_size_min,
+                    _visual.patch_size_max,
+                    sc_space_hash(_seed + _index * 89.17)
+                );
 
-                angle: sc_space_hash(_seed + _i * 103.41) * 360,
+                if (_formation)
+                    _size *= _visual.formation_scale;
 
-                alpha: lerp(
-                    0.52,
-                    1,
-                    sc_space_hash(_seed + _i * 127.59)
-                ),
+                var _aspect = lerp(
+                    _visual.patch_aspect_min,
+                    _visual.patch_aspect_max,
+                    sc_space_hash(_seed + _index * 103.41)
+                );
 
-                phase: sc_space_hash(_seed + _i * 149.83) * 360
+                var _variant = clamp(
+                    floor(
+                        sc_space_hash(_seed + _index * 127.59)
+                        * _variant_amount
+                    ),
+                    0,
+                    _variant_amount - 1
+                );
+
+                array_push(
+                    _patches,
+                    {
+                        local_x: _local_x,
+                        local_y: _local_y,
+
+                        width: _size * _aspect,
+                        height: _size / _aspect,
+
+                        angle: sc_space_hash(
+                            _seed + _index * 149.83
+                        ) * 360,
+
+                        alpha: lerp(
+                            0.48,
+                            0.9,
+                            sc_space_hash(_seed + _index * 173.17)
+                        ),
+
+                        variant: _variant,
+                        formation: _formation,
+
+                        phase: sc_space_hash(
+                            _seed + _index * 191.53
+                        ) * 360
+                    }
+                );
             }
-        );
+
+            ++_index;
+        }
     }
 
     return _patches;
@@ -142,7 +233,9 @@ function sc_environment_field_init(_field, _create)
         _create.key
     );
 
-    var _cache = sc_environment_field_visual_cache_get(_create.key);
+    var _cache = sc_environment_field_visual_cache_get(
+        _create.key
+    );
 
     if (!is_struct(_cache))
     {
@@ -153,19 +246,15 @@ function sc_environment_field_init(_field, _create)
         return false;
     }
 
+    var _radius_x = max(64, _create.radius_x);
+    var _radius_y = max(64, _create.radius_y);
+    var _density = clamp(_create.density, 0, 1);
+
     var _phase = variable_struct_exists(_create, "phase")
         ? _create.phase
         : random(360);
 
-    var _patch_amount = clamp(
-        round(
-            10
-            + max(_create.radius_x, _create.radius_y) / 2500
-            + _create.density * 5
-        ),
-        12,
-        22
-    );
+    var _variant_amount = array_length(_cache.sprites);
 
     _field.environment_field = {
         key: _create.key,
@@ -173,26 +262,32 @@ function sc_environment_field_init(_field, _create)
         interference: variable_clone(_definition.interference),
         visual: variable_clone(_definition.visual),
 
-        radius_x: max(64, _create.radius_x),
-        radius_y: max(64, _create.radius_y),
+        radius_x: _radius_x,
+        radius_y: _radius_y,
+
         angle: variable_struct_exists(_create, "angle")
             ? _create.angle
             : 0,
 
-        density: clamp(_create.density, 0, 1),
+        density: _density,
 
         runtime: {
-            sprite: _cache.sprite,
+            sprites: _cache.sprites,
             canvas_size: _cache.canvas_size,
             phase: _phase,
 
             patches: sc_gas_cloud_patches_create(
                 _definition.visual.seed + _phase * 17.31,
-                _patch_amount
+                _radius_x,
+                _radius_y,
+                _density,
+                _definition.visual,
+                _variant_amount
             )
         }
     };
 
+    // Gas remains above ships very faintly so they appear inside it.
     _field.depth = 20;
     _field.initialized = true;
     return true;
@@ -236,7 +331,7 @@ function sc_environment_field_visible(_field)
         && _field.y - _padding <= _camera_y + _view_h;
 }
 
-/// @description Returns whether one gas-cloud patch overlaps the camera.
+/// @description Returns whether one gas element overlaps the camera.
 function sc_gas_cloud_patch_visible(_x, _y, _radius)
 {
     var _camera = view_camera[0];
@@ -251,7 +346,112 @@ function sc_gas_cloud_patch_visible(_x, _y, _radius)
         && _y - _radius <= _camera_y + _view_h;
 }
 
-/// @description Draws one visible gas field as several smaller cloud patches.
+/// @description Returns normalized elliptical distance from a point to a field.
+function sc_environment_field_distance_get(_field, _x, _y)
+{
+    var _data = _field.environment_field;
+    var _direction = point_direction(_field.x, _field.y, _x, _y);
+    var _distance = point_distance(_field.x, _field.y, _x, _y);
+    var _local_angle = _direction - _data.angle;
+
+    var _local_x = lengthdir_x(_distance, _local_angle);
+    var _local_y = lengthdir_y(_distance, _local_angle);
+
+    var _normalized_x = _local_x / max(1, _data.radius_x);
+    var _normalized_y = _local_y / max(1, _data.radius_y);
+
+    return sqrt(
+        _normalized_x * _normalized_x
+        + _normalized_y * _normalized_y
+    );
+}
+
+/// @description Draws the faint haze covering the complete gas ellipse.
+function sc_gas_cloud_field_haze_draw(_field, _alpha)
+{
+    var _data = _field.environment_field;
+    var _visual = _data.visual;
+    var _sprite = s_particle_blur_1024;
+
+    var _scale_x = (_data.radius_x * 2.1)
+        / max(1, sprite_get_width(_sprite));
+
+    var _scale_y = (_data.radius_y * 2.1)
+        / max(1, sprite_get_height(_sprite));
+
+    draw_sprite_ext(
+        _sprite,
+        0,
+        _field.x,
+        _field.y,
+        _scale_x,
+        _scale_y,
+        _data.angle,
+        _visual.colour_dark,
+        _alpha
+    );
+
+    gpu_set_blendmode(bm_add);
+
+    draw_sprite_ext(
+        _sprite,
+        0,
+        _field.x,
+        _field.y,
+        _scale_x * 0.86,
+        _scale_y * 0.86,
+        _data.angle + 17,
+        _visual.colour_mid,
+        _alpha * 0.42
+    );
+
+    gpu_set_blendmode(bm_normal);
+}
+
+/// @description Draws subtle local haze over the player while inside gas.
+function sc_gas_cloud_player_haze_draw(_field)
+{
+    if (!instance_exists(global.player_id))
+        return;
+
+    var _distance = sc_environment_field_distance_get(
+        _field,
+        global.player_id.x,
+        global.player_id.y
+    );
+
+    if (_distance >= 1)
+        return;
+
+    var _data = _field.environment_field;
+    var _visual = _data.visual;
+
+    // Fade smoothly after crossing the gas boundary.
+    var _inside = clamp((1 - _distance) * 4, 0, 1);
+
+    var _alpha = lerp(
+        _visual.player_haze_alpha_min,
+        _visual.player_haze_alpha_max,
+        _data.density
+    ) * _inside;
+
+    var _size = _visual.player_haze_size;
+    var _sprite = s_particle_blur_1024;
+
+    draw_sprite_ext(
+        _sprite,
+        0,
+        global.player_id.x,
+        global.player_id.y,
+        _size / max(1, sprite_get_width(_sprite)),
+        _size / max(1, sprite_get_height(_sprite)),
+        current_time * 0.001,
+        _visual.colour_mid,
+        _alpha
+    );
+}
+
+/// @description Draws one gas field with continuous overlapping cloud coverage.
 function sc_gas_cloud_draw(_field)
 {
     if (!sc_environment_field_visible(_field))
@@ -262,7 +462,13 @@ function sc_gas_cloud_draw(_field)
     var _runtime = _data.runtime;
     var _patches = _runtime.patches;
 
-    var _alpha = lerp(
+    var _field_alpha = lerp(
+        _visual.field_haze_alpha_min,
+        _visual.field_haze_alpha_max,
+        _data.density
+    );
+
+    var _cloud_alpha = lerp(
         _visual.alpha_min,
         _visual.alpha_max,
         _data.density
@@ -270,31 +476,39 @@ function sc_gas_cloud_draw(_field)
 
     var _time = current_time * _visual.drift_speed;
 
+    // Guarantees that the environmental ellipse never looks empty.
+    sc_gas_cloud_field_haze_draw(
+        _field,
+        _field_alpha
+    );
+
     for (var _i = 0; _i < array_length(_patches); ++_i)
     {
         var _patch = _patches[_i];
 
-        // Convert the patch's normalized local position through field rotation.
-        var _local_x = _patch.local_x * _data.radius_x;
-        var _local_y = _patch.local_y * _data.radius_y;
-
+        // Rotate the locally positioned cloud with the full field.
         var _x = _field.x
-            + lengthdir_x(_local_x, _data.angle)
-            + lengthdir_x(_local_y, _data.angle + 90);
+            + lengthdir_x(_patch.local_x, _data.angle)
+            + lengthdir_x(_patch.local_y, _data.angle + 90);
 
         var _y = _field.y
-            + lengthdir_y(_local_x, _data.angle)
-            + lengthdir_y(_local_y, _data.angle + 90);
+            + lengthdir_y(_patch.local_x, _data.angle)
+            + lengthdir_y(_patch.local_y, _data.angle + 90);
 
-        // Every patch drifts slightly without moving its gameplay field.
-        _x += dcos(_patch.phase + _time) * _data.radius_x * 0.012;
-        _y += dsin(_patch.phase + _time) * _data.radius_y * 0.012;
+        _x += dcos(_patch.phase + _time)
+            * _visual.drift_amount
+            * 100;
 
-        var _patch_width = _data.radius_x * 2 * _patch.scale_x;
-        var _patch_height = _data.radius_y * 2 * _patch.scale_y;
-        var _patch_radius = max(_patch_width, _patch_height) * 0.6;
+        _y += dsin(_patch.phase + _time)
+            * _visual.drift_amount
+            * 100;
 
-        if (!sc_gas_cloud_patch_visible(_x, _y, _patch_radius))
+        var _radius = max(
+            _patch.width,
+            _patch.height
+        ) * 0.6;
+
+        if (!sc_gas_cloud_patch_visible(_x, _y, _radius))
             continue;
 
         var _pulse = 1 + dsin(
@@ -302,18 +516,26 @@ function sc_gas_cloud_draw(_field)
             + _patch.phase
         ) * _visual.pulse_amount;
 
+        var _alpha = _cloud_alpha * _patch.alpha;
+
+        if (_patch.formation)
+            _alpha = min(1, _alpha * 1.12);
+
         draw_sprite_ext(
-            _runtime.sprite,
+            _runtime.sprites[_patch.variant],
             0,
             _x,
             _y,
-            (_patch_width / _runtime.canvas_size) * _pulse,
-            _patch_height / _runtime.canvas_size,
+            (_patch.width / _runtime.canvas_size) * _pulse,
+            _patch.height / _runtime.canvas_size,
             _data.angle + _patch.angle,
             c_white,
-            _alpha * _patch.alpha
+            _alpha
         );
     }
+
+    // Very faint foreground layer confirms that the player is inside gas.
+    sc_gas_cloud_player_haze_draw(_field);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

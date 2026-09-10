@@ -185,12 +185,14 @@ function sc_gas_cloud_sprite_create(_visual)
     return _sprite;
 }
 
-/// @description Bakes every registered environmental-field visual once.
+/// @description Bakes several visual variations for every environment field.
 function sc_environment_field_visual_cache_init()
 {
     global.environment_field_visual_cache = {};
 
-    var _keys = variable_struct_get_names(global.data.environment_fields);
+    var _keys = variable_struct_get_names(
+        global.data.environment_fields
+    );
 
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
@@ -200,22 +202,50 @@ function sc_environment_field_visual_cache_init()
             _key
         );
 
-        var _sprite = sc_gas_cloud_sprite_create(_definition.visual);
+        var _variant_amount = max(
+            1,
+            round(_definition.visual.sprite_variants)
+        );
 
-        if (_sprite == -1)
+        var _sprites = array_create(_variant_amount, -1);
+
+        for (var _variant = 0;
+        _variant < _variant_amount;
+        ++_variant)
         {
-            show_debug_message(
-                "ENVIRONMENT FIELD BAKE ERROR - " + _key
+            var _variant_visual = variable_clone(
+                _definition.visual
             );
 
-            return false;
+            _variant_visual.seed = _definition.visual.seed
+                + _variant * 1049;
+
+            var _sprite = sc_gas_cloud_sprite_create(
+                _variant_visual
+            );
+
+            if (!sprite_exists(_sprite))
+            {
+                sc_environment_field_visual_cache_destroy();
+
+                show_debug_message(
+                    "ENVIRONMENT FIELD BAKE ERROR - "
+                    + _key
+                    + " VARIANT "
+                    + string(_variant)
+                );
+
+                return false;
+            }
+
+            _sprites[_variant] = _sprite;
         }
 
         variable_struct_set(
             global.environment_field_visual_cache,
             _key,
             {
-                sprite: _sprite,
+                sprites: _sprites,
                 canvas_size: _definition.visual.canvas_size
             }
         );
@@ -224,7 +254,7 @@ function sc_environment_field_visual_cache_init()
     return true;
 }
 
-/// @description Returns one baked environmental-field visual.
+/// @description Returns one baked environmental-field visual cache.
 function sc_environment_field_visual_cache_get(_key)
 {
     if (!variable_struct_exists(
@@ -256,8 +286,18 @@ function sc_environment_field_visual_cache_destroy()
             _keys[_i]
         );
 
-        if (is_struct(_cache) && sprite_exists(_cache.sprite))
-            sprite_delete(_cache.sprite);
+        if (!is_struct(_cache))
+            continue;
+
+        for (var _variant = 0;
+        _variant < array_length(_cache.sprites);
+        ++_variant)
+        {
+            var _sprite = _cache.sprites[_variant];
+
+            if (sprite_exists(_sprite))
+                sprite_delete(_sprite);
+        }
     }
 
     global.environment_field_visual_cache = {};

@@ -32,20 +32,6 @@ Add a debug population system for the 65,000-pixel campaign sector:
 
 Keep `F1` for spawning specific enemies near the player. Use a separate debug control or configuration for full-sector population.
 
-3. NEW SIMULANT SUPERHEAVY
-
-Design and implement a new `SUPERHEAVY` Simulant enemy:
-
-* New baked primitive ship design
-* Simulant-specific movement and combat behaviour
-* New weapon family
-* New projectile type or delivery behaviour
-* Appropriate armour, hull, threat value and detection ranges
-* Distinctive telegraphing and attack visuals
-* Compatibility with asteroid navigation and concealment
-* Add it to F1 enemy testing before procedural sector spawning
-
-The enemy should introduce a new combat problem rather than being only a larger existing Simulant.
 
 4. WORLD STRUCTURE EXPANSION
 
