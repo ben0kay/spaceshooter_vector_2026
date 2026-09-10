@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"background",
-    "path":"folders/sprites/background.yy",
+    "name":"particles_background",
+    "path":"folders/sprites/PARTICLES/particles_background.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
