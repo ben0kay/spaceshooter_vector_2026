@@ -16,6 +16,7 @@ function sc_data_init()
 		asteroid_spawn_pool: [],
 		structures: {},
 		devices: {},
+		environment_fields: {}
     };
 	if (!sc_faction_register_player()) return false;
     if (!sc_faction_hostility_init()) return false;
@@ -23,6 +24,7 @@ function sc_data_init()
 	if (!sc_recipe_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
 	if (!sc_asteroid_spawn_register_all()) return false;
+	if (!sc_gas_cloud_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
 	if (!sc_faction_device_register_all()) return false;

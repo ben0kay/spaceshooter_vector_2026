@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_gas_clouds",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_gas_clouds",
+  "parent":{
+    "name":"ENVIRONMENT",
+    "path":"folders/SCRIPTS---/SECTORS/ENVIRONMENT.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

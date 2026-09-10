@@ -311,173 +311,174 @@ function sc_enemy_sim_voidlance_visual_data()
 /// @description Draws the complete intact Voidlance fallback body.
 function sc_enemy_sim_voidlance_body_draw(_x, _y, _radius, _angle, _visual)
 {
-    sc_enemy_sim_voidlance_hull_draw(_x, _y, _radius, _angle, _visual, 0);
-    sc_enemy_sim_voidlance_armour_draw(_x, _y, _radius, _angle, _visual, 0);
+    sc_enemy_sim_voidlance_hull_draw(
+        _x, _y, _radius, _angle,
+        _visual,
+        0
+    );
+
+    sc_enemy_sim_voidlance_armour_draw(
+        _x, _y, _radius, _angle,
+        _visual,
+        0
+    );
 }
 
-/// @description Draws the permanent broad mechanical Voidlance hull.
+/// @description Draws the permanent Voidlance hull and extended beam conduit.
 function sc_enemy_sim_voidlance_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 
-    // ==================================================
-    // BROAD CENTRAL SHIP BODY
-    // ==================================================
-
-    // Dark upper hull.
+    // Compact upper rear hull.
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -1.03, 0,
+        -1.04, 0,
         -0.79, -0.39,
-        0.18, -0.42,
-        0.5, -0.13,
+        -0.13, -0.31,
+        0.03, 0,
         _p.hull_dark
     );
 
-    sc_visual_triangle(
-        _x, _y, _radius, _angle,
-        -1.03, 0,
-        0.5, -0.13,
-        0.62, 0,
-        _p.hull_dark,
-        false
-    );
-
-    // Dark lower hull.
+    // Compact lower rear hull.
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -1.03, 0,
-        0.5, 0.13,
-        0.18, 0.42,
+        -1.04, 0,
+        0.03, 0,
+        -0.13, 0.31,
         -0.79, 0.39,
         _p.hull_dark
-    );
-
-    sc_visual_triangle(
-        _x, _y, _radius, _angle,
-        -1.03, 0,
-        0.62, 0,
-        0.5, 0.13,
-        _p.hull_dark,
-        false
     );
 
     // Raised central mechanical deck.
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -0.82, -0.27,
-        0.3, -0.28,
-        0.52, 0,
-        -0.82, 0,
+        -0.88, -0.25,
+        -0.17, -0.22,
+        0.04, 0,
+        -0.88, 0,
         _p.hull_mid
     );
 
     sc_visual_quad(
         _x, _y, _radius, _angle,
-        -0.82, 0,
-        0.52, 0,
-        0.3, 0.28,
-        -0.82, 0.27,
+        -0.88, 0,
+        0.04, 0,
+        -0.17, 0.22,
+        -0.88, 0.25,
         _p.hull_mid
     );
 
-    // ==================================================
-    // THREE DETACHED SWEPT BLADES PER SIDE
-    // ==================================================
+    // Dark rear reactor bed.
+    sc_visual_circle(
+        _x, _y, _radius, _angle,
+        -0.34, 0,
+        0.31,
+        _p.void,
+        false
+    );
 
+    // Three separated blades on each side.
+    // Every blade begins against the hull; only its outer reach changes.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        // There is deliberately no solid hull plate behind this bank.
-        // The spacing exceeds each blade's width, leaving actual void gaps.
-        sc_sim_visual_swept_blade_bank(
+        // Forward blade.
+        sc_sim_visual_swept_blade(
             _x, _y, _radius, _angle,
-            _side,
-            {
-                amount: 3,
-
-                forward_start: 0.04,
-                forward_step: -0.3,
-
-                side_start: 0.37,
-                side_step: 0.27,
-
-                length_start: 0.6,
-                length_step: -0.035,
-
-                width_start: 0.15,
-                width_step: 0.012,
-
-                sweep_start: 0.14,
-                sweep_step: 0.065,
-
-                colour_primary: _p.hull_mid,
-                colour_secondary: _p.hull_dark,
-                energy_enabled: true
-            },
-            _p
+            -0.09,
+            0.27 * _side,
+            0.22,
+            0.19,
+            0.08,
+            _p.hull_mid,
+            _p,
+            true
         );
 
-        // Individual short roots attach only the inner end of each blade.
-        // These do not extend underneath the gaps.
-        for (var _i = 0; _i < 3; _i++)
-        {
-            var _blade_forward = 0.04 - _i * 0.3;
-            var _blade_side = (0.37 + _i * 0.27) * _side;
+        // Middle blade.
+        sc_sim_visual_swept_blade(
+            _x, _y, _radius, _angle,
+            -0.43,
+            0.29 * _side,
+            0.25,
+            0.26,
+            0.1,
+            _p.hull_dark,
+            _p,
+            true
+        );
 
-            sc_visual_line(
-                _x, _y, _radius, _angle,
-                _blade_forward + 0.2, _blade_side,
-                _blade_forward + 0.05, _blade_side,
-                7,
-                _p.void
-            );
-
-            sc_visual_line(
-                _x, _y, _radius, _angle,
-                _blade_forward + 0.19, _blade_side,
-                _blade_forward + 0.06, _blade_side,
-                2,
-                _p.outline
-            );
-        }
+        // Rear blade.
+        sc_sim_visual_swept_blade(
+            _x, _y, _radius, _angle,
+            -0.81,
+            0.31 * _side,
+            0.29,
+            0.34,
+            0.12,
+            _p.hull_mid,
+            _p,
+            true
+        );
     }
 
-    // ==================================================
-    // LONG INTEGRATED FORWARD CANNON
-    // ==================================================
-
-    // Broad cannon root joining the weapon to the ship body.
-    sc_visual_quad(
+    // Long upper triangular cannon rail.
+    sc_sim_visual_blade_panel(
         _x, _y, _radius, _angle,
-        -0.28, -0.16,
-        0.43, -0.13,
-        1.12, -0.035,
-        -0.28, 0,
-        _p.void
-    );
-
-    sc_visual_quad(
-        _x, _y, _radius, _angle,
-        -0.28, 0,
-        1.12, 0.035,
-        0.43, 0.13,
-        -0.28, 0.16,
-        _p.void
-    );
-
-    sc_sim_visual_beam_spine(
-        _x, _y, _radius, _angle,
-        -0.3,
-        1.1,
-        0.095,
+        -0.24, -0.22,
+        0.14, -0.2,
+        1.09, -0.045,
+        0.73, -0.09,
+        _p.hull_dark,
         _p
     );
 
-    // Mechanical braces segment the long cannon.
-    for (var _i = 0; _i < 4; _i++)
+    // Long lower triangular cannon rail.
+    sc_sim_visual_blade_panel(
+        _x, _y, _radius, _angle,
+        0.73, 0.09,
+        1.09, 0.045,
+        0.14, 0.2,
+        -0.24, 0.22,
+        _p.hull_dark,
+        _p
+    );
+
+    // Inner structural rails surrounding the conduit.
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        -0.17, -0.15,
+        0.2, -0.135,
+        0.94, -0.036,
+        0.63, -0.07,
+        _p.hull_mid
+    );
+
+    sc_visual_quad(
+        _x, _y, _radius, _angle,
+        0.63, 0.07,
+        0.94, 0.036,
+        0.2, 0.135,
+        -0.17, 0.15,
+        _p.hull_mid
+    );
+
+    // Long central energy conduit.
+    sc_sim_visual_beam_spine(
+        _x, _y, _radius, _angle,
+        -0.22,
+        1.08,
+        0.082,
+        _p
+    );
+
+    // Mechanical bands segmenting the conduit.
+    var _brace_forward = [0.04, 0.31, 0.58, 0.82, 1.01];
+
+    for (var _i = 0; _i < array_length(_brace_forward); _i++)
     {
-        var _forward = 0.08 + _i * 0.22;
-        var _half_width = lerp(0.13, 0.065, _i / 3);
+        var _forward = _brace_forward[_i];
+        var _progress = (_forward + 0.22) / 1.3;
+        var _half_width = lerp(0.105, 0.038, _progress);
 
         sc_visual_line(
             _x, _y, _radius, _angle,
@@ -489,8 +490,8 @@ function sc_enemy_sim_voidlance_hull_draw(_x, _y, _radius, _angle, _visual, _sta
 
         sc_visual_line(
             _x, _y, _radius, _angle,
-            _forward, -_half_width * 0.78,
-            _forward, _half_width * 0.78,
+            _forward, -_half_width * 0.72,
+            _forward, _half_width * 0.72,
             1,
             _p.outline
         );
@@ -510,103 +511,104 @@ function sc_enemy_sim_voidlance_armour_draw(_x, _y, _radius, _angle, _visual, _s
 {
     var _p = _visual.palette;
 
-    // ==================================================
-    // CENTRAL BODY ARMOUR
-    // ==================================================
-
+    // Rear hull armour surrounding the reactor.
     for (var _side = -1; _side <= 1; _side += 2)
     {
-        // Small central plate remains at every armour stage.
         sc_sim_visual_blade_panel(
             _x, _y, _radius, _angle,
-            0.34, 0.13 * _side,
-            0.08, 0.29 * _side,
-            -0.31, 0.33 * _side,
-            -0.14, 0.14 * _side,
+            -0.05, 0.1 * _side,
+            -0.24, 0.27 * _side,
+            -0.61, 0.3 * _side,
+            -0.48, 0.13 * _side,
             _p.hull_mid,
             _p
         );
 
-        // Larger shoulder plate disappears at the final stage.
         if (_stage <= 2)
         {
             sc_sim_visual_blade_panel(
                 _x, _y, _radius, _angle,
-                0.07, 0.28 * _side,
-                -0.15, 0.4 * _side,
-                -0.51, 0.42 * _side,
-                -0.34, 0.3 * _side,
+                -0.22, 0.27 * _side,
+                -0.49, 0.38 * _side,
+                -0.86, 0.36 * _side,
+                -0.65, 0.25 * _side,
                 _p.hull_light,
                 _p
             );
         }
     }
 
-    // ==================================================
-    // DETACHED BLADE ARMOUR
-    // ==================================================
-
-    // Armour overlays use the same spacing as the permanent blade structures.
-    // Later damage stages remove entire blades without ever filling the gaps.
+    // Narrow armour overlays follow the attached permanent blades.
     if (_stage <= 2)
     {
-        var _blade_amount = 3 - _stage;
-
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_sim_visual_swept_blade_bank(
+            // Forward blade armour.
+            sc_sim_visual_swept_blade(
                 _x, _y, _radius, _angle,
-                _side,
-                {
-                    amount: _blade_amount,
-
-                    forward_start: 0.04,
-                    forward_step: -0.3,
-
-                    // Slightly inset from the permanent blade beneath it.
-                    side_start: 0.385,
-                    side_step: 0.27,
-
-                    length_start: 0.54,
-                    length_step: -0.035,
-
-                    width_start: 0.105,
-                    width_step: 0.01,
-
-                    sweep_start: 0.13,
-                    sweep_step: 0.065,
-
-                    // No large areas use the bright Simulant metal colour.
-                    colour_primary: _p.hull_light,
-                    colour_secondary: _p.hull_mid,
-                    energy_enabled: false
-                },
-                _p
+                -0.09,
+                0.285 * _side,
+                0.18,
+                0.13,
+                0.07,
+                _p.hull_light,
+                _p,
+                false
             );
+
+            // Middle blade armour.
+            if (_stage <= 1)
+            {
+                sc_sim_visual_swept_blade(
+                    _x, _y, _radius, _angle,
+                    -0.43,
+                    0.305 * _side,
+                    0.21,
+                    0.19,
+                    0.085,
+                    _p.hull_mid,
+                    _p,
+                    false
+                );
+            }
+
+            // Rear blade armour.
+            if (_stage == 0)
+            {
+                sc_sim_visual_swept_blade(
+                    _x, _y, _radius, _angle,
+                    -0.81,
+                    0.325 * _side,
+                    0.25,
+                    0.26,
+                    0.1,
+                    _p.hull_light,
+                    _p,
+                    false
+                );
+            }
         }
     }
 
-    // ==================================================
-    // FORWARD WEAPON ARMOUR
-    // ==================================================
-
+    // Long forward armour strips emphasize the tapered pyramid.
     if (_stage <= 2)
     {
         for (var _side = -1; _side <= 1; _side += 2)
         {
-            sc_visual_quad(
+            sc_sim_visual_blade_panel(
                 _x, _y, _radius, _angle,
-                -0.12, 0.12 * _side,
-                0.48, 0.1 * _side,
-                0.91, 0.045 * _side,
-                0.12, 0.055 * _side,
-                _p.hull_light
+                -0.14, 0.18 * _side,
+                0.22, 0.16 * _side,
+                0.92, 0.05 * _side,
+                0.62, 0.085 * _side,
+                _p.hull_light,
+                _p
             );
 
             sc_visual_line(
                 _x, _y, _radius, _angle,
-                -0.05, 0.1 * _side,
-                0.87, 0.04 * _side,
+                -0.06, 0.145 * _side,
+                0.88, 0.045 * _side,
                 1,
                 _p.core
             );

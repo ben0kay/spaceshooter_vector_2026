@@ -558,9 +558,9 @@ function sc_sector_room_create()
 
     random_set_seed(_sector_seed);
 
-	sc_sector_structures_spawn(_layer);
+    sc_sector_structures_spawn(_layer);
     sc_sector_asteroid_fields_spawn(_layer);
-	
+    sc_gas_cloud_test_spawn(_layer);
 
     random_set_seed(_previous_seed);
 

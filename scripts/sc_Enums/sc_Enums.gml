@@ -68,6 +68,8 @@ enum AsteroidFieldScale { SMALL, MEDIUM, LARGE }
 enum AsteroidFieldDensity { SPARSE, STANDARD, DENSE }
 enum AsteroidFieldLayout { STANDARD, BELT, DENSE_CORE, ARCHIPELAGO }
 
+enum EnvironmentFieldType { GAS, ELECTRIC }
+
 enum StructureCollisionShape { CIRCLE, RECTANGLE }
 
 enum ItemLayer { RAW, MATERIAL, PART, PRODUCT }
