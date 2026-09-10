@@ -55,10 +55,11 @@ function sc_hud_minimap_refresh_force(_minimap)
     _minimap.next_asteroid_update_tick = GAME_TICK;
 }
 
-/// @description Caches nearby enemy contacts while retaining their sweep visibility.
+/// @description Caches enemy contacts and periodically evaluates asteroid concealment.
 function sc_hud_minimap_enemies_refresh(_minimap, _player)
 {
     var _list = ds_list_create();
+
     var _count = collision_circle_list(
         _player.x,
         _player.y,
@@ -76,9 +77,15 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
     for (var _i = 0; _i < _count; ++_i)
     {
         var _target = _list[| _i];
-        if (!_target.initialized || _target.enemy.state == EnemyState.DEAD) continue;
 
-        var _contact = sc_hud_minimap_enemy_contact_find(_previous, _target);
+        if (!_target.initialized
+        || _target.enemy.state == EnemyState.DEAD)
+            continue;
+
+        var _contact = sc_hud_minimap_enemy_contact_find(
+            _previous,
+            _target
+        );
 
         if (!is_struct(_contact))
         {
@@ -86,8 +93,13 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
                 target_id: _target,
                 world_x: _target.x,
                 world_y: _target.y,
-                size: sc_hud_minimap_enemy_size_get(_target.enemy.identity.ship_class),
+                size: sc_hud_minimap_enemy_size_get(
+                    _target.enemy.identity.ship_class
+                ),
                 alpha: 0,
+                reveal_alpha: 1,
+                concealment: 0,
+                next_concealment_tick: GAME_TICK,
                 pulse: 0
             };
         }
@@ -97,12 +109,56 @@ function sc_hud_minimap_enemies_refresh(_minimap, _player)
             _contact.world_y = _target.y;
         }
 
+        if (GAME_TICK >= _contact.next_concealment_tick)
+        {
+            _contact.concealment =
+                sc_asteroid_concealment_score_get(
+                    _player.x,
+                    _player.y,
+                    _target.x,
+                    _target.y
+                );
+
+            _contact.next_concealment_tick =
+                GAME_TICK + _minimap.concealment_update_interval;
+        }
+
+        var _distance = point_distance(
+            _player.x,
+            _player.y,
+            _target.x,
+            _target.y
+        );
+
+        var _closeness = 1 - clamp(
+            _distance / _minimap.range,
+            0,
+            1
+        );
+
+        var _concealed_alpha = lerp(
+            _minimap.concealment_alpha_min,
+            _minimap.concealment_alpha_max,
+            power(
+                _closeness,
+                _minimap.concealment_distance_power
+            )
+        );
+
+        _contact.reveal_alpha = lerp(
+            1,
+            _concealed_alpha,
+            _contact.concealment
+        );
+
         array_push(_contacts, _contact);
     }
 
     ds_list_destroy(_list);
+
     _minimap.enemy_contacts = _contacts;
-    _minimap.next_enemy_update_tick = GAME_TICK + _minimap.enemy_update_interval;
+    _minimap.next_enemy_update_tick =
+        GAME_TICK + _minimap.enemy_update_interval;
 }
 
 /// @description Caches nearby asteroid contacts at a slower interval.
@@ -140,20 +196,39 @@ function sc_hud_minimap_asteroids_refresh(_minimap, _player)
     _minimap.next_asteroid_update_tick = GAME_TICK + _minimap.asteroid_update_interval;
 }
 
-/// @description Updates the clockwise sweep and pulses crossed enemy contacts.
+/// @description Updates the radar sweep and reveals contacts according to certainty.
 function sc_hud_minimap_sweep_update(_minimap, _player)
 {
     var _previous_angle = _minimap.sweep_angle;
-    _minimap.sweep_angle = (_minimap.sweep_angle - _minimap.sweep_speed + 360) mod 360;
 
-    var _travel = (_previous_angle - _minimap.sweep_angle + 360) mod 360;
+    _minimap.sweep_angle = (
+        _minimap.sweep_angle
+        - _minimap.sweep_speed
+        + 360
+    ) mod 360;
+
+    var _travel = (
+        _previous_angle
+        - _minimap.sweep_angle
+        + 360
+    ) mod 360;
+
     var _contacts = _minimap.enemy_contacts;
 
     for (var _i = 0; _i < array_length(_contacts); ++_i)
     {
         var _contact = _contacts[_i];
-        _contact.alpha = max(0, _contact.alpha - 1 / _minimap.contact_fade_duration);
-        _contact.pulse = max(0, _contact.pulse - 0.08);
+
+        _contact.alpha = max(
+            0,
+            _contact.alpha
+                - 1 / _minimap.contact_fade_duration
+        );
+
+        _contact.pulse = max(
+            0,
+            _contact.pulse - 0.08
+        );
 
         var _direction = point_direction(
             _player.x,
@@ -162,12 +237,17 @@ function sc_hud_minimap_sweep_update(_minimap, _player)
             _contact.world_y
         );
 
-        var _clockwise_distance = (_previous_angle - _direction + 360) mod 360;
+        var _clockwise_distance = (
+            _previous_angle
+            - _direction
+            + 360
+        ) mod 360;
 
-        if (_clockwise_distance <= _travel + _minimap.detection_width)
+        if (_clockwise_distance
+        <= _travel + _minimap.detection_width)
         {
-            _contact.alpha = 1;
-            _contact.pulse = 1;
+            _contact.alpha = _contact.reveal_alpha;
+            _contact.pulse = _contact.reveal_alpha;
         }
     }
 }

@@ -101,7 +101,13 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
                 side: 0,
                 next_check_tick: GAME_TICK
             },
-
+				
+			field: {
+			    index: -1,
+			    density: 0,
+			    speed_multiplier: 1,
+			    next_check_tick: GAME_TICK
+			},
             // Only specialized movement styles provide additional runtime data.
             behaviour_runtime:
                 variable_struct_exists(_data.movement_controller, "runtime")

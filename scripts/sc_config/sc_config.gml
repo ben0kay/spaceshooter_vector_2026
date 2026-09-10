@@ -221,10 +221,10 @@ function sc_config_init()
 
 			    asteroid_concealment: {
 			        enabled: true,
-			        nearby_radius: 320,
+			        nearby_radius: 256,
 			        sample_radius: 190,
 			        sample_amount: 7,
-			        blocked_required: 2
+			        blocked_required: 4
 			    }
 			},
 			
@@ -276,6 +276,20 @@ function sc_config_init()
                 limit_to_player_range: true,
                 activation_range: 4000
             },
+			
+			field_navigation: {
+			    check_interval: 30,
+
+			    class_penalty: [
+			        0.05,
+			        0.08,
+			        0.11,
+			        0.14,
+			        0.17,
+			        0.2,
+			        0.23
+			    ]
+			},
         },
 			
 		asteroid: {

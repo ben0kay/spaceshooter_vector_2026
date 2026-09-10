@@ -86,7 +86,12 @@ function sc_hud_level_data()
             sweep_speed: 1.5,
             sweep_trails: 5,
             sweep_trail_spacing: 3,
-            detection_width: 1.5
+            detection_width: 1.5,
+			
+			concealment_update_interval: 30,
+			concealment_alpha_min: 0.08,
+			concealment_alpha_max: 0.6,
+			concealment_distance_power: 2,
         },
 			
 		facility: {
@@ -237,7 +242,19 @@ function sc_hud_level_init(_hud_object)
             contact_fade_duration: _data.minimap.contact_fade_duration,
 
             enemy_contacts: [],
-            asteroid_contacts: []
+            asteroid_contacts: [],
+			
+			concealment_update_interval:
+		    _data.minimap.concealment_update_interval,
+
+		concealment_alpha_min:
+		    _data.minimap.concealment_alpha_min,
+
+		concealment_alpha_max:
+		    _data.minimap.concealment_alpha_max,
+
+		concealment_distance_power:
+		    _data.minimap.concealment_distance_power,
         },
 			
 		facility: {

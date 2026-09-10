@@ -87,6 +87,7 @@ function sc_asteroid_spawn_register_lone()
         },
 
         spacing_scale: 1.3,
+		density: 0,
         pockets: []
     });
 }
@@ -123,6 +124,7 @@ function sc_asteroid_spawn_register_small_dense()
         },
 
         spacing_scale: 1,
+		density: 0.85,
         pockets: []
     });
 }
@@ -528,6 +530,7 @@ function sc_asteroid_spawn_create(
         y: _y,
         radius: _radius,
         amount: _spawned,
-        shape: _shape
+        shape: _shape,
+		density: _definition.density,
     };
 }

@@ -461,6 +461,12 @@ function sc_attack_area_damage_apply(_area)
 
         if (!is_struct(_result))
             continue;
+		
+		sc_heat_signature_mining_try(
+		    _area,
+		    _target,
+		    _packet
+		);
 
         sc_entity_knockback_apply(
             _target,

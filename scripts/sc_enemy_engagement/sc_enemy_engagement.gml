@@ -136,52 +136,45 @@ function sc_enemy_perception_line_of_sight_clear(_enemy, _candidate)
     return true;
 }
 
-/// @description Checks whether nearby asteroids conceal the player from this observer.
-function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
+/// @description Returns asteroid concealment from 0 exposed to 1 fully obstructed.
+function sc_asteroid_concealment_score_get(
+    _observer_x,
+    _observer_y,
+    _target_x,
+    _target_y
+)
 {
-    var _awareness = _enemy.enemy.awareness_controller;
-    if (!_awareness.asteroid_concealment) return true;
-    if (_candidate.entity.faction != Faction.PLAYER) return true;
-    if (global.level.asteroids_alive <= 0) return true;
+    if (global.level.asteroids_alive <= 0)
+        return 0;
 
-    var _config = global.config.enemy.perception.asteroid_concealment;
+    var _config =
+        global.config.enemy.perception.asteroid_concealment;
 
-    // Avoid the multi-line test unless the player is actually near asteroid cover.
     if (collision_circle(
-        _candidate.x,
-        _candidate.y,
+        _target_x,
+        _target_y,
         _config.nearby_radius,
         o_asteroid,
         false,
         true
     ) == noone)
-        return true;
+        return 0;
 
     var _direction = point_direction(
-        _enemy.x,
-        _enemy.y,
-        _candidate.x,
-        _candidate.y
+        _observer_x,
+        _observer_y,
+        _target_x,
+        _target_y
     );
 
-    var _sample_amount = max(
-        3,
-        round(_config.sample_amount)
-    );
-
-    var _blocked_required = clamp(
-        round(_config.blocked_required),
-        1,
-        _sample_amount
-    );
-
+    var _amount = max(3, round(_config.sample_amount));
     var _blocked = 0;
 
-    for (var _i = 0; _i < _sample_amount; ++_i)
+    for (var _i = 0; _i < _amount; ++_i)
     {
-        var _progress = _sample_amount <= 1
+        var _progress = _amount <= 1
             ? 0.5
-            : _i / (_sample_amount - 1);
+            : _i / (_amount - 1);
 
         var _offset = lerp(
             -_config.sample_radius,
@@ -189,31 +182,52 @@ function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
             _progress
         );
 
-        var _end_x = _candidate.x
+        var _end_x = _target_x
             + lengthdir_x(_offset, _direction + 90);
 
-        var _end_y = _candidate.y
+        var _end_y = _target_y
             + lengthdir_y(_offset, _direction + 90);
 
         if (collision_line(
-            _enemy.x,
-            _enemy.y,
+            _observer_x,
+            _observer_y,
             _end_x,
             _end_y,
             o_asteroid,
             false,
             true
-        ) == noone)
-            continue;
-
-        _blocked++;
-
-        // Stop as soon as enough visibility samples are obstructed.
-        if (_blocked >= _blocked_required)
-            return false;
+        ) != noone)
+            _blocked++;
     }
 
-    return true;
+    return _blocked / _amount;
+}
+
+/// @description Checks whether nearby asteroids conceal the player from this observer.
+function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
+{
+    var _awareness = _enemy.enemy.awareness_controller;
+
+    if (!_awareness.asteroid_concealment
+    || _candidate.entity.faction != Faction.PLAYER)
+        return true;
+
+    var _config =
+        global.config.enemy.perception.asteroid_concealment;
+
+    var _amount = max(3, round(_config.sample_amount));
+    var _threshold = clamp(
+        round(_config.blocked_required) / _amount,
+        0,
+        1
+    );
+
+    return sc_asteroid_concealment_score_get(
+        _enemy.x,
+        _enemy.y,
+        _candidate.x,
+        _candidate.y
+    ) < _threshold;
 }
 
 /// @description Returns whether a candidate can be visually acquired.

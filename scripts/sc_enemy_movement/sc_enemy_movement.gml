@@ -563,7 +563,54 @@ function sc_enemy_movement_alignment(_enemy, _move_direction)
     return (dcos(angle_difference(_move_direction, _enemy.draw_angle)) + 1) * 0.5;
 }
 
-/// @description Applies the current command through shared acceleration, friction and directional handling.
+/// @description Periodically caches the field-density movement penalty.
+function sc_enemy_movement_field_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _runtime = _data.movement.field;
+    var _config = global.config.enemy.field_navigation;
+
+    if (GAME_TICK < _runtime.next_check_tick)
+        return;
+
+    _runtime.next_check_tick =
+        GAME_TICK + max(1, round(_config.check_interval));
+
+    if (!sc_sector_campaign_active())
+    {
+        _runtime.index = -1;
+        _runtime.density = 0;
+        _runtime.speed_multiplier = 1;
+        return;
+    }
+
+    var _index = sc_sector_asteroid_field_index_at(
+        _enemy.x,
+        _enemy.y
+    );
+
+    _runtime.index = _index;
+
+    if (_index < 0)
+    {
+        _runtime.density = 0;
+        _runtime.speed_multiplier = 1;
+        return;
+    }
+
+    var _field = global.game.sector.asteroid_fields[_index];
+    var _class = _data.identity.ship_class;
+    var _penalty = _config.class_penalty[_class];
+
+    _runtime.density = clamp(_field.density, 0, 1);
+    _runtime.speed_multiplier = clamp(
+        1 - _runtime.density * _penalty,
+        0,
+        1
+    );
+}
+
+/// @description Applies the current command through shared acceleration, friction and field navigation.
 function sc_enemy_movement_apply(_enemy)
 {
     var _data = _enemy.enemy;
@@ -571,18 +618,56 @@ function sc_enemy_movement_apply(_enemy)
     var _command = _movement.command;
     var _handling = _data.stats.final.handling;
 
+    sc_enemy_movement_field_update(_enemy);
+
     if (_command.active)
     {
-        var _alignment = sc_enemy_movement_alignment(_enemy, _command.direction);
-        var _speed_factor = lerp(_handling.directional_speed_min, 1, _alignment);
-        var _thrust_factor = lerp(_handling.directional_thrust_min, 1, _alignment);
-        var _speed_max = _handling.speed_max * _command.speed_scale * _speed_factor;
-        var _acceleration = _handling.acceleration * _thrust_factor;
-        var _target_vx = lengthdir_x(_speed_max, _command.direction);
-        var _target_vy = lengthdir_y(_speed_max, _command.direction);
+        var _alignment = sc_enemy_movement_alignment(
+            _enemy,
+            _command.direction
+        );
 
-        _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_acceleration, _acceleration);
-        _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_acceleration, _acceleration);
+        var _speed_factor = lerp(
+            _handling.directional_speed_min,
+            1,
+            _alignment
+        );
+
+        var _thrust_factor = lerp(
+            _handling.directional_thrust_min,
+            1,
+            _alignment
+        );
+
+        var _speed_max = _handling.speed_max
+            * _command.speed_scale
+            * _speed_factor
+            * _movement.field.speed_multiplier;
+
+        var _acceleration = _handling.acceleration
+            * _thrust_factor;
+
+        var _target_vx = lengthdir_x(
+            _speed_max,
+            _command.direction
+        );
+
+        var _target_vy = lengthdir_y(
+            _speed_max,
+            _command.direction
+        );
+
+        _movement.velocity_x += clamp(
+            _target_vx - _movement.velocity_x,
+            -_acceleration,
+            _acceleration
+        );
+
+        _movement.velocity_y += clamp(
+            _target_vy - _movement.velocity_y,
+            -_acceleration,
+            _acceleration
+        );
     }
     else if (_command.apply_friction)
     {
@@ -590,8 +675,11 @@ function sc_enemy_movement_apply(_enemy)
         _movement.velocity_y *= _handling.friction_coeff;
     }
 
-    if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
-    if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
+    if (abs(_movement.velocity_x) < 0.001)
+        _movement.velocity_x = 0;
+
+    if (abs(_movement.velocity_y) < 0.001)
+        _movement.velocity_y = 0;
 
     _enemy.x += _movement.velocity_x;
     _enemy.y += _movement.velocity_y;
