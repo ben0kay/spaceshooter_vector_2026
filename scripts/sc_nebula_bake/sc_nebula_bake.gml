@@ -12,40 +12,68 @@ function sc_space_nebula_source_draw(_sprite, _x, _y, _width, _height, _angle, _
     );
 }
 
-/// @description Bakes a smooth high-resolution foundation for one nebula patch.
+/// @description Bakes the smooth broad foundation for one nebula.
 function sc_space_nebula_body_bake(_visual, _centre)
 {
     var _size = _visual.canvas_size;
     var _seed = _visual.seed;
+    var _amount = ceil(
+        _visual.body_amount * 0.58
+    );
 
-    for (var _i = 0; _i < ceil(_visual.body_amount * 0.4); ++_i)
+    for (var _i = 0; _i < _amount; ++_i)
     {
-        var _direction = sc_space_hash(_seed + _i * 17.31) * 360;
+        var _direction =
+            sc_space_hash(
+                _seed + _i * 17.31
+            ) * 360;
+
         var _distance = power(
-            sc_space_hash(_seed + _i * 43.73),
-            1.55
+            sc_space_hash(
+                _seed + _i * 43.73
+            ),
+            1.65
         );
 
         var _x = _centre + lengthdir_x(
-            _distance * _size * _visual.body_spread_x,
+            _distance
+            * _size
+            * _visual.body_spread_x,
             _direction
         );
 
         var _y = _centre + lengthdir_y(
-            _distance * _size * _visual.body_spread_y,
+            _distance
+            * _size
+            * _visual.body_spread_y,
             _direction
         );
 
         var _diameter = lerp(
-            _size * _visual.body_size_min,
-            _size * _visual.body_size_max,
-            sc_space_hash(_seed + _i * 67.91)
+            _size * 0.2,
+            _size * 0.5,
+            sc_space_hash(
+                _seed + _i * 67.91
+            )
         );
 
         var _stretch = lerp(
-            _visual.body_stretch_min,
-            _visual.body_stretch_max,
-            sc_space_hash(_seed + _i * 89.17)
+            0.8,
+            1.75,
+            sc_space_hash(
+                _seed + _i * 89.17
+            )
+        );
+
+        var _colour_mix =
+            sc_space_hash(
+                _seed + _i * 127.53
+            );
+
+        var _colour = merge_colour(
+            _visual.colour_primary,
+            _visual.colour_secondary,
+            _colour_mix
         );
 
         sc_space_nebula_source_draw(
@@ -54,66 +82,112 @@ function sc_space_nebula_body_bake(_visual, _centre)
             _y,
             _diameter * _stretch,
             _diameter / _stretch,
-            sc_space_hash(_seed + _i * 101.39) * 360,
-            merge_colour(
-                _visual.colour_dark,
-                _visual.colour_primary,
-                sc_space_hash(_seed + _i * 127.53)
-            ),
+            sc_space_hash(
+                _seed + _i * 101.39
+            ) * 360,
+            _colour,
             lerp(
-                _visual.body_alpha_min,
-                _visual.body_alpha_max,
-                sc_space_hash(_seed + _i * 149.21)
+                0.055,
+                0.14,
+                sc_space_hash(
+                    _seed + _i * 149.21
+                )
             )
         );
     }
 }
 
-/// @description Bakes irregular cloud pieces around the nebula foundation.
+/// @description Bakes colourful textured clouds throughout the nebula.
 function sc_space_nebula_clouds_bake(_visual, _centre)
 {
     var _size = _visual.canvas_size;
     var _seed = _visual.seed;
 
-    for (var _i = 0; _i < _visual.body_amount; ++_i)
+    for (var _i = 0;
+    _i < _visual.body_amount;
+    ++_i)
     {
-        var _sprite = sc_space_hash(_seed + _i * 163.91) < 0.5
+        var _entry_seed = _seed
+            + _i * 163.91;
+
+        var _sprite =
+            sc_space_hash(_entry_seed) < 0.5
             ? s_particle_cloud_002
             : s_particle_cloud_003;
 
-        var _direction = sc_space_hash(_seed + _i * 181.37) * 360;
+        var _direction =
+            sc_space_hash(
+                _entry_seed + 17.46
+            ) * 360;
+
         var _distance = power(
-            sc_space_hash(_seed + _i * 199.73),
-            1.25
+            sc_space_hash(
+                _entry_seed + 35.82
+            ),
+            1.35
         );
 
         var _x = _centre + lengthdir_x(
-            _distance * _size * _visual.body_spread_x,
+            _distance
+            * _size
+            * _visual.body_spread_x,
             _direction
         );
 
         var _y = _centre + lengthdir_y(
-            _distance * _size * _visual.body_spread_y,
+            _distance
+            * _size
+            * _visual.body_spread_y,
             _direction
         );
 
         var _width = lerp(
-            _size * 0.1,
-            _size * 0.3,
-            sc_space_hash(_seed + _i * 223.11)
+            _size * 0.13,
+            _size * 0.38,
+            sc_space_hash(
+                _entry_seed + 59.2
+            )
         );
 
         var _height = _width * lerp(
-            0.38,
-            0.72,
-            sc_space_hash(_seed + _i * 241.57)
+            0.42,
+            0.82,
+            sc_space_hash(
+                _entry_seed + 77.66
+            )
         );
 
-        var _colour = merge_colour(
-            _visual.colour_dark,
-            _visual.colour_secondary,
-            sc_space_hash(_seed + _i * 263.17)
-        );
+        var _colour_roll =
+            sc_space_hash(
+                _entry_seed + 99.26
+            );
+
+        var _colour;
+
+        if (_colour_roll < 0.34)
+        {
+            _colour = merge_colour(
+                _visual.colour_dark,
+                _visual.colour_primary,
+                0.72
+            );
+        }
+        else if (_colour_roll < 0.76)
+        {
+            _colour = merge_colour(
+                _visual.colour_primary,
+                _visual.colour_secondary,
+                0.62
+            );
+        }
+        else
+        {
+            _colour = merge_colour(
+                _visual.colour_secondary,
+                _visual.colour_highlight,
+                0.42
+            );
+        }
 
         sc_space_nebula_source_draw(
             _sprite,
@@ -121,12 +195,16 @@ function sc_space_nebula_clouds_bake(_visual, _centre)
             _y,
             _width,
             _height,
-            sc_space_hash(_seed + _i * 281.49) * 360,
+            sc_space_hash(
+                _entry_seed + 117.58
+            ) * 360,
             _colour,
             lerp(
-                _visual.body_alpha_min * 0.65,
-                _visual.body_alpha_max * 0.85,
-                sc_space_hash(_seed + _i * 307.83)
+                0.055,
+                0.15,
+                sc_space_hash(
+                    _entry_seed + 143.92
+                )
             )
         );
     }
@@ -262,23 +340,36 @@ function sc_space_nebula_wisps_bake(_visual, _centre)
     gpu_set_blendmode(bm_normal);
 }
 
-/// @description Bakes luminous cloud cover beneath bright energy streaks.
-function sc_space_nebula_streak_cloud_bake(_visual, _x, _y, _diameter, _seed)
+/// @description Bakes a colourful bloom around one bright streak.
+function sc_space_nebula_streak_cloud_bake(
+    _visual,
+    _x,
+    _y,
+    _diameter,
+    _seed
+)
 {
-    var _cloud = sc_space_hash(_seed + 13.71) < 0.5
+    var _cloud =
+        sc_space_hash(_seed + 13.71) < 0.5
         ? s_particle_cloud_002
         : s_particle_cloud_003;
 
     var _width = _diameter * lerp(
-        1.7,
-        2.8,
+        4.2,
+        7.2,
         sc_space_hash(_seed + 29.53)
     );
 
     var _height = _width * lerp(
-        0.42,
-        0.72,
+        0.48,
+        0.82,
         sc_space_hash(_seed + 47.19)
+    );
+
+    var _cloud_colour = merge_colour(
+        _visual.colour_primary,
+        _visual.colour_secondary,
+        0.62
     );
 
     sc_space_nebula_source_draw(
@@ -288,27 +379,38 @@ function sc_space_nebula_streak_cloud_bake(_visual, _x, _y, _diameter, _seed)
         _width,
         _height,
         sc_space_hash(_seed + 61.37) * 360,
-        merge_colour(
-            _visual.colour_primary,
-            _visual.colour_secondary,
-            0.55
-        ),
-        0.15
+        _cloud_colour,
+        0.13
+    );
+
+    gpu_set_blendmode(bm_add);
+
+    sc_space_nebula_source_draw(
+        s_particle_blur_1024,
+        _x,
+        _y,
+        _diameter * 4.6,
+        _diameter * 3.2,
+        0,
+        _visual.colour_secondary,
+        0.11
     );
 
     sc_space_nebula_source_draw(
         s_particle_blur_1024,
         _x,
         _y,
-        _diameter * 2.1,
-        _diameter * 1.4,
+        _diameter * 2.25,
+        _diameter * 1.55,
         0,
         _visual.colour_highlight,
-        0.1
+        0.17
     );
+
+    gpu_set_blendmode(bm_normal);
 }
 
-/// @description Bakes imported lightning and energetic cloud accents.
+/// @description Bakes small bright streaks surrounded by coloured clouds.
 function sc_space_nebula_streaks_bake(_visual, _centre)
 {
     var _size = _visual.canvas_size;
@@ -316,55 +418,88 @@ function sc_space_nebula_streaks_bake(_visual, _centre)
     var _sprites = _visual.streak_sprites;
     var _sprite_amount = array_length(_sprites);
 
-    if (_sprite_amount <= 0 || _visual.streak_amount <= 0)
+    if (_sprite_amount <= 0
+    || _visual.streak_amount <= 0)
         return;
 
-    for (var _i = 0; _i < _visual.streak_amount; ++_i)
+    for (var _i = 0;
+    _i < _visual.streak_amount;
+    ++_i)
     {
+        var _entry_seed = _seed
+            + _i * 487.19;
+
         var _sprite_index = clamp(
             floor(
-                sc_space_hash(_seed + _i * 487.19)
+                sc_space_hash(_entry_seed)
                 * _sprite_amount
             ),
             0,
             _sprite_amount - 1
         );
 
-        var _sprite = _sprites[_sprite_index];
-        var _direction = sc_space_hash(_seed + _i * 509.53) * 360;
+        var _sprite = _sprites[
+            _sprite_index
+        ];
+
+        var _direction =
+            sc_space_hash(
+                _entry_seed + 22.34
+            ) * 360;
 
         var _distance = power(
-            sc_space_hash(_seed + _i * 541.71),
-            1.65
-        ) * _size * _visual.streak_distance;
+            sc_space_hash(
+                _entry_seed + 54.52
+            ),
+            1.8
+        )
+        * _size
+        * _visual.streak_distance;
 
-        var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.72, _direction);
+        var _x = _centre + lengthdir_x(
+            _distance,
+            _direction
+        );
+
+        var _y = _centre + lengthdir_y(
+            _distance * 0.72,
+            _direction
+        );
 
         var _diameter = lerp(
-            _size * _visual.streak_size_min,
-            _size * _visual.streak_size_max,
-            sc_space_hash(_seed + _i * 563.17)
-        );
+            _size
+                * _visual.streak_size_min,
+            _size
+                * _visual.streak_size_max,
+            sc_space_hash(
+                _entry_seed + 76.16
+            )
+        ) * 0.58;
 
         var _stretch = lerp(
             _visual.streak_stretch_min,
             _visual.streak_stretch_max,
-            sc_space_hash(_seed + _i * 587.61)
+            sc_space_hash(
+                _entry_seed + 100.42
+            )
         );
 
-        var _angle = _visual.streak_angle_bias + lerp(
-            -_visual.streak_angle_spread,
-            _visual.streak_angle_spread,
-            sc_space_hash(_seed + _i * 611.43)
-        );
+        var _angle =
+            _visual.streak_angle_bias
+            + lerp(
+                -_visual.streak_angle_spread,
+                _visual.streak_angle_spread,
+                sc_space_hash(
+                    _entry_seed + 124.24
+                )
+            );
 
         sc_space_nebula_streak_cloud_bake(
             _visual,
             _x,
             _y,
             _diameter,
-            _seed + _i * 631.77
+            _entry_seed + 146.58
         );
 
         gpu_set_blendmode(bm_add);
@@ -374,17 +509,23 @@ function sc_space_nebula_streaks_bake(_visual, _centre)
             _x,
             _y,
             _diameter * _stretch,
-            _diameter / _stretch,
+            _diameter / max(1, _stretch),
             _angle,
             merge_colour(
-                _visual.colour_secondary,
+                _visual.colour_highlight,
                 _visual.colour_core,
-                sc_space_hash(_seed + _i * 653.29)
+                0.68
             ),
-            lerp(
-                _visual.streak_alpha_min,
-                _visual.streak_alpha_max,
-                sc_space_hash(_seed + _i * 677.71)
+            clamp(
+                lerp(
+                    _visual.streak_alpha_min,
+                    _visual.streak_alpha_max,
+                    sc_space_hash(
+                        _entry_seed + 168.32
+                    )
+                ) * 1.9,
+                0,
+                0.72
             )
         );
 
@@ -392,8 +533,11 @@ function sc_space_nebula_streaks_bake(_visual, _centre)
     }
 }
 
-/// @description Bakes rare major branching lightning structures.
-function sc_space_nebula_major_streaks_bake(_visual, _centre)
+/// @description Bakes concentrated major streaks and surrounding blooms.
+function sc_space_nebula_major_streaks_bake(
+    _visual,
+    _centre
+)
 {
     if (_visual.major_streak_sprite == -1
     || _visual.major_streak_amount <= 0)
@@ -402,28 +546,50 @@ function sc_space_nebula_major_streaks_bake(_visual, _centre)
     var _size = _visual.canvas_size;
     var _seed = _visual.seed;
 
-    for (var _i = 0; _i < _visual.major_streak_amount; ++_i)
+    for (var _i = 0;
+    _i < _visual.major_streak_amount;
+    ++_i)
     {
-        var _direction = sc_space_hash(_seed + _i * 691.53) * 360;
-        var _distance = sc_space_hash(
-            _seed + _i * 719.91
-        ) * _size * 0.16;
+        var _entry_seed = _seed
+            + _i * 691.53;
+
+        var _direction =
+            sc_space_hash(_entry_seed)
+            * 360;
+
+        var _distance =
+            sc_space_hash(
+                _entry_seed + 28.38
+            )
+            * _size
+            * 0.18;
 
         var _diameter = lerp(
-            _size * _visual.major_streak_size_min,
-            _size * _visual.major_streak_size_max,
-            sc_space_hash(_seed + _i * 743.37)
+            _size
+                * _visual.major_streak_size_min,
+            _size
+                * _visual.major_streak_size_max,
+            sc_space_hash(
+                _entry_seed + 51.84
+            )
+        ) * 0.68;
+
+        var _x = _centre + lengthdir_x(
+            _distance,
+            _direction
         );
 
-        var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.72, _direction);
+        var _y = _centre + lengthdir_y(
+            _distance * 0.72,
+            _direction
+        );
 
         sc_space_nebula_streak_cloud_bake(
             _visual,
             _x,
             _y,
-            _diameter,
-            _seed + _i * 761.13
+            _diameter * 0.65,
+            _entry_seed + 74.76
         );
 
         gpu_set_blendmode(bm_add);
@@ -434,44 +600,77 @@ function sc_space_nebula_major_streaks_bake(_visual, _centre)
             _y,
             _diameter,
             _diameter,
-            sc_space_hash(_seed + _i * 787.19) * 360,
-            _visual.colour_highlight,
-            _visual.major_streak_alpha
+            sc_space_hash(
+                _entry_seed + 101.32
+            ) * 360,
+            _visual.colour_core,
+            clamp(
+                _visual.major_streak_alpha
+                * 2.1,
+                0,
+                0.72
+            )
         );
 
         gpu_set_blendmode(bm_normal);
     }
 }
 
-/// @description Bakes compact coloured glows inside one nebula patch.
-function sc_space_nebula_glows_bake(_visual, _centre)
+/// @description Bakes compact colourful glow pockets.
+function sc_space_nebula_glows_bake(
+    _visual,
+    _centre
+)
 {
     var _size = _visual.canvas_size;
     var _seed = _visual.seed;
 
     gpu_set_blendmode(bm_add);
 
-    for (var _i = 0; _i < _visual.glow_amount; ++_i)
+    for (var _i = 0;
+    _i < _visual.glow_amount;
+    ++_i)
     {
-        var _direction = sc_space_hash(_seed + _i * 811.11) * 360;
-        var _distance = power(
-            sc_space_hash(_seed + _i * 839.37),
-            1.8
-        ) * _size * 0.3;
+        var _entry_seed = _seed
+            + _i * 811.11;
 
-        var _x = _centre + lengthdir_x(_distance, _direction);
-        var _y = _centre + lengthdir_y(_distance * 0.68, _direction);
+        var _direction =
+            sc_space_hash(_entry_seed)
+            * 360;
+
+        var _distance = power(
+            sc_space_hash(
+                _entry_seed + 28.26
+            ),
+            1.9
+        )
+        * _size
+        * 0.3;
+
+        var _x = _centre + lengthdir_x(
+            _distance,
+            _direction
+        );
+
+        var _y = _centre + lengthdir_y(
+            _distance * 0.68,
+            _direction
+        );
 
         var _diameter = lerp(
-            _size * 0.025,
-            _size * 0.11,
-            sc_space_hash(_seed + _i * 863.63)
+            _size * 0.018,
+            _size * 0.075,
+            sc_space_hash(
+                _entry_seed + 52.52
+            )
         );
 
         var _stretch = lerp(
-            1.2,
-            3.2,
-            sc_space_hash(_seed + _i * 887.87)
+            1.1,
+            2.5,
+            sc_space_hash(
+                _entry_seed + 76.76
+            )
         );
 
         sc_space_nebula_source_draw(
@@ -480,16 +679,22 @@ function sc_space_nebula_glows_bake(_visual, _centre)
             _y,
             _diameter * _stretch,
             _diameter / _stretch,
-            sc_space_hash(_seed + _i * 911.43) * 360,
+            sc_space_hash(
+                _entry_seed + 100.34
+            ) * 360,
             merge_colour(
                 _visual.colour_secondary,
-                _visual.colour_highlight,
-                sc_space_hash(_seed + _i * 937.29)
+                _visual.colour_core,
+                sc_space_hash(
+                    _entry_seed + 126.18
+                )
             ),
             lerp(
-                0.06,
-                0.18,
-                sc_space_hash(_seed + _i * 953.71)
+                0.12,
+                0.3,
+                sc_space_hash(
+                    _entry_seed + 148.62
+                )
             )
         );
     }
@@ -497,12 +702,16 @@ function sc_space_nebula_glows_bake(_visual, _centre)
     gpu_set_blendmode(bm_normal);
 }
 
-/// @description Generates and bakes one detailed nebula patch sprite.
+/// @description Generates and bakes one detailed layered nebula sprite.
 function sc_space_nebula_sprite_create(_visual)
 {
     var _size = _visual.canvas_size;
     var _centre = _size * 0.5;
-    var _surface = surface_create(_size, _size);
+
+    var _surface = surface_create(
+        _size,
+        _size
+    );
 
     if (!surface_exists(_surface))
         return -1;
@@ -510,17 +719,50 @@ function sc_space_nebula_sprite_create(_visual)
     surface_set_target(_surface);
     draw_clear_alpha(c_black, 0);
 
-    sc_space_nebula_body_bake(_visual, _centre);
-    sc_space_nebula_clouds_bake(_visual, _centre);
-    sc_space_nebula_arms_bake(_visual, _centre);
-    sc_space_nebula_wisps_bake(_visual, _centre);
-    sc_space_nebula_glows_bake(_visual, _centre);
-    sc_space_nebula_streaks_bake(_visual, _centre);
-    sc_space_nebula_major_streaks_bake(_visual, _centre);
+    sc_space_nebula_body_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_blooms_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_clouds_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_arms_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_wisps_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_glows_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_streaks_bake(
+        _visual,
+        _centre
+    );
+
+    sc_space_nebula_major_streaks_bake(
+        _visual,
+        _centre
+    );
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
     draw_set_colour(c_white);
+
     surface_reset_target();
 
     var _sprite = sprite_create_from_surface(
@@ -537,4 +779,107 @@ function sc_space_nebula_sprite_create(_visual)
 
     surface_free(_surface);
     return _sprite;
+}
+
+/// @description Bakes large faint colourful cloud blooms.
+function sc_space_nebula_blooms_bake(_visual, _centre)
+{
+    var _size = _visual.canvas_size;
+    var _seed = _visual.seed;
+    var _amount = max(
+        6,
+        ceil(_visual.body_amount * 0.14)
+    );
+
+    for (var _i = 0; _i < _amount; ++_i)
+    {
+        var _entry_seed = _seed
+            + _i * 1049.37;
+
+        var _sprite =
+            sc_space_hash(_entry_seed + 1) < 0.5
+            ? s_particle_cloud_002
+            : s_particle_cloud_003;
+
+        var _direction =
+            sc_space_hash(_entry_seed + 2)
+            * 360;
+
+        var _distance = power(
+            sc_space_hash(_entry_seed + 3),
+            1.6
+        );
+
+        var _x = _centre + lengthdir_x(
+            _distance
+            * _size
+            * _visual.body_spread_x
+            * 0.85,
+            _direction
+        );
+
+        var _y = _centre + lengthdir_y(
+            _distance
+            * _size
+            * _visual.body_spread_y
+            * 0.85,
+            _direction
+        );
+
+        var _width = lerp(
+            _size * 0.3,
+            _size * 0.68,
+            sc_space_hash(_entry_seed + 4)
+        );
+
+        var _height = _width * lerp(
+            0.52,
+            0.92,
+            sc_space_hash(_entry_seed + 5)
+        );
+
+        var _colour = merge_colour(
+            _visual.colour_primary,
+            _visual.colour_secondary,
+            sc_space_hash(_entry_seed + 6)
+        );
+
+        sc_space_nebula_source_draw(
+            _sprite,
+            _x,
+            _y,
+            _width,
+            _height,
+            sc_space_hash(_entry_seed + 7) * 360,
+            _colour,
+            lerp(
+                0.045,
+                0.11,
+                sc_space_hash(_entry_seed + 8)
+            )
+        );
+
+        gpu_set_blendmode(bm_add);
+
+        sc_space_nebula_source_draw(
+            s_particle_blur_1024,
+            _x,
+            _y,
+            _width * 0.78,
+            _height * 0.78,
+            0,
+            merge_colour(
+                _visual.colour_secondary,
+                _visual.colour_highlight,
+                0.35
+            ),
+            lerp(
+                0.025,
+                0.065,
+                sc_space_hash(_entry_seed + 9)
+            )
+        );
+
+        gpu_set_blendmode(bm_normal);
+    }
 }
