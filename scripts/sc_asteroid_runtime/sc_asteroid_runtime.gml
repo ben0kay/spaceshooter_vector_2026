@@ -89,7 +89,7 @@ function sc_asteroid_init(_asteroid, _create)
 
         visual: {
             radius: _radius,
-            variant: irandom(15),
+            variant: irandom(5),
             start_angle: random(360),
             rotation_speed: random_range(-0.08,0.08),
             scale_x: random_range(0.92,1.08) * choose(-1,1),
