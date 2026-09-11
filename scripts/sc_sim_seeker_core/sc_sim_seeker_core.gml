@@ -298,11 +298,14 @@ function sc_weapon_register_simulant_seeker_core()
             },
 
             guidance: {
-                homing: 1,
-                acquire_range: 1500,
-                turn_speed: 1.65,
-                reacquire_interval: 8
-            },
+			    acquire_range: 1500,
+			    turn_speed: 1.65,
+			    reacquire_interval: 8,
+			    lead_strength: 0,
+			    guidance_delay: 0,
+			    lock_angle: 360,
+			    avoidance: 0
+			},
 
             detonation: {
                 scale: 1.15,

@@ -300,52 +300,32 @@ function sc_projectile_homing_update(_projectile)
 
     if (GAME_TICK >= _runtime.guidance_ready_tick)
     {
-        if (!instance_exists(_target) && GAME_TICK >= _runtime.next_target_tick)
+        if (!instance_exists(_target) || GAME_TICK >= _runtime.next_target_tick)
         {
-            _target = sc_projectile_target_find(
-                _projectile,
-                _guidance.acquire_range,
-                _guidance.lock_angle
-            );
-
+            _target = sc_projectile_target_find(_projectile, _guidance.acquire_range, _guidance.lock_angle);
             _runtime.target_id = _target;
             _runtime.next_target_tick = GAME_TICK + _guidance.reacquire_interval;
         }
 
         if (instance_exists(_target))
-        {
-            _target_direction = sc_projectile_target_direction_get(
-                _projectile,
-                _target,
-                _guidance.lead_strength
-            );
-        }
+            _target_direction = sc_projectile_target_direction_get(_projectile, _target, _guidance.lead_strength);
     }
 
     var _turn_speed = _guidance.turn_speed;
 
     if (_guidance.avoidance != 0)
     {
-        var _avoidance_direction = sc_projectile_avoidance_direction_get(
-            _projectile,
-            _target_direction
-        );
+        var _avoidance_direction = sc_projectile_avoidance_direction_get(_projectile, _target_direction);
 
         if (!is_undefined(_avoidance_direction))
         {
             _target_direction = _avoidance_direction;
-            _turn_speed =
-                global.config.projectile.obstacle_avoidance.turn_speed_max
-                * _guidance.avoidance.strength;
+            _turn_speed = global.config.projectile.obstacle_avoidance.turn_speed_max * _guidance.avoidance.strength;
         }
     }
 
     var _turn = angle_difference(_target_direction, _data.direction);
-    _data.direction = (
-        _data.direction
-        + clamp(_turn, -_turn_speed, _turn_speed)
-        + 360
-    ) mod 360;
+    _data.direction = (_data.direction + clamp(_turn, -_turn_speed, _turn_speed) + 360) mod 360;
 }
 
 /// @description Creates a projectile's explosion and optional child emissions.

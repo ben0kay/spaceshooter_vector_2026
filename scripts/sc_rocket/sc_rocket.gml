@@ -122,7 +122,6 @@ function sc_weapon_register_shard_rocket()
             },
 
             guidance: {
-			    homing: 1,
 			    acquire_range: 720,
 			    turn_speed: 4,
 			    reacquire_interval: 12,
@@ -567,12 +566,7 @@ function sc_weapon_register_shard_demolition_rocket()
             },
 
             // Completely unguided.
-            guidance: {
-                homing: 0,
-                acquire_range: 0,
-                turn_speed: 0,
-                reacquire_interval: 30
-            },
+            guidance: 0,
 
             detonation: {
                 // 82 × 7.5 produces an approximately 615-pixel radius.
