@@ -556,31 +556,47 @@ function sc_sector_room_create()
 {
     if (!sc_sector_campaign_active())
     {
-        show_debug_message("SECTOR ERROR - campaign runtime unavailable");
+        show_debug_message(
+            "SECTOR ERROR - campaign runtime unavailable"
+        );
+
         return false;
     }
 
     var _sector = global.game.sector;
     var _previous_seed = random_get_seed();
-    var _sector_seed = sc_sector_seed_get(_sector.x, _sector.y);
+
+    var _sector_seed = sc_sector_seed_get(
+        _sector.x,
+        _sector.y
+    );
+
     var _layer = layer_get_id("Instances");
 
     random_set_seed(_sector_seed);
 
     sc_sector_structures_spawn(_layer);
     sc_sector_asteroid_fields_spawn(_layer);
-    sc_gas_cloud_test_spawn(_layer);
+
+    sc_gas_cloud_sector_spawn(
+        _layer,
+        _sector_seed
+    );
 
     random_set_seed(_previous_seed);
 
     if (instance_exists(global.player_id))
-        sc_sector_player_entry_apply(global.player_id);
+        sc_sector_player_entry_apply(
+            global.player_id
+        );
 
     show_debug_message(
         "SECTOR GENERATED - "
-        + string(_sector.x) + ", "
+        + string(_sector.x)
+        + ", "
         + string(_sector.y)
-        + " - SEED " + string(_sector_seed)
+        + " // SEED "
+        + string(_sector_seed)
     );
 
     return true;

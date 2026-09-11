@@ -755,6 +755,38 @@ function sc_asteroid_spawn_composition_resolve(_composition)
     };
 }
 
+/// @description Returns curved spacing compression based on existing formation spacing.
+function sc_asteroid_spawn_spacing_multiplier_get(
+    _spacing_scale
+)
+{
+    var _minimum_spacing = clamp(
+        global.config
+        .sector
+        .asteroid_fields
+        .spacing_multiplier,
+        0.1,
+        1
+    );
+
+    var _sparse_factor = clamp(
+        (_spacing_scale - 0.9) / 0.3,
+        0,
+        1
+    );
+
+    var _curved_factor = power(
+        _sparse_factor,
+        1.6
+    );
+
+    return lerp(
+        1,
+        _minimum_spacing,
+        _curved_factor
+    );
+}
+
 /// @description Spawns one asteroid population and returns its actual count.
 function sc_asteroid_spawn_population(
     _shape,
@@ -771,16 +803,10 @@ function sc_asteroid_spawn_population(
     var _attempts = 0;
     var _attempts_max = _amount * 100;
 
-    var _global_spacing =
-        global.config
-        .sector
-        .asteroid_fields
-        .spacing_multiplier;
-
-    _global_spacing = max(
-        0.1,
-        _global_spacing
-    );
+    var _curved_spacing =
+        sc_asteroid_spawn_spacing_multiplier_get(
+            _spacing_scale
+        );
 
     while (_spawned < _amount
     && _attempts < _attempts_max)
@@ -809,7 +835,7 @@ function sc_asteroid_spawn_population(
             + 24
         )
         * _spacing_scale
-        * _global_spacing;
+        * _curved_spacing;
 
         if (_position.x < _edge_margin
         || _position.x > room_width - _edge_margin

@@ -635,7 +635,9 @@ function sc_hud_sector_map_player_draw(_hud, _layout)
 function sc_hud_sector_map_draw(_hud)
 {
     var _map = _hud.sector_map;
-    if (!_map.open) return;
+
+    if (!_map.open)
+        return;
 
     var _palette = _hud.data.palette;
     var _layout = sc_hud_sector_map_layout_get(_hud);
@@ -644,10 +646,18 @@ function sc_hud_sector_map_draw(_hud)
 
     draw_set_alpha(0.96);
     draw_set_colour(_palette.void);
-    draw_rectangle(0, 0, _gui_width, _gui_height, false);
+
+    draw_rectangle(
+        0,
+        0,
+        _gui_width,
+        _gui_height,
+        false
+    );
 
     draw_set_alpha(1);
     draw_set_colour(_palette.panel);
+
     draw_rectangle(
         _layout.map_x,
         _layout.map_y,
@@ -657,6 +667,7 @@ function sc_hud_sector_map_draw(_hud)
     );
 
     draw_set_colour(_palette.outline);
+
     draw_rectangle(
         _layout.map_x,
         _layout.map_y,
@@ -665,24 +676,56 @@ function sc_hud_sector_map_draw(_hud)
         true
     );
 
-    sc_hud_sector_map_grid_draw(_hud, _layout);
+    sc_hud_sector_map_grid_draw(
+        _hud,
+        _layout
+    );
 
-    // Environmental regions sit beneath physical sector information.
-    sc_hud_sector_map_environment_fields_draw(_hud, _layout);
+    // Debug-only visual background regions.
+    sc_hud_sector_map_nebulas_draw(
+        _layout
+    );
 
-    sc_hud_sector_map_fields_draw(_hud, _layout);
-    sc_hud_sector_map_asteroids_draw(_hud, _layout);
-    sc_hud_sector_map_structures_draw(_hud, _layout);
-    sc_hud_sector_map_player_draw(_hud, _layout);
+    // Environmental gameplay regions.
+    sc_hud_sector_map_environment_fields_draw(
+        _hud,
+        _layout
+    );
+
+    sc_hud_sector_map_fields_draw(
+        _hud,
+        _layout
+    );
+
+    sc_hud_sector_map_asteroids_draw(
+        _hud,
+        _layout
+    );
+
+    sc_hud_sector_map_structures_draw(
+        _hud,
+        _layout
+    );
+
+    sc_hud_sector_map_player_draw(
+        _hud,
+        _layout
+    );
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.core);
     draw_set_alpha(1);
-    draw_text(48, 28, "SECTOR OVERVIEW // DEBUG");
+
+    draw_text(
+        48,
+        28,
+        "SECTOR OVERVIEW // DEBUG"
+    );
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.muted);
+
     draw_text(
         _gui_width - 48,
         28,

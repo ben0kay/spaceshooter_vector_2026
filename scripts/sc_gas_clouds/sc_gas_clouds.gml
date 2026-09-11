@@ -561,47 +561,97 @@ function sc_environment_field_draw(_field)
     }
 }
 
-/// @description Spawns large temporary visual test clouds in the sector.
-function sc_gas_cloud_test_spawn(_layer)
+/// @description Generates deterministic gas fields for one sector.
+function sc_gas_cloud_sector_spawn(
+    _layer,
+    _sector_seed
+)
 {
-    var _centre_x = room_width * 0.5;
-    var _centre_y = room_height * 0.5;
-
     global.game.sector.environment_fields = [];
 
-    array_push(
-        global.game.sector.environment_fields,
-        sc_environment_field_create(
-            "environment_gas_ionized",
-            _centre_x + 12000,
-            _centre_y - 3000,
-            _layer,
+    var _previous_seed = random_get_seed();
 
-            // Large elongated gas region.
-            11000,
-            7250,
-
-            24,
-            0.5
-        )
+    var _gas_seed = abs(
+        (_sector_seed + 190871)
+        mod 2147483647
     );
 
-    array_push(
-        global.game.sector.environment_fields,
-        sc_environment_field_create(
-            "environment_gas_ionized",
-            _centre_x - 15000,
-            _centre_y + 10000,
-            _layer,
-
-            // Very large dense gas region.
-            17000,
-            9500,
-
-            -38,
-            0.8
-        )
+    random_set_seed(
+        max(1, floor(_gas_seed))
     );
 
-    return true;
+    var _roll = random(1);
+    var _count = 0;
+
+    if (_roll < 0.3)
+    {
+        _count = 0;
+    }
+    else if (_roll < 0.7)
+    {
+        _count = irandom_range(1, 3);
+    }
+    else
+    {
+        _count = irandom_range(4, 5);
+    }
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _radius_x = random_range(
+            4500,
+            8500
+        );
+
+        var _radius_y = random_range(
+            3500,
+            6500
+        );
+
+        var _margin_x = _radius_x + 900;
+        var _margin_y = _radius_y + 900;
+
+        var _x = random_range(
+            _margin_x,
+            room_width - _margin_x
+        );
+
+        var _y = random_range(
+            _margin_y,
+            room_height - _margin_y
+        );
+
+        var _angle = random_range(
+            -180,
+            180
+        );
+
+        var _density = random_range(
+            0.35,
+            0.85
+        );
+
+        array_push(
+            global.game.sector.environment_fields,
+            sc_environment_field_create(
+                "environment_gas_ionized",
+                _x,
+                _y,
+                _layer,
+                _radius_x,
+                _radius_y,
+                _angle,
+                _density
+            )
+        );
+    }
+
+    random_set_seed(_previous_seed);
+
+    show_debug_message(
+        "SECTOR GAS FIELDS - "
+        + string(_count)
+    );
+
+    return _count;
 }

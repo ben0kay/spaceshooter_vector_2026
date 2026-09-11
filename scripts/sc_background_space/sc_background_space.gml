@@ -58,10 +58,11 @@ function sc_space_star_sprite_create(_size, _count, _seed, _radius_min, _radius_
     return _sprite;
 }
 
-/// @description Creates one complete procedural combat-space background.
+/// @description Creates one deterministic procedural combat-space background.
 function sc_space_background_create()
 {
     var _tile_size = 1024;
+    var _sector_seed = sc_space_background_seed_get();
 
     return {
         tile_size: _tile_size,
@@ -77,6 +78,7 @@ function sc_space_background_create()
                     make_colour_rgb(110, 145, 190),
                     0.015
                 ),
+
                 parallax: 0.08,
                 alpha: 0.55
             },
@@ -91,6 +93,7 @@ function sc_space_background_create()
                     make_colour_rgb(185, 215, 255),
                     0.035
                 ),
+
                 parallax: 0.2,
                 alpha: 0.72
             },
@@ -105,145 +108,15 @@ function sc_space_background_create()
                     make_colour_rgb(225, 240, 255),
                     0.09
                 ),
+
                 parallax: 0.42,
                 alpha: 0.9
             }
         },
 
-        // Localized, approximately circular nebula landmarks.
-        nebulas: [
-            sc_space_nebula_create(
-                "violet_storm",
-                401,
-                room_width * 0.13,
-                room_height * 0.14,
-                4600,
-                3900,
-                -18,
-                0.94
-            ),
-
-            sc_space_nebula_create(
-                "cyan_veil",
-                427,
-                room_width * 0.38,
-                room_height * 0.1,
-                4200,
-                3700,
-                22,
-                0.9
-            ),
-
-            sc_space_nebula_create(
-                "crimson_rift",
-                453,
-                room_width * 0.68,
-                room_height * 0.15,
-                4800,
-                3500,
-                -31,
-                0.94
-            ),
-
-            sc_space_nebula_create(
-                "azure_tempest",
-                479,
-                room_width * 0.88,
-                room_height * 0.25,
-                4300,
-                4100,
-                14,
-                0.94
-            ),
-
-            sc_space_nebula_create(
-                "solar_bloom",
-                505,
-                room_width * 0.2,
-                room_height * 0.36,
-                3900,
-                3700,
-                -9,
-                0.92
-            ),
-
-            sc_space_nebula_create(
-                "ghost_cloud",
-                531,
-                room_width * 0.52,
-                room_height * 0.33,
-                5000,
-                4100,
-                38,
-                0.82
-            ),
-
-            sc_space_nebula_create(
-                "violet_storm",
-                557,
-                room_width * 0.78,
-                room_height * 0.43,
-                4500,
-                3900,
-                27,
-                0.94
-            ),
-
-            sc_space_nebula_create(
-                "cyan_veil",
-                583,
-                room_width * 0.11,
-                room_height * 0.62,
-                4700,
-                4000,
-                -24,
-                0.9
-            ),
-
-            sc_space_nebula_create(
-                "azure_tempest",
-                609,
-                room_width * 0.39,
-                room_height * 0.58,
-                4100,
-                3900,
-                17,
-                0.94
-            ),
-
-            sc_space_nebula_create(
-                "crimson_rift",
-                635,
-                room_width * 0.67,
-                room_height * 0.69,
-                4500,
-                3600,
-                -37,
-                0.92
-            ),
-
-            sc_space_nebula_create(
-                "solar_bloom",
-                661,
-                room_width * 0.9,
-                room_height * 0.76,
-                4300,
-                4000,
-                11,
-                0.92
-            ),
-
-            sc_space_nebula_create(
-                "ghost_cloud",
-                687,
-                room_width * 0.43,
-                room_height * 0.88,
-                5100,
-                4200,
-                -16,
-                0.84
-            )
-        ],
+        nebulas: sc_space_nebulas_sector_create(
+            _sector_seed
+        ),
 
         grid: {
             size: 256,
@@ -391,4 +264,117 @@ function sc_space_background_destroy(_field)
         if (sprite_exists(_field.nebulas[_i].sprite))
             sprite_delete(_field.nebulas[_i].sprite);
     }
+}
+
+/// @description Returns the deterministic background seed for the active sector.
+function sc_space_background_seed_get()
+{
+    if (variable_global_exists("game")
+    && is_struct(global.game)
+    && variable_struct_exists(global.game, "sector")
+    && is_struct(global.game.sector))
+    {
+        return sc_sector_seed_get(
+            global.game.sector.x,
+            global.game.sector.y
+        );
+    }
+
+    return global.config.sector.world_seed;
+}
+
+/// @description Generates deterministic nebula landmarks for one sector.
+function sc_space_nebulas_sector_create(_sector_seed)
+{
+    var _nebulas = [];
+
+    var _types = [
+        "violet_storm",
+        "cyan_veil",
+        "crimson_rift",
+        "azure_tempest",
+        "solar_bloom",
+        "ghost_cloud"
+    ];
+
+    var _seed = _sector_seed + 913751;
+
+    var _count = 8 + floor(
+        sc_space_hash(_seed + 1) * 5
+    );
+
+    var _margin = 2600;
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _entry_seed = _seed + _i * 977;
+
+        var _type_index = clamp(
+            floor(
+                sc_space_hash(_entry_seed + 1)
+                * array_length(_types)
+            ),
+            0,
+            array_length(_types) - 1
+        );
+
+        var _width = lerp(
+            3200,
+            4800,
+            sc_space_hash(_entry_seed + 2)
+        );
+
+        var _aspect = lerp(
+            0.78,
+            1.12,
+            sc_space_hash(_entry_seed + 3)
+        );
+
+        var _height = _width * _aspect;
+
+        var _x = lerp(
+            _margin,
+            room_width - _margin,
+            sc_space_hash(_entry_seed + 4)
+        );
+
+        var _y = lerp(
+            _margin,
+            room_height - _margin,
+            sc_space_hash(_entry_seed + 5)
+        );
+
+        var _angle = lerp(
+            -180,
+            180,
+            sc_space_hash(_entry_seed + 6)
+        );
+
+        var _alpha = lerp(
+            0.84,
+            0.98,
+            sc_space_hash(_entry_seed + 7)
+        );
+
+        var _visual_seed = floor(
+            sc_space_hash(_entry_seed + 8)
+            * 1000000
+        );
+
+        array_push(
+            _nebulas,
+            sc_space_nebula_create(
+                _types[_type_index],
+                _visual_seed,
+                _x,
+                _y,
+                _width,
+                _height,
+                _angle,
+                _alpha
+            )
+        );
+    }
+
+    return _nebulas;
 }
