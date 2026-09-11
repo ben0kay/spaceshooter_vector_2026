@@ -175,6 +175,7 @@
     {"id":{"name":"sc_enemy_bake","path":"scripts/sc_enemy_bake/sc_enemy_bake.yy",},},
     {"id":{"name":"sc_enemy_engagement","path":"scripts/sc_enemy_engagement/sc_enemy_engagement.yy",},},
     {"id":{"name":"sc_enemy_flee","path":"scripts/sc_enemy_flee/sc_enemy_flee.yy",},},
+    {"id":{"name":"sc_enemy_grade","path":"scripts/sc_enemy_grade/sc_enemy_grade.yy",},},
     {"id":{"name":"sc_enemy_init","path":"scripts/sc_enemy_init/sc_enemy_init.yy",},},
     {"id":{"name":"sc_enemy_movement","path":"scripts/sc_enemy_movement/sc_enemy_movement.yy",},},
     {"id":{"name":"sc_enemy_register","path":"scripts/sc_enemy_register/sc_enemy_register.yy",},},

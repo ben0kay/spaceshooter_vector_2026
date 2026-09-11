@@ -56,6 +56,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
     return {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
+        grade: sc_enemy_grade_create(_data.identity.name),
         doctrine: sc_enemy_init_doctrine_create(_data),
         reward: variable_clone(_data.reward),
 
@@ -101,13 +102,14 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
                 side: 0,
                 next_check_tick: GAME_TICK
             },
-				
-			field: {
-			    index: -1,
-			    density: 0,
-			    speed_multiplier: 1,
-			    next_check_tick: GAME_TICK
-			},
+
+            field: {
+                index: -1,
+                density: 0,
+                speed_multiplier: 1,
+                next_check_tick: GAME_TICK
+            },
+
             // Only specialized movement styles provide additional runtime data.
             behaviour_runtime:
                 variable_struct_exists(_data.movement_controller, "runtime")
@@ -262,7 +264,10 @@ function sc_enemy_init(_enemy, _enemy_key)
         return false;
     }
 
-    var _data = variable_struct_get(global.data.enemies, _enemy_key);
+    var _data = variable_struct_get(
+        global.data.enemies,
+        _enemy_key
+    );
 
     // Create the shared runtime before calculating its final stats.
     _enemy.enemy = sc_enemy_init_runtime_create(
@@ -274,11 +279,16 @@ function sc_enemy_init(_enemy, _enemy_key)
     if (!sc_enemy_stats_init(_enemy, _data.stats_base))
         return false;
 
+    // Grade is permanent and enters before the final stats are used.
+    if (!sc_enemy_grade_stats_apply(_enemy))
+        return false;
+
     var _runtime = _enemy.enemy;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
     // Establish initial facing before entity and hardpoint initialization.
     _enemy.draw_angle = 0;
+
     _runtime.movement.command.facing_mode =
         _runtime.movement_controller.facing.default_mode;
 
@@ -302,8 +312,10 @@ function sc_enemy_init(_enemy, _enemy_key)
     if (!sc_enemy_attack_controller_init(_enemy))
         return false;
 
-    if (is_struct(_runtime.utility_controller)
-    && !sc_enemy_utility_controller_init(_enemy))
+    if (
+        is_struct(_runtime.utility_controller)
+        && !sc_enemy_utility_controller_init(_enemy)
+    )
         return false;
 
     _enemy.initialized = true;
@@ -311,7 +323,8 @@ function sc_enemy_init(_enemy, _enemy_key)
 
     show_debug_message(
         "ENEMY INITIALIZED - "
-        + _runtime.identity.name
+        + _runtime.grade.name
+        + " [" + sc_item_grade_name_get(_runtime.grade.grade) + "]"
     );
 
     return true;

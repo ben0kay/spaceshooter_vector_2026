@@ -286,6 +286,70 @@ function sc_config_init()
 
         enemy: {
 			
+			grades: [
+                {
+                    grade: ItemGrade.COMMON,
+                    chance: 0,
+                    defence_multiplier: 1,
+                    damage_multiplier: 1,
+                    glow_alpha: 0,
+                    glow_scale: 0,
+                    names: []
+                },
+                {
+                    grade: ItemGrade.IMPROVED,
+                    chance: 0.08,
+                    defence_multiplier: 1.05,
+                    damage_multiplier: 1.05,
+                    glow_alpha: 0.055,
+                    glow_scale: 3,
+                    names: [
+                        "Harlan's Skirmisher",
+                        "Wayward Corsair",
+                        "Ashrunner"
+                    ]
+                },
+                {
+                    grade: ItemGrade.ADVANCED,
+                    chance: 0.035,
+                    defence_multiplier: 1.09,
+                    damage_multiplier: 1.08,
+                    glow_alpha: 0.07,
+                    glow_scale: 3.3,
+                    names: [
+                        "Razorwing \"Black Talon\"",
+                        "Stormblade \"Apex\"",
+                        "Ironwing \"Vanguard\""
+                    ]
+                },
+                {
+                    grade: ItemGrade.SUPERIOR,
+                    chance: 0.02,
+                    defence_multiplier: 1.2,
+                    damage_multiplier: 1.15,
+                    glow_alpha: 0.085,
+                    glow_scale: 3.6,
+                    names: [
+                        "Voidlance \"Severance\"",
+                        "Nightfall \"Requiem\"",
+                        "Starreaver \"Nemesis\""
+                    ]
+                },
+                {
+                    grade: ItemGrade.PROTOTYPE,
+                    chance: 0.004,
+                    defence_multiplier: 1.35,
+                    damage_multiplier: 1.2,
+                    glow_alpha: 0.11,
+                    glow_scale: 4,
+                    names: [
+                        "Prototype Dreadwing \"Eidolon\"",
+                        "Prototype Warframe \"Terminus\"",
+                        "Prototype Voidship \"Ascendant\""
+                    ]
+                }
+            ],
+			
 			perception: {
 			    line_of_sight: {
 			        enabled: true,

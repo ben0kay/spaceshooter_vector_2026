@@ -403,8 +403,16 @@ function sc_enemy_draw(_enemy)
     var _motion = global.config.visual.ship_motion;
     var _phase = _runtime.motion_phase;
     var _strength = _visual.motion_strength;
-    var _bob_side = sin(GAME_TICK * _motion.side_speed + _phase) * _motion.side_amount * _strength;
-    var _bob_forward = sin(GAME_TICK * _motion.forward_speed + 1.7 + _phase * 0.73) * _motion.forward_amount * _strength;
+
+    var _bob_side =
+        sin(GAME_TICK * _motion.side_speed + _phase)
+        * _motion.side_amount
+        * _strength;
+
+    var _bob_forward =
+        sin(GAME_TICK * _motion.forward_speed + 1.7 + _phase * 0.73)
+        * _motion.forward_amount
+        * _strength;
 
     var _draw_x = _enemy.x
         + lengthdir_x(_bob_forward, _angle)
@@ -414,51 +422,161 @@ function sc_enemy_draw(_enemy)
         + lengthdir_y(_bob_forward, _angle)
         + lengthdir_y(_bob_side, _angle + 90);
 
-    for (var _i = 0; _i < array_length(_data.thrusters); _i++)
+    // Grade glow is drawn underneath the complete ship assembly.
+     if (_data.grade.graded)
+    {
+        sc_enemy_grade_glow_draw(
+            _enemy,
+            _draw_x,
+            _draw_y
+        );
+    }
+
+    for (var _i = 0; _i < array_length(_data.thrusters); ++_i)
     {
         var _thruster = _data.thrusters[_i];
         var _power = _thruster.runtime.power;
-        if (_power <= 0.01) continue;
 
-        var _forward = _thruster.forward * _visual.radius;
-        var _side = _thruster.side * _visual.radius;
-        var _thruster_x = _draw_x + lengthdir_x(_forward, _angle) + lengthdir_x(_side, _angle + 90);
-        var _thruster_y = _draw_y + lengthdir_y(_forward, _angle) + lengthdir_y(_side, _angle + 90);
-        var _thruster_angle = _angle + _thruster.angle;
-        var _flicker = 0.94 + sin(GAME_TICK * 0.35 + _thruster.runtime.phase) * 0.06;
-        var _length_scale = _thruster.scale * (0.25 + _power * 0.75) * _flicker;
-        var _width_scale = _thruster.scale * (0.82 + _power * 0.18);
+        if (_power <= 0.01)
+            continue;
+
+        var _forward =
+            _thruster.forward
+            * _visual.radius;
+
+        var _side =
+            _thruster.side
+            * _visual.radius;
+
+        var _thruster_x = _draw_x
+            + lengthdir_x(_forward, _angle)
+            + lengthdir_x(_side, _angle + 90);
+
+        var _thruster_y = _draw_y
+            + lengthdir_y(_forward, _angle)
+            + lengthdir_y(_side, _angle + 90);
+
+        var _thruster_angle =
+            _angle
+            + _thruster.angle;
+
+        var _flicker =
+            0.94
+            + sin(
+                GAME_TICK * 0.35
+                + _thruster.runtime.phase
+            ) * 0.06;
+
+        var _length_scale =
+            _thruster.scale
+            * (0.25 + _power * 0.75)
+            * _flicker;
+
+        var _width_scale =
+            _thruster.scale
+            * (0.82 + _power * 0.18);
 
         if (sprite_exists(_runtime.thrust_sprite))
-            draw_sprite_ext(_runtime.thrust_sprite, 0, _thruster_x, _thruster_y, _length_scale, _width_scale, _thruster_angle, c_white, _power);
+        {
+            draw_sprite_ext(
+                _runtime.thrust_sprite,
+                0,
+                _thruster_x,
+                _thruster_y,
+                _length_scale,
+                _width_scale,
+                _thruster_angle,
+                c_white,
+                _power
+            );
+        }
         else
-            _visual.thrust.draw_script(_thruster_x, _thruster_y, _visual.radius * _thruster.scale, _thruster_angle, _visual, _power);
+        {
+            _visual.thrust.draw_script(
+                _thruster_x,
+                _thruster_y,
+                _visual.radius * _thruster.scale,
+                _thruster_angle,
+                _visual,
+                _power
+            );
+        }
     }
 
-		sc_enemy_body_visual_draw(_enemy, _draw_x, _draw_y, _angle);
+    sc_enemy_body_visual_draw(
+        _enemy,
+        _draw_x,
+        _draw_y,
+        _angle
+    );
 
     var _core_x = _draw_x
-        + lengthdir_x(_visual.core.forward * _visual.radius, _angle)
-        + lengthdir_x(_visual.core.side * _visual.radius, _angle + 90);
+        + lengthdir_x(
+            _visual.core.forward * _visual.radius,
+            _angle
+        )
+        + lengthdir_x(
+            _visual.core.side * _visual.radius,
+            _angle + 90
+        );
 
     var _core_y = _draw_y
-        + lengthdir_y(_visual.core.forward * _visual.radius, _angle)
-        + lengthdir_y(_visual.core.side * _visual.radius, _angle + 90);
+        + lengthdir_y(
+            _visual.core.forward * _visual.radius,
+            _angle
+        )
+        + lengthdir_y(
+            _visual.core.side * _visual.radius,
+            _angle + 90
+        );
 
-    var _core_angle = _angle + _runtime.core_angle;
+    var _core_angle =
+        _angle
+        + _runtime.core_angle;
 
     if (sprite_exists(_runtime.core_sprite))
-        draw_sprite_ext(_runtime.core_sprite, 0, _core_x, _core_y, 1, 1, _core_angle, c_white, _runtime.core_alpha);
+    {
+        draw_sprite_ext(
+            _runtime.core_sprite,
+            0,
+            _core_x,
+            _core_y,
+            1,
+            1,
+            _core_angle,
+            c_white,
+            _runtime.core_alpha
+        );
+    }
     else
-        _visual.draw.core(_core_x, _core_y, _visual.radius, _core_angle, _visual, _runtime.core_alpha);
+    {
+        _visual.draw.core(
+            _core_x,
+            _core_y,
+            _visual.radius,
+            _core_angle,
+            _visual,
+            _runtime.core_alpha
+        );
+    }
 
-    for (var _i = 0; _i < array_length(_data.hardpoints); _i++)
+    for (var _i = 0; _i < array_length(_data.hardpoints); ++_i)
     {
         var _hardpoint = _data.hardpoints[_i];
-        var _forward = _hardpoint.forward * _visual.radius;
-        var _side = _hardpoint.side * _visual.radius;
-        var _hardpoint_angle = _hardpoint.runtime.aim_angle;
-        var _recoil = _hardpoint.runtime.recoil;
+
+        var _forward =
+            _hardpoint.forward
+            * _visual.radius;
+
+        var _side =
+            _hardpoint.side
+            * _visual.radius;
+
+        var _hardpoint_angle =
+            _hardpoint.runtime.aim_angle;
+
+        var _recoil =
+            _hardpoint.runtime.recoil;
 
         var _hardpoint_x = _draw_x
             + lengthdir_x(_forward, _angle)
@@ -471,19 +589,55 @@ function sc_enemy_draw(_enemy)
             - lengthdir_y(_recoil, _hardpoint_angle);
 
         if (sprite_exists(_hardpoint.runtime.sprite))
-            draw_sprite_ext(_hardpoint.runtime.sprite, 0, _hardpoint_x, _hardpoint_y, 1, 1, _hardpoint_angle, c_white, 1);
+        {
+            draw_sprite_ext(
+                _hardpoint.runtime.sprite,
+                0,
+                _hardpoint_x,
+                _hardpoint_y,
+                1,
+                1,
+                _hardpoint_angle,
+                c_white,
+                1
+            );
+        }
         else
-            _hardpoint.draw_script(_hardpoint_x, _hardpoint_y, _visual.radius, _hardpoint_angle, _visual, 1);
+        {
+            _hardpoint.draw_script(
+                _hardpoint_x,
+                _hardpoint_y,
+                _visual.radius,
+                _hardpoint_angle,
+                _visual,
+                1
+            );
+        }
     }
-	
-	if (is_struct(_data.utility_controller))
-    sc_enemy_utility_draw(_enemy, _draw_x, _draw_y);
 
-    sc_enemy_attack_telegraph_draw(_enemy, _draw_x, _draw_y);
-
-    if (_defence.shield.current > 0 && sprite_exists(_runtime.shield_sprite))
+    if (is_struct(_data.utility_controller))
     {
-        var _shield_ratio = _defence.shield.current / _defence.shield.maximum;
+        sc_enemy_utility_draw(
+            _enemy,
+            _draw_x,
+            _draw_y
+        );
+    }
+
+    sc_enemy_attack_telegraph_draw(
+        _enemy,
+        _draw_x,
+        _draw_y
+    );
+
+    if (
+        _defence.shield.current > 0
+        && sprite_exists(_runtime.shield_sprite)
+    )
+    {
+        var _shield_ratio =
+            _defence.shield.current
+            / _defence.shield.maximum;
 
         sc_visual_shield_sprite_draw(
             _runtime.shield_sprite,
@@ -494,6 +648,16 @@ function sc_enemy_draw(_enemy)
             _shield_ratio,
             _runtime.shield_hit_alpha,
             1
+        );
+    }
+
+    // Grade name is drawn over the completed ship.
+     if (_data.grade.graded)
+    {
+        sc_enemy_grade_name_draw(
+            _enemy,
+            _draw_x,
+            _draw_y
         );
     }
 }

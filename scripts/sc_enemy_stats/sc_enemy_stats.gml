@@ -7,6 +7,7 @@ function sc_enemy_stats_init(_enemy, _stats_base)
         modifiers: {
             difficulty: [],
             level: [],
+            grade: [],
             local: [],
             temporary: []
         },
@@ -24,7 +25,8 @@ function sc_enemy_stats_recalculate(_enemy)
     var _data = _enemy.enemy;
     var _stats = _data.stats;
 
-    if (!_stats.dirty) return false;
+    if (!_stats.dirty)
+        return false;
 
     _stats.final = variable_clone(_stats.base);
 
@@ -35,6 +37,10 @@ function sc_enemy_stats_recalculate(_enemy)
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.level);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.level);
     sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.level);
+
+    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.grade);
+    sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.grade);
+    sc_stats_modifiers_apply(_stats.final.range, _stats.modifiers.grade);
 
     sc_stats_modifiers_apply(_stats.final, _stats.modifiers.local);
     sc_stats_modifiers_apply(_stats.final.handling, _stats.modifiers.local);
@@ -82,15 +88,25 @@ function sc_enemy_stats_recalculate(_enemy)
         _data.defence.armour.maximum = _final.armour_max;
         _data.defence.hull.maximum = _final.hull_max;
 
-        _data.defence.shield.current = min(_data.defence.shield.current, _final.shield_max);
-        _data.defence.armour.current = min(_data.defence.armour.current, _final.armour_max);
-        _data.defence.hull.current = min(_data.defence.hull.current, _final.hull_max);
+        _data.defence.shield.current = min(
+            _data.defence.shield.current,
+            _final.shield_max
+        );
+
+        _data.defence.armour.current = min(
+            _data.defence.armour.current,
+            _final.armour_max
+        );
+
+        _data.defence.hull.current = min(
+            _data.defence.hull.current,
+            _final.hull_max
+        );
     }
 
     _stats.dirty = false;
     return true;
 }
-
 /// @description Adds one modifier to a named enemy modifier group.
 function sc_enemy_stats_modifier_add(_enemy, _group, _modifier)
 {
