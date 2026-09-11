@@ -1,8 +1,6 @@
-/// @description Returns the reusable callsign pool belonging to one grade.
-function sc_enemy_grade_name_pool_get(_grade)
+/// @description Returns a reusable generic callsign pool belonging to one grade.
+function sc_enemy_grade_generic_name_pool_get(_grade)
 {
-    static _common = [];
-
     static _improved = [
         "Ashrunner",
         "Wayfarer",
@@ -33,13 +31,12 @@ function sc_enemy_grade_name_pool_get(_grade)
 
     switch (_grade)
     {
-        case ItemGrade.IMPROVED: return _improved;
         case ItemGrade.ADVANCED: return _advanced;
         case ItemGrade.SUPERIOR: return _superior;
         case ItemGrade.PROTOTYPE: return _prototype;
     }
 
-    return _common;
+    return _improved;
 }
 
 /// @description Returns a reusable Rebel owner pool belonging to one grade.
@@ -75,7 +72,88 @@ function sc_enemy_grade_rebel_owner_pool_get(_grade)
 
     switch (_grade)
     {
-        case ItemGrade.IMPROVED: return _improved;
+        case ItemGrade.ADVANCED: return _advanced;
+        case ItemGrade.SUPERIOR: return _superior;
+        case ItemGrade.PROTOTYPE: return _prototype;
+    }
+
+    return _improved;
+}
+
+/// @description Returns a reusable Corporation callsign pool belonging to one grade.
+function sc_enemy_grade_corporation_callsign_pool_get(_grade)
+{
+    static _improved = [
+        "COPPERHEAD",
+        "WATCHDOG",
+        "LONGBOW",
+        "BLUE SPEAR"
+    ];
+
+    static _advanced = [
+        "BLACK TALON",
+        "VANGUARD",
+        "IRON CROWN",
+        "DEADLOCK"
+    ];
+
+    static _superior = [
+        "SOVEREIGN",
+        "JUDGEMENT",
+        "DOMINUS",
+        "OVERWATCH"
+    ];
+
+    static _prototype = [
+        "AEGIS PRIME",
+        "ZENITH",
+        "IMPERATOR",
+        "FINAL AUTHORITY"
+    ];
+
+    switch (_grade)
+    {
+        case ItemGrade.ADVANCED: return _advanced;
+        case ItemGrade.SUPERIOR: return _superior;
+        case ItemGrade.PROTOTYPE: return _prototype;
+    }
+
+    return _improved;
+}
+
+/// @description Returns a reusable Simulant designation pool belonging to one grade.
+function sc_enemy_grade_simulant_designation_pool_get(_grade)
+{
+    static _improved = [
+        "ECHO",
+        "VECTOR",
+        "STATIC",
+        "TRACE"
+    ];
+
+    static _advanced = [
+        "SEVERANCE",
+        "NULL",
+        "FRACTURE",
+        "OVERRIDE"
+    ];
+
+    static _superior = [
+        "REQUIEM",
+        "NEMESIS",
+        "EVENT HORIZON",
+        "OBLIVION"
+    ];
+
+    static _prototype = [
+        "EIDOLON",
+        "TERMINUS",
+        "SINGULARITY",
+        "APOTHEOSIS"
+    ];
+
+    switch (_grade)
+    {
         case ItemGrade.ADVANCED: return _advanced;
         case ItemGrade.SUPERIOR: return _superior;
         case ItemGrade.PROTOTYPE: return _prototype;
@@ -87,37 +165,70 @@ function sc_enemy_grade_rebel_owner_pool_get(_grade)
 /// @description Creates a faction-styled name while preserving the real ship name.
 function sc_enemy_grade_name_create(_base_name, _faction, _grade)
 {
-    var _names = sc_enemy_grade_name_pool_get(_grade);
-    var _name = _names[irandom(array_length(_names) - 1)];
-
     switch (_faction)
     {
         case Faction.REBEL:
         {
-            var _owners = sc_enemy_grade_rebel_owner_pool_get(_grade);
-            var _owner = _owners[irandom(array_length(_owners) - 1)];
+            var _owners =
+                sc_enemy_grade_rebel_owner_pool_get(_grade);
+
+            var _owner =
+                _owners[irandom(array_length(_owners) - 1)];
 
             return _owner + "'s " + _base_name;
         }
 
         case Faction.CORPORATION:
         {
-            if (_grade == ItemGrade.PROTOTYPE)
-                return "Prototype " + _base_name + " \"" + string_upper(_name) + "\"";
+            var _callsigns =
+                sc_enemy_grade_corporation_callsign_pool_get(_grade);
 
-            return _base_name + " \"" + string_upper(_name) + "\"";
+            var _callsign =
+                _callsigns[irandom(array_length(_callsigns) - 1)];
+
+            if (_grade == ItemGrade.PROTOTYPE)
+            {
+                return "Prototype "
+                    + _base_name
+                    + " \""
+                    + _callsign
+                    + "\"";
+            }
+
+            return _base_name
+                + " \""
+                + _callsign
+                + "\"";
         }
 
         case Faction.SIMULANT:
         {
-            if (_grade == ItemGrade.PROTOTYPE)
-                return _base_name + " // PROTOTYPE-" + string_upper(_name);
+            var _designations =
+                sc_enemy_grade_simulant_designation_pool_get(_grade);
 
-            return _base_name + " // " + string_upper(_name);
+            var _designation =
+                _designations[irandom(array_length(_designations) - 1)];
+
+            if (_grade == ItemGrade.PROTOTYPE)
+            {
+                return _base_name
+                    + " // PROTOTYPE-"
+                    + _designation;
+            }
+
+            return _base_name
+                + " // "
+                + _designation;
         }
 
         case Faction.AUTOMATED:
         {
+            var _names =
+                sc_enemy_grade_generic_name_pool_get(_grade);
+
+            var _name =
+                _names[irandom(array_length(_names) - 1)];
+
             return _base_name
                 + " // "
                 + string_upper(_name)
@@ -127,11 +238,29 @@ function sc_enemy_grade_name_create(_base_name, _faction, _grade)
 
         case Faction.ALIEN:
         {
-            return _base_name + " \"" + _name + "\"";
+            var _names =
+                sc_enemy_grade_generic_name_pool_get(_grade);
+
+            var _name =
+                _names[irandom(array_length(_names) - 1)];
+
+            return _base_name
+                + " \""
+                + _name
+                + "\"";
         }
     }
 
-    return _base_name + " \"" + _name + "\"";
+    var _names =
+        sc_enemy_grade_generic_name_pool_get(_grade);
+
+    var _name =
+        _names[irandom(array_length(_names) - 1)];
+
+    return _base_name
+        + " \""
+        + _name
+        + "\"";
 }
 
 /// @description Rolls one enemy grade after applying its rank chance multiplier.

@@ -785,19 +785,25 @@ function sc_enemy_die(_enemy, _packet)
     _data.visual.death.script(_enemy);
 
     var _shake_magnitude = clamp(
-        _shake_config.shake_base + _mass * _shake_config.shake_per_mass,
+        _shake_config.shake_base
+        + _mass * _shake_config.shake_per_mass,
         _shake_config.shake_min,
         _shake_config.shake_max
     );
 
     var _shake_time = min(
         _shake_config.time_max,
-        round(_shake_config.time_base + _mass * _shake_config.time_per_mass)
+        round(
+            _shake_config.time_base
+            + _mass * _shake_config.time_per_mass
+        )
     );
 
     sc_camera_shake_at(
-        _death_x, _death_y,
-        _shake_magnitude, _shake_time,
+        _death_x,
+        _death_y,
+        _shake_magnitude,
+        _shake_time,
         _shake_config.falloff_start,
         _shake_config.falloff_end,
         _shake_config.falloff_min
@@ -805,7 +811,14 @@ function sc_enemy_die(_enemy, _packet)
 
     if (_source.faction == Faction.PLAYER)
     {
-        sc_player_reward_grant(_data.reward, _death_x, _death_y, _death_layer);
+        sc_player_reward_grant(
+            _data.reward,
+            _death_x,
+            _death_y,
+            _death_layer,
+            _data.grade.reward_multiplier
+        );
+
         // Increment player kill count and combat statistics here later.
     }
     else
@@ -817,5 +830,8 @@ function sc_enemy_die(_enemy, _packet)
     // Process registered on-death abilities here later.
     // Insert registered enemy death audio here later.
 
-    return sc_enemy_remove(_enemy, EnemyRemovalReason.KILLED);
+    return sc_enemy_remove(
+        _enemy,
+        EnemyRemovalReason.KILLED
+    );
 }

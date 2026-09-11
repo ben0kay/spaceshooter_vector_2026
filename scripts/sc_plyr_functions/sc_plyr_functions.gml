@@ -431,7 +431,6 @@ function sc_player_control_suspend(_player)
     _player.combat.weapons_allowed = false;
 }
 
-
 /// @description Updates active player movement, weapons and abilities.
 function sc_player_update_active(_player)
 {
