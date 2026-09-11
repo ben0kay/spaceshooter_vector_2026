@@ -176,7 +176,125 @@ function sc_hud_sector_map_grid_draw(_hud, _layout)
     }
 }
 
-/// @description Draws one scaled organic shape boundary.
+/// @description Draws a partial curved asteroid-field boundary.
+function sc_hud_sector_map_arc_draw(
+    _layout,
+    _shape,
+    _colour,
+    _alpha
+)
+{
+    var _segments = 48;
+    var _half_span = _shape.arc_span * 0.5;
+
+    var _outer_radius = _shape.radius * (
+        _shape.arc_radius_scale
+        + _shape.arc_thickness_scale
+        + _shape.irregularity
+    );
+
+    var _inner_radius = _shape.radius * max(
+        0.05,
+        _shape.arc_radius_scale
+        - _shape.arc_thickness_scale
+        - _shape.irregularity
+    );
+
+    draw_set_colour(_colour);
+    draw_set_alpha(_alpha);
+
+    var _previous = undefined;
+    var _first_outer = undefined;
+    var _last_outer = undefined;
+    var _first_inner = undefined;
+    var _last_inner = undefined;
+
+    for (var _pass = 0; _pass < 2; ++_pass)
+    {
+        var _radius = _pass == 0
+            ? _outer_radius
+            : _inner_radius;
+
+        _previous = undefined;
+
+        for (var _i = 0; _i <= _segments; ++_i)
+        {
+            var _progress = _i / _segments;
+            var _direction = lerp(
+                -_half_span,
+                _half_span,
+                _progress
+            );
+
+            var _forward =
+                dcos(_direction)
+                * _radius;
+
+            var _side =
+                dsin(_direction)
+                * _radius
+                * _shape.aspect;
+
+            var _world_x = _shape.x
+                + lengthdir_x(_forward, _shape.angle)
+                + lengthdir_x(_side, _shape.angle + 90);
+
+            var _world_y = _shape.y
+                + lengthdir_y(_forward, _shape.angle)
+                + lengthdir_y(_side, _shape.angle + 90);
+
+            var _position = sc_hud_sector_map_position_get(
+                _layout,
+                _world_x,
+                _world_y
+            );
+
+            if (!is_undefined(_previous))
+            {
+                draw_line(
+                    _previous.x,
+                    _previous.y,
+                    _position.x,
+                    _position.y
+                );
+            }
+
+            if (_i == 0)
+            {
+                if (_pass == 0)
+                    _first_outer = _position;
+                else
+                    _first_inner = _position;
+            }
+
+            if (_i == _segments)
+            {
+                if (_pass == 0)
+                    _last_outer = _position;
+                else
+                    _last_inner = _position;
+            }
+
+            _previous = _position;
+        }
+    }
+
+    draw_line(
+        _first_outer.x,
+        _first_outer.y,
+        _first_inner.x,
+        _first_inner.y
+    );
+
+    draw_line(
+        _last_outer.x,
+        _last_outer.y,
+        _last_inner.x,
+        _last_inner.y
+    );
+}
+
+/// @description Draws one asteroid-field shape boundary.
 function sc_hud_sector_map_shape_draw(
     _hud,
     _layout,
@@ -186,6 +304,18 @@ function sc_hud_sector_map_shape_draw(
     _alpha
 )
 {
+    if (_shape.type == AsteroidFieldShape.ARC)
+    {
+        sc_hud_sector_map_arc_draw(
+            _layout,
+            _shape,
+            _colour,
+            _alpha
+        );
+
+        return;
+    }
+
     var _segments = 64;
     var _previous_x = 0;
     var _previous_y = 0;
@@ -196,6 +326,7 @@ function sc_hud_sector_map_shape_draw(
     for (var _i = 0; _i <= _segments; ++_i)
     {
         var _direction = _i / _segments * 360;
+
         var _wave = 1 + dsin(
             _direction * _shape.lobes
             + _shape.phase
@@ -206,8 +337,12 @@ function sc_hud_sector_map_shape_draw(
             * _radius_scale
             * _wave;
 
-        var _forward = dcos(_direction) * _distance;
-        var _side = dsin(_direction)
+        var _forward =
+            dcos(_direction)
+            * _distance;
+
+        var _side =
+            dsin(_direction)
             * _distance
             * _shape.aspect;
 

@@ -53,46 +53,59 @@ function sc_asteroid_spawn_generation_data()
             }
         ],
 
-        shapes: [
+                shapes: [
             {
                 shape: AsteroidFieldShape.ORGANIC, name: "FIELD",
-                weights: [100,70,75], amount_multiplier: 1,
+                weights: [88,60,50], amount_multiplier: 1,
                 aspect_min: 0.68, aspect_max: 1,
                 irregularity_min: 0.08, irregularity_max: 0.2,
                 lobes_min: 3, lobes_max: 8,
-                inner_radius_scale: 0
+                inner_radius_scale: 0,
+                arc_span_min: 360, arc_span_max: 360,
+                arc_radius_scale: 0,
+                arc_thickness_min: 0, arc_thickness_max: 0
             },
             {
                 shape: AsteroidFieldShape.BAND, name: "BAND",
-                weights: [0,0,0], amount_multiplier: 1,
-                aspect_min: 0.16, aspect_max: 0.3,
-                irregularity_min: 0.03, irregularity_max: 0.1,
+                weights: [12,18,22], amount_multiplier: 0.9,
+                aspect_min: 0.14, aspect_max: 0.27,
+                irregularity_min: 0.03, irregularity_max: 0.09,
                 lobes_min: 2, lobes_max: 5,
-                inner_radius_scale: 0
+                inner_radius_scale: 0,
+                arc_span_min: 360, arc_span_max: 360,
+                arc_radius_scale: 0,
+                arc_thickness_min: 0, arc_thickness_max: 0
             },
             {
                 shape: AsteroidFieldShape.RING, name: "RING",
-                weights: [0,30,25], amount_multiplier: 1,
+                weights: [0,15,18], amount_multiplier: 0.82,
                 aspect_min: 0.74, aspect_max: 1,
                 irregularity_min: 0.04, irregularity_max: 0.12,
                 lobes_min: 3, lobes_max: 6,
-                inner_radius_scale: 0.55
+                inner_radius_scale: 0.55,
+                arc_span_min: 360, arc_span_max: 360,
+                arc_radius_scale: 0,
+                arc_thickness_min: 0, arc_thickness_max: 0
             },
             {
                 shape: AsteroidFieldShape.ARC, name: "ARC",
-                weights: [0,0,0], amount_multiplier: 1,
-                aspect_min: 0.75, aspect_max: 1,
-                irregularity_min: 0.03, irregularity_max: 0.1,
+                weights: [0,7,10], amount_multiplier: 0.62,
+                aspect_min: 0.78, aspect_max: 1,
+                irregularity_min: 0.02, irregularity_max: 0.07,
                 lobes_min: 2, lobes_max: 5,
-                inner_radius_scale: 0.55
+                inner_radius_scale: 0,
+                arc_span_min: 105, arc_span_max: 220,
+                arc_radius_scale: 0.7,
+                arc_thickness_min: 0.1, arc_thickness_max: 0.2
             }
         ],
 
         distributions: [
             {
                 distribution: AsteroidFieldDistribution.UNIFORM, name: "UNIFORM",
-                weights: [55,40,35], amount_multiplier: 1,
-                inner_radius_scale: 0, radial_power: 0.5,
+                weights: [55,45,40], amount_multiplier: 1,
+                inner_radius_scale: 0, outer_radius_scale: 1,
+                radial_power: 0.5,
                 subformation_keys: [
                     "asteroid_cluster_local_medium",
                     "asteroid_cluster_local_sparse_large",
@@ -103,20 +116,23 @@ function sc_asteroid_spawn_generation_data()
             },
             {
                 distribution: AsteroidFieldDistribution.DENSE_CORE, name: "DENSE CORE",
-                weights: [45,30,0], amount_multiplier: 1,
-                inner_radius_scale: 0, radial_power: 1.7,
+                weights: [35,25,10], amount_multiplier: 1,
+                inner_radius_scale: 0, outer_radius_scale: 1,
+                radial_power: 1.7,
                 subformation_keys: []
             },
             {
                 distribution: AsteroidFieldDistribution.CLUSTERED, name: "CLUSTERED",
-                weights: [0,0,40], amount_multiplier: 0.12,
-                inner_radius_scale: 0, radial_power: 0.5,
+                weights: [0,0,35], amount_multiplier: 0.12,
+                inner_radius_scale: 0, outer_radius_scale: 1,
+                radial_power: 0.5,
                 subformation_keys: ["asteroid_pocket_archipelago"]
             },
             {
                 distribution: AsteroidFieldDistribution.EDGE_HEAVY, name: "EDGE HEAVY",
-                weights: [0,0,0], amount_multiplier: 1,
-                inner_radius_scale: 0.42, radial_power: 0.38,
+                weights: [10,30,15], amount_multiplier: 0.92,
+                inner_radius_scale: 0.42, outer_radius_scale: 1,
+                radial_power: 0.38,
                 subformation_keys: []
             }
         ],
@@ -312,12 +328,16 @@ function sc_asteroid_spawn_request_create()
                 aspect_min: 0.65, aspect_max: 1,
                 irregularity_min: 0, irregularity_max: 0.08,
                 lobes_min: 2, lobes_max: 3,
-                inner_radius_scale: 0
+                inner_radius_scale: 0,
+                arc_span_min: 360, arc_span_max: 360,
+                arc_radius_scale: 0,
+                arc_thickness_min: 0, arc_thickness_max: 0
             },
 
             distribution: {
                 distribution: AsteroidFieldDistribution.UNIFORM,
                 inner_radius_scale: 0,
+                outer_radius_scale: 1,
                 radial_power: 0.5
             },
 
@@ -379,26 +399,145 @@ function sc_asteroid_spawn_shape_create(_x, _y, _radius, _shape_data)
         lobes: irandom_range(_shape_data.lobes_min, _shape_data.lobes_max),
         phase: random(360),
 
-        inner_radius_scale: clamp(_shape_data.inner_radius_scale, 0, 0.95)
+        inner_radius_scale: clamp(_shape_data.inner_radius_scale, 0, 0.95),
+
+        arc_span: random_range(_shape_data.arc_span_min, _shape_data.arc_span_max),
+        arc_radius_scale: _shape_data.arc_radius_scale,
+        arc_thickness_scale: random_range(
+            _shape_data.arc_thickness_min,
+            _shape_data.arc_thickness_max
+        )
     };
 }
 
 /// @description Returns a randomized position inside one field shape and distribution.
 function sc_asteroid_spawn_shape_position_get(_shape, _distribution)
 {
-    var _direction = random(360);
-    var _wave = 1 + dsin(_direction * _shape.lobes + _shape.phase) * _shape.irregularity;
-    var _inner = max(_shape.inner_radius_scale, _distribution.inner_radius_scale);
-
-    var _normalized_distance = lerp(
-        clamp(_inner, 0, 0.98),
-        1,
-        power(random(1), max(0.01, _distribution.radial_power))
+    var _inner = clamp(
+        max(_shape.inner_radius_scale, _distribution.inner_radius_scale),
+        0,
+        0.98
     );
 
-    var _distance = _normalized_distance * _shape.radius * _wave;
-    var _forward = dcos(_direction) * _distance;
-    var _side = dsin(_direction) * _distance * _shape.aspect;
+    var _outer = clamp(
+        max(_inner + 0.01, _distribution.outer_radius_scale),
+        _inner + 0.01,
+        1
+    );
+
+    var _power = max(0.01, _distribution.radial_power);
+    var _forward = 0;
+    var _side = 0;
+
+    switch (_shape.type)
+    {
+        case AsteroidFieldShape.BAND:
+        {
+            var _forward_sign = random(1) < 0.5 ? -1 : 1;
+            var _side_sign = random(1) < 0.5 ? -1 : 1;
+
+            var _forward_normalized =
+                power(random(1), _power)
+                * _forward_sign
+                * _outer;
+
+            var _side_normalized =
+                power(random(1), _power)
+                * _side_sign;
+
+            var _end_taper = lerp(
+                0.48,
+                1,
+                power(1 - abs(_forward_normalized), 0.35)
+            );
+
+            var _wave = dsin(
+                _forward_normalized * 180
+                * _shape.lobes
+                + _shape.phase
+            ) * _shape.irregularity;
+
+            _forward =
+                _forward_normalized
+                * _shape.radius;
+
+            _side =
+                (_side_normalized * _end_taper + _wave)
+                * _shape.radius
+                * _shape.aspect;
+
+            break;
+        }
+
+        case AsteroidFieldShape.ARC:
+        {
+            var _arc_direction = random_range(
+                -_shape.arc_span * 0.5,
+                _shape.arc_span * 0.5
+            );
+
+            var _thickness_sign =
+                random(1) < 0.5 ? -1 : 1;
+
+            var _thickness =
+                power(random(1), _power)
+                * _thickness_sign;
+
+            var _wave = dsin(
+                _arc_direction * _shape.lobes
+                + _shape.phase
+            ) * _shape.irregularity;
+
+            var _distance = _shape.radius * (
+                _shape.arc_radius_scale
+                + _thickness * _shape.arc_thickness_scale
+                + _wave
+            );
+
+            _forward =
+                dcos(_arc_direction)
+                * _distance;
+
+            _side =
+                dsin(_arc_direction)
+                * _distance
+                * _shape.aspect;
+
+            break;
+        }
+
+        default:
+        {
+            var _direction = random(360);
+
+            var _wave = 1 + dsin(
+                _direction * _shape.lobes
+                + _shape.phase
+            ) * _shape.irregularity;
+
+            var _normalized_distance = lerp(
+                _inner,
+                _outer,
+                power(random(1), _power)
+            );
+
+            var _distance =
+                _normalized_distance
+                * _shape.radius
+                * _wave;
+
+            _forward =
+                dcos(_direction)
+                * _distance;
+
+            _side =
+                dsin(_direction)
+                * _distance
+                * _shape.aspect;
+
+            break;
+        }
+    }
 
     return {
         x: _shape.x
@@ -744,82 +883,73 @@ function sc_asteroid_spawn_subformations_create(
 {
     var _spawned = 0;
 
-    for (var _plan_index = 0;
-    _plan_index < array_length(_plans)
-    && _spawned < _asteroid_budget;
-    ++_plan_index)
+    for (
+        var _plan_index = 0;
+        _plan_index < array_length(_plans)
+        && _spawned < _asteroid_budget;
+        ++_plan_index
+    )
     {
         var _plan = _plans[_plan_index];
         var _profile = _plan.profile;
 
-        var _direction = random(360);
+        var _placement_distribution = {
+            distribution: AsteroidFieldDistribution.UNIFORM,
+            inner_radius_scale: _profile.distance_min_scale,
+            outer_radius_scale: _profile.distance_max_scale,
+            radial_power: 0.5
+        };
 
-        var _distance = random_range(
-            _parent_shape.radius
-                * _profile.distance_min_scale,
-            _parent_shape.radius
-                * _profile.distance_max_scale
+        var _position = sc_asteroid_spawn_shape_position_get(
+            _parent_shape,
+            _placement_distribution
         );
 
-        var _x = _parent_shape.x
-            + lengthdir_x(
-                _distance,
-                _direction
-            );
-
-        var _y = _parent_shape.y
-            + lengthdir_y(
-                _distance
-                    * _parent_shape.aspect,
-                _direction
-            );
-
         var _radius = random_range(
-            _parent_shape.radius
-                * _profile.radius_min_scale,
-            _parent_shape.radius
-                * _profile.radius_max_scale
+            _parent_shape.radius * _profile.radius_min_scale,
+            _parent_shape.radius * _profile.radius_max_scale
         );
 
         var _shape = sc_asteroid_spawn_shape_create(
-            _x,
-            _y,
+            _position.x,
+            _position.y,
             _radius,
             {
-                aspect_min: 0.72,
-                aspect_max: 1,
-                irregularity_min: 0.08,
-                irregularity_max: 0.18,
-                lobes_min: 3,
-                lobes_max: 6
+                shape: AsteroidFieldShape.ORGANIC,
+                aspect_min: 0.72, aspect_max: 1,
+                irregularity_min: 0.08, irregularity_max: 0.18,
+                lobes_min: 3, lobes_max: 6,
+                inner_radius_scale: 0,
+                arc_span_min: 360, arc_span_max: 360,
+                arc_radius_scale: 0,
+                arc_thickness_min: 0, arc_thickness_max: 0
             }
         );
 
         var _distribution = {
+            distribution: AsteroidFieldDistribution.UNIFORM,
             inner_radius_scale: 0,
-            radial_power: 0.8,
-            local_mode: "uniform"
+            outer_radius_scale: 1,
+            radial_power: 0.8
         };
 
-        var _zone_index =
-            array_length(_zones);
+        var _zone_index = array_length(_zones);
 
         var _amount = min(
             _plan.amount,
             _asteroid_budget - _spawned
         );
 
-        var _formation_spawned =
-            sc_asteroid_spawn_population(
-                _shape,
-                _distribution,
-                _amount,
-                _profile.spacing_scale,
-                _layer,
-                _field_index,
-                _zone_index,
-                _plan.composition
-            );
+        var _formation_spawned = sc_asteroid_spawn_population(
+            _shape,
+            _distribution,
+            _amount,
+            _profile.spacing_scale,
+            _layer,
+            _field_index,
+            _zone_index,
+            _plan.composition
+        );
 
         if (_formation_spawned <= 0)
             continue;
@@ -828,10 +958,8 @@ function sc_asteroid_spawn_subformations_create(
             key: _profile.key,
             name: _profile.name,
             allocation: _profile.allocation,
-            composition_mode:
-                _profile.composition_mode,
-            dominant_key:
-                _plan.dominant_key,
+            composition_mode: _profile.composition_mode,
+            dominant_key: _plan.dominant_key,
 
             shape: _shape,
             distribution: _distribution,
