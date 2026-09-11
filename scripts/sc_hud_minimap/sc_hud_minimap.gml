@@ -199,15 +199,195 @@ function sc_hud_minimap_asteroids_refresh(_minimap, _player)
     _minimap.next_asteroid_update_tick = GAME_TICK + _minimap.asteroid_update_interval;
 }
 
-/// @description Updates the radar sweep and reveals contacts according to certainty.
-function sc_hud_minimap_sweep_update(_minimap, _player)
+/// @description Ensures one contact has radar-interference runtime data.
+function sc_hud_minimap_contact_interference_prepare(_contact)
 {
+    if (!variable_struct_exists(_contact,"jitter_x"))
+        _contact.jitter_x = 0;
+
+    if (!variable_struct_exists(_contact,"jitter_y"))
+        _contact.jitter_y = 0;
+
+    if (!variable_struct_exists(_contact,"echo_x"))
+        _contact.echo_x = 0;
+
+    if (!variable_struct_exists(_contact,"echo_y"))
+        _contact.echo_y = 0;
+
+    if (!variable_struct_exists(_contact,"echo_alpha"))
+        _contact.echo_alpha = 0;
+}
+
+/// @description Updates cached minimap disruption from generic radar sources.
+function sc_hud_minimap_interference_update(
+    _minimap,
+    _config,
+    _player
+)
+{
+    var _runtime = _minimap.interference;
+
+    if (GAME_TICK >= _runtime.next_sample_tick)
+    {
+        _runtime.target_strength =
+            sc_radar_interference_strength_get(_player);
+
+        _runtime.next_sample_tick =
+            GAME_TICK
+            + max(1,round(_config.sample_interval));
+    }
+
+    _runtime.strength = lerp(
+        _runtime.strength,
+        _runtime.target_strength,
+        clamp(_config.response_speed,0,1)
+    );
+
+    if (_runtime.target_strength <= 0
+    && _runtime.strength < 0.002)
+        _runtime.strength = 0;
+
+    var _contacts = _minimap.enemy_contacts;
+
+    for (var _i=0; _i<array_length(_contacts); ++_i)
+    {
+        var _contact = _contacts[_i];
+
+        sc_hud_minimap_contact_interference_prepare(
+            _contact
+        );
+
+        _contact.echo_alpha = max(
+            0,
+            _contact.echo_alpha-_config.echo_fade_speed
+        );
+    }
+
+    if (GAME_TICK < _runtime.next_jitter_tick)
+        return;
+
+    _runtime.next_jitter_tick =
+        GAME_TICK
+        + max(1,round(_config.jitter_interval));
+
+    var _strength = _runtime.strength;
+    var _jitter = lerp(
+        _config.jitter_min,
+        _config.jitter_max,
+        _strength
+    ) * _strength;
+
+    _runtime.sweep_visual_offset =
+        random_range(
+            -_config.sweep_visual_jitter,
+            _config.sweep_visual_jitter
+        ) * _strength;
+
+    for (var _i=0; _i<array_length(_contacts); ++_i)
+    {
+        var _contact = _contacts[_i];
+
+        if (_strength <= 0)
+        {
+            _contact.jitter_x = 0;
+            _contact.jitter_y = 0;
+            _contact.echo_alpha = 0;
+            continue;
+        }
+
+        var _direction = random(360);
+        var _distance = random(_jitter);
+
+        _contact.jitter_x =
+            lengthdir_x(_distance,_direction);
+
+        _contact.jitter_y =
+            lengthdir_y(_distance,_direction);
+
+        if (random(1)
+        < _config.echo_chance*_strength)
+        {
+            var _echo_direction = random(360);
+
+            var _echo_distance = lerp(
+                _config.echo_distance_min,
+                _config.echo_distance_max,
+                _strength
+            );
+
+            _contact.echo_x =
+                lengthdir_x(
+                    _echo_distance,
+                    _echo_direction
+                );
+
+            _contact.echo_y =
+                lengthdir_y(
+                    _echo_distance,
+                    _echo_direction
+                );
+
+            _contact.echo_alpha =
+                _config.echo_alpha*_strength;
+        }
+    }
+}
+
+/// @description Updates the radar sweep and reveals contacts.
+function sc_hud_minimap_sweep_update(
+    _minimap,
+    _player,
+    _config
+)
+{
+    var _interference = _minimap.interference;
+    var _strength = _interference.strength;
+    var _speed = _minimap.sweep_speed;
+
+    if (_interference.sweep_hold_remaining > 0)
+    {
+        --_interference.sweep_hold_remaining;
+        _speed = 0;
+    }
+    else if (_interference.sweep_catchup_remaining > 0)
+    {
+        --_interference.sweep_catchup_remaining;
+
+        _speed *= lerp(
+            1,
+            _config.sweep_catchup_multiplier,
+            _strength
+        );
+    }
+    else if (_strength > 0
+    && random(1)
+    < _config.sweep_glitch_chance*_strength)
+    {
+        _interference.sweep_hold_remaining =
+            irandom_range(
+                _config.sweep_hold_min,
+                max(
+                    _config.sweep_hold_min,
+                    round(
+                        lerp(
+                            _config.sweep_hold_min,
+                            _config.sweep_hold_max,
+                            _strength
+                        )
+                    )
+                )
+            );
+
+        _interference.sweep_catchup_remaining =
+            _config.sweep_catchup_frames;
+
+        _speed = 0;
+    }
+
     var _previous_angle = _minimap.sweep_angle;
 
     _minimap.sweep_angle = (
-        _minimap.sweep_angle
-        - _minimap.sweep_speed
-        + 360
+        _minimap.sweep_angle-_speed+360
     ) mod 360;
 
     var _travel = (
@@ -218,19 +398,19 @@ function sc_hud_minimap_sweep_update(_minimap, _player)
 
     var _contacts = _minimap.enemy_contacts;
 
-    for (var _i = 0; _i < array_length(_contacts); ++_i)
+    for (var _i=0; _i<array_length(_contacts); ++_i)
     {
         var _contact = _contacts[_i];
 
         _contact.alpha = max(
             0,
             _contact.alpha
-                - 1 / _minimap.contact_fade_duration
+                - 1/_minimap.contact_fade_duration
         );
 
         _contact.pulse = max(
             0,
-            _contact.pulse - 0.08
+            _contact.pulse-0.08
         );
 
         var _direction = point_direction(
@@ -241,16 +421,17 @@ function sc_hud_minimap_sweep_update(_minimap, _player)
         );
 
         var _clockwise_distance = (
-            _previous_angle
-            - _direction
-            + 360
+            _previous_angle-_direction+360
         ) mod 360;
 
         if (_clockwise_distance
-        <= _travel + _minimap.detection_width)
+        <= _travel+_minimap.detection_width)
         {
-            _contact.alpha = _contact.reveal_alpha;
-            _contact.pulse = _contact.reveal_alpha;
+            _contact.alpha =
+                _contact.reveal_alpha;
+
+            _contact.pulse =
+                _contact.reveal_alpha;
         }
     }
 }
@@ -271,7 +452,7 @@ function sc_hud_minimap_zoom_change(_minimap, _amount)
     sc_hud_minimap_refresh_force(_minimap);
 }
 
-/// @description Updates dragging, buttons, cached contacts and radar sweep.
+/// @description Updates dragging, contacts, interference and radar sweep.
 function sc_hud_minimap_update(_hud)
 {
     var _data = _hud.data.minimap;
@@ -284,7 +465,8 @@ function sc_hud_minimap_update(_hud)
     if (_released)
         _minimap.dragging = false;
 
-    if (global.PlayerState == PlayerState.ACTIVE && _pressed)
+    if (global.PlayerState == PlayerState.ACTIVE
+    && _pressed)
     {
         if (_minimap.minimized)
         {
@@ -293,8 +475,8 @@ function sc_hud_minimap_update(_hud)
                 _mouse_y,
                 _minimap.x,
                 _minimap.y,
-                _minimap.x + _data.minimized_width,
-                _minimap.y + _data.minimized_height
+                _minimap.x+_data.minimized_width,
+                _minimap.y+_data.minimized_height
             ))
             {
                 _minimap.minimized = false;
@@ -303,15 +485,15 @@ function sc_hud_minimap_update(_hud)
         }
         else
         {
-            var _local_x = _mouse_x - _minimap.x;
-            var _local_y = _mouse_y - _minimap.y;
+            var _local_x = _mouse_x-_minimap.x;
+            var _local_y = _mouse_y-_minimap.y;
 
             if (point_in_rectangle(
                 _local_x,
                 _local_y,
-                _data.width - 30,
+                _data.width-30,
                 5,
-                _data.width - 7,
+                _data.width-7,
                 25
             ))
             {
@@ -322,25 +504,32 @@ function sc_hud_minimap_update(_hud)
                 _local_x,
                 _local_y,
                 12,
-                _data.height - 25,
+                _data.height-25,
                 38,
-                _data.height - 7
+                _data.height-7
             ))
             {
-                sc_hud_minimap_zoom_change(_minimap, -1);
+                sc_hud_minimap_zoom_change(
+                    _minimap,
+                    -1
+                );
             }
             else if (point_in_rectangle(
                 _local_x,
                 _local_y,
-                _data.width - 38,
-                _data.height - 25,
-                _data.width - 12,
-                _data.height - 7
+                _data.width-38,
+                _data.height-25,
+                _data.width-12,
+                _data.height-7
             ))
             {
-                sc_hud_minimap_zoom_change(_minimap, 1);
+                sc_hud_minimap_zoom_change(
+                    _minimap,
+                    1
+                );
             }
-            else if (_local_y >= 0 && _local_y <= _data.header_height)
+            else if (_local_y >= 0
+            && _local_y <= _data.header_height)
             {
                 _minimap.dragging = true;
                 _minimap.drag_offset_x = _local_x;
@@ -349,35 +538,60 @@ function sc_hud_minimap_update(_hud)
         }
     }
 
-    if (_minimap.dragging && mouse_check_button(mb_left))
+    if (_minimap.dragging
+    && mouse_check_button(mb_left))
     {
         var _gui_width = display_get_gui_width();
         var _gui_height = display_get_gui_height();
 
         _minimap.x = clamp(
-            _mouse_x - _minimap.drag_offset_x,
+            _mouse_x-_minimap.drag_offset_x,
             0,
-            _gui_width - _data.width
+            _gui_width-_data.width
         );
 
         _minimap.y = clamp(
-            _mouse_y - _minimap.drag_offset_y,
+            _mouse_y-_minimap.drag_offset_y,
             0,
-            _gui_height - _data.height
+            _gui_height-_data.height
         );
     }
 
-    if (_minimap.minimized || !instance_exists(global.player_id)) return;
+    if (_minimap.minimized
+    || !instance_exists(global.player_id))
+        return;
 
     var _player = global.player_id;
 
-    if (GAME_TICK >= _minimap.next_enemy_update_tick)
-        sc_hud_minimap_enemies_refresh(_minimap, _player);
+    sc_hud_minimap_interference_update(
+        _minimap,
+        _data.interference,
+        _player
+    );
 
-    if (GAME_TICK >= _minimap.next_asteroid_update_tick)
-        sc_hud_minimap_asteroids_refresh(_minimap, _player);
+    if (GAME_TICK
+    >= _minimap.next_enemy_update_tick)
+    {
+        sc_hud_minimap_enemies_refresh(
+            _minimap,
+            _player
+        );
+    }
 
-    sc_hud_minimap_sweep_update(_minimap, _player);
+    if (GAME_TICK
+    >= _minimap.next_asteroid_update_tick)
+    {
+        sc_hud_minimap_asteroids_refresh(
+            _minimap,
+            _player
+        );
+    }
+
+    sc_hud_minimap_sweep_update(
+        _minimap,
+        _player,
+        _data.interference
+    );
 }
 
 /// @description Converts one world position into local radar coordinates.
@@ -499,18 +713,26 @@ function sc_hud_minimap_structures_draw(_hud, _player)
     }
 }
 
-/// @description Draws fading red enemy contacts.
+/// @description Draws enemy contacts with radar uncertainty and echoes.
 function sc_hud_minimap_enemies_draw(_hud, _player)
 {
     var _data = _hud.data.minimap;
     var _minimap = _hud.minimap;
     var _contacts = _minimap.enemy_contacts;
-    var _colour = make_colour_rgb(255, 48, 65);
+    var _interference = _minimap.interference.strength;
+    var _config = _data.interference;
+    var _colour = make_colour_rgb(255,48,65);
 
-    for (var _i = 0; _i < array_length(_contacts); ++_i)
+    for (var _i=0; _i<array_length(_contacts); ++_i)
     {
         var _contact = _contacts[_i];
-        if (_contact.alpha <= 0) continue;
+
+        if (_contact.alpha <= 0)
+            continue;
+
+        sc_hud_minimap_contact_interference_prepare(
+            _contact
+        );
 
         var _position = sc_hud_minimap_position_get(
             _minimap,
@@ -520,52 +742,172 @@ function sc_hud_minimap_enemies_draw(_hud, _player)
             _contact.world_y
         );
 
-        var _dx = _position.x - _data.radar_centre_x;
-        var _dy = _position.y - _data.radar_centre_y;
-        if (_dx * _dx + _dy * _dy > sqr(_data.radar_radius)) continue;
+        var _dx =
+            _position.x-_data.radar_centre_x;
 
-        var _x = _minimap.x + _position.x;
-        var _y = _minimap.y + _position.y;
+        var _dy =
+            _position.y-_data.radar_centre_y;
+
+        if (_dx*_dx+_dy*_dy
+        > sqr(_data.radar_radius))
+            continue;
+
+        var _x =
+            _minimap.x
+            + _position.x
+            + _contact.jitter_x;
+
+        var _y =
+            _minimap.y
+            + _position.y
+            + _contact.jitter_y;
+
+        var _flicker = 1;
+
+        var _flicker_frames = round(
+            _interference*3
+        );
+
+        if (_flicker_frames > 0
+        && (GAME_TICK+_i*7) mod 23
+        < _flicker_frames)
+        {
+            _flicker = lerp(
+                1,
+                _config.flicker_min,
+                _interference
+            );
+        }
+
+        if (_contact.echo_alpha > 0)
+        {
+            draw_set_colour(_colour);
+
+            draw_set_alpha(
+                _contact.alpha
+                * _contact.echo_alpha
+            );
+
+            draw_circle(
+                _x+_contact.echo_x,
+                _y+_contact.echo_y,
+                max(1,_contact.size*0.72),
+                false
+            );
+        }
 
         if (_contact.pulse > 0)
         {
             draw_set_colour(_colour);
-            draw_set_alpha(_contact.pulse * 0.25);
+
+            draw_set_alpha(
+                _contact.pulse
+                * 0.25
+                * _flicker
+            );
+
             draw_circle(
                 _x,
                 _y,
-                _contact.size + (1 - _contact.pulse) * 10,
+                _contact.size
+                    + (1-_contact.pulse)*10,
                 true
             );
         }
 
         draw_set_colour(_colour);
-        draw_set_alpha(_contact.alpha * 0.28);
-        draw_circle(_x, _y, _contact.size + 2, false);
 
-        draw_set_alpha(_contact.alpha);
-        draw_circle(_x, _y, _contact.size, false);
+        draw_set_alpha(
+            _contact.alpha
+            * 0.28
+            * _flicker
+        );
+
+        draw_circle(
+            _x,
+            _y,
+            _contact.size+2,
+            false
+        );
+
+        draw_set_alpha(
+            _contact.alpha*_flicker
+        );
+
+        draw_circle(
+            _x,
+            _y,
+            _contact.size,
+            false
+        );
     }
 }
 
-/// @description Draws the clockwise radar sweep and fading trail lines.
+/// @description Draws the radar sweep with interference displacement.
 function sc_hud_minimap_sweep_draw(_hud)
 {
     var _data = _hud.data.minimap;
     var _palette = _hud.data.palette;
     var _minimap = _hud.minimap;
-    var _centre_x = _minimap.x + _data.radar_centre_x;
-    var _centre_y = _minimap.y + _data.radar_centre_y;
 
-    for (var _i = _data.sweep_trails; _i >= 0; --_i)
+    var _centre_x =
+        _minimap.x+_data.radar_centre_x;
+
+    var _centre_y =
+        _minimap.y+_data.radar_centre_y;
+
+    var _interference =
+        _minimap.interference.strength;
+
+    var _visual_offset =
+        _minimap.interference.sweep_visual_offset;
+
+    for (var _i=_data.sweep_trails;
+    _i>=0;
+    --_i)
     {
-        var _angle = _minimap.sweep_angle + _i * _data.sweep_trail_spacing;
-        var _alpha = lerp(0.06, 0.72, 1 - _i / (_data.sweep_trails + 1));
-        var _end_x = _centre_x + lengthdir_x(_data.radar_radius, _angle);
-        var _end_y = _centre_y + lengthdir_y(_data.radar_radius, _angle);
+        var _trail_ratio =
+            1-_i/(_data.sweep_trails+1);
 
-        draw_set_colour(_i == 0 ? _palette.core : _palette.accent);
+        var _angle =
+            _minimap.sweep_angle
+            + _i*_data.sweep_trail_spacing
+            + _visual_offset*_trail_ratio;
+
+        var _alpha = lerp(
+            0.06,
+            0.72,
+            _trail_ratio
+        );
+
+        _alpha *= lerp(
+            1,
+            0.72+0.18*dsin(GAME_TICK*23+_i*51),
+            _interference
+        );
+
+        var _end_x =
+            _centre_x
+            + lengthdir_x(
+                _data.radar_radius,
+                _angle
+            );
+
+        var _end_y =
+            _centre_y
+            + lengthdir_y(
+                _data.radar_radius,
+                _angle
+            );
+
+        draw_set_colour(
+            _i == 0
+            ? _palette.core
+            : _palette.accent
+        );
+
         draw_set_alpha(_alpha);
+
         draw_line_width(
             _centre_x,
             _centre_y,

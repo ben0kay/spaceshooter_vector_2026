@@ -195,6 +195,7 @@
     {"id":{"name":"sc_hud_level","path":"scripts/sc_hud_level/sc_hud_level.yy",},},
     {"id":{"name":"sc_hud_minimap","path":"scripts/sc_hud_minimap/sc_hud_minimap.yy",},},
     {"id":{"name":"sc_hud_sector_map","path":"scripts/sc_hud_sector_map/sc_hud_sector_map.yy",},},
+    {"id":{"name":"sc_interference","path":"scripts/sc_interference/sc_interference.yy",},},
     {"id":{"name":"sc_inventory","path":"scripts/sc_inventory/sc_inventory.yy",},},
     {"id":{"name":"sc_item_recipes","path":"scripts/sc_item_recipes/sc_item_recipes.yy",},},
     {"id":{"name":"sc_item_visuals","path":"scripts/sc_item_visuals/sc_item_visuals.yy",},},

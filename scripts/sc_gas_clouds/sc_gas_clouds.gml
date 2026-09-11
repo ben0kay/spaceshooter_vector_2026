@@ -44,27 +44,29 @@ function sc_gas_cloud_register_all()
             detection_multiplier: 0.55,
             targeting_multiplier: 0.75,
             forget_multiplier: 0.7,
-            alert_share_multiplier: 0.45
+            alert_share_multiplier: 0.45,
+
+            radar_strength: 0.75,
+            radar_boundary_fade: 0.22
         },
 
         visual: {
             canvas_size: 768,
             seed: 704,
 
-            colour_dark: make_colour_rgb(8, 34, 46),
-            colour_mid: make_colour_rgb(18, 100, 122),
-            colour_glow: make_colour_rgb(48, 190, 210),
+            colour_dark: make_colour_rgb(8,34,46),
+            colour_mid: make_colour_rgb(18,100,122),
+            colour_glow: make_colour_rgb(48,190,210),
 
             body_amount: 72,
             wisp_amount: 26,
 
-            alpha_min: 0.25,
-            alpha_max: 0.62,
+            // Individual cloud patches.
+            alpha_min: 0.32,
+            alpha_max: 0.72,
 
-            // Four differently seeded versions prevent visible repetition.
             sprite_variants: 4,
 
-            // Overlapping world-cloud layers provide continuous coverage.
             patch_spacing_sparse: 1850,
             patch_spacing_dense: 1350,
             patch_size_min: 2800,
@@ -76,12 +78,14 @@ function sc_gas_cloud_register_all()
             formation_chance_max: 0.28,
             formation_scale: 1.35,
 
-            field_haze_alpha_min: 0.035,
-            field_haze_alpha_max: 0.11,
+            // Continuous background haze across the complete gas field.
+            field_haze_alpha_min: 0.05,
+            field_haze_alpha_max: 0.15,
 
+            // Faint foreground haze when the player is inside.
             player_haze_size: 2400,
-            player_haze_alpha_min: 0.018,
-            player_haze_alpha_max: 0.065,
+            player_haze_alpha_min: 0.025,
+            player_haze_alpha_max: 0.085,
 
             drift_amount: 0.035,
             drift_speed: 0.012,

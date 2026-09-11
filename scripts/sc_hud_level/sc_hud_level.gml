@@ -98,6 +98,30 @@ function sc_hud_level_data()
 			    alpha_max: 0.3,
 			    distance_power: 2
 			},
+				
+			interference: {
+    sample_interval: 10,
+    response_speed: 0.12,
+
+    jitter_interval: 8,
+    jitter_min: 0.5,
+    jitter_max: 7,
+
+    echo_chance: 0.18,
+    echo_distance_min: 4,
+    echo_distance_max: 11,
+    echo_alpha: 0.28,
+    echo_fade_speed: 0.035,
+
+    flicker_min: 0.55,
+
+    sweep_glitch_chance: 0.035,
+    sweep_hold_min: 1,
+    sweep_hold_max: 4,
+    sweep_catchup_frames: 2,
+    sweep_catchup_multiplier: 2.2,
+    sweep_visual_jitter: 3
+},
         },
 			
 		sector_map: {
@@ -276,6 +300,18 @@ function sc_hud_level_init(_hud_object)
 			concealment: variable_clone(
 		    _data.minimap.concealment
 			),
+			
+			interference: {
+    strength: 0,
+    target_strength: 0,
+
+    next_sample_tick: GAME_TICK,
+    next_jitter_tick: GAME_TICK,
+
+    sweep_hold_remaining: 0,
+    sweep_catchup_remaining: 0,
+    sweep_visual_offset: 0
+},
         },
 			
 		sector_map: {
