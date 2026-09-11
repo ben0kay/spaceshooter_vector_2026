@@ -134,6 +134,7 @@
     {"id":{"name":"sc_asteroid_bake","path":"scripts/sc_asteroid_bake/sc_asteroid_bake.yy",},},
     {"id":{"name":"sc_asteroid_runtime","path":"scripts/sc_asteroid_runtime/sc_asteroid_runtime.yy",},},
     {"id":{"name":"sc_asteroid_spawns","path":"scripts/sc_asteroid_spawns/sc_asteroid_spawns.yy",},},
+    {"id":{"name":"sc_asteroid_visual_components","path":"scripts/sc_asteroid_visual_components/sc_asteroid_visual_components.yy",},},
     {"id":{"name":"sc_asteroid_visual","path":"scripts/sc_asteroid_visual/sc_asteroid_visual.yy",},},
     {"id":{"name":"sc_asteroids","path":"scripts/sc_asteroids/sc_asteroids.yy",},},
     {"id":{"name":"sc_attack_area","path":"scripts/sc_attack_area/sc_attack_area.yy",},},

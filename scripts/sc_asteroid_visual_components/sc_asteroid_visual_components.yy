@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_asteroid_visual_components",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_asteroid_visual_components",
+  "parent":{
+    "name":"asteroids",
+    "path":"folders/SCRIPTS---/asteroids.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

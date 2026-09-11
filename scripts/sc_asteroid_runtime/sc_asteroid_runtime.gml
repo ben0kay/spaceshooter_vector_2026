@@ -20,11 +20,13 @@ function sc_asteroid_size_data(_size)
     return undefined;
 }
 
-/// @description Initializes one generic factionless asteroid.
 function sc_asteroid_init(_asteroid, _create)
 {
     if (!is_struct(_create)
-    || !variable_struct_exists(global.data.asteroids, _create.key))
+    || !variable_struct_exists(
+        global.data.asteroids,
+        _create.key
+    ))
         return false;
 
     var _definition = variable_struct_get(
@@ -32,12 +34,15 @@ function sc_asteroid_init(_asteroid, _create)
         _create.key
     );
 
-    var _size = sc_asteroid_size_data(_create.size);
+    var _size = sc_asteroid_size_data(
+        _create.size
+    );
 
     if (!is_struct(_size))
         return false;
 
-    var _radius = _size.radius * random_range(0.9,1.1);
+    var _radius = _size.radius
+        * random_range(0.9, 1.1);
 
     var _health = round(
         _size.health
@@ -50,8 +55,15 @@ function sc_asteroid_init(_asteroid, _create)
             irandom_range(
                 _size.yield_min,
                 _size.yield_max
-            ) * _definition.stats.yield_multiplier
+            )
+            * _definition.stats.yield_multiplier
         )
+    );
+
+    var _visual_config = sc_asteroid_component_config();
+    var _variant_count = max(
+        6,
+        _visual_config.variant_count
     );
 
     _asteroid.draw_angle = random(360);
@@ -89,17 +101,22 @@ function sc_asteroid_init(_asteroid, _create)
 
         visual: {
             radius: _radius,
-            variant: irandom(5),
+            variant: irandom(_variant_count - 1),
             start_angle: random(360),
-            rotation_speed: random_range(-0.08,0.08),
-            scale_x: random_range(0.92,1.08) * choose(-1,1),
-            scale_y: random_range(0.92,1.08) * choose(-1,1)
+            rotation_speed: random_range(-0.08, 0.08),
+            scale_x: random_range(0.92, 1.08)
+                * choose(-1, 1),
+            scale_y: random_range(0.92, 1.08)
+                * choose(-1, 1)
         }
     };
 
     var _collision = {
-        radius_forward: _asteroid.asteroid.collision.radius,
-        radius_side: _asteroid.asteroid.collision.radius
+        radius_forward:
+            _asteroid.asteroid.collision.radius,
+
+        radius_side:
+            _asteroid.asteroid.collision.radius
     };
 
     if (!sc_entity_init(
