@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_siegebreaker",
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+    "name":"HEAVY",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

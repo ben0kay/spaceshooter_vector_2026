@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"Script157",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"Script157",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

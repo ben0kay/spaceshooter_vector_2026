@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_voidlance",
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+    "name":"SUPERHEAVY",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/SUPERHEAVY.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

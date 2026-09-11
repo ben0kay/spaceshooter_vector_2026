@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_twin_fighter",
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+    "name":"STANDARD",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/STANDARD.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

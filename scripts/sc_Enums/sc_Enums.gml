@@ -24,6 +24,8 @@ enum EnemyClass {TINY, LIGHT, STANDARD, HEAVY, SUPERHEAVY, CAPITAL, TITAN }
 enum EnemyRank { COMMON, VETERAN, ELITE, CHAMPION, MINIBOSS, BOSS }
 enum EnemyRemovalReason { KILLED, ESCAPED, DESPAWNED }
 enum AsteroidResponse { IGNORE, AVOID, STOP, DESTROY, BOMBARD }
+enum EnemyTerritoryType { NONE, RADIUS, ASTEROID_REGION, INSTANCE_RADIUS }
+enum EnemyTerritoryFallback { NONE, FIND_REGION, ALLY_ANCHOR, FLEE }
 
 //==================================================
 // ATTACK CONTROLLER

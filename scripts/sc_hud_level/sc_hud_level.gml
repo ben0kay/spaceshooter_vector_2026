@@ -70,6 +70,7 @@ function sc_hud_level_data()
     height: 106,
     y: 82,
     cut: 12,
+	hover_padding: 24,
 
     scan_interval: 6,
     fade_in_speed: 0.16,

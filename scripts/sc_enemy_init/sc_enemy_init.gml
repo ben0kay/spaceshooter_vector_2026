@@ -249,7 +249,6 @@ function sc_enemy_init_thrusters(_enemy)
 /// @description Initializes one enemy from registered data and final stats.
 function sc_enemy_init(_enemy, _enemy_key)
 {
-    // Validate and retrieve the registered enemy definition.
     if (!variable_struct_exists(global.data.enemies, _enemy_key))
     {
         show_debug_message(
@@ -265,7 +264,6 @@ function sc_enemy_init(_enemy, _enemy_key)
         _enemy_key
     );
 
-    // Create the shared runtime before calculating its final stats.
     _enemy.enemy = sc_enemy_init_runtime_create(
         _enemy,
         _enemy_key,
@@ -275,14 +273,12 @@ function sc_enemy_init(_enemy, _enemy_key)
     if (!sc_enemy_stats_init(_enemy, _data.stats_base))
         return false;
 
-    // Grade is permanent and enters before the final stats are used.
     if (!sc_enemy_grade_stats_apply(_enemy))
         return false;
 
     var _runtime = _enemy.enemy;
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
-    // Establish initial facing before entity and hardpoint initialization.
     _enemy.draw_angle = 0;
 
     _runtime.movement.command.facing_mode =
@@ -298,20 +294,20 @@ function sc_enemy_init(_enemy, _enemy_key)
     ))
         return false;
 
-    // Attach defence, cached visuals and per-component runtime data.
     sc_enemy_init_defence(_enemy);
     sc_enemy_init_visual_runtime(_enemy, _cache);
     sc_enemy_init_hardpoints(_enemy, _cache);
     sc_enemy_init_thrusters(_enemy);
 
-    // Utility initialization happens after attacks and claims its own hardpoints.
+    // Territory is opt-in. Existing enemies have no controller and skip it.
+    if (!sc_enemy_territory_init(_enemy, _data))
+        return false;
+
     if (!sc_enemy_attack_controller_init(_enemy))
         return false;
 
-    if (
-        is_struct(_runtime.utility_controller)
-        && !sc_enemy_utility_controller_init(_enemy)
-    )
+    if (is_struct(_runtime.utility_controller)
+    && !sc_enemy_utility_controller_init(_enemy))
         return false;
 
     _enemy.initialized = true;

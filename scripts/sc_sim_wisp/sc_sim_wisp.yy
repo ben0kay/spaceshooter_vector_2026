@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_wisp",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_wisp",
+  "parent":{
+    "name":"TINY",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/TINY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

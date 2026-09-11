@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_skirmisher",
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+    "name":"LIGHT",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/LIGHT.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

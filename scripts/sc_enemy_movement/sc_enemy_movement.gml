@@ -413,43 +413,70 @@ function sc_enemy_movement_orbit(_enemy)
 /// @description Selects one unobstructed wander destination inside the registered spawn radius.
 function sc_enemy_wander_target_select(_enemy)
 {
-    var _data = _enemy.enemy;
-    var _movement = _data.movement;
-    var _wander = _movement.wander;
-    var _range = _data.stats.final.range.wander;
-    var _config = GCFG.enemy.wander;
-    var _radius_forward = _data.collision.radius_forward;
-    var _radius_side = _data.collision.radius_side;
-    var _margin = max(_radius_forward, _radius_side) + _config.edge_margin;
+    var _data=_enemy.enemy;
+    var _movement=_data.movement;
+    var _wander=_movement.wander;
+    var _range=_data.stats.final.range.wander;
+    var _config=GCFG.enemy.wander;
+    var _radius_forward=_data.collision.radius_forward;
+    var _radius_side=_data.collision.radius_side;
+    var _margin=max(_radius_forward,_radius_side)+_config.edge_margin;
 
-    for (var _i = 0; _i < _config.candidate_attempts; _i++)
+    for (var _i=0; _i<_config.candidate_attempts; ++_i)
     {
-        var _direction = random(360);
-        var _distance = sqrt(random(1)) * _range;
-        var _target_x = _movement.spawn_x + lengthdir_x(_distance, _direction);
-        var _target_y = _movement.spawn_y + lengthdir_y(_distance, _direction);
+        var _direction=random(360);
+        var _distance=sqrt(random(1))*_range;
+        var _target_x=_movement.spawn_x+lengthdir_x(_distance,_direction);
+        var _target_y=_movement.spawn_y+lengthdir_y(_distance,_direction);
 
-        if (_target_x < _margin || _target_x > room_width - _margin
-        || _target_y < _margin || _target_y > room_height - _margin)
+        if (_target_x<_margin || _target_x>room_width-_margin
+        || _target_y<_margin || _target_y>room_height-_margin)
             continue;
 
-        var _blocked = collision_ellipse(
-            _target_x - _radius_forward, _target_y - _radius_side,
-            _target_x + _radius_forward, _target_y + _radius_side,
-            o_solid, false, true
-        ) != noone;
+        if (!sc_enemy_territory_position_valid(_enemy,_target_x,_target_y))
+            continue;
 
-        if (_blocked) continue;
-        if (collision_line(_enemy.x, _enemy.y, _target_x, _target_y, o_solid, false, true) != noone) continue;
+        var _left=_target_x-_radius_forward;
+        var _top=_target_y-_radius_side;
+        var _right=_target_x+_radius_forward;
+        var _bottom=_target_y+_radius_side;
 
-        _wander.target_x = _target_x;
-        _wander.target_y = _target_y;
-        _wander.active = true;
+        if (collision_ellipse(
+            _left,_top,_right,_bottom,
+            o_solid,false,true
+        )!=noone)
+            continue;
+
+        if (collision_ellipse(
+            _left,_top,_right,_bottom,
+            o_asteroid,false,true
+        )!=noone)
+            continue;
+
+        if (collision_line(
+            _enemy.x,_enemy.y,
+            _target_x,_target_y,
+            o_solid,false,true
+        )!=noone)
+            continue;
+
+        if (collision_line(
+            _enemy.x,_enemy.y,
+            _target_x,_target_y,
+            o_asteroid,false,true
+        )!=noone)
+            continue;
+
+        _wander.target_x=_target_x;
+        _wander.target_y=_target_y;
+        _wander.active=true;
         return true;
     }
 
-    _wander.active = false;
-    _wander.next_move_tick = GAME_TICK + irandom_range(_config.wait_min, _config.wait_max);
+    _wander.active=false;
+    _wander.next_move_tick=
+        GAME_TICK+irandom_range(_config.wait_min,_config.wait_max);
+
     return false;
 }
 
@@ -563,8 +590,6 @@ function sc_enemy_movement_alignment(_enemy, _move_direction)
     return (dcos(angle_difference(_move_direction, _enemy.draw_angle)) + 1) * 0.5;
 }
 
-
-
 /// @description Applies the current command through shared acceleration and friction.
 function sc_enemy_movement_apply(_enemy)
 {
@@ -632,7 +657,7 @@ function sc_enemy_movement_swing(_enemy)
     _command.facing_mode = EnemyFacingMode.FIXED;
 }
 
-/// @description Resolves current state, backaway priority, obstacle response, facing and movement.
+/// @description Resolves state, territory, obstacle response, facing and movement.
 function sc_enemy_movement_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -645,13 +670,13 @@ function sc_enemy_movement_update(_enemy)
     switch (_state)
     {
         case EnemyState.IDLE:
-		    if (_data.critical_response.sheltered)
-		        sc_enemy_movement_retreat_sheltered(_enemy);
-		    else if (_data.critical_response.returning)
-		        sc_enemy_movement_retreat_return(_enemy);
-		    else
-		        _controller.idle_script(_enemy);
-		break;
+            if (_data.critical_response.sheltered)
+                sc_enemy_movement_retreat_sheltered(_enemy);
+            else if (_data.critical_response.returning)
+                sc_enemy_movement_retreat_return(_enemy);
+            else
+                _controller.idle_script(_enemy);
+        break;
 
         case EnemyState.INVESTIGATING:
             sc_enemy_movement_investigate(_enemy);
@@ -666,10 +691,13 @@ function sc_enemy_movement_update(_enemy)
             {
                 var _dx = _data.target_id.x - _enemy.x;
                 var _dy = _data.target_id.y - _enemy.y;
-                _data.target_distance_sq = _dx * _dx + _dy * _dy;
+
+                _data.target_distance_sq =
+                    _dx * _dx + _dy * _dy;
 
                 if (_data.stats.final.range.backaway > 0
-                && _data.target_distance_sq < _data.stats.final.range.backaway_sq)
+                && _data.target_distance_sq
+                < _data.stats.final.range.backaway_sq)
                 {
                     sc_enemy_movement_backaway(_enemy);
                     _backawaying = true;
@@ -680,6 +708,7 @@ function sc_enemy_movement_update(_enemy)
         break;
 
         case EnemyState.STUNNED:
+        {
             var _stagger = _enemy.entity.status.stagger;
             _stagger.remaining--;
 
@@ -688,18 +717,29 @@ function sc_enemy_movement_update(_enemy)
                 _stagger.remaining = 0;
                 _data.state = _stagger.return_state;
             }
+        }
         break;
 
         case EnemyState.RETREATING:
-		case EnemyState.FLEEING:
-		    _data.critical_response.movement_script(
-		        _enemy,
-		        _data.critical_response.option
-		    );
-break;
+        case EnemyState.FLEEING:
+            _data.critical_response.movement_script(
+                _enemy,
+                _data.critical_response.option
+            );
+        break;
     }
 
-    if (_state == EnemyState.ATTACKING && !_backawaying)
+    var _territory_override = false;
+
+    if (variable_struct_exists(_data, "territory"))
+    {
+        _territory_override =
+            sc_enemy_territory_update(_enemy);
+    }
+
+    if (_state == EnemyState.ATTACKING
+    && !_backawaying
+    && !_territory_override)
         sc_enemy_movement_strafe_apply(_enemy);
 
     sc_enemy_obstacle_response_apply(_enemy);
@@ -707,8 +747,12 @@ break;
     sc_enemy_movement_apply(_enemy);
 
     if (_state == EnemyState.RETREATING
-	|| _state == EnemyState.FLEEING)
-	    return sc_enemy_critical_response_arrival_update(_enemy);
+    || _state == EnemyState.FLEEING)
+    {
+        return sc_enemy_critical_response_arrival_update(
+            _enemy
+        );
+    }
 
     return false;
 }

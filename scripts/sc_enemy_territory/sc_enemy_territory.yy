@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_enemy_territory",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_enemy_territory",
+  "parent":{
+    "name":"ENEMY",
+    "path":"folders/SCRIPTS---/ENEMY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -103,16 +103,19 @@ function sc_hud_top_banner_forced_target_update(_hud)
     return _target;
 }
 
-/// @description Returns the living enemy currently underneath the mouse.
-function sc_hud_top_banner_hover_target_get()
+/// @description Returns a living enemy underneath or slightly beside the mouse.
+function sc_hud_top_banner_hover_target_get(_hud)
 {
     if (global.PlayerState != PlayerState.ACTIVE)
         return noone;
 
-    var _enemy = instance_position(
+    var _enemy = collision_circle(
         mouse_x,
         mouse_y,
-        o_enemy
+        _hud.data.top_banner.hover_padding,
+        o_enemy,
+        false,
+        true
     );
 
     return sc_hud_top_banner_enemy_valid(_enemy)
@@ -128,7 +131,7 @@ function sc_hud_top_banner_enemy_target_get(_hud)
     if (sc_hud_top_banner_enemy_valid(_forced))
         return _forced;
 
-    return sc_hud_top_banner_hover_target_get();
+    return sc_hud_top_banner_hover_target_get(_hud);
 }
 
 /// @description Updates enemy selection and banner fading.
@@ -284,14 +287,23 @@ function sc_hud_top_banner_frame_draw(
     draw_line_width(_x + _width - 126, _y + 4, _x + _width - 24, _y + 4, 2);
 }
 
-/// @description Draws live enemy information inside the shared banner.
+/// @description Draws live faction-coloured enemy information inside the shared banner.
 function sc_hud_top_banner_enemy_draw(_hud, _enemy, _x, _y, _alpha)
 {
     var _data = _enemy.enemy;
     var _defence = _data.defence;
     var _config = _hud.data.top_banner;
     var _palette = _hud.data.palette;
+    var _faction_palette = _data.visual.palette;
     var _width = _config.width;
+
+    var _shield_colour = _faction_palette.energy;
+    var _armour_colour = _faction_palette.accent;
+    var _hull_colour = merge_colour(
+        _faction_palette.glow,
+        _faction_palette.accent,
+        0.4
+    );
 
     var _current_total =
         _defence.shield.current
@@ -311,7 +323,12 @@ function sc_hud_top_banner_enemy_draw(_hud, _enemy, _x, _y, _alpha)
     draw_set_halign(fa_left);
     draw_set_colour(_data.grade.colour);
     draw_set_alpha(_alpha);
-    draw_text(_x + 22, _y + 19, string_upper(_data.grade.name));
+
+    draw_text(
+        _x + 22,
+        _y + 19,
+        string_upper(_data.grade.name)
+    );
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
@@ -327,36 +344,42 @@ function sc_hud_top_banner_enemy_draw(_hud, _enemy, _x, _y, _alpha)
     var _bar_width = _width - 44;
 
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 34,
-        _bar_width, 17,
+        _bar_x,
+        _y + 34,
+        _bar_width,
+        17,
         "SHIELD",
         _defence.shield.current,
         _defence.shield.maximum,
-        _palette.shield,
+        _shield_colour,
         _alpha,
         _config,
         _palette
     );
 
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 55,
-        _bar_width, 17,
+        _bar_x,
+        _y + 55,
+        _bar_width,
+        17,
         "ARMOUR",
         _defence.armour.current,
         _defence.armour.maximum,
-        _palette.armour,
+        _armour_colour,
         _alpha,
         _config,
         _palette
     );
 
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 76,
-        _bar_width, 17,
+        _bar_x,
+        _y + 76,
+        _bar_width,
+        17,
         "HULL",
         _defence.hull.current,
         _defence.hull.maximum,
-        _palette.hull,
+        _hull_colour,
         _alpha,
         _config,
         _palette
