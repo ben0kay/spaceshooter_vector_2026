@@ -152,7 +152,7 @@ function sc_enemy_damage_visual_update(_enemy)
     var _defence = _data.defence;
     var _visual = _data.visual;
     var _runtime = _visual.runtime;
-    var _config = global.config.visual.enemy_damage;
+    var _config = GCFG.visual.enemy_damage;
     var _hull_ratio = _defence.hull.current / max(1, _defence.hull.maximum);
 
     if (_hull_ratio >= _config.hull_threshold) return false;
@@ -210,7 +210,7 @@ function sc_enemy_visual_update(_enemy)
     var _thrusters = _data.thrusters;
     var _speed_max = _data.stats.final.handling.speed_max;
     var _mass = _data.stats.final.mass;
-    var _thrust_config = global.config.visual.enemy_thrust;
+    var _thrust_config = GCFG.visual.enemy_thrust;
 
     _visual.runtime.core_angle = (_visual.runtime.core_angle + 1.5) mod 360;
     _visual.runtime.core_alpha = 0.78 + sin(GAME_TICK * 0.09) * 0.22;
@@ -311,7 +311,7 @@ function sc_enemy_separation_resolve(_enemy, _other)
 
     if (_overlap <= 0) return false;
 
-    var _config = global.config.enemy.separation;
+    var _config = GCFG.enemy.separation;
     var _mass_enemy = _enemy.enemy.stats.final.mass;
 	var _mass_other = _other.enemy.stats.final.mass;
     var _mass_total = max(1, _mass_enemy + _mass_other);
@@ -400,7 +400,7 @@ function sc_enemy_draw(_enemy)
     var _runtime = _visual.runtime;
     var _defence = _data.defence;
     var _angle = _enemy.draw_angle;
-    var _motion = global.config.visual.ship_motion;
+    var _motion = GCFG.visual.ship_motion;
     var _phase = _runtime.motion_phase;
     var _strength = _visual.motion_strength;
 
@@ -686,7 +686,7 @@ function sc_enemy_die(_enemy, _packet)
     var _death_x = _enemy.x;
     var _death_y = _enemy.y;
     var _death_layer = _enemy.layer;
-    var _shake_config = global.config.visual.enemy_death;
+    var _shake_config = GCFG.visual.enemy_death;
     var _mass = _data.stats.final.mass;
 
     _data.visual.death.script(_enemy);

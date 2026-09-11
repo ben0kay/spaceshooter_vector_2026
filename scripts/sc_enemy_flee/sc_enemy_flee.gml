@@ -240,7 +240,7 @@ function sc_enemy_critical_response_try(_enemy, _result)
     || _data.identity.rank == EnemyRank.BOSS)
         return false;
 
-    var _class_multiplier = global.config.enemy.critical_response.class_chance_multiplier[
+    var _class_multiplier = GCFG.enemy.critical_response.class_chance_multiplier[
         _data.identity.ship_class
     ];
 
@@ -354,7 +354,7 @@ function sc_enemy_movement_retreat_return(_enemy)
     var _dx = _runtime.return_x - _enemy.x;
     var _dy = _runtime.return_y - _enemy.y;
     var _arrival_radius = max(_data.collision.radius_forward,_data.collision.radius_side)
-        + global.config.enemy.critical_response.return_arrival_margin;
+        + GCFG.enemy.critical_response.return_arrival_margin;
 
     if (_dx * _dx + _dy * _dy <= _arrival_radius * _arrival_radius)
     {
@@ -460,7 +460,7 @@ function sc_enemy_retreat_arrive_shelter(_enemy, _option)
     }
 
     var _defence = _data.defence;
-    var _config = global.config.enemy.critical_response;
+    var _config = GCFG.enemy.critical_response;
 
     _defence.hull.current = _defence.hull.maximum;
     _defence.armour.current = min(

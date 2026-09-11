@@ -38,7 +38,7 @@ function sc_item_grade_colour_get(_grade)
 /// @description Returns the configured effectiveness multiplier of one item grade.
 function sc_item_grade_multiplier_get(_grade)
 {
-    return global.config.crafting.grades[_grade].multiplier;
+    return GCFG.crafting.grades[_grade].multiplier;
 }
 
 /// @description Returns whether one item type supports quality grades.
@@ -61,7 +61,7 @@ function sc_item_crafted_grade_roll(_item)
 {
     if (!sc_item_grade_supported(_item)) return undefined;
 
-    var _grades = global.config.crafting.grades;
+    var _grades = GCFG.crafting.grades;
     var _roll = random(1);
     var _total = 0;
 

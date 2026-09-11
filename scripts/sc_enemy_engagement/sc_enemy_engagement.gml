@@ -103,7 +103,7 @@ function sc_enemy_engagement_candidate_reject(_enemy,_candidate)
 function sc_enemy_perception_line_of_sight_clear(_enemy, _candidate)
 {
     var _awareness = _enemy.enemy.awareness_controller;
-    var _config = global.config.enemy.perception.line_of_sight;
+    var _config = GCFG.enemy.perception.line_of_sight;
 
     if (!_awareness.detection_line_of_sight)
         return true;
@@ -215,7 +215,7 @@ function sc_enemy_perception_asteroid_concealment_clear(_enemy, _candidate)
         return true;
 
     var _config =
-        global.config.enemy.perception.asteroid_concealment;
+        GCFG.enemy.perception.asteroid_concealment;
 
     var _amount = max(
         3,
@@ -323,7 +323,7 @@ function sc_enemy_engagement_candidate_consider(
 /// @description Returns whether an entity is inside the faction-engagement area.
 function sc_enemy_engagement_area_contains(_entity)
 {
-    var _config = global.config.enemy.engagement;
+    var _config = GCFG.enemy.engagement;
 
     if (!_config.limit_to_player_range)
         return true;

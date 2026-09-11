@@ -26,7 +26,7 @@ function sc_sector_campaign_active()
 /// @description Creates one deterministic seed from sector coordinates and debug offset.
 function sc_sector_seed_get(_sector_x, _sector_y)
 {
-    var _seed = global.config.sector.world_seed;
+    var _seed = GCFG.sector.world_seed;
     _seed += _sector_x * 73856093;
     _seed += _sector_y * 19349663;
     _seed += _sector_x * _sector_y * 83492791;
@@ -71,7 +71,7 @@ function sc_sector_field_centre_valid(
 function sc_sector_field_structure_clear(_x, _y, _radius)
 {
     var _clearance =
-        global.config.sector.asteroid_fields.structure_clearance;
+        GCFG.sector.asteroid_fields.structure_clearance;
 
     var _count = instance_number(o_world_structure);
 
@@ -100,7 +100,7 @@ function sc_sector_field_structure_clear(_x, _y, _radius)
 function sc_sector_asteroid_fields_spawn(_layer)
 {
     var _sector = global.game.sector;
-    var _config = global.config.sector.asteroid_fields;
+    var _config = GCFG.sector.asteroid_fields;
 
     var _formation_limit = irandom_range(
         _config.amount_min,
@@ -325,7 +325,7 @@ function sc_sector_asteroid_zone_density_get(_zone, _x, _y)
     }
 
     var _remaining_ratio = clamp(_zone.remaining_amount / _zone.initial_amount, 0, 1);
-    var _depletion_power = global.config.sector.asteroid_fields.density_depletion_power;
+    var _depletion_power = GCFG.sector.asteroid_fields.density_depletion_power;
 
     return clamp(_local_density * power(_remaining_ratio, _depletion_power), 0, 1);
 }
@@ -417,7 +417,7 @@ function sc_sector_asteroid_field_population_remove(_asteroid)
 function sc_sector_player_entry_apply(_player)
 {
     var _sector = global.game.sector;
-    var _padding = global.config.sector.edge_spawn_padding;
+    var _padding = GCFG.sector.edge_spawn_padding;
     var _extent = max(
         _player.ship.collision.radius_forward,
         _player.ship.collision.radius_side

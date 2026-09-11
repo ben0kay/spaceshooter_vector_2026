@@ -88,7 +88,7 @@ function sc_attack_area_standard_init(_area, _create)
     }
 
     var _occlusion = variable_clone(
-        global.config.damage.area_occlusion
+        GCFG.damage.area_occlusion
     );
 
     var _occlusion_supported =

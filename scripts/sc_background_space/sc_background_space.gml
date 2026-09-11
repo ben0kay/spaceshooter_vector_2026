@@ -280,7 +280,7 @@ function sc_space_background_seed_get()
         );
     }
 
-    return global.config.sector.world_seed;
+    return GCFG.sector.world_seed;
 }
 
 /// @description Generates deterministic nebula landmarks for one sector.

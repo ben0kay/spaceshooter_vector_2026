@@ -14,7 +14,7 @@ function sc_enemy_init_doctrine_create(_data)
 /// @description Creates global rear-damage settings with an optional enemy override.
 function sc_enemy_init_rear_damage_create(_data)
 {
-    var _rear_damage = variable_clone(global.config.enemy.rear_damage);
+    var _rear_damage = variable_clone(GCFG.enemy.rear_damage);
 
     if (variable_struct_exists(_data, "rear_damage"))
     {
@@ -33,7 +33,7 @@ function sc_enemy_init_rear_damage_create(_data)
 function sc_enemy_init_awareness_controller_create(_data)
 {
     var _awareness = variable_clone(_data.awareness_controller);
-    var _config = global.config.enemy.perception;
+    var _config = GCFG.enemy.perception;
 
     _awareness.detection_line_of_sight =
         variable_struct_exists(_awareness, "detection_line_of_sight")

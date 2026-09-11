@@ -14,7 +14,7 @@ function sc_player_draw_ship(_player, _colour, _alpha, _draw_thrust, _draw_shiel
     var _angle = _player.draw_angle;
     var _radius = _visual.radius;
     var _thrust_power = _runtime.thrust_power;
-    var _motion = global.config.visual.ship_motion;
+    var _motion = GCFG.visual.ship_motion;
     var _strength = _visual.motion_strength;
 
     var _bob_side = sin(GAME_TICK * _motion.side_speed) * _motion.side_amount * _strength;

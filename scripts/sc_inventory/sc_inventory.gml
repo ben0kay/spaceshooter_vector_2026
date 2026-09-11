@@ -202,7 +202,7 @@ function sc_inventory_selected_drop(_hud)
         _player.layer,
         _removed.key,
         _removed.amount,
-        { lifetime_multiplier: global.config.asteroid.pickup.player_drop_lifetime_multiplier 
+        { lifetime_multiplier: GCFG.asteroid.pickup.player_drop_lifetime_multiplier 
 			},
 		_removed.grade
     );

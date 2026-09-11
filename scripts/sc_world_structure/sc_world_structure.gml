@@ -176,7 +176,7 @@ function sc_world_structure_cleanup(_structure)
 /// @description Draws the exact configured collision pieces of one world structure.
 function sc_world_structure_collision_debug_draw(_structure)
 {
-    if (!global.config.debug.structure_collision) return;
+    if (!GCFG.debug.structure_collision) return;
 
     var _parts = _structure.structure.data.collision.parts;
     var _structure_angle = _structure.draw_angle;

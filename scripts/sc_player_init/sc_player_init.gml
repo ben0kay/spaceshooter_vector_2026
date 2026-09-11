@@ -4,7 +4,7 @@ function sc_player_init_loadout_create(_definition)
     var _campaign = variable_clone(_definition.starting_loadout);
     var _active = _campaign;
 
-    if (global.config.debug.player_full_loadout
+    if (GCFG.debug.player_full_loadout
     && variable_struct_exists(_definition, "debug_loadout"))
         _active = variable_clone(_definition.debug_loadout);
 

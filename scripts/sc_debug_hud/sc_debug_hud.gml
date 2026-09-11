@@ -14,7 +14,7 @@ function sc_debug_fps_colour_get(_fps)
 /// @description Draws current FPS and a smoothed multi-second average.
 function sc_debug_fps_draw()
 {
-    if (!global.config.debug.show_fps) return;
+    if (!GCFG.debug.show_fps) return;
 
     static _average = 0;
     static _initialized = false;

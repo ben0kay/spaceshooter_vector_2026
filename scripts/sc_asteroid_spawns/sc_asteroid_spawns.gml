@@ -302,7 +302,7 @@ function sc_asteroid_spawn_radius_resolve(_scale_data)
 function sc_asteroid_spawn_request_create()
 {
     var _generation = global.data.asteroid_spawn_generation;
-    var _config = global.config.sector.asteroid_fields;
+    var _config = GCFG.sector.asteroid_fields;
 
     if (random(1) < _generation.lone_chance)
     {
@@ -554,7 +554,7 @@ function sc_asteroid_spawn_shape_position_get(_shape, _distribution)
 function sc_asteroid_spawn_material_pool_get(_rich)
 {
     var _source =
-        global.config.sector.asteroid_fields.materials;
+        GCFG.sector.asteroid_fields.materials;
 
     var _sector_east = max(
         0,
@@ -663,7 +663,7 @@ function sc_asteroid_spawn_rich_composition_create(
 function sc_asteroid_spawn_composition_resolve(_composition)
 {
     var _config =
-        global.config.sector.asteroid_fields;
+        GCFG.sector.asteroid_fields;
 
     if (!is_struct(_composition))
     {
@@ -691,7 +691,7 @@ function sc_asteroid_spawn_spacing_multiplier_get(
 )
 {
     var _minimum_spacing = clamp(
-        global.config
+        GCFG
         .sector
         .asteroid_fields
         .spacing_multiplier,

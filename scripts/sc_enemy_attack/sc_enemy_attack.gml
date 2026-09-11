@@ -326,7 +326,7 @@ function sc_enemy_attack_line_of_sight_clear_to(_enemy,_target,_line_of_sight = 
     var _width = min(
         _target_collision.radius_forward,
         _target_collision.radius_side
-    )*global.config.enemy.asteroid.line_of_sight_width_scale;
+    )*GCFG.enemy.asteroid.line_of_sight_width_scale;
 
     var _direction = point_direction(
         _enemy.x,

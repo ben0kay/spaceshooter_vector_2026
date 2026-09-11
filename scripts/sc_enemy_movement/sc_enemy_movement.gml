@@ -90,7 +90,7 @@ function sc_enemy_movement_bombard_asteroid_field(_enemy)
 
     var _movement = _data.movement;
     var _runtime = _movement.behaviour_runtime.bombard;
-    var _config = global.config.enemy.asteroid;
+    var _config = GCFG.enemy.asteroid;
 
     if (GAME_TICK >= _runtime.next_field_check_tick)
     {
@@ -417,7 +417,7 @@ function sc_enemy_wander_target_select(_enemy)
     var _movement = _data.movement;
     var _wander = _movement.wander;
     var _range = _data.stats.final.range.wander;
-    var _config = global.config.enemy.wander;
+    var _config = GCFG.enemy.wander;
     var _radius_forward = _data.collision.radius_forward;
     var _radius_side = _data.collision.radius_side;
     var _margin = max(_radius_forward, _radius_side) + _config.edge_margin;
@@ -459,7 +459,7 @@ function sc_enemy_movement_wander(_enemy)
     var _data = _enemy.enemy;
     var _movement = _data.movement;
     var _wander = _movement.wander;
-    var _config = global.config.enemy.wander;
+    var _config = GCFG.enemy.wander;
 
     if (_data.stats.final.range.wander <= 0) return;
 

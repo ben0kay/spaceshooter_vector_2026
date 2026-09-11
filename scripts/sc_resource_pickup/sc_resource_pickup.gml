@@ -20,7 +20,7 @@ function sc_resource_pickup_spawn(
     || !variable_struct_exists(global.data.items, _item_key))
         return noone;
 
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
     var _direction = random(360);
     var _speed_multiplier = 1;
 	var _lifetime_multiplier = 1;
@@ -75,7 +75,7 @@ function sc_resource_pickup_init(_pickup, _create)
             : _create.grade;
     }
 
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
 
     _pickup.resource_pickup = {
         item_key: _create.item_key,
@@ -100,7 +100,7 @@ function sc_resource_pickup_init(_pickup, _create)
 /// @description Periodically merges one pickup with a nearby matching pickup.
 function sc_resource_pickup_merge_update(_pickup)
 {
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
     var _data = _pickup.resource_pickup;
 
     if (_data.amount >= _config.merge_amount_max
@@ -173,7 +173,7 @@ function sc_resource_pickup_merge_update(_pickup)
 function sc_resource_pickup_update(_pickup)
 {
     var _data = _pickup.resource_pickup;
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
 
     if (GAME_TICK >= _data.expire_tick)
     {
@@ -313,7 +313,7 @@ function sc_resource_pickup_update(_pickup)
 function sc_resource_pickup_draw(_pickup)
 {
     var _data = _pickup.resource_pickup;
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
 
     var _sprite = sc_resource_pickup_visual_cache_get(
         _data.item_key,
@@ -378,7 +378,7 @@ function sc_particles_resource_pickup_register()
 function sc_particles_resource_pickup_trail_emit(_pickup)
 {
     var _data = _pickup.resource_pickup;
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
 
     if (!sc_update_due(_pickup, _config.trail_interval))
     return;

@@ -266,9 +266,9 @@ function sc_enemy_grade_name_create(_base_name, _faction, _grade)
 /// @description Rolls one enemy grade after applying its rank chance multiplier.
 function sc_enemy_grade_roll(_rank)
 {
-    var _grades = global.config.enemy.grades;
+    var _grades = GCFG.enemy.grades;
     var _rank_multiplier =
-        global.config.enemy.grade.rank_chance_multiplier[_rank];
+        GCFG.enemy.grade.rank_chance_multiplier[_rank];
 
     if (_rank_multiplier <= 0)
         return ItemGrade.COMMON;
@@ -297,7 +297,7 @@ function sc_enemy_grade_roll(_rank)
 function sc_enemy_grade_create(_base_name, _faction, _rank)
 {
     var _grade = sc_enemy_grade_roll(_rank);
-    var _config = global.config.enemy.grades[_grade];
+    var _config = GCFG.enemy.grades[_grade];
     var _graded = _grade != ItemGrade.COMMON;
 
     var _name = _graded
@@ -407,7 +407,7 @@ function sc_enemy_grade_name_draw(_enemy, _draw_x, _draw_y)
 
     var _data = _enemy.enemy;
     var _grade = _data.grade;
-    var _config = global.config.enemy.grade;
+    var _config = GCFG.enemy.grade;
 
     var _distance = point_distance(
         _enemy.x,

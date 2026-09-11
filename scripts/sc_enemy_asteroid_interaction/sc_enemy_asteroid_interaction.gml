@@ -2,7 +2,7 @@
 function sc_enemy_obstacle_route_probe(_enemy,_direction,_distance,_include_asteroids)
 {
     var _data=_enemy.enemy;
-    var _config=global.config.enemy.asteroid;
+    var _config=GCFG.enemy.asteroid;
     var _clearance=max(
         _data.collision.radius_forward,
         _data.collision.radius_side
@@ -52,7 +52,7 @@ function sc_enemy_obstacle_avoid_direction_select(_enemy,_desired_direction,_loo
 {
     var _data=_enemy.enemy;
     var _runtime=_data.movement.obstacle;
-    var _config=global.config.enemy.asteroid;
+    var _config=GCFG.enemy.asteroid;
     var _angles=_config.candidate_angles;
     var _selected_direction=0;
     var _selected_side=0;
@@ -180,7 +180,7 @@ function sc_enemy_asteroid_destroy_hold(_enemy)
     if (!sc_enemy_obstacle_is_asteroid(_target))
         return false;
 
-    var _config = global.config.enemy.asteroid;
+    var _config = GCFG.enemy.asteroid;
 
     if (GAME_TICK >= _runtime.next_check_tick)
     {
@@ -271,7 +271,7 @@ function sc_enemy_obstacle_response_apply(_enemy)
         return;
     }
 
-    var _config = global.config.enemy.asteroid;
+    var _config = GCFG.enemy.asteroid;
     var _lazy = _data.optimization.lazy_factor;
 
     _runtime.next_check_tick = GAME_TICK+max(

@@ -143,7 +143,7 @@ function sc_projectile_init(_projectile, _create)
 /// @description Returns centralized visual feedback for one projectile class.
 function sc_projectile_class_config_get(_class)
 {
-    return global.config.projectile.classes[_class];
+    return GCFG.projectile.classes[_class];
 }
 
 /// @description Creates a regular or interceptable projectile from its definition.
@@ -255,7 +255,7 @@ function sc_projectile_avoidance_direction_get(_projectile, _target_direction)
     var _guidance = _data.guidance;
     var _avoidance = _guidance.avoidance;
     var _runtime = _data.runtime;
-    var _config = global.config.projectile.obstacle_avoidance;
+    var _config = GCFG.projectile.obstacle_avoidance;
     var _distance = (_config.look_ahead_base + _data.movement.speed * _config.look_ahead_speed) * _avoidance.clearance_scale;
 
     if (sc_projectile_obstacle_line_clear(_projectile, _data.direction, _distance))
@@ -320,7 +320,7 @@ function sc_projectile_homing_update(_projectile)
         if (!is_undefined(_avoidance_direction))
         {
             _target_direction = _avoidance_direction;
-            _turn_speed = global.config.projectile.obstacle_avoidance.turn_speed_max * _guidance.avoidance.strength;
+            _turn_speed = GCFG.projectile.obstacle_avoidance.turn_speed_max * _guidance.avoidance.strength;
         }
     }
 
@@ -416,7 +416,7 @@ function sc_projectile_shield_impact_get(_projectile, _target)
 {
     var _data = _projectile.projectile;
     var _collision = _target.entity.collision;
-    var _shield_scale = global.config.visual.shield.radius_scale;
+    var _shield_scale = GCFG.visual.shield.radius_scale;
     var _radius_forward = _collision.radius_forward * _shield_scale;
     var _radius_side = _collision.radius_side * _shield_scale;
     var _target_angle = _target.draw_angle;
@@ -712,7 +712,7 @@ function sc_projectile_draw(_projectile)
         {
             case ProjectileMotion.ROCKET:
             {
-                var _config = global.config.visual.projectile_motion.rocket;
+                var _config = GCFG.visual.projectile_motion.rocket;
                 var _actual_radius = max(1, _visual.radius * _scale);
                 var _speed_factor = _data.movement.speed / max(0.01, _config.reference_speed);
                 var _size_factor = _config.reference_radius / _actual_radius;

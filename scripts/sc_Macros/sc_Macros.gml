@@ -3,6 +3,7 @@
 #macro UPDATE_2 (((GAME_TICK + real(id)) mod 2) == 0)
 #macro UPDATE_4 (((GAME_TICK + real(id)) mod 4) == 0)
 #macro UPDATE_8 (((GAME_TICK + real(id)) mod 8) == 0)
+#macro GCFG global.config
 
 /// @description Returns whether an instance's staggered update is due.
 function sc_update_due(_instance, _interval)

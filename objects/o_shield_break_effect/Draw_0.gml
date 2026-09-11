@@ -1,6 +1,6 @@
 /// @description Draws expanding fading shield-energy layers.
 var _data = shield_break;
-var _config = global.config.visual.shield.break_effect;
+var _config = GCFG.visual.shield.break_effect;
 var _progress = 1 - _data.remaining / _data.life;
 var _fade = sqr(1 - _progress);
 var _inner_scale = lerp(1, _config.inner_scale_end, _progress);

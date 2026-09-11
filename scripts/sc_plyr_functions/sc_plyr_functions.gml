@@ -181,7 +181,7 @@ function sc_player_obstacle_overlap_resolve(_player)
 function sc_player_asteroid_bounce(_player, _asteroid)
 {
     var _movement = _player.movement;
-    var _config = global.config.player_collision;
+    var _config = GCFG.player_collision;
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
 
     if (_speed <= 0) return false;
@@ -204,7 +204,7 @@ function sc_player_solid_move_asteroids(_player)
 {
     var _movement = _player.movement;
     var _collision = _player.ship.collision;
-    var _config = global.config.player_collision;
+    var _config = GCFG.player_collision;
     var _extent = max(_collision.radius_forward, _collision.radius_side);
     var _speed = point_distance(0, 0, _movement.velocity_x, _movement.velocity_y);
     var _steps = _speed > _config.dash_substep_threshold

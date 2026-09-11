@@ -62,7 +62,7 @@ function sc_asteroid_init(_asteroid, _create)
     );
 
     var _composition_config =
-        global.config.asteroid.composition;
+        GCFG.asteroid.composition;
 
     var _is_rock = (
         _definition.item_key
@@ -243,7 +243,7 @@ function sc_asteroid_yield_emit(
 function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
 {
     var _data = _asteroid.asteroid;
-    var _config = global.config.asteroid;
+    var _config = GCFG.asteroid;
     var _efficiency = _config.extraction.weapon_efficiency;
     var _mining = is_struct(_packet.extraction);
 
@@ -275,7 +275,7 @@ function sc_asteroid_yield_destruction_release(_asteroid, _packet)
 
     _yield.progress +=
         _yield.remaining
-        * global.config.asteroid.extraction.destruction_efficiency;
+        * GCFG.asteroid.extraction.destruction_efficiency;
 
     return sc_asteroid_yield_emit(
         _asteroid,
@@ -288,7 +288,7 @@ function sc_asteroid_death_effect_create(_asteroid)
 {
     var _data = _asteroid.asteroid;
     var _radius = _data.visual.radius;
-    var _config = global.config.asteroid.death;
+    var _config = GCFG.asteroid.death;
 
     if (!sc_optimization_circle_visible(
         _asteroid.x,
@@ -452,7 +452,7 @@ function sc_asteroid_yield_item_emit(
         return 0;
 
     var _data = _asteroid.asteroid;
-    var _config = global.config.asteroid.pickup;
+    var _config = GCFG.asteroid.pickup;
     var _remaining = _amount;
 
     while (_remaining > 0)
@@ -516,7 +516,7 @@ function sc_asteroid_test_field_spawn(
     _field_index = -1
 )
 {
-    var _config = global.config.sector.asteroid_fields;
+    var _config = GCFG.sector.asteroid_fields;
     var _materials = _config.materials;
     var _sizes = _config.sizes;
     var _target_amount = max(array_length(_forced_sizes),_amount);

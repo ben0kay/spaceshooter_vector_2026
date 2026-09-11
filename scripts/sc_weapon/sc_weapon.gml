@@ -84,7 +84,7 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
 /// @description Applies player zoom spread once when firing an unguided projectile.
 function sc_weapon_zoom_accuracy_apply(_owner, _weapon, _direction)
 {
-    var _config = global.config.player.zoom_accuracy;
+    var _config = GCFG.player.zoom_accuracy;
     var _delivery = _weapon.delivery;
 
     if (!_config.enabled

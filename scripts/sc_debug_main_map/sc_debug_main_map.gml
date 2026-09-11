@@ -174,7 +174,7 @@ function sc_hud_sector_map_nebula_draw(
 /// @description Draws all generated nebulae on the debug sector map.
 function sc_hud_sector_map_nebulas_draw(_layout)
 {
-    if (!global.config.debug.sector_map_nebulas)
+    if (!GCFG.debug.sector_map_nebulas)
         return;
 
     var _background = instance_find(

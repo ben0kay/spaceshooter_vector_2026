@@ -5,7 +5,7 @@ function sc_particles_register_shield_break()
     var _streak = sc_particles_type_create();
     if (!part_type_exists(_blur) || !part_type_exists(_streak)) return false;
 
-    var _config = global.config.visual.shield.break_effect.particles;
+    var _config = GCFG.visual.shield.break_effect.particles;
 
     part_type_sprite(_blur, s_blur, false, false, false);
     part_type_size(_blur, _config.blur.size_min, _config.blur.size_max, _config.blur.growth, 0);
@@ -38,7 +38,7 @@ function sc_particles_shield_break_emit(_x, _y, _angle, _sprite, _palette)
     var _types = sc_particles_group_get("shield_break");
     if (!is_struct(_types)) return false;
 
-    var _config = global.config.visual.shield.break_effect.particles;
+    var _config = GCFG.visual.shield.break_effect.particles;
     var _width = sprite_get_width(_sprite);
     var _height = sprite_get_height(_sprite);
     var _radius_x = _width * 0.47;

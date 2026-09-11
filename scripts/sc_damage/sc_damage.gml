@@ -3,13 +3,13 @@
 /// @description Returns centralized tuning for one damage type.
 function sc_damage_type_config_get(_type)
 {
-    return global.config.damage.types[_type];
+    return GCFG.damage.types[_type];
 }
 
 /// @description Returns centralized tuning for one damage effect.
 function sc_damage_effect_config_get(_effect)
 {
-    return global.config.damage.effects[_effect];
+    return GCFG.damage.effects[_effect];
 }
 
 /// @description Creates one immutable damage packet when an attack is spawned.
@@ -21,7 +21,7 @@ function sc_damage_packet_create(_definition, _source, _projectile = false)
         : _type_config.default_effect;
 
     var _effect_config = sc_damage_effect_config_get(_effect);
-    var _critical_config = global.config.player.critical_hit.projectile.kinetic;
+    var _critical_config = GCFG.player.critical_hit.projectile.kinetic;
 
     var _critical_eligible = _projectile
         && _source.faction == Faction.PLAYER
@@ -221,7 +221,7 @@ function sc_projectile_damage(_projectile, _packet)
 /// @description Returns a player damage packet reduced when its enemy target is off-screen.
 function sc_enemy_offscreen_damage_packet_get(_enemy, _packet)
 {
-    var _config = global.config.player.offscreen_damage;
+    var _config = GCFG.player.offscreen_damage;
 
     if (!_config.enabled
     || _packet.source.faction != Faction.PLAYER)
@@ -463,7 +463,7 @@ function sc_asteroid_damage(_asteroid, _packet)
     && _packet.source.faction != noone)
     {
         _damage_amount *=
-            global.config.enemy.asteroid.destroy_damage_multiplier;
+            GCFG.enemy.asteroid.destroy_damage_multiplier;
     }
 
     var _damage = min(_health.current, _damage_amount);

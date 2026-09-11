@@ -6,7 +6,7 @@ sc_optimization_enemy_update(id);
 if (enemy.critical_response.sheltered)
     sc_enemy_retreat_recovery_update(id);
 
-var _updates = global.config.optimization.enemy_updates;
+var _updates = GCFG.optimization.enemy_updates;
 var _optimization = enemy.optimization;
 var _perception_interval = enemy.state == EnemyState.IDLE
     ? _updates.perception_idle_interval

@@ -59,7 +59,7 @@ function sc_optimization_enemy_init(_enemy)
 /// @description Refreshes one enemy's render visibility and distance-based update factor.
 function sc_optimization_enemy_update(_enemy)
 {
-    var _config = global.config.optimization;
+    var _config = GCFG.optimization;
     var _updates = _config.enemy_updates;
     var _optimization = _enemy.enemy.optimization;
     var _radius = _enemy.enemy.visual.radius * _config.enemy_visual_radius_scale;

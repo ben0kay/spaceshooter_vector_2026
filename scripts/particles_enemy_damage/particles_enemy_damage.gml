@@ -30,7 +30,7 @@ function sc_particles_enemy_damage_smoke_emit(_x, _y, _scale, _severity, _fx)
     var _types = sc_particles_group_get("enemy_damage");
     if (!is_struct(_types)) return false;
 
-    var _config = global.config.visual.enemy_damage;
+    var _config = GCFG.visual.enemy_damage;
     var _size = _scale * lerp(_config.size_min, _config.size_max, _severity);
 
     part_type_colour2(_types.smoke, _fx.colour_light, _fx.colour_dark);

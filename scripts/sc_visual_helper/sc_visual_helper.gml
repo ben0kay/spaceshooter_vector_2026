@@ -136,7 +136,7 @@ function sc_visual_ellipse_outline(_x, _y, _radius_forward, _radius_side, _angle
 /// @description Draws the shared baked elliptical shield using collision proportions.
 function sc_visual_shield_bake_draw(_x, _y, _radius_forward, _radius_side, _palette)
 {
-    var _config = global.config.visual.shield;
+    var _config = GCFG.visual.shield;
     var _forward = _radius_forward * _config.radius_scale;
     var _side = _radius_side * _config.radius_scale;
     var _field_centre = merge_colour(_palette.void, _palette.glow, _config.field_centre_mix);
@@ -161,7 +161,7 @@ function sc_visual_shield_bake_draw(_x, _y, _radius_forward, _radius_side, _pale
 /// @description Draws one cached shield sprite using shared runtime tuning.
 function sc_visual_shield_sprite_draw(_sprite, _x, _y, _angle, _palette, _charge_ratio, _hit_alpha, _draw_alpha)
 {
-    var _config = global.config.visual.shield;
+    var _config = GCFG.visual.shield;
     var _pulse = _config.idle_pulse_base + sin(GAME_TICK * _config.idle_pulse_speed) * _config.idle_pulse_amount;
     var _alpha = clamp(_config.runtime_alpha_base + _charge_ratio * _config.runtime_alpha_charge * _pulse, 0, _config.runtime_alpha_max);
     var _scale = 1 + sin(GAME_TICK * _config.idle_scale_speed) * _config.idle_scale_amount;

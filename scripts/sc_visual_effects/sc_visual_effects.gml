@@ -262,8 +262,8 @@ function sc_shield_break_effect_create(_entity, _sprite, _palette)
             angle: _entity.draw_angle,
             energy_colour: _palette.energy,
             glow_colour: _palette.glow,
-            life: global.config.visual.shield.break_effect.life,
-            remaining: global.config.visual.shield.break_effect.life,
+            life: GCFG.visual.shield.break_effect.life,
+            remaining: GCFG.visual.shield.break_effect.life,
             depth: _entity.depth - 1
         }
     });

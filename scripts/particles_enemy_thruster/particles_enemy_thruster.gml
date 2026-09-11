@@ -36,7 +36,7 @@ function sc_particles_register_enemy_thrust()
 /// @description Calculates shared enemy-thruster width and length factors.
 function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _length_config)
 {
-    var _config = global.config.visual.enemy_thrust;
+    var _config = GCFG.visual.enemy_thrust;
     var _radius_factor = clamp(_ship_radius / _config.radius_reference, _config.radius_factor_min, _config.radius_factor_max);
     var _mass_factor = clamp(_mass, _config.mass_min, _config.mass_max);
 
@@ -52,7 +52,7 @@ function sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _ma
 function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_scale, _ship_radius, _mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
-    var _config = global.config.visual.enemy_thrust.ignition;
+    var _config = GCFG.visual.enemy_thrust.ignition;
     var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _config);
     var _width = _scale.width;
     var _length = _scale.length;
@@ -84,7 +84,7 @@ function sc_particles_enemy_thrust_ignition(_x, _y, _direction, _power, _mount_s
 function sc_particles_enemy_thrust_emit(_x, _y, _direction, _power, _mount_scale, _ship_radius, _mass, _palette)
 {
     var _types = sc_particles_group_get("enemy_thrust");
-    var _config = global.config.visual.enemy_thrust.trail;
+    var _config = GCFG.visual.enemy_thrust.trail;
     var _scale = sc_particles_enemy_thrust_scale(_power, _mount_scale, _ship_radius, _mass, _config);
     var _width = _scale.width;
     var _length = _scale.length;

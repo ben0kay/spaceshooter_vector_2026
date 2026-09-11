@@ -68,7 +68,7 @@ function sc_entity_collision_debug_draw(_entity)
 /// @description Draws asteroid-clearance acquisition ranges and current targets.
 function sc_enemy_utility_asteroid_debug_draw(_enemy)
 {
-    if (!global.config.debug.asteroid_clearance) return;
+    if (!GCFG.debug.asteroid_clearance) return;
 
     var _data = _enemy.enemy;
     var _controller = _data.utility_controller;
@@ -142,7 +142,7 @@ function sc_enemy_utility_asteroid_debug_draw(_enemy)
 /// @description Restarts the campaign room using another procedural debug seed.
 function sc_debug_room_restart_update()
 {
-    if (!global.config.debug.room_restart
+    if (!GCFG.debug.room_restart
     || !keyboard_check_pressed(ord("R"))
     || !sc_sector_campaign_active())
         return false;
