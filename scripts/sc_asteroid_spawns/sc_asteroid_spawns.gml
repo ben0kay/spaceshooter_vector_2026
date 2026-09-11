@@ -48,7 +48,7 @@ function sc_asteroid_spawn_generation_data()
             },
             {
                 density: AsteroidFieldDensity.DENSE, name: "DENSE",
-                weights: [45,10,0], amount_multiplier: 1.3,
+                weights: [45,25,0], amount_multiplier: 1.3,
                 spacing_scale: 0.9, navigation_density: 0.85
             }
         ],

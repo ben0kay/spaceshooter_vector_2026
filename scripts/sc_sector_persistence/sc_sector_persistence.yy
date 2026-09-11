@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sector_persistence",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sector_persistence",
+  "parent":{
+    "name":"SECTORS",
+    "path":"folders/SCRIPTS---/SECTORS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

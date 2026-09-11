@@ -4,6 +4,9 @@
 #macro UPDATE_4 (((GAME_TICK + real(id)) mod 4) == 0)
 #macro UPDATE_8 (((GAME_TICK + real(id)) mod 8) == 0)
 #macro GCFG global.config
+#macro PROFILE_SAVE_VERSION 2
+#macro SECTOR_STATE_VERSION 1
+#macro SECTOR_GENERATION_VERSION 1
 
 /// @description Returns whether an instance's staggered update is due.
 function sc_update_due(_instance, _interval)

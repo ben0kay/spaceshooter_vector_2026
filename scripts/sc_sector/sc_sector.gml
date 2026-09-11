@@ -517,32 +517,30 @@ function sc_sector_structures_spawn(_layer)
     return instance_exists(_base) && instance_exists(_derelict);
 }
 
-/// @description Generates the active sector and restores any carried player.
+/// @description Generates the active sector, restores persistent changes and places the carried player.
 function sc_sector_room_create()
 {
     if (!sc_sector_campaign_active())
     {
-        show_debug_message(
-            "SECTOR ERROR - campaign runtime unavailable"
-        );
-
+        show_debug_message("SECTOR ERROR - campaign runtime unavailable");
         return false;
     }
 
     var _sector = global.game.sector;
     var _previous_seed = random_get_seed();
-
-    var _sector_seed = sc_sector_seed_get(
-        _sector.x,
-        _sector.y
-    );
-
+    var _sector_seed = sc_sector_seed_get(_sector.x, _sector.y);
     var _layer = layer_get_id("Instances");
 
+    sc_sector_persistence_prepare(_sector_seed);
     random_set_seed(_sector_seed);
 
+    // Static structures generate before fields so asteroid placement avoids them.
     sc_sector_structures_spawn(_layer);
     sc_sector_asteroid_fields_spawn(_layer);
+
+    // Apply saved asteroid destruction only after the complete deterministic
+    // baseline exists, otherwise removed asteroids would alter later placement.
+    sc_sector_persistence_restore();
 
     sc_gas_cloud_sector_spawn(
         _layer,
@@ -552,9 +550,7 @@ function sc_sector_room_create()
     random_set_seed(_previous_seed);
 
     if (instance_exists(global.player_id))
-        sc_sector_player_entry_apply(
-            global.player_id
-        );
+        sc_sector_player_entry_apply(global.player_id);
 
     show_debug_message(
         "SECTOR GENERATED - "
@@ -563,12 +559,14 @@ function sc_sector_room_create()
         + string(_sector.y)
         + " // SEED "
         + string(_sector_seed)
+        + " // VISIT "
+        + string(_sector.persistence.state.visit_count)
     );
 
     return true;
 }
 
-/// @description Moves the campaign into one adjacent sector.
+/// @description Saves the current sector and moves the campaign into one adjacent sector.
 function sc_sector_transition(_direction)
 {
     if (!sc_sector_campaign_active()
@@ -579,47 +577,67 @@ function sc_sector_transition(_direction)
     var _player = global.player_id;
     if (_sector.transitioning) return false;
 
+    var _next_x = _sector.x;
+    var _next_y = _sector.y;
+    var _entry_side = "";
+    var _entry_axis = 0.5;
+
     switch (_direction)
     {
         case "east":
-            _sector.x++;
-            _sector.entry_side = "west";
-            _sector.entry_axis = _player.y / room_height;
+            _next_x++;
+            _entry_side = "west";
+            _entry_axis = _player.y / room_height;
         break;
 
         case "west":
-            if (_sector.x <= 0) return false;
+            if (_next_x <= 0) return false;
 
-            _sector.x--;
-            _sector.entry_side = "east";
-            _sector.entry_axis = _player.y / room_height;
+            _next_x--;
+            _entry_side = "east";
+            _entry_axis = _player.y / room_height;
         break;
 
         case "north":
-            if (_sector.y <= -1) return false;
+            if (_next_y <= -1) return false;
 
-            _sector.y--;
-            _sector.entry_side = "south";
-            _sector.entry_axis = _player.x / room_width;
+            _next_y--;
+            _entry_side = "south";
+            _entry_axis = _player.x / room_width;
         break;
 
         case "south":
-            if (_sector.y >= 1) return false;
+            if (_next_y >= 1) return false;
 
-            _sector.y++;
-            _sector.entry_side = "north";
-            _sector.entry_axis = _player.x / room_width;
+            _next_y++;
+            _entry_side = "north";
+            _entry_axis = _player.x / room_width;
         break;
 
         default:
             return false;
     }
 
-    _sector.entry_axis = clamp(_sector.entry_axis, 0.05, 0.95);
+    // Capture under the current coordinates before changing sectors.
+    if (!sc_sector_persistence_capture())
+    {
+        show_debug_message("SECTOR TRANSITION ERROR - persistence capture failed");
+        return false;
+    }
+
+    if (!sc_profile_save())
+    {
+        show_debug_message("SECTOR TRANSITION ERROR - profile save failed");
+        return false;
+    }
+
+    _sector.x = _next_x;
+    _sector.y = _next_y;
+    _sector.entry_side = _entry_side;
+    _sector.entry_axis = clamp(_entry_axis, 0.05, 0.95);
     _sector.transitioning = true;
 
     sc_player_continuous_weapons_release(_player);
-
     _player.persistent = true;
 
     global.PlayerState = PlayerState.INITIALIZING;

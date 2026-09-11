@@ -8,7 +8,7 @@ function sc_profile_path(_slot)
 function sc_profile_default(_slot, _pilot_name)
 {
     return {
-        version: 1,
+        version: PROFILE_SAVE_VERSION,
         slot: _slot,
         pilot_name: _pilot_name,
         created_at: date_current_datetime(),
@@ -16,7 +16,10 @@ function sc_profile_default(_slot, _pilot_name)
         credits: 0,
         selected_ship_key: "ship_fighter",
         unlocked_ship_keys: ["ship_shard", "ship_fighter", "ship_bastion"],
-        persistent_modifiers: []
+        persistent_modifiers: [],
+
+        // Coordinate-keyed persistent sector changes.
+        sector_states: {}
     };
 }
 
@@ -39,6 +42,10 @@ function sc_profile_validate(_profile, _slot)
     if (!variable_struct_exists(_profile, "persistent_modifiers") || !is_array(_profile.persistent_modifiers))
         _profile.persistent_modifiers = [];
 
+    if (!variable_struct_exists(_profile, "sector_states") || !is_struct(_profile.sector_states))
+        _profile.sector_states = {};
+
+    _profile.version = PROFILE_SAVE_VERSION;
     _profile.slot = _slot;
     return true;
 }

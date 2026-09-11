@@ -24,10 +24,7 @@ function sc_asteroid_size_data(_size)
 function sc_asteroid_init(_asteroid, _create)
 {
     if (!is_struct(_create)
-    || !variable_struct_exists(
-        global.data.asteroids,
-        _create.key
-    ))
+    || !variable_struct_exists(global.data.asteroids, _create.key))
         return false;
 
     var _definition = variable_struct_get(
@@ -35,16 +32,10 @@ function sc_asteroid_init(_asteroid, _create)
         _create.key
     );
 
-    var _size = sc_asteroid_size_data(
-        _create.size
-    );
+    var _size = sc_asteroid_size_data(_create.size);
+    if (!is_struct(_size)) return false;
 
-    if (!is_struct(_size))
-        return false;
-
-    var _radius = _size.radius
-        * random_range(0.9, 1.1);
-
+    var _radius = _size.radius * random_range(0.9, 1.1);
     var _health = round(
         _size.health
         * _definition.stats.health_multiplier
@@ -53,21 +44,13 @@ function sc_asteroid_init(_asteroid, _create)
     var _yield = max(
         1,
         round(
-            irandom_range(
-                _size.yield_min,
-                _size.yield_max
-            )
+            irandom_range(_size.yield_min, _size.yield_max)
             * _definition.stats.yield_multiplier
         )
     );
 
-    var _composition_config =
-        GCFG.asteroid.composition;
-
-    var _is_rock = (
-        _definition.item_key
-        == _composition_config.rock_item_key
-    );
+    var _composition_config = GCFG.asteroid.composition;
+    var _is_rock = _definition.item_key == _composition_config.rock_item_key;
 
     _asteroid.draw_angle = random(360);
 
@@ -76,15 +59,17 @@ function sc_asteroid_init(_asteroid, _create)
         item_key: _definition.item_key,
         size: _create.size,
 
-        field_index: variable_struct_exists(
-            _create,
-            "field_index"
-        ) ? _create.field_index : -1,
+        persistent_id: variable_struct_exists(_create, "persistent_id")
+            ? _create.persistent_id
+            : -1,
 
-        zone_index: variable_struct_exists(
-            _create,
-            "zone_index"
-        ) ? _create.zone_index : -1,
+        field_index: variable_struct_exists(_create, "field_index")
+            ? _create.field_index
+            : -1,
+
+        zone_index: variable_struct_exists(_create, "zone_index")
+            ? _create.zone_index
+            : -1,
 
         health: {
             current: _health,
@@ -98,20 +83,11 @@ function sc_asteroid_init(_asteroid, _create)
             progress: 0,
 
             composition: {
-                rock_item_key:
-                    _composition_config.rock_item_key,
-
-                ore_item_key:
-                    _definition.item_key,
-
-                ore_chance:
-                    _is_rock
+                rock_item_key: _composition_config.rock_item_key,
+                ore_item_key: _definition.item_key,
+                ore_chance: _is_rock
                     ? 0
-                    : clamp(
-                        _composition_config.ore_chance,
-                        0,
-                        1
-                    )
+                    : clamp(_composition_config.ore_chance, 0, 1)
             }
         },
 
@@ -124,19 +100,14 @@ function sc_asteroid_init(_asteroid, _create)
             variant: irandom(5),
             start_angle: random(360),
             rotation_speed: random_range(-0.08, 0.08),
-            scale_x: random_range(0.92, 1.08)
-                * choose(-1, 1),
-            scale_y: random_range(0.92, 1.08)
-                * choose(-1, 1)
+            scale_x: random_range(0.92, 1.08) * choose(-1, 1),
+            scale_y: random_range(0.92, 1.08) * choose(-1, 1)
         }
     };
 
     var _collision = {
-        radius_forward:
-            _asteroid.asteroid.collision.radius,
-
-        radius_side:
-            _asteroid.asteroid.collision.radius
+        radius_forward: _asteroid.asteroid.collision.radius,
+        radius_side: _asteroid.asteroid.collision.radius
     };
 
     if (!sc_entity_init(
@@ -345,7 +316,8 @@ function sc_asteroid_death_effect_create(_asteroid)
 /// @description Handles the complete death lifecycle of one asteroid.
 function sc_asteroid_die(_asteroid, _packet)
 {
-    // Remove it from procedural field density before destroying the instance.
+    // Record the procedural identity before field references are removed.
+    sc_sector_persistence_asteroid_destroyed_add(_asteroid);
     sc_sector_asteroid_field_population_remove(_asteroid);
 
     sc_asteroid_death_effect_create(_asteroid);
