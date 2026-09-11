@@ -134,13 +134,14 @@ function sc_config_init()
             edge_spawn_padding: 640,
 
             asteroid_fields: {
-			    amount_min: 3,
-			    amount_max: 5,
+			    amount_min: 4,
+			    amount_max: 6,
 			    centre_padding: 2800,
 			    centre_separation: 4400,
 			    spawn_clear_radius: 2200,
-				budget_min: 180,
-				budget_max: 320,
+				budget_min: 360,
+				budget_max: 420,
+				population_multiplier: 1.75,
 				structure_clearance: 1200,
 				density_depletion_power: 0.65,
 
