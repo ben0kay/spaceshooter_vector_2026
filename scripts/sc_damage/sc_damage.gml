@@ -218,11 +218,41 @@ function sc_projectile_damage(_projectile, _packet)
     return _result;
 }
 
-/// @description Applies layered enemy damage with an optional rear armour and hull bonus.
+/// @description Returns a player damage packet reduced when its enemy target is off-screen.
+function sc_enemy_offscreen_damage_packet_get(_enemy, _packet)
+{
+    var _config = global.config.player.offscreen_damage;
+
+    if (!_config.enabled
+    || _packet.source.faction != Faction.PLAYER)
+        return _packet;
+
+    var _visible = sc_optimization_circle_visible(
+        _enemy.x,
+        _enemy.y,
+        _enemy.enemy.visual.radius,
+        _config.margin
+    );
+
+    if (_visible)
+        return _packet;
+
+    return sc_damage_packet_scaled(
+        _packet,
+        _config.multiplier
+    );
+}
+
+/// @description Applies layered enemy damage with off-screen reduction and optional rear damage bonus.
 function sc_enemy_damage(_enemy, _packet, _impact = undefined)
 {
     var _data = _enemy.enemy;
     if (_data.state == EnemyState.DEAD) return false;
+
+    var _packet_resolve = sc_enemy_offscreen_damage_packet_get(
+        _enemy,
+        _packet
+    );
 
     var _rear = _data.rear_damage;
     var _rear_angle = false;
@@ -234,30 +264,46 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
 
         if (abs(_dx) + abs(_dy) > 0.001)
         {
-            var _impact_direction = point_direction(_enemy.x, _enemy.y, _impact.x, _impact.y);
+            var _impact_direction = point_direction(
+                _enemy.x,
+                _enemy.y,
+                _impact.x,
+                _impact.y
+            );
+
             var _rear_direction = _enemy.draw_angle + 180;
-            _rear_angle = abs(angle_difference(_impact_direction, _rear_direction)) <= _rear.arc * 0.5;
+
+            _rear_angle = abs(angle_difference(
+                _impact_direction,
+                _rear_direction
+            )) <= _rear.arc * 0.5;
         }
     }
 
     var _defence = _data.defence;
     var _shield_before = _defence.shield.current;
-    var _rear_multiplier = _rear_angle ? _rear.multiplier : 1;
+    var _rear_multiplier = _rear_angle
+        ? _rear.multiplier
+        : 1;
+
     var _result = sc_damage_resolve(
-        _packet,
+        _packet_resolve,
         _defence.shield.current,
         _defence.armour.current,
         _defence.hull.current,
         _rear_multiplier
     );
 
-    _result.rear_hit = _rear_angle && (_result.dealt.armour > 0 || _result.dealt.hull > 0);
+    _result.rear_hit = _rear_angle
+        && (_result.dealt.armour > 0
+        || _result.dealt.hull > 0);
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
     _defence.hull.current = _result.hull;
 
-    if (_result.dealt.total <= 0) return false;
+    if (_result.dealt.total <= 0)
+        return false;
 
     sc_shield_break_effect_try(
         _enemy,
@@ -288,13 +334,15 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
     {
         _defence.hull.current = 0;
         _data.state = EnemyState.DEAD;
-        sc_enemy_die(_enemy, _packet);
+        sc_enemy_die(_enemy, _packet_resolve);
         return _result;
     }
 
-    if (_data.state == EnemyState.RETREATING || _data.state == EnemyState.FLEEING)
+    if (_data.state == EnemyState.RETREATING
+    || _data.state == EnemyState.FLEEING)
     {
-        if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        if (_result.effect.type == DamageEffect.STAGGER
+        && sc_damage_effect_triggered(_result.effect))
             sc_enemy_stagger_begin(_enemy, _result.effect);
 
         return _result;
@@ -305,7 +353,8 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
     sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
     sc_enemy_critical_response_try(_enemy, _result);
 
-    if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+    if (_result.effect.type == DamageEffect.STAGGER
+    && sc_damage_effect_triggered(_result.effect))
         sc_enemy_stagger_begin(_enemy, _result.effect);
 
     return _result;

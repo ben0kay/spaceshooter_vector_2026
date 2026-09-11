@@ -81,6 +81,36 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
     return noone;
 }
 
+/// @description Applies player zoom spread once when firing an unguided projectile.
+function sc_weapon_zoom_accuracy_apply(_owner, _weapon, _direction)
+{
+    var _config = global.config.player.zoom_accuracy;
+    var _delivery = _weapon.delivery;
+
+    if (!_config.enabled
+    || _owner.entity.faction != Faction.PLAYER
+    || _delivery.type != AttackDelivery.PROJECTILE
+    || _delivery.guidance != 0
+    || !instance_exists(global.level.camera))
+        return _direction;
+
+    var _zoom = global.level.camera.camera_data.zoom.current;
+
+    if (_zoom <= _config.penalty_start)
+        return _direction;
+
+    var _amount = clamp(
+        (_zoom - _config.penalty_start)
+        / max(0.001, _config.penalty_full - _config.penalty_start),
+        0,
+        1
+    );
+
+    var _spread = _config.spread_max * _amount;
+
+    return _direction + random_range(-_spread, _spread);
+}
+
 /// @description Fires one registered weapon using a generic owner and shot pattern.
 function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_multiplier)
 {
@@ -91,28 +121,66 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_
         damage_multiplier: _damage_multiplier
     };
 
+    _direction = sc_weapon_zoom_accuracy_apply(
+        _owner,
+        _weapon,
+        _direction
+    );
+
     switch (_shot.pattern)
     {
         case ShotPattern.SINGLE:
-            return sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction);
+            return sc_weapon_delivery_fire(
+                _owner,
+                _weapon,
+                _source,
+                _x,
+                _y,
+                _direction
+            );
 
         case ShotPattern.SPREAD:
-            var _step = _shot.amount > 1 ? _shot.angle_total / (_shot.amount - 1) : 0;
+        {
+            var _step = _shot.amount > 1
+                ? _shot.angle_total / (_shot.amount - 1)
+                : 0;
+
             var _start = _direction - _shot.angle_total * 0.5;
 
             for (var _i = 0; _i < _shot.amount; _i++)
-                sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _start + _step * _i);
+            {
+                sc_weapon_delivery_fire(
+                    _owner,
+                    _weapon,
+                    _source,
+                    _x,
+                    _y,
+                    _start + _step * _i
+                );
+            }
 
             return true;
+        }
 
         case ShotPattern.RANDOM_CONE:
+        {
             for (var _i = 0; _i < _shot.amount; _i++)
+            {
                 sc_weapon_delivery_fire(
-                    _owner, _weapon, _source, _x, _y,
-                    _direction + random_range(-_shot.angle_total * 0.5, _shot.angle_total * 0.5)
+                    _owner,
+                    _weapon,
+                    _source,
+                    _x,
+                    _y,
+                    _direction + random_range(
+                        -_shot.angle_total * 0.5,
+                        _shot.angle_total * 0.5
+                    )
                 );
+            }
 
             return true;
+        }
     }
 
     return false;

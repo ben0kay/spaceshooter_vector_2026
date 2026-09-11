@@ -589,6 +589,19 @@ function sc_config_init()
 		            }
 		        }
 		    }
+			
+			zoom_accuracy: {
+			    enabled: true,
+			    penalty_start: 1,
+			    penalty_full: 3,
+			    spread_max: 4
+			},
+			
+			offscreen_damage: {
+			    enabled: true,
+			    multiplier: 0.5,
+			    margin: 96
+			},
 		},
 			
 		player_collision: {
