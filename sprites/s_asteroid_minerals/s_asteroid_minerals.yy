@@ -2,7 +2,7 @@
   "$GMSprite":"v2",
   "%Name":"s_asteroid_minerals",
   "bboxMode":0,
-  "bbox_bottom":312,
+  "bbox_bottom":310,
   "bbox_left":0,
   "bbox_right":312,
   "bbox_top":0,

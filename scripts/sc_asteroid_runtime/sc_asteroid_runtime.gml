@@ -37,7 +37,8 @@ function sc_asteroid_init(_asteroid, _create)
     if (!is_struct(_size))
         return false;
 
-    var _radius = _size.radius * random_range(0.9, 1.1);
+    var _radius = _size.radius * random_range(0.9,1.1);
+
     var _health = round(
         _size.health
         * _definition.stats.health_multiplier
@@ -88,11 +89,11 @@ function sc_asteroid_init(_asteroid, _create)
 
         visual: {
             radius: _radius,
-            variant: irandom(5),
+            variant: irandom(15),
             start_angle: random(360),
-            rotation_speed: random_range(-0.08, 0.08),
-            scale_x: random_range(0.92, 1.08) * choose(-1, 1),
-            scale_y: random_range(0.92, 1.08) * choose(-1, 1)
+            rotation_speed: random_range(-0.08,0.08),
+            scale_x: random_range(0.92,1.08) * choose(-1,1),
+            scale_y: random_range(0.92,1.08) * choose(-1,1)
         }
     };
 
