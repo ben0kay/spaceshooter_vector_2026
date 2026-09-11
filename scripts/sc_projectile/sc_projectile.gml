@@ -1,45 +1,3 @@
-
-/// @description Creates normalized projectile guidance while supporting older weapons.
-function sc_projectile_guidance_create(_source)
-{
-    var _guidance = variable_clone(_source);
-
-    _guidance.lead_strength = variable_struct_exists(_guidance, "lead_strength")
-        ? clamp(_guidance.lead_strength, 0, 1)
-        : 0;
-
-    _guidance.guidance_delay = variable_struct_exists(_guidance, "guidance_delay")
-        ? max(0, round(_guidance.guidance_delay))
-        : 0;
-
-    _guidance.lock_angle = variable_struct_exists(_guidance, "lock_angle")
-        ? clamp(_guidance.lock_angle, 0, 360)
-        : 360;
-
-    var _avoidance = variable_struct_exists(_guidance, "avoidance")
-        ? variable_clone(_guidance.avoidance)
-        : {};
-
-    _avoidance.strength = variable_struct_exists(_avoidance, "strength")
-        ? clamp(_avoidance.strength, 0, 1)
-        : 0;
-
-    _avoidance.asteroids = variable_struct_exists(_avoidance, "asteroids")
-        ? _avoidance.asteroids
-        : 0;
-
-    _avoidance.structures = variable_struct_exists(_avoidance, "structures")
-        ? _avoidance.structures
-        : 0;
-
-    _avoidance.clearance_scale = variable_struct_exists(_avoidance, "clearance_scale")
-        ? max(0.1, _avoidance.clearance_scale)
-        : 1;
-
-    _guidance.avoidance = _avoidance;
-    return _guidance;
-}
-
 /// @description Initializes a reusable projectile with optional armour and hull.
 function sc_projectile_init(_projectile, _create)
 {
@@ -52,14 +10,13 @@ function sc_projectile_init(_projectile, _create)
     var _data = variable_struct_get(global.data.projectiles, _create.key);
     var _delivery = _create.delivery;
     var _launch = _delivery.projectile;
+    var _guidance = _delivery.guidance;
     var _scale = max(0.01, _launch.scale);
     var _life = max(1, round(_launch.life));
     var _collision = variable_clone(_data.collision);
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
-	var _guidance = sc_projectile_guidance_create(_delivery.guidance);
-
     var _has_trail = variable_struct_exists(_visual, "trail");
     var _has_trail_script = variable_struct_exists(_visual, "trail_script");
 
@@ -80,7 +37,6 @@ function sc_projectile_init(_projectile, _create)
             area: variable_clone(_data.detonation.area),
             scale: _delivery.detonation.scale,
             damage: variable_clone(_delivery.detonation.damage),
-
             emissions: variable_struct_exists(_data.detonation, "emissions")
                 ? variable_clone(_data.detonation.emissions)
                 : []
@@ -102,27 +58,31 @@ function sc_projectile_init(_projectile, _create)
         _health_bar.offset_y = 6;
 
         _defence = {
-            shield: {
-                current: 0,
-                maximum: 0
-            },
-
-            armour: {
-                current: _armour,
-                maximum: _armour
-            },
-
-            hull: {
-                current: _hull,
-                maximum: _hull
-            },
-
+            shield: { current: 0, maximum: 0 },
+            armour: { current: _armour, maximum: _armour },
+            hull: { current: _hull, maximum: _hull },
             health_bar: _health_bar,
-
             detonate_on_destroy: variable_struct_exists(_data.defence, "detonate_on_destroy")
                 ? _data.defence.detonate_on_destroy
                 : false
         };
+    }
+
+    var _runtime = {
+        detonated: false,
+        destroyed: false,
+        ricochet: undefined,
+        has_trail: _has_trail,
+        has_trail_script: _has_trail_script
+    };
+
+    if (_guidance != 0)
+    {
+        _runtime.target_id = noone;
+        _runtime.next_target_tick = GAME_TICK;
+        _runtime.guidance_ready_tick = GAME_TICK + _guidance.guidance_delay;
+        _runtime.avoidance_direction = _create.direction;
+        _runtime.avoidance_until_tick = GAME_TICK;
     }
 
     _projectile.projectile = {
@@ -146,25 +106,13 @@ function sc_projectile_init(_projectile, _create)
             maximum: _life
         },
 
-        guidance: _guidance
-        damage: sc_damage_packet_create(_delivery.damage,_create.source,true),
+        guidance: _guidance,
+        damage: sc_damage_packet_create(_delivery.damage, _create.source, true),
         collision: _collision,
         visual: _visual,
         defence: _defence,
         detonation: _detonation,
-
-        runtime: {
-		    target_id: noone,
-		    next_target_tick: GAME_TICK,
-		    guidance_ready_tick: GAME_TICK + _guidance.guidance_delay,
-		    avoidance_direction: _create.direction,
-		    avoidance_until_tick: GAME_TICK,
-		    detonated: false,
-		    destroyed: false,
-		    ricochet: undefined,
-		    has_trail: _has_trail,
-		    has_trail_script: _has_trail_script
-		}
+        runtime: _runtime
     };
 
     _projectile.draw_angle = _create.direction;
@@ -346,8 +294,6 @@ function sc_projectile_homing_update(_projectile)
 {
     var _data = _projectile.projectile;
     var _guidance = _data.guidance;
-    if (!_guidance.homing) return;
-
     var _runtime = _data.runtime;
     var _target = _runtime.target_id;
     var _target_direction = _data.direction;
@@ -356,30 +302,50 @@ function sc_projectile_homing_update(_projectile)
     {
         if (!instance_exists(_target) && GAME_TICK >= _runtime.next_target_tick)
         {
-            _target = sc_projectile_target_find(_projectile, _guidance.acquire_range, _guidance.lock_angle);
+            _target = sc_projectile_target_find(
+                _projectile,
+                _guidance.acquire_range,
+                _guidance.lock_angle
+            );
+
             _runtime.target_id = _target;
-            _runtime.next_target_tick = GAME_TICK + max(1, round(_guidance.reacquire_interval));
+            _runtime.next_target_tick = GAME_TICK + _guidance.reacquire_interval;
         }
 
         if (instance_exists(_target))
-            _target_direction = sc_projectile_target_direction_get(_projectile, _target, _guidance.lead_strength);
+        {
+            _target_direction = sc_projectile_target_direction_get(
+                _projectile,
+                _target,
+                _guidance.lead_strength
+            );
+        }
     }
 
     var _turn_speed = _guidance.turn_speed;
 
-    if (_guidance.avoidance.strength > 0)
+    if (_guidance.avoidance != 0)
     {
-        var _avoidance_direction = sc_projectile_avoidance_direction_get(_projectile, _target_direction);
+        var _avoidance_direction = sc_projectile_avoidance_direction_get(
+            _projectile,
+            _target_direction
+        );
 
         if (!is_undefined(_avoidance_direction))
         {
             _target_direction = _avoidance_direction;
-            _turn_speed = global.config.projectile.obstacle_avoidance.turn_speed_max * _guidance.avoidance.strength;
+            _turn_speed =
+                global.config.projectile.obstacle_avoidance.turn_speed_max
+                * _guidance.avoidance.strength;
         }
     }
 
     var _turn = angle_difference(_target_direction, _data.direction);
-    _data.direction = (_data.direction + clamp(_turn, -_turn_speed, _turn_speed) + 360) mod 360;
+    _data.direction = (
+        _data.direction
+        + clamp(_turn, -_turn_speed, _turn_speed)
+        + 360
+    ) mod 360;
 }
 
 /// @description Creates a projectile's explosion and optional child emissions.
@@ -430,7 +396,8 @@ function sc_projectile_update(_projectile)
 /// @description Updates one damaging travelling projectile.
 function sc_projectile_active_update(_projectile, _data)
 {
-    sc_projectile_homing_update(_projectile);
+    if (_data.guidance != 0)
+        sc_projectile_homing_update(_projectile);
 
     _projectile.x += lengthdir_x(_data.movement.speed, _data.direction);
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
@@ -440,7 +407,6 @@ function sc_projectile_active_update(_projectile, _data)
         _data.visual.trail_script(_projectile, _data);
 
     _data.life.remaining--;
-
     if (_data.life.remaining > 0) return;
 
     sc_projectile_detonate(_projectile);
