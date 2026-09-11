@@ -746,7 +746,7 @@ Recon drones — Small fast units could locate the player and call reinforcement
 Mine-layer ships — Enemies could exploit your deployable/mine architecture to reshape combat spaces.
 Defensive minefields — Important stations could be surrounded by persistent mine clusters.
 Smart mines — Advanced mines could distinguish friend from foe and reposition slightly.
-EMP mines — Mines could disable shields or systems instead of dealing raw damage.
+EMP mines — Mines could disable shields or systems instead of dealing raw damage. - lock movement temporarily
 Decoy mines — Some devices could generate false radar contacts.
 Proximity alarms — Entering defended territory could trigger escalating warnings before combat begins.
 Surrender behaviour — Certain civilian or damaged enemies could stop fighting instead of fleeing.
