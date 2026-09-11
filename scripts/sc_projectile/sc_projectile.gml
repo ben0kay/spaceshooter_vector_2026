@@ -513,57 +513,6 @@ function sc_projectile_sprite_get(_projectile)
     return _cache.sprites[_frame];
 }
 
-/// @description Applies a damage packet to an interceptable projectile.
-function sc_projectile_damage(_projectile, _packet)
-{
-    if (!instance_exists(_projectile)) return false;
-
-    var _data = _projectile.projectile;
-    var _defence = _data.defence;
-
-    if (_data.state != ProjectileState.ACTIVE
-    || _data.runtime.destroyed
-    || !is_struct(_defence))
-        return false;
-
-    var _result = sc_damage_resolve(
-        _packet,
-        0,
-        _defence.armour.current,
-        _defence.hull.current
-    );
-
-    _defence.armour.current = _result.armour;
-    _defence.hull.current = _result.hull;
-
-    if (_result.dealt.total <= 0) return false;
-
-    _data.visual.runtime.hit_alpha = 1;
-	
-	if (is_struct(_defence.health_bar))
-    sc_health_bar_damage_show(_defence.health_bar);
-
-    if (_defence.hull.current <= 0)
-    {
-        _defence.hull.current = 0;
-        _data.runtime.destroyed = true;
-
-        if (_defence.detonate_on_destroy)
-            sc_projectile_detonate(_projectile);
-
-        _data.visual.impact_script(
-            _projectile.x,
-            _projectile.y,
-            _data.direction,
-            noone,
-            _data.scale
-        );
-
-        instance_destroy(_projectile);
-    }
-
-    return _result;
-}
 
 /// @description Resolves one projectile striking an opposing interceptable projectile.
 function sc_projectile_projectile_collision(_projectile, _target)

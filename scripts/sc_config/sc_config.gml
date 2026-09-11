@@ -107,7 +107,18 @@ function sc_config_init()
                 runtime_alpha_base: 0.28, runtime_alpha_charge: 0.5, runtime_alpha_max: 0.82,
                 idle_pulse_base: 0.88, idle_pulse_amount: 0.12, idle_pulse_speed: 0.08,
                 idle_scale_amount: 0.008, idle_scale_speed: 0.06,
-                hit_scale_amount: 0.11, hit_flash_alpha: 0.48
+                hit_scale_amount: 0.11, hit_flash_alpha: 0.48,
+				
+				break_effect: {
+				    life: 26,
+				    inner_scale_end: 1.28,
+				    outer_scale_end: 1.7,
+				    inner_alpha: 0.8,
+				    outer_alpha: 0.38,
+				    blur_alpha: 0.2,
+				    blur_scale: 2.2,
+				    rotation: 3
+				}
             }
         },
 		

@@ -250,3 +250,30 @@ function sc_visual_beam_layered_draw(_x1, _y1, _x2, _y2, _base_width, _style, _p
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
+
+/// @description Creates one reusable baked shield-break visual.
+function sc_shield_break_effect_create(_entity, _sprite, _palette)
+{
+    if (!sprite_exists(_sprite)) return false;
+
+    return instance_create_layer(_entity.x, _entity.y, _entity.layer, o_shield_break_effect, {
+        shield_break_create: {
+            sprite: _sprite,
+            angle: _entity.draw_angle,
+            energy_colour: _palette.energy,
+            glow_colour: _palette.glow,
+            life: global.config.visual.shield.break_effect.life,
+            remaining: global.config.visual.shield.break_effect.life,
+            depth: _entity.depth - 1
+        }
+    });
+}
+
+/// @description Creates a shield-break effect only on a positive-to-zero transition.
+function sc_shield_break_effect_try(_entity, _shield_before, _result, _sprite, _palette)
+{
+    if (_shield_before <= 0 || _result.shield > 0 || _result.dealt.shield <= 0)
+        return false;
+
+    return sc_shield_break_effect_create(_entity, _sprite, _palette);
+}

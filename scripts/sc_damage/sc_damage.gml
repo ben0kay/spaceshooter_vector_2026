@@ -160,3 +160,235 @@ function sc_damage_effect_triggered(_effect)
     if (_effect.type == DamageEffect.NONE) return false;
     return random(1) < _effect.chance;
 }
+
+/// @description Applies a damage packet to an interceptable projectile.
+function sc_projectile_damage(_projectile, _packet)
+{
+    if (!instance_exists(_projectile)) return false;
+
+    var _data = _projectile.projectile;
+    var _defence = _data.defence;
+
+    if (_data.state != ProjectileState.ACTIVE
+    || _data.runtime.destroyed
+    || !is_struct(_defence))
+        return false;
+
+    var _result = sc_damage_resolve(
+        _packet,
+        0,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0) return false;
+
+    _data.visual.runtime.hit_alpha = 1;
+	
+	if (is_struct(_defence.health_bar))
+    sc_health_bar_damage_show(_defence.health_bar);
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        _data.runtime.destroyed = true;
+
+        if (_defence.detonate_on_destroy)
+            sc_projectile_detonate(_projectile);
+
+        _data.visual.impact_script(
+            _projectile.x,
+            _projectile.y,
+            _data.direction,
+            noone,
+            _data.scale
+        );
+
+        instance_destroy(_projectile);
+    }
+
+    return _result;
+}
+
+/// @description Applies layered enemy damage with an optional rear armour and hull bonus.
+function sc_enemy_damage(_enemy, _packet, _impact = undefined)
+{
+    var _data = _enemy.enemy;
+    if (_data.state == EnemyState.DEAD) return false;
+
+    var _rear = _data.rear_damage;
+    var _rear_angle = false;
+
+    if (_rear.arc > 0 && is_struct(_impact))
+    {
+        var _dx = _impact.x - _enemy.x;
+        var _dy = _impact.y - _enemy.y;
+
+        if (abs(_dx) + abs(_dy) > 0.001)
+        {
+            var _impact_direction = point_direction(_enemy.x, _enemy.y, _impact.x, _impact.y);
+            var _rear_direction = _enemy.draw_angle + 180;
+            _rear_angle = abs(angle_difference(_impact_direction, _rear_direction)) <= _rear.arc * 0.5;
+        }
+    }
+
+    var _defence = _data.defence;
+    var _shield_before = _defence.shield.current;
+    var _rear_multiplier = _rear_angle ? _rear.multiplier : 1;
+    var _result = sc_damage_resolve(
+        _packet,
+        _defence.shield.current,
+        _defence.armour.current,
+        _defence.hull.current,
+        _rear_multiplier
+    );
+
+    _result.rear_hit = _rear_angle && (_result.dealt.armour > 0 || _result.dealt.hull > 0);
+
+    _defence.shield.current = _result.shield;
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0) return false;
+
+    sc_shield_break_effect_try(
+        _enemy,
+        _shield_before,
+        _result,
+        _data.visual.runtime.shield_sprite,
+        _data.visual.palette
+    );
+
+    if (_result.critical_hit)
+    {
+        sc_world_feedback_create(
+            _enemy.x + random_range(-18, 18),
+            _enemy.y - _data.visual.radius * 0.7,
+            _enemy.layer,
+            "CRITICAL X" + string(_result.critical_multiplier),
+            make_colour_rgb(255, 190, 55),
+            1.15
+        );
+    }
+
+    sc_health_bar_damage_show(_enemy.health_bar);
+
+    if (_result.dealt.shield > 0)
+        _data.visual.runtime.shield_hit_alpha = 1;
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        _data.state = EnemyState.DEAD;
+        sc_enemy_die(_enemy, _packet);
+        return _result;
+    }
+
+    if (_data.state == EnemyState.RETREATING || _data.state == EnemyState.FLEEING)
+    {
+        if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+            sc_enemy_stagger_begin(_enemy, _result.effect);
+
+        return _result;
+    }
+
+    sc_enemy_engagement_retaliation_try(_enemy, _packet);
+    sc_enemy_awareness_damage_try(_enemy, _packet);
+    sc_enemy_alert_try(_enemy, _data.doctrine.alert.on_damage);
+    sc_enemy_critical_response_try(_enemy, _result);
+
+    if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        sc_enemy_stagger_begin(_enemy, _result.effect);
+
+    return _result;
+}
+
+/// @description Applies directional damage through the player's layered defence.
+function sc_player_damage(_player, _packet, _impact = undefined)
+{
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
+
+    var _dash = _player.movement.dash;
+    if (global.PlayerState == PlayerState.DASHING && _dash.invulnerable) return false;
+
+    var _defence = _player.defence;
+    var _shield_before = _defence.shield.current;
+    var _focus = _player.combat.shield_focus;
+    var _stats = _player.ship.stats.final;
+    var _packet_resolve = _packet;
+    var _shield_resolve = _defence.shield.current;
+
+    _focus.protected_impact = false;
+
+    if (_focus.active && is_struct(_impact))
+    {
+        var _impact_direction = point_direction(_player.x, _player.y, _impact.x, _impact.y);
+        var _inside_arc = abs(angle_difference(_impact_direction, _player.draw_angle)) <= _stats.shield_focus_arc * 0.5;
+
+        _focus.impact_direction = _impact_direction;
+        _focus.protected_impact = _inside_arc;
+
+        if (_inside_arc)
+        {
+            _packet_resolve = variable_clone(_packet);
+            _packet_resolve.amount *= _stats.shield_focus_damage_multiplier;
+        }
+        else _shield_resolve = 0;
+    }
+
+    var _result = sc_damage_resolve(
+        _packet_resolve,
+        _shield_resolve,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    if (_focus.active && is_struct(_impact) && !_focus.protected_impact)
+    {
+        _result.shield = _defence.shield.current;
+        _result.shield_focus_bypassed = true;
+    }
+    else _result.shield_focus_bypassed = false;
+
+    _result.shield_focus_protected = _focus.active && _focus.protected_impact;
+
+    _defence.shield.current = _result.shield;
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_defence.armour.current <= 0)
+        _player.inventory.equipment.armour = undefined;
+
+    if (_result.dealt.total <= 0) return false;
+
+    sc_shield_break_effect_try(
+        _player,
+        _shield_before,
+        _result,
+        _player.ship.visual.runtime.cache.shield,
+        _player.ship.visual.palette
+    );
+
+    if (_player.inventory.installation.active)
+        sc_player_module_install_cancel(_player);
+
+    _defence.shield.recharge_delay_remaining = _stats.shield_recharge_delay;
+    sc_health_bar_damage_show(_player.health_bar);
+
+    if (_result.dealt.shield > 0)
+        _player.ship.visual.runtime.shield_hit_alpha = 1;
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        global.PlayerState = PlayerState.DESTROYED;
+        sc_player_die(_player, _packet);
+    }
+    else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
+        sc_player_stagger_begin(_player, _result.effect);
+
+    return _result;
+}

@@ -10,8 +10,8 @@
   "name":"o_death_fragment",
   "overriddenProperties":[],
   "parent":{
-    "name":"OBJECTS---",
-    "path":"folders/OBJECTS---.yy",
+    "name":"effects",
+    "path":"folders/OBJECTS---/effects.yy",
   },
   "parentObjectId":null,
   "persistent":false,
