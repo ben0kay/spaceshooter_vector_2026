@@ -1,10 +1,8 @@
-/// @description Bakes one asteroid material, variant and damage stage.
+/// @description Bakes one primitive asteroid material, shape and damage stage.
 function sc_asteroid_visual_bake(_data, _variant, _stage)
 {
     var _canvas = 256;
     var _centre = _canvas * 0.5;
-    var _radius = 108;
-
     var _surface = surface_create(
         _canvas,
         _canvas
@@ -16,28 +14,14 @@ function sc_asteroid_visual_bake(_data, _variant, _stage)
     surface_set_target(_surface);
     draw_clear_alpha(c_black, 0);
 
-    if (sc_asteroid_component_material_enabled(_data))
-    {
-        sc_asteroid_component_draw(
-            _centre,
-            _centre,
-            _radius,
-            _variant,
-            _stage,
-            _data
-        );
-    }
-    else
-    {
-        sc_asteroid_primitive_draw(
-            _centre,
-            _centre,
-            _radius,
-            _variant mod 6,
-            _stage,
-            _data.palette
-        );
-    }
+    sc_asteroid_primitive_draw(
+        _centre,
+        _centre,
+        108,
+        _variant,
+        _stage,
+        _data.palette
+    );
 
     surface_reset_target();
 
@@ -57,19 +41,13 @@ function sc_asteroid_visual_bake(_data, _variant, _stage)
     return _sprite;
 }
 
-/// @description Bakes every registered asteroid material and damage stage.
+/// @description Bakes every primitive asteroid material and shape.
 function sc_asteroid_visual_cache_init()
 {
     if (variable_global_exists("asteroid_visual_cache"))
         sc_asteroid_visual_cache_destroy();
 
     global.asteroid_visual_cache = {};
-
-    var _config = sc_asteroid_component_config();
-    var _variant_count = max(
-        6,
-        _config.variant_count
-    );
 
     var _keys = variable_struct_get_names(
         global.data.asteroids
@@ -84,12 +62,10 @@ function sc_asteroid_visual_cache_init()
             _key
         );
 
-        var _variants = array_create(
-            _variant_count
-        );
+        var _variants = array_create(6);
 
         for (var _variant = 0;
-        _variant < _variant_count;
+        _variant < 6;
         ++_variant)
         {
             _variants[_variant] = array_create(
@@ -97,7 +73,9 @@ function sc_asteroid_visual_cache_init()
                 -1
             );
 
-            for (var _stage = 0; _stage < 4; ++_stage)
+            for (var _stage = 0;
+            _stage < 4;
+            ++_stage)
             {
                 var _sprite = sc_asteroid_visual_bake(
                     _data,
@@ -129,40 +107,23 @@ function sc_asteroid_visual_cache_init()
     }
 
     show_debug_message(
-        "ASTEROID VISUAL CACHE BAKED - "
-        + string(_variant_count)
-        + " VARIANTS"
+        "ASTEROID PRIMITIVE VISUAL CACHE BAKED"
     );
 
     return true;
 }
 
-/// @description Returns one cached asteroid sprite.
+/// @description Returns one cached primitive asteroid sprite.
 function sc_asteroid_visual_cache_get(
     _key,
     _variant,
     _stage
 )
 {
-    var _variants = variable_struct_get(
+    return variable_struct_get(
         global.asteroid_visual_cache,
         _key
-    );
-
-    var _variant_index = _variant
-        mod array_length(_variants);
-
-    var _stage_index = clamp(
-        _stage,
-        0,
-        array_length(_variants[_variant_index]) - 1
-    );
-
-    return _variants[
-        _variant_index
-    ][
-        _stage_index
-    ];
+    )[_variant][_stage];
 }
 
 /// @description Deletes every generated asteroid sprite.

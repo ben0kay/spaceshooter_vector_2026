@@ -20,6 +20,7 @@ function sc_asteroid_size_data(_size)
     return undefined;
 }
 
+/// @description Initializes one generic factionless asteroid.
 function sc_asteroid_init(_asteroid, _create)
 {
     if (!is_struct(_create)
@@ -60,10 +61,12 @@ function sc_asteroid_init(_asteroid, _create)
         )
     );
 
-    var _visual_config = sc_asteroid_component_config();
-    var _variant_count = max(
-        6,
-        _visual_config.variant_count
+    var _composition_config =
+        global.config.asteroid.composition;
+
+    var _is_rock = (
+        _definition.item_key
+        == _composition_config.rock_item_key
     );
 
     _asteroid.draw_angle = random(360);
@@ -92,7 +95,24 @@ function sc_asteroid_init(_asteroid, _create)
         yield: {
             total: _yield,
             remaining: _yield,
-            progress: 0
+            progress: 0,
+
+            composition: {
+                rock_item_key:
+                    _composition_config.rock_item_key,
+
+                ore_item_key:
+                    _definition.item_key,
+
+                ore_chance:
+                    _is_rock
+                    ? 0
+                    : clamp(
+                        _composition_config.ore_chance,
+                        0,
+                        1
+                    )
+            }
         },
 
         collision: {
@@ -101,7 +121,7 @@ function sc_asteroid_init(_asteroid, _create)
 
         visual: {
             radius: _radius,
-            variant: irandom(_variant_count - 1),
+            variant: irandom(5),
             start_angle: random(360),
             rotation_speed: random_range(-0.08, 0.08),
             scale_x: random_range(0.92, 1.08)
@@ -168,15 +188,23 @@ function sc_asteroid_yield_output_get(_amount, _multiplier)
     return _output;
 }
 
-/// @description Converts accumulated extraction progress into outward world pickups.
-function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1, _launch_multiplier = 1)
+/// @description Converts extraction progress into mixed rock and ore pickups.
+function sc_asteroid_yield_emit(
+    _asteroid,
+    _yield_multiplier = 1,
+    _launch_multiplier = 1
+)
 {
     var _data = _asteroid.asteroid;
     var _yield = _data.yield;
-    var _config = global.config.asteroid.pickup;
-    var _base_amount = min(_yield.remaining, floor(_yield.progress));
 
-    if (_base_amount <= 0) return 0;
+    var _base_amount = min(
+        _yield.remaining,
+        floor(_yield.progress)
+    );
+
+    if (_base_amount <= 0)
+        return 0;
 
     _yield.progress -= _base_amount;
     _yield.remaining -= _base_amount;
@@ -186,41 +214,27 @@ function sc_asteroid_yield_emit(_asteroid, _yield_multiplier = 1, _launch_multip
         _yield_multiplier
     );
 
-    var _remaining = _output;
+    if (_output <= 0)
+        return 0;
 
-    while (_remaining > 0)
-    {
-        var _chunk = min(_remaining, irandom_range(1, 3));
-        var _direction = random(360);
+    var _rolled = sc_asteroid_yield_composition_roll(
+        _yield,
+        _output
+    );
 
-        // Begin outside the physical asteroid instead of beneath it.
-        var _spawn_distance =
-            _data.collision.radius
-            + _config.spawn_clearance
-            + random_range(0, 8);
+    sc_asteroid_yield_item_emit(
+        _asteroid,
+        _yield.composition.rock_item_key,
+        _rolled.rock_amount,
+        _launch_multiplier
+    );
 
-        var _spawn_x =
-            _asteroid.x
-            + lengthdir_x(_spawn_distance, _direction);
-
-        var _spawn_y =
-            _asteroid.y
-            + lengthdir_y(_spawn_distance, _direction);
-
-        sc_resource_pickup_spawn(
-            _spawn_x,
-            _spawn_y,
-            _asteroid.layer,
-            _data.item_key,
-            _chunk,
-            {
-                direction: _direction + random_range(-12, 12),
-                speed_multiplier: _launch_multiplier
-            }
-        );
-
-        _remaining -= _chunk;
-    }
+    sc_asteroid_yield_item_emit(
+        _asteroid,
+        _yield.composition.ore_item_key,
+        _rolled.ore_amount,
+        _launch_multiplier
+    );
 
     return _output;
 }
@@ -470,6 +484,92 @@ function sc_asteroid_weighted_choose(_entries)
     return _entries[array_length(_entries) - 1];
 }
 
+/// @description Splits recovered yield into rock and material amounts.
+function sc_asteroid_yield_composition_roll(
+    _yield,
+    _amount
+)
+{
+    var _composition = _yield.composition;
+    var _ore_amount = 0;
+
+    for (var _i = 0; _i < _amount; ++_i)
+    {
+        if (random(1) < _composition.ore_chance)
+            ++_ore_amount;
+    }
+
+    return {
+        rock_amount: _amount - _ore_amount,
+        ore_amount: _ore_amount
+    };
+}
+
+/// @description Emits one item type from an asteroid as world pickups.
+function sc_asteroid_yield_item_emit(
+    _asteroid,
+    _item_key,
+    _amount,
+    _launch_multiplier
+)
+{
+    if (_amount <= 0)
+        return 0;
+
+    var _data = _asteroid.asteroid;
+    var _config = global.config.asteroid.pickup;
+    var _remaining = _amount;
+
+    while (_remaining > 0)
+    {
+        var _chunk = min(
+            _remaining,
+            irandom_range(1, 3)
+        );
+
+        var _direction = random(360);
+
+        var _spawn_distance =
+            _data.collision.radius
+            + _config.spawn_clearance
+            + random_range(0, 8);
+
+        var _spawn_x =
+            _asteroid.x
+            + lengthdir_x(
+                _spawn_distance,
+                _direction
+            );
+
+        var _spawn_y =
+            _asteroid.y
+            + lengthdir_y(
+                _spawn_distance,
+                _direction
+            );
+
+        sc_resource_pickup_spawn(
+            _spawn_x,
+            _spawn_y,
+            _asteroid.layer,
+            _item_key,
+            _chunk,
+            {
+                direction:
+                    _direction
+                    + random_range(-12, 12),
+
+                speed_multiplier:
+                    _launch_multiplier
+            }
+        );
+
+        _remaining -= _chunk;
+    }
+
+    return _amount;
+}
+
 /// @description Spawns one configurable mixed asteroid field.
 function sc_asteroid_test_field_spawn(
     _centre_x,
@@ -529,3 +629,4 @@ function sc_asteroid_test_field_spawn(
 
     return _spawned;
 }
+

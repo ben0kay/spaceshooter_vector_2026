@@ -366,10 +366,17 @@ function sc_config_init()
 			
 		asteroid: {
 			
+			composition: {
+		        rock_item_key: "item_rock",
+		        ore_chance: 0.5
+		    },
+			
 		    extraction: {
 		        weapon_efficiency: 0.45,
 		        destruction_efficiency: 0.15
 		    },
+				
+			
 
 		    pickup: {
 			    launch_speed_min: 1.8,
