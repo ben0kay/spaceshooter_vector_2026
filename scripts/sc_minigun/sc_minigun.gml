@@ -30,9 +30,7 @@ function sc_weapon_register_minigun()
                 effect: DamageEffect.NONE
             },
 
-            guidance: {
-                homing: 0
-            }
+            guidance: 0,
         },
 
         shot: {

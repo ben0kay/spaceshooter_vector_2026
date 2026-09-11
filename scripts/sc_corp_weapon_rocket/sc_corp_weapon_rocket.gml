@@ -24,10 +24,14 @@ function sc_weapon_register_corporation_rocket()
             },
 
             guidance: {
-                homing: 1,
+
                 acquire_range: 1800,
                 turn_speed: 1.6,
-                reacquire_interval: 10
+                reacquire_interval: 10,
+				lead_strength: 0,
+				guidance_delay: 0,
+				lock_angle: 360,
+				avoidance: 0
             },
 
             detonation: {

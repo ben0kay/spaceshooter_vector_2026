@@ -23,9 +23,7 @@ function sc_weapon_register_corporation_plasma()
                 effect: DamageEffect.NONE
             },
 
-            guidance: {
-                homing: 0
-            }
+            guidance: 0,
         },
 
         audio: {

@@ -31,10 +31,13 @@ function sc_weapon_register_corporation_micro_missile()
             },
 
             guidance: {
-                homing: 1,
                 acquire_range: 1350,
                 turn_speed: 3.6,
-                reacquire_interval: 8
+                reacquire_interval: 8,
+				lead_strength: 0,
+guidance_delay: 0,
+lock_angle: 360,
+avoidance: 0
             },
 
             detonation: {
@@ -83,10 +86,14 @@ function sc_weapon_register_corporation_pursuit_micro_missile()
             },
 
             guidance: {
-                homing: 1,
+
                 acquire_range: 1550,
                 turn_speed: 5.5,
-                reacquire_interval: 5
+                reacquire_interval: 5,
+				lead_strength: 0,
+guidance_delay: 0,
+lock_angle: 360,
+avoidance: 0
             },
 
             detonation: {
@@ -135,10 +142,14 @@ function sc_weapon_register_corporation_breach_micro_missile()
             },
 
             guidance: {
-                homing: 1,
+
                 acquire_range: 1700,
                 turn_speed: 2.4,
-                reacquire_interval: 10
+                reacquire_interval: 10,
+				lead_strength: 0,
+guidance_delay: 0,
+lock_angle: 360,
+avoidance: 0
             },
 
             detonation: {

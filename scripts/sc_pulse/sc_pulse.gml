@@ -22,9 +22,7 @@ function sc_weapon_register_shard_pulse()
                 effect: DamageEffect.NONE
             },
 
-            guidance: {
-                homing: 0
-            }
+            guidance: 0,
         },
 
         shot: {

@@ -24,9 +24,7 @@ function sc_weapon_register_simulant_rocket()
                 effect: DamageEffect.NONE
             },
 
-            guidance: {
-                homing: 0
-            },
+            guidance: 0,
 
             detonation: {
                 scale: 0.8,
@@ -73,12 +71,7 @@ function sc_weapon_register_simulant_dreadnaught_rocket()
                 effect: DamageEffect.NONE
             },
 
-            guidance: {
-                homing: 0,
-                acquire_range: 1800,
-                turn_speed: 1.45,
-                reacquire_interval: 10
-            },
+            guidance: 0,
 
             detonation: {
                 scale: 1.75,
