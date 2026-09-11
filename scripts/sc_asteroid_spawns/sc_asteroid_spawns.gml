@@ -39,12 +39,12 @@ function sc_asteroid_spawn_generation_data()
             {
                 density: AsteroidFieldDensity.SPARSE, name: "SPARSE",
                 weights: [20,45,85], amount_multiplier: 0.68,
-                spacing_scale: 1.2, navigation_density: 0.3
+                spacing_scale: 1.1, navigation_density: 0.3
             },
             {
                 density: AsteroidFieldDensity.STANDARD, name: "STANDARD",
                 weights: [35,45,15], amount_multiplier: 1,
-                spacing_scale: 1.04, navigation_density: 0.55
+                spacing_scale: 1, navigation_density: 0.55
             },
             {
                 density: AsteroidFieldDensity.DENSE, name: "DENSE",

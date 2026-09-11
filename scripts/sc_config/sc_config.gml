@@ -183,11 +183,11 @@ function sc_config_init()
 			    centre_padding: 2800,
 			    centre_separation: 4400,
 			    spawn_clear_radius: 1000,
-				budget_min: 420,
-				budget_max: 500,
-				population_multiplier: 1.5,
-				spacing_multiplier: 0.7,
-				structure_clearance: 1000,
+				budget_min: 450,
+				budget_max: 850,
+				population_multiplier: 1.6,
+				spacing_multiplier: 0.5,
+				structure_clearance: 800,
 				density_depletion_power: 0.65,
 
 			    materials: [
