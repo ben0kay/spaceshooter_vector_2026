@@ -281,7 +281,13 @@ function sc_config_init()
                 { name: "Burn", chance: 0.2, duration: 180, strength: 0.15, tick_interval: 30 },
                 { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 },
                 { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
-            ]
+            ],
+			
+			area_occlusion: {
+                asteroids: true,
+                radius_scale: 0.85,
+                blocked_damage_multiplier: 0.15
+            },
         },
 
         enemy: {

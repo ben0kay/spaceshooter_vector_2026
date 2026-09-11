@@ -87,29 +87,83 @@ function sc_attack_area_standard_init(_area, _create)
         break;
     }
 
+    var _occlusion = variable_clone(
+        global.config.damage.area_occlusion
+    );
+
+    var _occlusion_supported =
+        _definition.shape
+        == AttackAreaShape.CIRCLE;
+
+    var _occlusion_default =
+        _occlusion_supported
+        && _create.damage.type
+        == DamageType.EXPLOSIVE;
+
+    _occlusion.asteroids =
+        _occlusion.asteroids
+        && _occlusion_default;
+
+    // A circular attack may explicitly override the damage-type default.
+    if (
+        _occlusion_supported
+        && variable_struct_exists(_behaviour, "occlusion")
+    )
+    {
+        _occlusion.asteroids =
+            _behaviour.occlusion.asteroids;
+    }
+
     _area.attack_area = {
         delivery_type: AttackDelivery.AREA,
         source: _create.source,
         direction: _create.direction,
         shape: _definition.shape,
         geometry: _geometry,
-        damage: sc_damage_packet_create(_create.damage, _create.source),
+
+        damage: sc_damage_packet_create(
+            _create.damage,
+            _create.source
+        ),
 
         behaviour: {
             duration: max(1, round(_behaviour.duration)),
             tick_interval: _interval,
             hit_once: _behaviour.hit_once,
             max_targets: _behaviour.max_targets,
-            falloff_minimum: clamp(_behaviour.falloff_minimum, 0, 1),
-            falloff_exponent: max(0.01, _behaviour.falloff_exponent),
-            falloff_distance: max(1, _falloff_distance)
+
+            falloff_minimum: clamp(
+                _behaviour.falloff_minimum,
+                0,
+                1
+            ),
+
+            falloff_exponent: max(
+                0.01,
+                _behaviour.falloff_exponent
+            ),
+
+            falloff_distance: max(
+                1,
+                _falloff_distance
+            ),
+
+            occlusion: _occlusion
         },
 
-        visual: variable_clone(_definition.visual),
+        visual: variable_clone(
+            _definition.visual
+        ),
 
         runtime: {
-            life: max(1, round(_behaviour.duration)),
-            next_damage_tick: GAME_TICK + _interval,
+            life: max(
+                1,
+                round(_behaviour.duration)
+            ),
+
+            next_damage_tick:
+                GAME_TICK + _interval,
+
             hit_ids: []
         }
     };
@@ -117,8 +171,21 @@ function sc_attack_area_standard_init(_area, _create)
     _area.draw_angle = _create.direction;
     _area.initialized = true;
 
-    if (variable_struct_exists(_area.attack_area.visual, "shockwave"))
-        sc_shockwave_create(_area.x, _area.y, _area.layer, _area.attack_area.visual.shockwave, _falloff_distance);
+    if (
+        variable_struct_exists(
+            _area.attack_area.visual,
+            "shockwave"
+        )
+    )
+    {
+        sc_shockwave_create(
+            _area.x,
+            _area.y,
+            _area.layer,
+            _area.attack_area.visual.shockwave,
+            _falloff_distance
+        );
+    }
 
     sc_attack_area_damage_apply(_area);
     return true;
@@ -356,8 +423,98 @@ function sc_attack_area_target_inside(_area, _target)
     return false;
 }
 
-/// @description Returns an area damage packet scaled by distance.
-function sc_attack_area_damage_packet_get(_area,_target)
+/// @description Returns whether an asteroid blocks a circular area from one target.
+function sc_attack_area_asteroid_occluded(_area, _target)
+{
+    var _data = _area.attack_area;
+    var _occlusion = _data.behaviour.occlusion;
+
+    if (!_occlusion.asteroids
+    || global.level.asteroids_alive <= 0)
+        return false;
+
+    var _line_x = _target.x - _area.x;
+    var _line_y = _target.y - _area.y;
+    var _line_length_sq =
+        _line_x * _line_x
+        + _line_y * _line_y;
+
+    if (_line_length_sq <= 0.001)
+        return false;
+
+    var _asteroids = ds_list_create();
+
+    collision_line_list(
+        _area.x,
+        _area.y,
+        _target.x,
+        _target.y,
+        o_asteroid,
+        false,
+        true,
+        _asteroids,
+        false
+    );
+
+    var _blocked = false;
+    var _count = ds_list_size(_asteroids);
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _asteroid = _asteroids[| _i];
+
+        if (_asteroid == _target
+        || !_asteroid.initialized)
+            continue;
+
+        var _relative_x =
+            _asteroid.x
+            - _area.x;
+
+        var _relative_y =
+            _asteroid.y
+            - _area.y;
+
+        var _progress = (
+            _relative_x * _line_x
+            + _relative_y * _line_y
+        ) / _line_length_sq;
+
+        // The asteroid centre must lie toward and before the target.
+        if (_progress <= 0
+        || _progress >= 1)
+            continue;
+
+        var _nearest_x =
+            _area.x
+            + _line_x * _progress;
+
+        var _nearest_y =
+            _area.y
+            + _line_y * _progress;
+
+        var _radius =
+            _asteroid.asteroid.visual.radius
+            * _occlusion.radius_scale;
+
+        if (sc_point_distance_sq(
+            _asteroid.x,
+            _asteroid.y,
+            _nearest_x,
+            _nearest_y
+        ) <= _radius * _radius)
+        {
+            _blocked = true;
+            break;
+        }
+    }
+
+    ds_list_destroy(_asteroids);
+    return _blocked;
+}
+
+/// @description Returns an area damage packet scaled by distance and asteroid cover.
+function sc_attack_area_damage_packet_get(_area, _target)
 {
     var _data = _area.attack_area;
 
@@ -365,35 +522,51 @@ function sc_attack_area_damage_packet_get(_area,_target)
         return _data.damage;
 
     var _behaviour = _data.behaviour;
+    var _multiplier = 1;
 
-    if (_behaviour.falloff_minimum >= 1)
+    if (_behaviour.falloff_minimum < 1)
+    {
+        var _distance = point_distance(
+            _area.x,
+            _area.y,
+            _target.x,
+            _target.y
+        );
+
+        var _distance_ratio = clamp(
+            _distance
+            / _behaviour.falloff_distance,
+            0,
+            1
+        );
+
+        _multiplier *= lerp(
+            1,
+            _behaviour.falloff_minimum,
+            power(
+                _distance_ratio,
+                _behaviour.falloff_exponent
+            )
+        );
+    }
+
+    if (sc_attack_area_asteroid_occluded(
+        _area,
+        _target
+    ))
+    {
+        _multiplier *=
+            _behaviour
+            .occlusion
+            .blocked_damage_multiplier;
+    }
+
+    if (_multiplier >= 1)
         return _data.damage;
-
-    var _distance = point_distance(
-        _area.x,
-        _area.y,
-        _target.x,
-        _target.y
-    );
-
-    var _distance_ratio = clamp(
-        _distance / _behaviour.falloff_distance,
-        0,
-        1
-    );
-
-    var _falloff = lerp(
-        1,
-        _behaviour.falloff_minimum,
-        power(
-            _distance_ratio,
-            _behaviour.falloff_exponent
-        )
-    );
 
     return sc_damage_packet_scaled(
         _data.damage,
-        _falloff
+        _multiplier
     );
 }
 
