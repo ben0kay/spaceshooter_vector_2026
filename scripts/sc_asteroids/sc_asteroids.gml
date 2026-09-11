@@ -200,7 +200,7 @@ function sc_asteroid_register_quartz()
         },
 
         palette: {
-            void: make_colour_rgb(10,,18),
+            void: make_colour_rgb(10,8,18),
             dark: make_colour_rgb(35,31,47),
             mid: make_colour_rgb(76,68,96),
             light: make_colour_rgb(155,143,181),
