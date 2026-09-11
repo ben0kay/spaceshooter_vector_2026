@@ -494,6 +494,7 @@ function sc_sector_structures_spawn(_layer)
         {
             structure_create: {
                 key: "player_starting_base",
+                persistent_id: "frontier_haven",
                 angle: 0,
                 collision_layer: _layer
             }
@@ -508,13 +509,15 @@ function sc_sector_structures_spawn(_layer)
         {
             structure_create: {
                 key: "derelict_test",
+                persistent_id: "derelict_test_001",
                 angle: 18,
                 collision_layer: _layer
             }
         }
     );
 
-    return instance_exists(_base) && instance_exists(_derelict);
+    return instance_exists(_base)
+        && instance_exists(_derelict);
 }
 
 /// @description Generates the active sector, restores persistent changes and places the carried player.

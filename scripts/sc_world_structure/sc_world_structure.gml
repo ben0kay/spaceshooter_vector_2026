@@ -100,13 +100,23 @@ function sc_world_structure_init(_structure, _create)
 
     if (!sprite_exists(_sprite))
     {
-        show_debug_message("WORLD STRUCTURE ERROR - visual cache missing: " + _create.key);
+        show_debug_message(
+            "WORLD STRUCTURE ERROR - visual cache missing: "
+            + _create.key
+        );
+
         return false;
     }
 
     _structure.draw_angle = _create.angle;
     _structure.structure = {
         key: _create.key,
+
+        persistent_id:
+            variable_struct_exists(_create, "persistent_id")
+            ? string(_create.persistent_id)
+            : "",
+
         data: _data,
         sprite: _sprite,
         colliders: [],
@@ -115,16 +125,18 @@ function sc_world_structure_init(_structure, _create)
 
     if (variable_struct_exists(_data, "facility_controller"))
     {
-        _structure.structure.facility = sc_facility_runtime_create(
-            _structure,
-            _data.facility_controller
-        );
+        _structure.structure.facility =
+            sc_facility_runtime_create(
+                _structure,
+                _data.facility_controller
+            );
     }
 
-    _structure.structure.colliders = sc_world_structure_colliders_create(
-        _structure,
-        _create.collision_layer
-    );
+    _structure.structure.colliders =
+        sc_world_structure_colliders_create(
+            _structure,
+            _create.collision_layer
+        );
 
     return true;
 }

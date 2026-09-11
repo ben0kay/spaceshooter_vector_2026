@@ -21,10 +21,10 @@ function sc_asteroid_size_data(_size)
 }
 
 /// @description Initializes one generic factionless asteroid.
-function sc_asteroid_init(_asteroid, _create)
+function sc_asteroid_init(_asteroid,_create)
 {
     if (!is_struct(_create)
-    || !variable_struct_exists(global.data.asteroids, _create.key))
+    || !variable_struct_exists(global.data.asteroids,_create.key))
         return false;
 
     var _definition = variable_struct_get(
@@ -35,17 +35,37 @@ function sc_asteroid_init(_asteroid, _create)
     var _size = sc_asteroid_size_data(_create.size);
     if (!is_struct(_size)) return false;
 
-    var _radius = _size.radius * random_range(0.9, 1.1);
+    var _modifier_key = variable_struct_exists(_create,"modifier_key")
+        ? _create.modifier_key
+        : "";
+
+    var _modifier = sc_asteroid_modifier_runtime_create(_modifier_key);
+
+    if (string_length(_modifier_key) > 0 && !is_struct(_modifier))
+        return false;
+
+    var _health_multiplier = is_struct(_modifier)
+        ? _modifier.definition.stats.health_multiplier
+        : 1;
+
+    var _yield_multiplier = is_struct(_modifier)
+        ? _modifier.definition.stats.yield_multiplier
+        : 1;
+
+    var _radius = _size.radius*random_range(0.9,1.1);
+
     var _health = round(
         _size.health
-        * _definition.stats.health_multiplier
+        *_definition.stats.health_multiplier
+        *_health_multiplier
     );
 
     var _yield = max(
         1,
         round(
-            irandom_range(_size.yield_min, _size.yield_max)
-            * _definition.stats.yield_multiplier
+            irandom_range(_size.yield_min,_size.yield_max)
+            *_definition.stats.yield_multiplier
+            *_yield_multiplier
         )
     );
 
@@ -58,16 +78,17 @@ function sc_asteroid_init(_asteroid, _create)
         key: _create.key,
         item_key: _definition.item_key,
         size: _create.size,
+        modifier: _modifier,
 
-        persistent_id: variable_struct_exists(_create, "persistent_id")
+        persistent_id: variable_struct_exists(_create,"persistent_id")
             ? _create.persistent_id
             : -1,
 
-        field_index: variable_struct_exists(_create, "field_index")
+        field_index: variable_struct_exists(_create,"field_index")
             ? _create.field_index
             : -1,
 
-        zone_index: variable_struct_exists(_create, "zone_index")
+        zone_index: variable_struct_exists(_create,"zone_index")
             ? _create.zone_index
             : -1,
 
@@ -87,21 +108,21 @@ function sc_asteroid_init(_asteroid, _create)
                 ore_item_key: _definition.item_key,
                 ore_chance: _is_rock
                     ? 0
-                    : clamp(_composition_config.ore_chance, 0, 1)
+                    : clamp(_composition_config.ore_chance,0,1)
             }
         },
 
         collision: {
-            radius: _radius * 0.82
+            radius: _radius*0.82
         },
 
         visual: {
             radius: _radius,
             variant: irandom(5),
             start_angle: random(360),
-            rotation_speed: random_range(-0.08, 0.08),
-            scale_x: random_range(0.92, 1.08) * choose(-1, 1),
-            scale_y: random_range(0.92, 1.08) * choose(-1, 1)
+            rotation_speed: random_range(-0.08,0.08),
+            scale_x: random_range(0.92,1.08)*choose(-1,1),
+            scale_y: random_range(0.92,1.08)*choose(-1,1)
         }
     };
 
@@ -211,7 +232,7 @@ function sc_asteroid_yield_emit(
 }
 
 /// @description Adds recoverable base extraction progress from one asteroid hit.
-function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
+function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
 {
     var _data = _asteroid.asteroid;
     var _config = GCFG.asteroid;
@@ -219,38 +240,42 @@ function sc_asteroid_yield_damage_add(_asteroid, _packet, _damage)
     var _mining = is_struct(_packet.extraction);
 
     if (_mining)
-        _efficiency = max(0, _packet.extraction.efficiency);
+        _efficiency = max(0,_packet.extraction.efficiency);
 
-    var _damage_ratio =
-        _damage
-        / max(1, _data.health.maximum);
+    var _damage_ratio = _damage/max(1,_data.health.maximum);
 
     _data.yield.progress +=
         _damage_ratio
-        * _data.yield.total
-        * _efficiency;
+        *_data.yield.total
+        *_efficiency;
+
+    var _launch_multiplier = _mining
+        ? _config.pickup.mining_launch_multiplier
+        : 1;
+
+    _launch_multiplier *=
+        sc_asteroid_modifier_pickup_launch_multiplier_get(_asteroid);
 
     return sc_asteroid_yield_emit(
         _asteroid,
         sc_asteroid_source_yield_multiplier_get(_packet),
-        _mining
-            ? _config.pickup.mining_launch_multiplier
-            : 1
+        _launch_multiplier
     );
 }
 
 /// @description Releases the asteroid's final recoverable destruction yield.
-function sc_asteroid_yield_destruction_release(_asteroid, _packet)
+function sc_asteroid_yield_destruction_release(_asteroid,_packet)
 {
     var _yield = _asteroid.asteroid.yield;
 
     _yield.progress +=
         _yield.remaining
-        * GCFG.asteroid.extraction.destruction_efficiency;
+        *GCFG.asteroid.extraction.destruction_efficiency;
 
     return sc_asteroid_yield_emit(
         _asteroid,
-        sc_asteroid_source_yield_multiplier_get(_packet)
+        sc_asteroid_source_yield_multiplier_get(_packet),
+        sc_asteroid_modifier_pickup_launch_multiplier_get(_asteroid)
     );
 }
 
@@ -314,19 +339,28 @@ function sc_asteroid_death_effect_create(_asteroid)
 }
 
 /// @description Handles the complete death lifecycle of one asteroid.
-function sc_asteroid_die(_asteroid, _packet)
+function sc_asteroid_die(_asteroid,_packet)
 {
-    // Record the procedural identity before field references are removed.
     sc_sector_persistence_asteroid_destroyed_add(_asteroid);
     sc_sector_asteroid_field_population_remove(_asteroid);
 
+    var _modifier = _asteroid.asteroid.modifier;
+
+    if (is_struct(_modifier)
+    && !is_undefined(_modifier.definition.behaviour.death_script))
+    {
+        _modifier.definition.behaviour.death_script(
+            _asteroid,
+            _packet
+        );
+    }
+
     sc_asteroid_death_effect_create(_asteroid);
-    sc_asteroid_yield_destruction_release(_asteroid, _packet);
+    sc_asteroid_yield_destruction_release(_asteroid,_packet);
 
     instance_destroy(_asteroid);
     return true;
 }
-
 
 /// @description Draws one visible cached asteroid with runtime variation.
 function sc_asteroid_draw(_asteroid)
@@ -334,7 +368,7 @@ function sc_asteroid_draw(_asteroid)
     var _data = _asteroid.asteroid;
     var _visual = _data.visual;
 
-    var _extent = _visual.radius * max(
+    var _extent = _visual.radius*max(
         abs(_visual.scale_x),
         abs(_visual.scale_y)
     );
@@ -353,10 +387,10 @@ function sc_asteroid_draw(_asteroid)
         _data.health.stage
     );
 
-    var _scale = _visual.radius / 108;
+    var _scale = _visual.radius/108;
     var _angle = (
         _visual.start_angle
-        + GAME_TICK * _visual.rotation_speed
+        + GAME_TICK*_visual.rotation_speed
     ) mod 360;
 
     draw_sprite_ext(
@@ -364,12 +398,46 @@ function sc_asteroid_draw(_asteroid)
         0,
         _asteroid.x,
         _asteroid.y,
-        _scale * _visual.scale_x,
-        _scale * _visual.scale_y,
+        _scale*_visual.scale_x,
+        _scale*_visual.scale_y,
         _angle,
         c_white,
         1
     );
+
+    var _modifier = _data.modifier;
+
+    if (is_struct(_modifier)
+    && _modifier.definition.visual.enabled)
+    {
+        var _overlay = sc_asteroid_modifier_visual_cache_get(
+            _modifier.key,
+            _visual.variant
+        );
+
+        var _pulse = 0.68+sin(
+            GAME_TICK*0.055
+            +_data.persistent_id*1.37
+        )*0.22;
+
+        gpu_set_blendmode(bm_add);
+
+        draw_sprite_ext(
+            _overlay,
+            0,
+            _asteroid.x,
+            _asteroid.y,
+            _scale*_visual.scale_x,
+            _scale*_visual.scale_y,
+            _angle,
+            c_white,
+            _pulse
+        );
+
+        gpu_set_blendmode(bm_normal);
+        draw_set_alpha(1);
+        draw_set_colour(c_white);
+    }
 }
 
 /// @description Chooses one weighted test-spawner entry.
@@ -477,7 +545,7 @@ function sc_asteroid_yield_item_emit(
     return _amount;
 }
 
-/// @description Spawns one configurable mixed asteroid field.
+/// @description Spawns one configurable mixed asteroid field with optional forced modifier.
 function sc_asteroid_test_field_spawn(
     _centre_x,
     _centre_y,
@@ -485,7 +553,8 @@ function sc_asteroid_test_field_spawn(
     _amount,
     _layer,
     _forced_sizes = [],
-    _field_index = -1
+    _field_index = -1,
+    _forced_modifier_key = undefined
 )
 {
     var _config = GCFG.sector.asteroid_fields;
@@ -523,9 +592,14 @@ function sc_asteroid_test_field_spawn(
 
         var _material = sc_asteroid_weighted_choose(_materials);
 
+        var _modifier_key = is_undefined(_forced_modifier_key)
+            ? sc_asteroid_modifier_roll()
+            : _forced_modifier_key;
+
         instance_create_layer(_x,_y,_layer,o_asteroid,{
             asteroid_create: {
                 key: _material.key,
+                modifier_key: _modifier_key,
                 size: _size,
                 field_index: _field_index
             }

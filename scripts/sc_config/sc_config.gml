@@ -476,6 +476,24 @@ function sc_config_init()
 			
 		asteroid: {
 			
+			modifiers: {
+		        rare_chance: 0.002,
+
+		        unstable: {
+		            health_multiplier: 0.8,
+		            yield_multiplier: 1,
+		            pickup_launch_multiplier: 3.5,
+
+		            explosion_damage: [22,48,100,220],
+		            explosion_radius: [150,220,360,700],
+		            explosion_knockback: [4,7,12,20],
+
+		            falloff_minimum: 0.2,
+		            falloff_exponent: 1.35,
+		            colour: make_colour_rgb(255,105,35)
+		        }
+		    },
+			
 			composition: {
 		        rock_item_key: "item_rock",
 		        ore_chance: 0.5

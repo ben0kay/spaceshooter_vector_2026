@@ -22,6 +22,11 @@ function sc_world_structure_register_derelict()
             scan_duration: 300
         },
 
+        persistence: {
+            capture_script: sc_derelict_persistence_capture,
+            restore_script: sc_derelict_persistence_restore
+        },
+
         visual: {
             canvas_width: 560,
             canvas_height: 340,
@@ -99,6 +104,71 @@ function sc_derelict_test_primitive_draw(_x, _y, _visual)
     draw_set_colour(c_white);
 }
 
+/// @description Creates a JSON-safe copy of one derelict's remaining loot.
+function sc_derelict_persistence_loot_capture(_derelict)
+{
+    var _source = _derelict.derelict.loot;
+    var _loot = [];
+
+    for (var _i = 0; _i < array_length(_source); ++_i)
+    {
+        var _entry = _source[_i];
+
+        array_push(
+            _loot,
+            {
+                key: _entry.key,
+                amount: _entry.amount,
+                grade: is_undefined(_entry.grade)
+                    ? ItemGrade.COMMON
+                    : _entry.grade
+            }
+        );
+    }
+
+    return _loot;
+}
+
+/// @description Captures one derelict's persistent gameplay state.
+function sc_derelict_persistence_capture(_derelict)
+{
+    var _runtime = _derelict.derelict;
+
+    // Active scanning drones do not persist between rooms.
+    var _state = _runtime.state == DerelictState.SCANNING
+        ? DerelictState.UNKNOWN
+        : _runtime.state;
+
+    return {
+        state: _state,
+        hull: _runtime.hull.current,
+        loot: sc_derelict_persistence_loot_capture(_derelict)
+    };
+}
+
+/// @description Restores one derelict's persistent gameplay state.
+function sc_derelict_persistence_restore(_derelict, _saved)
+{
+    var _runtime = _derelict.derelict;
+
+    _runtime.state = _saved.state == DerelictState.SCANNING
+        ? DerelictState.UNKNOWN
+        : _saved.state;
+
+    _runtime.hull.current = clamp(
+        _saved.hull,
+        1,
+        _runtime.hull.maximum
+    );
+
+    _runtime.loot = variable_clone(_saved.loot);
+    _runtime.scanner_id = noone;
+    _runtime.scan_progress = 0;
+    _runtime.health_bar_remaining = 0;
+
+    return true;
+}
+
 /// @description Initializes hidden cargo and defence for one derelict.
 function sc_derelict_init(_derelict)
 {
@@ -134,7 +204,12 @@ function sc_derelict_damage(_derelict, _packet, _impact = undefined)
     var _runtime = _derelict.derelict;
     if (_runtime.state == DerelictState.DESTROYED) return false;
 
-    var _result = sc_damage_resolve(_packet, 0, 0, _runtime.hull.current);
+    var _result = sc_damage_resolve(
+        _packet,
+        0,
+        0,
+        _runtime.hull.current
+    );
 
     _runtime.hull.current = _result.hull;
     _runtime.health_bar_remaining = 120;
@@ -143,6 +218,11 @@ function sc_derelict_damage(_derelict, _packet, _impact = undefined)
     {
         _runtime.hull.current = 0;
         _runtime.state = DerelictState.DESTROYED;
+
+        sc_sector_persistence_structure_destroyed_add(
+            _derelict
+        );
+
         instance_destroy(_derelict);
     }
 

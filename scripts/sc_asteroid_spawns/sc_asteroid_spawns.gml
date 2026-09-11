@@ -717,7 +717,7 @@ function sc_asteroid_spawn_spacing_multiplier_get(
     );
 }
 
-/// @description Spawns one deterministic asteroid population with stable persistence IDs.
+/// @description Spawns one deterministic asteroid population with stable persistence IDs and rare modifiers.
 function sc_asteroid_spawn_population(
     _shape,
     _distribution,
@@ -731,7 +731,7 @@ function sc_asteroid_spawn_population(
 {
     var _spawned = 0;
     var _attempts = 0;
-    var _attempts_max = _amount * 100;
+    var _attempts_max = _amount*100;
 
     var _curved_spacing =
         sc_asteroid_spawn_spacing_multiplier_get(
@@ -747,9 +747,7 @@ function sc_asteroid_spawn_population(
             _composition.sizes
         ).size;
 
-        var _size_data = sc_asteroid_size_data(
-            _size
-        );
+        var _size_data = sc_asteroid_size_data(_size);
 
         var _position = sc_asteroid_spawn_shape_position_get(
             _shape,
@@ -757,20 +755,20 @@ function sc_asteroid_spawn_population(
         );
 
         var _edge_margin =
-            _size_data.radius * 1.1
-            + 32;
+            _size_data.radius*1.1
+            +32;
 
         var _spawn_clearance = (
-            _size_data.radius * 0.95
-            + 24
+            _size_data.radius*0.95
+            +24
         )
-        * _spacing_scale
-        * _curved_spacing;
+        *_spacing_scale
+        *_curved_spacing;
 
         if (_position.x < _edge_margin
-        || _position.x > room_width - _edge_margin
+        || _position.x > room_width-_edge_margin
         || _position.y < _edge_margin
-        || _position.y > room_height - _edge_margin)
+        || _position.y > room_height-_edge_margin)
             continue;
 
         if (collision_circle(
@@ -790,6 +788,9 @@ function sc_asteroid_spawn_population(
         var _persistent_id =
             sc_sector_persistence_asteroid_id_take();
 
+        var _modifier_key =
+            sc_asteroid_modifier_roll(_persistent_id);
+
         instance_create_layer(
             _position.x,
             _position.y,
@@ -798,6 +799,7 @@ function sc_asteroid_spawn_population(
             {
                 asteroid_create: {
                     key: _material.key,
+                    modifier_key: _modifier_key,
                     size: _size,
                     field_index: _field_index,
                     zone_index: _zone_index,

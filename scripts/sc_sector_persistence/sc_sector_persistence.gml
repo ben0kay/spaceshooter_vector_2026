@@ -95,10 +95,24 @@ function sc_sector_persistence_prepare(_sector_seed)
     _sector.persistence = {
         state: _state,
         asteroid_id_next: 0,
+        structure_id_next: 0,
         restoring: false
     };
 
     return true;
+}
+
+/// @description Supplies a stable ID for one deterministically generated structure.
+function sc_sector_persistence_structure_id_take(_prefix = "structure")
+{
+    var _persistence = global.game.sector.persistence;
+    var _persistent_id =
+        _prefix
+        + "_"
+        + string(_persistence.structure_id_next);
+
+    _persistence.structure_id_next++;
+    return _persistent_id;
 }
 
 /// @description Supplies the next stable procedural asteroid ID during generation.
@@ -170,26 +184,6 @@ function sc_sector_persistence_asteroids_capture()
     return true;
 }
 
-/// @description Captures all currently supported mutable sector state.
-function sc_sector_persistence_capture()
-{
-    if (!sc_sector_campaign_active()
-    || !variable_struct_exists(global.game.sector, "persistence"))
-        return false;
-
-    sc_sector_persistence_asteroids_capture();
-
-    var _state = global.game.sector.persistence.state;
-    _state.last_saved_at = date_current_datetime();
-
-    // Future capture functions:
-    // sc_sector_persistence_enemies_capture();
-    // sc_sector_persistence_structures_capture();
-    // sc_sector_persistence_pickups_capture();
-
-    return true;
-}
-
 /// @description Restores asteroid destruction, damage and extraction deltas.
 function sc_sector_persistence_asteroids_restore()
 {
@@ -258,6 +252,140 @@ function sc_sector_persistence_asteroids_restore()
     return true;
 }
 
+/// @description Records one persistent structure as permanently destroyed.
+function sc_sector_persistence_structure_destroyed_add(_structure)
+{
+    if (!sc_sector_campaign_active()) return false;
+
+    var _runtime = _structure.structure;
+    if (_runtime.persistent_id == "") return false;
+
+    variable_struct_set(
+        global.game.sector.persistence.state.structures,
+        _runtime.persistent_id,
+        {
+            key: _runtime.key,
+            destroyed: true,
+            data: {}
+        }
+    );
+
+    return true;
+}
+
+/// @description Captures custom state from every living persistent structure.
+function sc_sector_persistence_structures_capture()
+{
+    var _records =
+        global.game.sector.persistence.state.structures;
+
+    var _count = instance_number(o_world_structure);
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _structure = instance_find(o_world_structure, _i);
+        if (!instance_exists(_structure) || !_structure.initialized) continue;
+
+        var _runtime = _structure.structure;
+        var _persistent_id = _runtime.persistent_id;
+        if (_persistent_id == "") continue;
+
+        var _definition = _runtime.data;
+        if (!variable_struct_exists(_definition, "persistence")) continue;
+
+        var _persistence = _definition.persistence;
+        if (is_undefined(_persistence.capture_script)) continue;
+
+        var _data = _persistence.capture_script(_structure);
+        if (!is_struct(_data)) continue;
+
+        variable_struct_set(
+            _records,
+            _persistent_id,
+            {
+                key: _runtime.key,
+                destroyed: false,
+                data: _data
+            }
+        );
+    }
+
+    return true;
+}
+
+/// @description Restores or removes every persistent generated structure.
+function sc_sector_persistence_structures_restore()
+{
+    var _persistence = global.game.sector.persistence;
+    var _records = _persistence.state.structures;
+    var _count = instance_number(o_world_structure);
+    var _structures = [];
+
+    for (var _i = 0; _i < _count; ++_i)
+        array_push(_structures, instance_find(o_world_structure, _i));
+
+    _persistence.restoring = true;
+
+    for (var _i = 0; _i < array_length(_structures); ++_i)
+    {
+        var _structure = _structures[_i];
+        if (!instance_exists(_structure) || !_structure.initialized) continue;
+
+        var _runtime = _structure.structure;
+        var _persistent_id = _runtime.persistent_id;
+
+        if (_persistent_id == ""
+        || !variable_struct_exists(_records, _persistent_id))
+            continue;
+
+        var _record = variable_struct_get(
+            _records,
+            _persistent_id
+        );
+
+        if (_record.destroyed)
+        {
+            instance_destroy(_structure);
+            continue;
+        }
+
+        var _definition = _runtime.data;
+        if (!variable_struct_exists(_definition, "persistence")) continue;
+
+        var _structure_persistence = _definition.persistence;
+        if (is_undefined(_structure_persistence.restore_script)) continue;
+
+        _structure_persistence.restore_script(
+            _structure,
+            _record.data
+        );
+    }
+
+    _persistence.restoring = false;
+    return true;
+}
+
+/// @description Captures all currently supported mutable sector state.
+function sc_sector_persistence_capture()
+{
+    if (!sc_sector_campaign_active()
+    || !variable_struct_exists(global.game.sector, "persistence"))
+        return false;
+
+    sc_sector_persistence_asteroids_capture();
+    sc_sector_persistence_structures_capture();
+
+    var _state = global.game.sector.persistence.state;
+    _state.last_saved_at = date_current_datetime();
+
+    // Future capture functions:
+    // sc_sector_persistence_enemies_capture();
+    // sc_sector_persistence_pickups_capture();
+    // sc_sector_persistence_environment_capture();
+
+    return true;
+}
+
 /// @description Restores every currently supported sector-state category.
 function sc_sector_persistence_restore()
 {
@@ -266,11 +394,12 @@ function sc_sector_persistence_restore()
         return false;
 
     sc_sector_persistence_asteroids_restore();
+    sc_sector_persistence_structures_restore();
 
     // Future restoration functions:
     // sc_sector_persistence_enemies_restore();
-    // sc_sector_persistence_structures_restore();
     // sc_sector_persistence_pickups_restore();
+    // sc_sector_persistence_environment_restore();
 
     return true;
 }

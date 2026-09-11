@@ -12,6 +12,7 @@ function sc_data_init()
         items: {},
 		recipes: {},
         asteroids: {},
+		asteroid_modifiers: {},
 		asteroid_spawns: {},
 		asteroid_spawn_pool: [],
 		structures: {},
@@ -23,6 +24,7 @@ function sc_data_init()
     if (!sc_item_register_all()) return false;
 	if (!sc_recipe_register_all()) return false;
     if (!sc_asteroid_register_all()) return false;
+	if (!sc_asteroid_modifier_register_all()) return false;
 	if (!sc_asteroid_spawn_register_all()) return false;
 	if (!sc_gas_cloud_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;

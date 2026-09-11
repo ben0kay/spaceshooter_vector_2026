@@ -447,10 +447,11 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     return _result;
 }
 
-/// @description Applies damage, direct enemy demolition power, resource release and damage stages.
-function sc_asteroid_damage(_asteroid, _packet)
+/// @description Applies damage, modifier responses, resource release and damage stages.
+function sc_asteroid_damage(_asteroid,_packet)
 {
-    var _health = _asteroid.asteroid.health;
+    var _data = _asteroid.asteroid;
+    var _health = _data.health;
     var _damage_amount = sc_damage_packet_amount_get(_packet);
 
     if (is_struct(_packet.extraction))
@@ -466,13 +467,28 @@ function sc_asteroid_damage(_asteroid, _packet)
             GCFG.enemy.asteroid.destroy_damage_multiplier;
     }
 
-    var _damage = min(_health.current, _damage_amount);
+    if (_damage_amount <= 0)
+        return false;
+
+    var _modifier = _data.modifier;
+
+    if (is_struct(_modifier)
+    && !is_undefined(_modifier.definition.behaviour.damage_script))
+    {
+        _damage_amount = _modifier.definition.behaviour.damage_script(
+            _asteroid,
+            _packet,
+            _damage_amount
+        );
+    }
+
+    var _damage = min(_health.current,_damage_amount);
     if (_damage <= 0) return false;
 
     _health.current -= _damage;
-    sc_asteroid_yield_damage_add(_asteroid, _packet, _damage);
+    sc_asteroid_yield_damage_add(_asteroid,_packet,_damage);
 
-    var _ratio = _health.current / _health.maximum;
+    var _ratio = _health.current/_health.maximum;
 
     _health.stage = _ratio <= 0.25
         ? 3
@@ -500,7 +516,7 @@ function sc_asteroid_damage(_asteroid, _packet)
     if (_health.current <= 0)
     {
         _health.current = 0;
-        sc_asteroid_die(_asteroid, _packet);
+        sc_asteroid_die(_asteroid,_packet);
     }
 
     return _result;
