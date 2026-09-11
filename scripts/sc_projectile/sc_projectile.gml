@@ -1,3 +1,45 @@
+
+/// @description Creates normalized projectile guidance while supporting older weapons.
+function sc_projectile_guidance_create(_source)
+{
+    var _guidance = variable_clone(_source);
+
+    _guidance.lead_strength = variable_struct_exists(_guidance, "lead_strength")
+        ? clamp(_guidance.lead_strength, 0, 1)
+        : 0;
+
+    _guidance.guidance_delay = variable_struct_exists(_guidance, "guidance_delay")
+        ? max(0, round(_guidance.guidance_delay))
+        : 0;
+
+    _guidance.lock_angle = variable_struct_exists(_guidance, "lock_angle")
+        ? clamp(_guidance.lock_angle, 0, 360)
+        : 360;
+
+    var _avoidance = variable_struct_exists(_guidance, "avoidance")
+        ? variable_clone(_guidance.avoidance)
+        : {};
+
+    _avoidance.strength = variable_struct_exists(_avoidance, "strength")
+        ? clamp(_avoidance.strength, 0, 1)
+        : 0;
+
+    _avoidance.asteroids = variable_struct_exists(_avoidance, "asteroids")
+        ? _avoidance.asteroids
+        : 0;
+
+    _avoidance.structures = variable_struct_exists(_avoidance, "structures")
+        ? _avoidance.structures
+        : 0;
+
+    _avoidance.clearance_scale = variable_struct_exists(_avoidance, "clearance_scale")
+        ? max(0.1, _avoidance.clearance_scale)
+        : 1;
+
+    _guidance.avoidance = _avoidance;
+    return _guidance;
+}
+
 /// @description Initializes a reusable projectile with optional armour and hull.
 function sc_projectile_init(_projectile, _create)
 {
@@ -16,6 +58,7 @@ function sc_projectile_init(_projectile, _create)
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
+	var _guidance = sc_projectile_guidance_create(_delivery.guidance);
 
     var _has_trail = variable_struct_exists(_visual, "trail");
     var _has_trail_script = variable_struct_exists(_visual, "trail_script");
@@ -103,7 +146,7 @@ function sc_projectile_init(_projectile, _create)
             maximum: _life
         },
 
-        guidance: variable_clone(_delivery.guidance),
+        guidance: _guidance
         damage: sc_damage_packet_create(_delivery.damage,_create.source,true),
         collision: _collision,
         visual: _visual,
@@ -111,14 +154,17 @@ function sc_projectile_init(_projectile, _create)
         detonation: _detonation,
 
         runtime: {
-            target_id: noone,
-            next_target_tick: GAME_TICK,
-            detonated: false,
-            destroyed: false,
-            ricochet: undefined,
-            has_trail: _has_trail,
-            has_trail_script: _has_trail_script
-        }
+		    target_id: noone,
+		    next_target_tick: GAME_TICK,
+		    guidance_ready_tick: GAME_TICK + _guidance.guidance_delay,
+		    avoidance_direction: _create.direction,
+		    avoidance_until_tick: GAME_TICK,
+		    detonated: false,
+		    destroyed: false,
+		    ricochet: undefined,
+		    has_trail: _has_trail,
+		    has_trail_script: _has_trail_script
+		}
     };
 
     _projectile.draw_angle = _create.direction;
@@ -178,18 +224,15 @@ function sc_projectiles_shared_register_all()
     return true;
 }
 
-function sc_projectile_target_find(_projectile, _range)
+/// @description Finds the nearest valid opposing entity inside the acquisition cone.
+function sc_projectile_target_find(_projectile, _range, _lock_angle)
 {
     var _data = _projectile.projectile;
     var _list = ds_list_create();
-
-    var _count = collision_circle_list(
-        _projectile.x, _projectile.y, _range,
-        o_entity, false, true, _list, false
-    );
-
+    var _count = collision_circle_list(_projectile.x, _projectile.y, _range, o_entity, false, true, _list, false);
     var _target = noone;
     var _best_distance_sq = _range * _range;
+    var _half_angle = _lock_angle * 0.5;
 
     for (var _i = 0; _i < _count; ++_i)
     {
@@ -199,11 +242,10 @@ function sc_projectile_target_find(_projectile, _range)
         if (!_candidate.entity.guidance_targetable) continue;
         if (_candidate.entity.faction == _data.source.faction) continue;
 
-        var _distance_sq = sc_point_distance_sq(
-            _projectile.x, _projectile.y,
-            _candidate.x, _candidate.y
-        );
+        var _direction = point_direction(_projectile.x, _projectile.y, _candidate.x, _candidate.y);
+        if (_lock_angle < 360 && abs(angle_difference(_direction, _data.direction)) > _half_angle) continue;
 
+        var _distance_sq = sc_point_distance_sq(_projectile.x, _projectile.y, _candidate.x, _candidate.y);
         if (_distance_sq >= _best_distance_sq) continue;
 
         _best_distance_sq = _distance_sq;
@@ -214,30 +256,130 @@ function sc_projectile_target_find(_projectile, _range)
     return _target;
 }
 
-/// @description Updates weapon-supplied projectile guidance.
+/// @description Returns a homing direction with optional predictive target leading.
+function sc_projectile_target_direction_get(_projectile, _target, _lead_strength)
+{
+    var _data = _projectile.projectile;
+    var _target_x = _target.x;
+    var _target_y = _target.y;
+
+    if (_lead_strength > 0)
+    {
+        var _velocity_x = 0;
+        var _velocity_y = 0;
+
+        if (_target.object_index == o_player)
+        {
+            _velocity_x = _target.movement.velocity_x;
+            _velocity_y = _target.movement.velocity_y;
+        }
+        else if (_target.object_index == o_enemy)
+        {
+            _velocity_x = _target.enemy.movement.velocity_x;
+            _velocity_y = _target.enemy.movement.velocity_y;
+        }
+
+        var _distance = point_distance(_projectile.x, _projectile.y, _target.x, _target.y);
+        var _lead_time = (_distance / max(1, _data.movement.speed)) * _lead_strength;
+        _target_x += _velocity_x * _lead_time;
+        _target_y += _velocity_y * _lead_time;
+    }
+
+    return point_direction(_projectile.x, _projectile.y, _target_x, _target_y);
+}
+
+/// @description Returns whether one projected missile path contains no enabled obstacles.
+function sc_projectile_obstacle_line_clear(_projectile, _direction, _distance)
+{
+    var _avoidance = _projectile.projectile.guidance.avoidance;
+    var _end_x = _projectile.x + lengthdir_x(_distance, _direction);
+    var _end_y = _projectile.y + lengthdir_y(_distance, _direction);
+
+    if (_avoidance.asteroids && collision_line(_projectile.x, _projectile.y, _end_x, _end_y, o_asteroid, false, true) != noone) return false;
+    if (_avoidance.structures && collision_line(_projectile.x, _projectile.y, _end_x, _end_y, o_solid, false, true) != noone) return false;
+    return true;
+}
+
+/// @description Returns a clear steering direction when the missile is approaching an obstacle.
+function sc_projectile_avoidance_direction_get(_projectile, _target_direction)
+{
+    var _data = _projectile.projectile;
+    var _guidance = _data.guidance;
+    var _avoidance = _guidance.avoidance;
+    var _runtime = _data.runtime;
+    var _config = global.config.projectile.obstacle_avoidance;
+    var _distance = (_config.look_ahead_base + _data.movement.speed * _config.look_ahead_speed) * _avoidance.clearance_scale;
+
+    if (sc_projectile_obstacle_line_clear(_projectile, _data.direction, _distance))
+    {
+        if (GAME_TICK < _runtime.avoidance_until_tick) return _runtime.avoidance_direction;
+        return undefined;
+    }
+
+    var _angles = _config.probe_angles;
+    var _best_direction = undefined;
+    var _best_score = 1000000;
+
+    for (var _i = 0; _i < array_length(_angles); ++_i)
+    {
+        var _candidate = _data.direction + _angles[_i];
+        if (!sc_projectile_obstacle_line_clear(_projectile, _candidate, _distance)) continue;
+
+        var _score = abs(angle_difference(_target_direction, _candidate)) + abs(_angles[_i]) * 0.15;
+
+        if (_score < _best_score)
+        {
+            _best_score = _score;
+            _best_direction = _candidate;
+        }
+    }
+
+    if (is_undefined(_best_direction)) return undefined;
+
+    _runtime.avoidance_direction = _best_direction;
+    _runtime.avoidance_until_tick = GAME_TICK + _config.release_delay;
+    return _best_direction;
+}
+
+/// @description Updates predictive homing and optional reactive obstacle avoidance.
 function sc_projectile_homing_update(_projectile)
 {
     var _data = _projectile.projectile;
     var _guidance = _data.guidance;
-
     if (!_guidance.homing) return;
 
     var _runtime = _data.runtime;
     var _target = _runtime.target_id;
+    var _target_direction = _data.direction;
 
-    if (!instance_exists(_target) || GAME_TICK >= _runtime.next_target_tick)
+    if (GAME_TICK >= _runtime.guidance_ready_tick)
     {
-        _target = sc_projectile_target_find(_projectile, _guidance.acquire_range);
-        _runtime.target_id = _target;
-        _runtime.next_target_tick = GAME_TICK + max(1, round(_guidance.reacquire_interval));
+        if (!instance_exists(_target) && GAME_TICK >= _runtime.next_target_tick)
+        {
+            _target = sc_projectile_target_find(_projectile, _guidance.acquire_range, _guidance.lock_angle);
+            _runtime.target_id = _target;
+            _runtime.next_target_tick = GAME_TICK + max(1, round(_guidance.reacquire_interval));
+        }
+
+        if (instance_exists(_target))
+            _target_direction = sc_projectile_target_direction_get(_projectile, _target, _guidance.lead_strength);
     }
 
-    if (!instance_exists(_target)) return;
+    var _turn_speed = _guidance.turn_speed;
 
-    var _target_direction = point_direction(_projectile.x, _projectile.y, _target.x, _target.y);
+    if (_guidance.avoidance.strength > 0)
+    {
+        var _avoidance_direction = sc_projectile_avoidance_direction_get(_projectile, _target_direction);
+
+        if (!is_undefined(_avoidance_direction))
+        {
+            _target_direction = _avoidance_direction;
+            _turn_speed = global.config.projectile.obstacle_avoidance.turn_speed_max * _guidance.avoidance.strength;
+        }
+    }
+
     var _turn = angle_difference(_target_direction, _data.direction);
-    _data.direction += clamp(_turn, -_guidance.turn_speed, _guidance.turn_speed);
-    _data.direction = _data.direction mod 360;
+    _data.direction = (_data.direction + clamp(_turn, -_turn_speed, _turn_speed) + 360) mod 360;
 }
 
 /// @description Creates a projectile's explosion and optional child emissions.

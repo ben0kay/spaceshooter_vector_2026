@@ -237,6 +237,15 @@ function sc_config_init()
         },
 
         projectile: {
+			
+		    obstacle_avoidance: {
+		        look_ahead_base: 80,
+		        look_ahead_speed: 8,
+		        probe_angles: [25, -25, 45, -45, 70, -70],
+		        release_delay: 8,
+		        turn_speed_max: 9
+		    },
+			
             classes: [
                 {
                     name: "Light",

@@ -122,11 +122,22 @@ function sc_weapon_register_shard_rocket()
             },
 
             guidance: {
-                homing: 1,
-                acquire_range: 720,
-                turn_speed: 4,
-                reacquire_interval: 12
-            },
+			    homing: 1,
+			    acquire_range: 720,
+			    turn_speed: 4,
+			    reacquire_interval: 12,
+
+			    lead_strength: 0.45,
+			    guidance_delay: 6,
+			    lock_angle: 160,
+
+			    avoidance: {
+			        strength: 0.75,
+			        asteroids: 1,
+			        structures: 1,
+			        clearance_scale: 1.15
+			    }
+			},
 
             detonation: {
                 scale: 1.15,
