@@ -256,27 +256,23 @@ function sc_hud_sector_map_field_draw(_hud, _layout, _field)
         _config.field_alpha
     );
 
-    // Belts show the edge of their hollow central region.
-    if (_field.layout == AsteroidFieldLayout.BELT
-    && array_length(_zones) > 0)
+    if (_field.shape_type == AsteroidFieldShape.RING && array_length(_zones) > 0)
     {
         sc_hud_sector_map_shape_draw(
             _hud,
             _layout,
             _field.shape,
-            _zones[0].distribution.inner_radius_scale,
+            _field.shape.inner_radius_scale,
             _palette.warning,
             _config.field_alpha * 0.65
         );
     }
 
-    // Additional zones represent generated dense pockets.
     for (var _i = 1; _i < array_length(_zones); ++_i)
     {
         var _zone = _zones[_i];
 
-        if (_zone.remaining_amount <= 0)
-            continue;
+        if (_zone.remaining_amount <= 0) continue;
 
         sc_hud_sector_map_shape_draw(
             _hud,
@@ -300,33 +296,18 @@ function sc_hud_sector_map_field_draw(_hud, _layout, _field)
 
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
-    draw_set_colour(
-        _field.remaining_amount > 0
-            ? _palette.warning
-            : _palette.muted
-    );
-
-    draw_set_alpha(
-        _field.remaining_amount > 0
-            ? 0.8
-            : 0.35
-    );
+    draw_set_colour(_field.remaining_amount > 0 ? _palette.warning : _palette.muted);
+    draw_set_alpha(_field.remaining_amount > 0 ? 0.8 : 0.35);
 
     draw_text(
         _centre.x,
         _centre.y,
         string_upper(_field.name)
-        + "\nDENSITY "
-        + string_format(_field.density, 1, 2)
-        + " // "
-        + string(_field.remaining_amount)
-        + " / "
-        + string(_field.initial_amount)
-        + "\nZONES "
-        + string(array_length(_zones))
-        + " // REMAINING "
-        + string(round(_remaining_ratio * 100))
-        + "%"
+        + "\nDENSITY " + string_format(_field.density, 1, 2)
+        + " // " + string(_field.remaining_amount)
+        + " / " + string(_field.initial_amount)
+        + "\nZONES " + string(array_length(_zones))
+        + " // REMAINING " + string(round(_remaining_ratio * 100)) + "%"
     );
 }
 

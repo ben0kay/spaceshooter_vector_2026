@@ -66,7 +66,8 @@ enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 enum AsteroidSize { SMALL, MEDIUM, LARGE, HUGE}
 enum AsteroidFieldScale { SMALL, MEDIUM, LARGE }
 enum AsteroidFieldDensity { SPARSE, STANDARD, DENSE }
-enum AsteroidFieldLayout { STANDARD, BELT, DENSE_CORE, ARCHIPELAGO }
+enum AsteroidFieldShape { ORGANIC, BAND, RING, ARC }
+enum AsteroidFieldDistribution { UNIFORM, DENSE_CORE, CLUSTERED, EDGE_HEAVY }
 
 enum EnvironmentFieldType { GAS, ELECTRIC }
 
