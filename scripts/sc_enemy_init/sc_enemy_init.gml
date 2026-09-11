@@ -56,7 +56,11 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
     return {
         key: _enemy_key,
         identity: variable_clone(_data.identity),
-        grade: sc_enemy_grade_create(_data.identity.name),
+        grade: sc_enemy_grade_create(
+		    _data.identity.name,
+		    _data.identity.faction,
+		    _data.identity.rank
+		),
         doctrine: sc_enemy_init_doctrine_create(_data),
         reward: variable_clone(_data.reward),
 

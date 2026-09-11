@@ -286,67 +286,65 @@ function sc_config_init()
 
         enemy: {
 			
-			grades: [
+			 grade: {
+                rank_chance_multiplier: [
+                    1,      // COMMON
+                    0.7,    // VETERAN
+                    0.4,    // ELITE
+                    0.2,    // CHAMPION
+                    0,      // MINIBOSS
+                    0       // BOSS
+                ],
+
+                name_distance_full: 900,
+                name_distance_max: 1800
+            },
+
+            grades: [
                 {
                     grade: ItemGrade.COMMON,
                     chance: 0,
                     defence_multiplier: 1,
                     damage_multiplier: 1,
+                    reward_multiplier: 1,
                     glow_alpha: 0,
-                    glow_scale: 0,
-                    names: []
+                    glow_scale: 0
                 },
                 {
                     grade: ItemGrade.IMPROVED,
                     chance: 0.08,
                     defence_multiplier: 1.05,
                     damage_multiplier: 1.05,
+                    reward_multiplier: 1.1,
                     glow_alpha: 0.055,
-                    glow_scale: 3,
-                    names: [
-                        "Harlan's Skirmisher",
-                        "Wayward Corsair",
-                        "Ashrunner"
-                    ]
+                    glow_scale: 3
                 },
                 {
                     grade: ItemGrade.ADVANCED,
                     chance: 0.035,
                     defence_multiplier: 1.09,
                     damage_multiplier: 1.08,
+                    reward_multiplier: 1.2,
                     glow_alpha: 0.07,
-                    glow_scale: 3.3,
-                    names: [
-                        "Razorwing \"Black Talon\"",
-                        "Stormblade \"Apex\"",
-                        "Ironwing \"Vanguard\""
-                    ]
+                    glow_scale: 3.3
                 },
                 {
                     grade: ItemGrade.SUPERIOR,
                     chance: 0.02,
                     defence_multiplier: 1.2,
                     damage_multiplier: 1.15,
+                    reward_multiplier: 1.4,
                     glow_alpha: 0.085,
-                    glow_scale: 3.6,
-                    names: [
-                        "Voidlance \"Severance\"",
-                        "Nightfall \"Requiem\"",
-                        "Starreaver \"Nemesis\""
-                    ]
+                    glow_scale: 3.6
                 },
                 {
                     grade: ItemGrade.PROTOTYPE,
                     chance: 0.004,
                     defence_multiplier: 1.35,
                     damage_multiplier: 1.2,
+                    reward_multiplier: 1.75,
                     glow_alpha: 0.11,
-                    glow_scale: 4,
-                    names: [
-                        "Prototype Dreadwing \"Eidolon\"",
-                        "Prototype Warframe \"Terminus\"",
-                        "Prototype Voidship \"Ascendant\""
-                    ]
+                    glow_scale: 4
                 }
             ],
 			
