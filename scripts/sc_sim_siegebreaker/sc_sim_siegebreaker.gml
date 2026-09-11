@@ -119,13 +119,11 @@ function sc_enemy_register_sim_siegebreaker()
             channels: [
                 {
                     key: "rockets",
-                    selection: AttackSelection.WEIGHTED,
-                    asteroid_target: true
+                    selection: AttackSelection.WEIGHTED
                 },
                 {
                     key: "pulse",
-                    selection: AttackSelection.WEIGHTED,
-                    asteroid_target: false
+                    selection: AttackSelection.WEIGHTED
                 }
             ],
 

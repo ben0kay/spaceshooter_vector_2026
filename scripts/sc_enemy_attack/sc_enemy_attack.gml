@@ -1028,24 +1028,11 @@ function sc_enemy_attack_update(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
     var _channels = _controller.channels;
-    var _destroying_asteroid = sc_enemy_asteroid_destroy_active(_enemy);
     var _active_count = 0;
 
     for (var _c = 0; _c < array_length(_channels); _c++)
     {
-        var _channel = _channels[_c];
-
-        if (_destroying_asteroid
-        && variable_struct_exists(_channel, "asteroid_target")
-        && !_channel.asteroid_target)
-        {
-            if (_channel.runtime.phase != EnemyAttackPhase.IDLE)
-                sc_enemy_attack_channel_cancel(_channel);
-
-            continue;
-        }
-
-        if (sc_enemy_attack_channel_active(_channel))
+        if (sc_enemy_attack_channel_active(_channels[_c]))
             _active_count++;
     }
 
@@ -1053,12 +1040,6 @@ function sc_enemy_attack_update(_enemy)
     {
         var _channel = _channels[_c];
         var _runtime = _channel.runtime;
-
-        if (_destroying_asteroid
-        && variable_struct_exists(_channel, "asteroid_target")
-        && !_channel.asteroid_target)
-            continue;
-
         var _was_active = sc_enemy_attack_channel_active(_channel);
 
         var _ready_to_start = _runtime.phase == EnemyAttackPhase.IDLE
