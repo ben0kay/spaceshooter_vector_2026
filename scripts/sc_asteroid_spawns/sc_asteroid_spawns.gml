@@ -101,7 +101,10 @@ function sc_asteroid_spawn_generation_data()
                     lobes_max: 8
                 },
 
-                pocket_key: "asteroid_pocket_dense_optional"
+                subformation_keys: [
+                    "asteroid_cluster_local_sparse_large",
+                    "asteroid_pocket_dense_optional"
+                ]
             },
             {
                 layout: AsteroidFieldLayout.BELT,
@@ -124,7 +127,7 @@ function sc_asteroid_spawn_generation_data()
                     lobes_max: 6
                 },
 
-                pocket_key: ""
+                subformation_keys: []
             },
             {
                 layout: AsteroidFieldLayout.DENSE_CORE,
@@ -147,7 +150,7 @@ function sc_asteroid_spawn_generation_data()
                     lobes_max: 7
                 },
 
-                pocket_key: ""
+                subformation_keys: []
             },
             {
                 layout: AsteroidFieldLayout.ARCHIPELAGO,
@@ -170,14 +173,33 @@ function sc_asteroid_spawn_generation_data()
                     lobes_max: 8
                 },
 
-                pocket_key: "asteroid_pocket_archipelago"
+                subformation_keys: [
+                    "asteroid_pocket_archipelago"
+                ]
             }
         ],
 
-        pockets: [
+        subformations: [
+            {
+                key: "asteroid_cluster_local_sparse_large",
+                scale_required: AsteroidFieldScale.LARGE,
+                density_required: AsteroidFieldDensity.SPARSE,
+                chance: 1,
+                amount_min: 3,
+                amount_max: 5,
+                radius_min_scale: 0.055,
+                radius_max_scale: 0.085,
+                distance_min_scale: 0.16,
+                distance_max_scale: 0.78,
+                asteroid_min: 7,
+                asteroid_max: 12,
+                density: 0.45,
+                spacing_scale: 1.04
+            },
             {
                 key: "asteroid_pocket_dense_optional",
                 scale_required: AsteroidFieldScale.LARGE,
+                density_required: -1,
                 chance: 0.7,
                 amount_min: 2,
                 amount_max: 4,
@@ -193,6 +215,7 @@ function sc_asteroid_spawn_generation_data()
             {
                 key: "asteroid_pocket_archipelago",
                 scale_required: AsteroidFieldScale.LARGE,
+                density_required: -1,
                 chance: 1,
                 amount_min: 5,
                 amount_max: 9,
@@ -249,15 +272,15 @@ function sc_asteroid_spawn_scale_axis_choose(_entries, _scale)
     ];
 }
 
-/// @description Returns one registered pocket profile by string key.
-function sc_asteroid_spawn_pocket_get(_key)
+/// @description Returns one registered subformation profile by string key.
+function sc_asteroid_spawn_subformation_get(_key)
 {
-    var _pockets =
-        global.data.asteroid_spawn_generation.pockets;
+    var _subformations =
+        global.data.asteroid_spawn_generation.subformations;
 
-    for (var _i = 0; _i < array_length(_pockets); ++_i)
-        if (_pockets[_i].key == _key)
-            return _pockets[_i];
+    for (var _i = 0; _i < array_length(_subformations); ++_i)
+        if (_subformations[_i].key == _key)
+            return _subformations[_i];
 
     return undefined;
 }
@@ -298,8 +321,14 @@ function sc_asteroid_spawn_request_create()
             scale: AsteroidFieldScale.SMALL,
             density_type: AsteroidFieldDensity.SPARSE,
             layout: AsteroidFieldLayout.STANDARD,
-            radius: random_range(_lone.radius_min, _lone.radius_max),
-            amount: irandom_range(_lone.amount_min, _lone.amount_max),
+            radius: random_range(
+                _lone.radius_min,
+                _lone.radius_max
+            ),
+            amount: irandom_range(
+                _lone.amount_min,
+                _lone.amount_max
+            ),
             density: 0,
             spacing_scale: _lone.spacing_scale,
 
@@ -318,7 +347,7 @@ function sc_asteroid_spawn_request_create()
                 lobes_max: 3
             },
 
-            pocket_key: ""
+            subformation_keys: []
         };
     }
 
@@ -375,7 +404,9 @@ function sc_asteroid_spawn_request_create()
             _layout_data.shape
         ),
 
-        pocket_key: _layout_data.pocket_key
+        subformation_keys: variable_clone(
+            _layout_data.subformation_keys
+        )
     };
 }
 
@@ -557,118 +588,130 @@ function sc_asteroid_spawn_population(
     return _spawned;
 }
 
-/// @description Creates large-field dense pockets and their density zones.
-function sc_asteroid_spawn_pockets_create(
+/// @description Creates registered child formations and their density zones.
+function sc_asteroid_spawn_subformations_create(
     _parent_shape,
     _request,
     _layer,
     _field_index,
     _composition,
-    _zones
+    _zones,
+    _asteroid_budget
 )
 {
-    var _pocket_key = _request.pocket_key;
-
-    if (_request.scale != AsteroidFieldScale.LARGE
-    || _pocket_key == "")
-    {
-        return {
-            spawned: 0,
-            zones: _zones
-        };
-    }
-
-    var _profile = sc_asteroid_spawn_pocket_get(
-        _pocket_key
-    );
-
-    if (!is_struct(_profile)
-    || random(1) > _profile.chance)
-    {
-        return {
-            spawned: 0,
-            zones: _zones
-        };
-    }
-
     var _spawned = 0;
-    var _pocket_amount = irandom_range(
-        _profile.amount_min,
-        _profile.amount_max
-    );
+    var _keys = _request.subformation_keys;
 
-    for (var _i = 0; _i < _pocket_amount; ++_i)
+    for (var _key_index = 0;
+    _key_index < array_length(_keys)
+    && _spawned < _asteroid_budget;
+    ++_key_index)
     {
-        var _direction = random(360);
-        var _distance = random_range(
-            _parent_shape.radius
-                * _profile.distance_min_scale,
-            _parent_shape.radius
-                * _profile.distance_max_scale
+        var _profile = sc_asteroid_spawn_subformation_get(
+            _keys[_key_index]
         );
 
-        var _x = _parent_shape.x
-            + lengthdir_x(_distance, _direction);
+        if (!is_struct(_profile)
+        || _profile.scale_required != _request.scale
+        || (_profile.density_required >= 0
+            && _profile.density_required
+                != _request.density_type)
+        || random(1) > _profile.chance)
+            continue;
 
-        var _y = _parent_shape.y
-            + lengthdir_y(
-                _distance * _parent_shape.aspect,
-                _direction
+        var _formation_amount = irandom_range(
+            _profile.amount_min,
+            _profile.amount_max
+        );
+
+        for (var _i = 0;
+        _i < _formation_amount
+        && _spawned < _asteroid_budget;
+        ++_i)
+        {
+            var _direction = random(360);
+            var _distance = random_range(
+                _parent_shape.radius
+                    * _profile.distance_min_scale,
+                _parent_shape.radius
+                    * _profile.distance_max_scale
             );
 
-        var _radius = random_range(
-            _parent_shape.radius
-                * _profile.radius_min_scale,
-            _parent_shape.radius
-                * _profile.radius_max_scale
-        );
+            var _x = _parent_shape.x
+                + lengthdir_x(
+                    _distance,
+                    _direction
+                );
 
-        var _shape = sc_asteroid_spawn_shape_create(
-            _x,
-            _y,
-            _radius,
-            {
-                aspect_min: 0.72,
-                aspect_max: 1,
-                irregularity_min: 0.08,
-                irregularity_max: 0.18,
-                lobes_min: 3,
-                lobes_max: 6
-            }
-        );
+            var _y = _parent_shape.y
+                + lengthdir_y(
+                    _distance
+                        * _parent_shape.aspect,
+                    _direction
+                );
 
-        var _distribution = {
-            inner_radius_scale: 0,
-            radial_power: 0.8,
-            local_mode: "uniform"
-        };
+            var _radius = random_range(
+                _parent_shape.radius
+                    * _profile.radius_min_scale,
+                _parent_shape.radius
+                    * _profile.radius_max_scale
+            );
 
-        var _zone_index = array_length(_zones);
-        var _amount = irandom_range(
-            _profile.asteroid_min,
-            _profile.asteroid_max
-        );
+            var _shape = sc_asteroid_spawn_shape_create(
+                _x,
+                _y,
+                _radius,
+                {
+                    aspect_min: 0.72,
+                    aspect_max: 1,
+                    irregularity_min: 0.08,
+                    irregularity_max: 0.18,
+                    lobes_min: 3,
+                    lobes_max: 6
+                }
+            );
 
-        var _pocket_spawned = sc_asteroid_spawn_population(
-            _shape,
-            _distribution,
-            _amount,
-            _profile.spacing_scale,
-            _layer,
-            _field_index,
-            _zone_index,
-            _composition
-        );
+            var _distribution = {
+                inner_radius_scale: 0,
+                radial_power: 0.8,
+                local_mode: "uniform"
+            };
 
-        array_push(_zones, {
-            shape: _shape,
-            distribution: _distribution,
-            density: _profile.density,
-            initial_amount: _pocket_spawned,
-            remaining_amount: _pocket_spawned
-        });
+            var _zone_index = array_length(_zones);
 
-        _spawned += _pocket_spawned;
+            var _amount = min(
+                irandom_range(
+                    _profile.asteroid_min,
+                    _profile.asteroid_max
+                ),
+                _asteroid_budget - _spawned
+            );
+
+            var _formation_spawned =
+                sc_asteroid_spawn_population(
+                    _shape,
+                    _distribution,
+                    _amount,
+                    _profile.spacing_scale,
+                    _layer,
+                    _field_index,
+                    _zone_index,
+                    _composition
+                );
+
+            if (_formation_spawned <= 0)
+                continue;
+
+            array_push(_zones, {
+                shape: _shape,
+                distribution: _distribution,
+                density: _profile.density,
+                initial_amount: _formation_spawned,
+                remaining_amount: _formation_spawned
+            });
+
+            _spawned += _formation_spawned;
+        }
     }
 
     return {
@@ -684,12 +727,14 @@ function sc_asteroid_spawn_create(
     _layer,
     _request,
     _field_index = -1,
-    _composition_override = undefined
+    _composition_override = undefined,
+    _asteroid_budget = 2147483647
 )
 {
-    var _composition = sc_asteroid_spawn_composition_resolve(
-        _composition_override
-    );
+    var _composition =
+        sc_asteroid_spawn_composition_resolve(
+            _composition_override
+        );
 
     var _shape = sc_asteroid_spawn_shape_create(
         _x,
@@ -699,10 +744,14 @@ function sc_asteroid_spawn_create(
     );
 
     var _zones = [];
+
     var _main_spawned = sc_asteroid_spawn_population(
         _shape,
         _request.distribution,
-        _request.amount,
+        min(
+            _request.amount,
+            max(0, _asteroid_budget)
+        ),
         _request.spacing_scale,
         _layer,
         _field_index,
@@ -714,8 +763,12 @@ function sc_asteroid_spawn_create(
     {
         array_push(_zones, {
             shape: _shape,
-            distribution: variable_clone(_request.distribution),
-            density: _request.layout == AsteroidFieldLayout.ARCHIPELAGO
+            distribution: variable_clone(
+                _request.distribution
+            ),
+            density:
+                _request.layout
+                    == AsteroidFieldLayout.ARCHIPELAGO
                 ? _request.density * 0.15
                 : _request.density,
             initial_amount: _main_spawned,
@@ -723,16 +776,25 @@ function sc_asteroid_spawn_create(
         });
     }
 
-    var _pockets = sc_asteroid_spawn_pockets_create(
-        _shape,
-        _request,
-        _layer,
-        _field_index,
-        _composition,
-        _zones
-    );
+    var _subformations =
+        sc_asteroid_spawn_subformations_create(
+            _shape,
+            _request,
+            _layer,
+            _field_index,
+            _composition,
+            _zones,
+            max(
+                0,
+                _asteroid_budget - _main_spawned
+            )
+        );
 
-    _zones = _pockets.zones;
+    _zones = _subformations.zones;
+
+    var _total_spawned =
+        _main_spawned
+        + _subformations.spawned;
 
     return {
         key: _request.key,
@@ -748,9 +810,9 @@ function sc_asteroid_spawn_create(
         radius: _request.radius,
         density: _request.density,
 
-        amount: _main_spawned + _pockets.spawned,
-        initial_amount: _main_spawned + _pockets.spawned,
-        remaining_amount: _main_spawned + _pockets.spawned,
+        amount: _total_spawned,
+        initial_amount: _total_spawned,
+        remaining_amount: _total_spawned,
 
         shape: _shape,
         zones: _zones

@@ -125,8 +125,11 @@ function sc_sector_asteroid_fields_spawn(_layer)
     {
         _attempts++;
 
-        var _request = sc_asteroid_spawn_request_create();
+        var _request =
+            sc_asteroid_spawn_request_create();
+
         var _radius = _request.radius;
+
         var _padding = max(
             _config.centre_padding,
             _radius + 320
@@ -174,12 +177,18 @@ function sc_sector_asteroid_fields_spawn(_layer)
             ? array_length(_fields)
             : -1;
 
+        var _remaining_budget =
+            _asteroid_budget
+            - _asteroids_spawned;
+
         var _spawn = sc_asteroid_spawn_create(
             _x,
             _y,
             _layer,
             _request,
-            _field_index
+            _field_index,
+            undefined,
+            _remaining_budget
         );
 
         if (_spawn.amount <= 0)
