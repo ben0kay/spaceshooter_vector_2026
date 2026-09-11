@@ -717,7 +717,7 @@ function sc_asteroid_spawn_spacing_multiplier_get(
     );
 }
 
-/// @description Spawns one asteroid population and returns its actual count.
+/// @description Spawns one deterministic asteroid population with stable persistence IDs.
 function sc_asteroid_spawn_population(
     _shape,
     _distribution,
@@ -787,6 +787,9 @@ function sc_asteroid_spawn_population(
             _composition.materials
         );
 
+        var _persistent_id =
+            sc_sector_persistence_asteroid_id_take();
+
         instance_create_layer(
             _position.x,
             _position.y,
@@ -797,7 +800,8 @@ function sc_asteroid_spawn_population(
                     key: _material.key,
                     size: _size,
                     field_index: _field_index,
-                    zone_index: _zone_index
+                    zone_index: _zone_index,
+                    persistent_id: _persistent_id
                 }
             }
         );
