@@ -41,6 +41,7 @@ if (global.LevelState == LevelState.DEBUG)
 }
 
 sc_hud_level_update(hud);
+sc_hud_top_banner_update(hud);
 sc_hud_sector_map_update(hud);
 sc_hud_minimap_update(hud);
 sc_derelict_interaction_update(hud);

@@ -65,6 +65,24 @@ function sc_hud_level_data()
             effect_speed: 5
         },
 
+		top_banner: {
+    width: 640,
+    height: 106,
+    y: 82,
+    cut: 12,
+
+    scan_interval: 6,
+    fade_in_speed: 0.16,
+    fade_out_speed: 0.07,
+
+    segments: 16,
+    segment_gap: 2,
+
+    background_alpha: 0.94,
+    outline_alpha: 0.85,
+    empty_alpha: 0.18
+},
+
         minimap: {
             width: 244,
             height: 270,

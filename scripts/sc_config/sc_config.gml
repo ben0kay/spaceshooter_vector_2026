@@ -588,7 +588,7 @@ function sc_config_init()
 		                armour_enabled: false
 		            }
 		        }
-		    }
+		    },
 			
 			zoom_accuracy: {
 			    enabled: true,

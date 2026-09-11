@@ -6,7 +6,9 @@ if (!sc_hud_level_init(id))
     exit;
 }
 
+sc_hud_top_banner_init(hud);
 sc_debug_enemy_spawn_init(hud);
 sc_debug_weapon_test_init(hud);
 sc_derelict_hud_init(hud);
+
 global.level.hud = id;

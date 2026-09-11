@@ -11,6 +11,7 @@ enum BossEncounterState { WAITING, APPROACH, WAVE, BOSS, VICTORY }
 enum InventoryTab { CARGO, EQUIPMENT, SYSTEMS, UPGRADES, NAVIGATION, LOG }
 enum MainMenuAction { DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT }
 enum GUIButtonStyle { STANDARD, TAB, PRIMARY, DANGER }
+enum HudTopBannerMode { NONE, ENEMY, ALERT, DISCOVERY }
 //==================================================
 // FACTIONS / ENEMY STATE
 //==================================================

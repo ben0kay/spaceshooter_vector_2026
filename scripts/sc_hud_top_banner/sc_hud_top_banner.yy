@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_hud_top_banner",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_hud_top_banner",
+  "parent":{
+    "name":"HUD",
+    "path":"folders/SCRIPTS---/HUD.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
