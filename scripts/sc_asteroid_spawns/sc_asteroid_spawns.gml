@@ -771,25 +771,45 @@ function sc_asteroid_spawn_population(
     var _attempts = 0;
     var _attempts_max = _amount * 100;
 
+    var _global_spacing =
+        global.config
+        .sector
+        .asteroid_fields
+        .spacing_multiplier;
+
+    _global_spacing = max(
+        0.1,
+        _global_spacing
+    );
+
     while (_spawned < _amount
     && _attempts < _attempts_max)
     {
-        _attempts++;
+        ++_attempts;
 
         var _size = sc_asteroid_weighted_choose(
             _composition.sizes
         ).size;
 
-        var _size_data = sc_asteroid_size_data(_size);
+        var _size_data = sc_asteroid_size_data(
+            _size
+        );
+
         var _position = sc_asteroid_spawn_shape_position_get(
             _shape,
             _distribution
         );
 
-        var _edge_margin = _size_data.radius * 1.1 + 32;
+        var _edge_margin =
+            _size_data.radius * 1.1
+            + 32;
+
         var _spawn_clearance = (
-            _size_data.radius * 0.95 + 24
-        ) * _spacing_scale;
+            _size_data.radius * 0.95
+            + 24
+        )
+        * _spacing_scale
+        * _global_spacing;
 
         if (_position.x < _edge_margin
         || _position.x > room_width - _edge_margin
@@ -826,7 +846,7 @@ function sc_asteroid_spawn_population(
             }
         );
 
-        _spawned++;
+        ++_spawned;
     }
 
     return _spawned;

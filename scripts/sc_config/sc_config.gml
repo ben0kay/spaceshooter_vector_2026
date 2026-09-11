@@ -142,6 +142,7 @@ function sc_config_init()
 				budget_min: 360,
 				budget_max: 420,
 				population_multiplier: 1.5,
+				spacing_multiplier: 0.7,
 				structure_clearance: 1200,
 				density_depletion_power: 0.65,
 
