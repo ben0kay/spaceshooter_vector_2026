@@ -104,6 +104,8 @@ function sc_asteroid_spawn_generation_data()
                 subformation_keys: [
                     "asteroid_cluster_local_medium",
                     "asteroid_cluster_local_sparse_large",
+                    "asteroid_pocket_rich_medium",
+                    "asteroid_pocket_rich_large",
                     "asteroid_pocket_dense_optional"
                 ]
             },
@@ -185,6 +187,7 @@ function sc_asteroid_spawn_generation_data()
                 key: "asteroid_cluster_local_medium",
                 name: "LOCAL CLUSTER",
                 allocation: "redistribute",
+                composition_mode: "parent",
 
                 scale_required: AsteroidFieldScale.MEDIUM,
                 density_required: -1,
@@ -204,12 +207,16 @@ function sc_asteroid_spawn_generation_data()
 
                 background_min_scale: 0.6,
                 density: 0.55,
-                spacing_scale: 1.04
+                spacing_scale: 1.04,
+
+                rich_share_min: 0,
+                rich_share_max: 0
             },
             {
                 key: "asteroid_cluster_local_sparse_large",
                 name: "LOCAL CLUSTER",
                 allocation: "redistribute",
+                composition_mode: "parent",
 
                 scale_required: AsteroidFieldScale.LARGE,
                 density_required: AsteroidFieldDensity.SPARSE,
@@ -229,12 +236,74 @@ function sc_asteroid_spawn_generation_data()
 
                 background_min_scale: 0.5,
                 density: 0.45,
-                spacing_scale: 1.04
+                spacing_scale: 1.04,
+
+                rich_share_min: 0,
+                rich_share_max: 0
+            },
+            {
+                key: "asteroid_pocket_rich_medium",
+                name: "ORE-RICH POCKET",
+                allocation: "redistribute",
+                composition_mode: "rich",
+
+                scale_required: AsteroidFieldScale.MEDIUM,
+                density_required: -1,
+                layout_required: AsteroidFieldLayout.STANDARD,
+
+                chance: 0.15,
+                amount_min: 1,
+                amount_max: 1,
+
+                radius_min_scale: 0.08,
+                radius_max_scale: 0.13,
+                distance_min_scale: 0.16,
+                distance_max_scale: 0.72,
+
+                asteroid_min: 8,
+                asteroid_max: 14,
+
+                background_min_scale: 0.55,
+                density: 0.6,
+                spacing_scale: 1,
+
+                rich_share_min: 0.55,
+                rich_share_max: 0.68
+            },
+            {
+                key: "asteroid_pocket_rich_large",
+                name: "ORE-RICH POCKET",
+                allocation: "redistribute",
+                composition_mode: "rich",
+
+                scale_required: AsteroidFieldScale.LARGE,
+                density_required: -1,
+                layout_required: AsteroidFieldLayout.STANDARD,
+
+                chance: 0.3,
+                amount_min: 1,
+                amount_max: 1,
+
+                radius_min_scale: 0.05,
+                radius_max_scale: 0.09,
+                distance_min_scale: 0.16,
+                distance_max_scale: 0.76,
+
+                asteroid_min: 12,
+                asteroid_max: 20,
+
+                background_min_scale: 0.45,
+                density: 0.65,
+                spacing_scale: 1,
+
+                rich_share_min: 0.58,
+                rich_share_max: 0.72
             },
             {
                 key: "asteroid_pocket_dense_optional",
                 name: "DENSE POCKET",
                 allocation: "additive",
+                composition_mode: "parent",
 
                 scale_required: AsteroidFieldScale.LARGE,
                 density_required: -1,
@@ -254,12 +323,16 @@ function sc_asteroid_spawn_generation_data()
 
                 background_min_scale: 0,
                 density: 0.9,
-                spacing_scale: 0.9
+                spacing_scale: 0.9,
+
+                rich_share_min: 0,
+                rich_share_max: 0
             },
             {
                 key: "asteroid_pocket_archipelago",
                 name: "ASTEROID ISLAND",
                 allocation: "additive",
+                composition_mode: "parent",
 
                 scale_required: AsteroidFieldScale.LARGE,
                 density_required: -1,
@@ -279,11 +352,15 @@ function sc_asteroid_spawn_generation_data()
 
                 background_min_scale: 0,
                 density: 0.9,
-                spacing_scale: 0.9
+                spacing_scale: 0.9,
+
+                rich_share_min: 0,
+                rich_share_max: 0
             }
         ]
     };
 }
+
 /// @description Initializes the reusable asteroid generator data.
 function sc_asteroid_spawn_register_all()
 {
@@ -543,22 +620,133 @@ function sc_asteroid_spawn_shape_position_get(
     };
 }
 
-/// @description Resolves optional composition against global defaults.
+/// @description Returns asteroid materials currently available at this sector depth.
+function sc_asteroid_spawn_material_pool_get(_rich)
+{
+    var _source =
+        global.config.sector.asteroid_fields.materials;
+
+    var _sector_east = max(
+        0,
+        global.game.sector.x
+    );
+
+    var _pool = [];
+
+    for (var _i = 0; _i < array_length(_source); ++_i)
+    {
+        var _material = _source[_i];
+
+        if (_sector_east < _material.min_sector_east)
+            continue;
+
+        var _weight = _material.weight;
+
+        if (_rich)
+        {
+            if (_sector_east
+            < _material.rich_min_sector_east)
+                continue;
+
+            _weight = _material.rich_weight;
+        }
+
+        if (_weight <= 0)
+            continue;
+
+        array_push(_pool, {
+            key: _material.key,
+            weight: _weight
+        });
+    }
+
+    return _pool;
+}
+
+/// @description Creates a material mixture dominated by one eligible ore.
+function sc_asteroid_spawn_rich_composition_create(
+    _composition,
+    _share_min,
+    _share_max
+)
+{
+    var _rich_pool =
+        sc_asteroid_spawn_material_pool_get(true);
+
+    var _dominant =
+        sc_asteroid_weighted_choose(_rich_pool);
+
+    var _dominant_share = random_range(
+        _share_min,
+        _share_max
+    );
+
+    var _background_total = 0;
+
+    for (var _i = 0;
+    _i < array_length(_composition.materials);
+    ++_i)
+    {
+        var _material = _composition.materials[_i];
+
+        if (_material.key != _dominant.key)
+            _background_total += _material.weight;
+    }
+
+    var _materials = [];
+
+    for (var _i = 0;
+    _i < array_length(_composition.materials);
+    ++_i)
+    {
+        var _material = _composition.materials[_i];
+        var _weight = _dominant_share;
+
+        if (_material.key != _dominant.key)
+        {
+            _weight = _background_total > 0
+                ? (_material.weight / _background_total)
+                    * (1 - _dominant_share)
+                : 0;
+        }
+
+        if (_weight > 0)
+        {
+            array_push(_materials, {
+                key: _material.key,
+                weight: _weight
+            });
+        }
+    }
+
+    return {
+        dominant_key: _dominant.key,
+
+        composition: {
+            materials: _materials,
+            sizes: _composition.sizes
+        }
+    };
+}
+
+/// @description Resolves optional composition against current sector availability.
 function sc_asteroid_spawn_composition_resolve(_composition)
 {
-    var _config = global.config.sector.asteroid_fields;
+    var _config =
+        global.config.sector.asteroid_fields;
 
     if (!is_struct(_composition))
     {
         return {
-            materials: _config.materials,
+            materials:
+                sc_asteroid_spawn_material_pool_get(false),
             sizes: _config.sizes
         };
     }
 
     return {
         materials: is_undefined(_composition.materials)
-            ? _config.materials
+            ? sc_asteroid_spawn_material_pool_get(false)
             : _composition.materials,
 
         sizes: is_undefined(_composition.sizes)
@@ -647,7 +835,8 @@ function sc_asteroid_spawn_population(
 /// @description Rolls valid child formations before the parent population is created.
 function sc_asteroid_spawn_subformation_plan_create(
     _request,
-    _parent_amount
+    _parent_amount,
+    _parent_composition
 )
 {
     var _plans = [];
@@ -705,9 +894,32 @@ function sc_asteroid_spawn_subformation_plan_create(
                 _reserved += _amount;
             }
 
+            var _composition =
+                _parent_composition;
+
+            var _dominant_key = "";
+
+            if (_profile.composition_mode == "rich")
+            {
+                var _rich =
+                    sc_asteroid_spawn_rich_composition_create(
+                        _parent_composition,
+                        _profile.rich_share_min,
+                        _profile.rich_share_max
+                    );
+
+                _composition =
+                    _rich.composition;
+
+                _dominant_key =
+                    _rich.dominant_key;
+            }
+
             array_push(_plans, {
                 profile: _profile,
-                amount: _amount
+                amount: _amount,
+                composition: _composition,
+                dominant_key: _dominant_key
             });
         }
     }
@@ -724,7 +936,6 @@ function sc_asteroid_spawn_subformations_create(
     _request,
     _layer,
     _field_index,
-    _composition,
     _zones,
     _plans,
     _asteroid_budget
@@ -741,6 +952,7 @@ function sc_asteroid_spawn_subformations_create(
         var _profile = _plan.profile;
 
         var _direction = random(360);
+
         var _distance = random_range(
             _parent_shape.radius
                 * _profile.distance_min_scale,
@@ -788,7 +1000,8 @@ function sc_asteroid_spawn_subformations_create(
             local_mode: "uniform"
         };
 
-        var _zone_index = array_length(_zones);
+        var _zone_index =
+            array_length(_zones);
 
         var _amount = min(
             _plan.amount,
@@ -804,7 +1017,7 @@ function sc_asteroid_spawn_subformations_create(
                 _layer,
                 _field_index,
                 _zone_index,
-                _composition
+                _plan.composition
             );
 
         if (_formation_spawned <= 0)
@@ -814,6 +1027,10 @@ function sc_asteroid_spawn_subformations_create(
             key: _profile.key,
             name: _profile.name,
             allocation: _profile.allocation,
+            composition_mode:
+                _profile.composition_mode,
+            dominant_key:
+                _plan.dominant_key,
 
             shape: _shape,
             distribution: _distribution,
@@ -863,7 +1080,8 @@ function sc_asteroid_spawn_create(
     var _subformation_plan =
         sc_asteroid_spawn_subformation_plan_create(
             _request,
-            _parent_amount
+            _parent_amount,
+            _composition
         );
 
     var _main_target = max(
@@ -874,16 +1092,17 @@ function sc_asteroid_spawn_create(
 
     var _zones = [];
 
-    var _main_spawned = sc_asteroid_spawn_population(
-        _shape,
-        _request.distribution,
-        _main_target,
-        _request.spacing_scale,
-        _layer,
-        _field_index,
-        _request.field ? 0 : -1,
-        _composition
-    );
+    var _main_spawned =
+        sc_asteroid_spawn_population(
+            _shape,
+            _request.distribution,
+            _main_target,
+            _request.spacing_scale,
+            _layer,
+            _field_index,
+            _request.field ? 0 : -1,
+            _composition
+        );
 
     if (_request.field)
     {
@@ -891,6 +1110,8 @@ function sc_asteroid_spawn_create(
             key: "asteroid_field_parent",
             name: _request.name,
             allocation: "parent",
+            composition_mode: "parent",
+            dominant_key: "",
 
             shape: _shape,
             distribution: variable_clone(
@@ -910,7 +1131,8 @@ function sc_asteroid_spawn_create(
 
     var _child_budget = max(
         0,
-        _asteroid_budget - _main_spawned
+        _asteroid_budget
+        - _main_spawned
     );
 
     var _subformations =
@@ -919,7 +1141,6 @@ function sc_asteroid_spawn_create(
             _request,
             _layer,
             _field_index,
-            _composition,
             _zones,
             _subformation_plan.plans,
             _child_budget

@@ -141,23 +141,89 @@ function sc_config_init()
 			    spawn_clear_radius: 2200,
 				budget_min: 360,
 				budget_max: 420,
-				population_multiplier: 1.75,
+				population_multiplier: 1.5,
 				structure_clearance: 1200,
 				density_depletion_power: 0.65,
 
 			    materials: [
-		    { key: "asteroid_rock", weight: 33 },
-		    { key: "asteroid_carbon", weight: 13 },
-		    { key: "asteroid_iron", weight: 11 },
-		    { key: "asteroid_copper", weight: 8 },
-		    { key: "asteroid_silicon", weight: 7 },
-		    { key: "asteroid_quartz", weight: 4 },
-		    { key: "asteroid_ice", weight: 10 },
-		    { key: "asteroid_titanium", weight: 3 },
-		    { key: "asteroid_crystal", weight: 2 },
-		    { key: "asteroid_sulfur", weight: 8 },
-		    { key: "asteroid_uranium", weight: 1 }
-		],
+    {
+        key: "asteroid_rock",
+        weight: 33,
+        rich_weight: 0,
+        min_sector_east: 0,
+        rich_min_sector_east: 0
+    },
+    {
+        key: "asteroid_carbon",
+        weight: 13,
+        rich_weight: 13,
+        min_sector_east: 0,
+        rich_min_sector_east: 0
+    },
+    {
+        key: "asteroid_iron",
+        weight: 11,
+        rich_weight: 11,
+        min_sector_east: 0,
+        rich_min_sector_east: 0
+    },
+    {
+        key: "asteroid_copper",
+        weight: 8,
+        rich_weight: 8,
+        min_sector_east: 0,
+        rich_min_sector_east: 1
+    },
+    {
+        key: "asteroid_silicon",
+        weight: 7,
+        rich_weight: 7,
+        min_sector_east: 0,
+        rich_min_sector_east: 1
+    },
+    {
+        key: "asteroid_ice",
+        weight: 10,
+        rich_weight: 8,
+        min_sector_east: 0,
+        rich_min_sector_east: 2
+    },
+    {
+        key: "asteroid_sulfur",
+        weight: 8,
+        rich_weight: 6,
+        min_sector_east: 1,
+        rich_min_sector_east: 3
+    },
+    {
+        key: "asteroid_quartz",
+        weight: 4,
+        rich_weight: 3,
+        min_sector_east: 2,
+        rich_min_sector_east: 4
+    },
+    {
+        key: "asteroid_titanium",
+        weight: 3,
+        rich_weight: 1.5,
+        min_sector_east: 3,
+        rich_min_sector_east: 6
+    },
+    {
+        key: "asteroid_crystal",
+        weight: 2,
+        rich_weight: 0.75,
+        min_sector_east: 5,
+        rich_min_sector_east: 9
+    },
+    {
+        key: "asteroid_uranium",
+        weight: 1,
+        rich_weight: 0.2,
+        min_sector_east: 6,
+        rich_min_sector_east: 12
+    }
+],
 
 			    sizes: [
 			        { size: AsteroidSize.SMALL, weight: 12 },
