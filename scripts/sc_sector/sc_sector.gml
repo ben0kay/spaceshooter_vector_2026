@@ -299,69 +299,35 @@ function sc_sector_asteroid_field_index_at(_x, _y)
 /// @description Returns one zone's depleted local navigation density.
 function sc_sector_asteroid_zone_density_get(_zone, _x, _y)
 {
-    if (_zone.initial_amount <= 0
-    || _zone.remaining_amount <= 0)
-        return 0;
+    if (_zone.initial_amount <= 0 || _zone.remaining_amount <= 0) return 0;
 
-    var _normalized = sc_sector_asteroid_shape_distance_get(
-        _zone.shape,
-        _x,
-        _y
-    );
-
-    if (_normalized > 1)
-        return 0;
+    var _normalized = sc_sector_asteroid_shape_distance_get(_zone.shape, _x, _y);
+    if (_normalized > 1) return 0;
 
     var _distribution = _zone.distribution;
     var _local_density = _zone.density;
 
-    switch (_distribution.local_mode)
+    switch (_distribution.distribution)
     {
-        case "belt":
-            var _inner = clamp(
-                _distribution.inner_radius_scale,
-                0,
-                0.98
-            );
-
-            if (_normalized < _inner)
-                return 0;
+        case AsteroidFieldDistribution.EDGE_HEAVY:
+        {
+            var _inner = clamp(_distribution.inner_radius_scale, 0, 0.98);
+            if (_normalized < _inner) return 0;
+        }
         break;
 
-        case "core":
-            var _core_strength = power(
-                1 - clamp(_normalized, 0, 1),
-                0.7
-            );
-
-            _local_density = lerp(
-                _zone.density * 0.25,
-                _zone.density,
-                _core_strength
-            );
+        case AsteroidFieldDistribution.DENSE_CORE:
+        {
+            var _core_strength = power(1 - clamp(_normalized, 0, 1), 0.7);
+            _local_density = lerp(_zone.density * 0.25, _zone.density, _core_strength);
+        }
         break;
     }
 
-    var _remaining_ratio = clamp(
-        _zone.remaining_amount
-            / _zone.initial_amount,
-        0,
-        1
-    );
+    var _remaining_ratio = clamp(_zone.remaining_amount / _zone.initial_amount, 0, 1);
+    var _depletion_power = global.config.sector.asteroid_fields.density_depletion_power;
 
-    var _depletion_power =
-        global.config.sector.asteroid_fields
-            .density_depletion_power;
-
-    return clamp(
-        _local_density
-            * power(
-                _remaining_ratio,
-                _depletion_power
-            ),
-        0,
-        1
-    );
+    return clamp(_local_density * power(_remaining_ratio, _depletion_power), 0, 1);
 }
 
 /// @description Returns effective asteroid density at one world position.

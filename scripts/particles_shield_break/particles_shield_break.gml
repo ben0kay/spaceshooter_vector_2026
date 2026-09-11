@@ -45,7 +45,8 @@ function sc_particles_shield_break_emit(_x, _y, _angle, _sprite, _palette)
     var _radius_y = _height * 0.47;
     var _diameter = max(_width, _height);
     var _amount = clamp(round(_diameter / _config.spacing), _config.amount_min, _config.amount_max);
-    var _size_scale = clamp(_diameter / _config.size_reference, 0.75, 2);
+    var _size_ratio = _diameter / _config.size_reference;
+    var _size_scale = clamp(power(_size_ratio, 1.25), 0.32, 2);
 
     part_type_colour3(_types.blur, _palette.core, _palette.energy, _palette.glow);
     part_type_colour3(_types.streak, _palette.core, _palette.energy, _palette.glow);

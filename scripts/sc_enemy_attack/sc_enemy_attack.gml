@@ -473,7 +473,13 @@ function sc_enemy_attack_can_use(_enemy, _attack)
     {
         var _conditions = _attack.conditions;
 
-        // Obstacle destruction ignores normal player-combat range restrictions.
+        // Certain attacks may be excluded from deliberate asteroid destruction.
+        if (_destroying_asteroid
+        && variable_struct_exists(_conditions, "asteroid_target")
+        && !_conditions.asteroid_target)
+            return false;
+
+        // Obstacle destruction ignores ordinary combat range restrictions.
         if (!_destroying_asteroid)
         {
             if (variable_struct_exists(_conditions, "range_min")
@@ -485,7 +491,7 @@ function sc_enemy_attack_can_use(_enemy, _attack)
                 return false;
 
             if (sc_enemy_attack_line_of_sight_required(_attack)
-            && !sc_enemy_attack_line_of_sight_clear(_enemy,_attack))
+            && !sc_enemy_attack_line_of_sight_clear(_enemy, _attack))
                 return false;
         }
 
@@ -1022,11 +1028,24 @@ function sc_enemy_attack_update(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
     var _channels = _controller.channels;
+    var _destroying_asteroid = sc_enemy_asteroid_destroy_active(_enemy);
     var _active_count = 0;
 
     for (var _c = 0; _c < array_length(_channels); _c++)
     {
-        if (sc_enemy_attack_channel_active(_channels[_c]))
+        var _channel = _channels[_c];
+
+        if (_destroying_asteroid
+        && variable_struct_exists(_channel, "asteroid_target")
+        && !_channel.asteroid_target)
+        {
+            if (_channel.runtime.phase != EnemyAttackPhase.IDLE)
+                sc_enemy_attack_channel_cancel(_channel);
+
+            continue;
+        }
+
+        if (sc_enemy_attack_channel_active(_channel))
             _active_count++;
     }
 
@@ -1034,14 +1053,17 @@ function sc_enemy_attack_update(_enemy)
     {
         var _channel = _channels[_c];
         var _runtime = _channel.runtime;
+
+        if (_destroying_asteroid
+        && variable_struct_exists(_channel, "asteroid_target")
+        && !_channel.asteroid_target)
+            continue;
+
         var _was_active = sc_enemy_attack_channel_active(_channel);
 
-        var _ready_to_start =
-            _runtime.phase == EnemyAttackPhase.IDLE
-            || (
-                _runtime.phase == EnemyAttackPhase.COOLDOWN
-                && GAME_TICK >= _runtime.cooldown_until
-            );
+        var _ready_to_start = _runtime.phase == EnemyAttackPhase.IDLE
+            || (_runtime.phase == EnemyAttackPhase.COOLDOWN
+            && GAME_TICK >= _runtime.cooldown_until);
 
         if (_ready_to_start
         && !_was_active
@@ -1057,6 +1079,5 @@ function sc_enemy_attack_update(_enemy)
         else if (_was_active && !_is_active) _active_count--;
     }
 
-    // Leave the controller in a stable backward-compatible state.
     sc_enemy_attack_channel_bind(_controller, _channels[0]);
 }

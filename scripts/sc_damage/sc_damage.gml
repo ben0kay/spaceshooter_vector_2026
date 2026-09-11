@@ -13,10 +13,13 @@ function sc_damage_effect_config_get(_effect)
 }
 
 /// @description Creates one immutable damage packet when an attack is spawned.
-function sc_damage_packet_create(_definition,_source,_projectile = false)
+function sc_damage_packet_create(_definition, _source, _projectile = false)
 {
     var _type_config = sc_damage_type_config_get(_definition.type);
-    var _effect = variable_struct_exists(_definition,"effect") ? _definition.effect : _type_config.default_effect;
+    var _effect = variable_struct_exists(_definition, "effect")
+        ? _definition.effect
+        : _type_config.default_effect;
+
     var _effect_config = sc_damage_effect_config_get(_effect);
     var _critical_config = global.config.player.critical_hit.projectile.kinetic;
 
@@ -25,27 +28,29 @@ function sc_damage_packet_create(_definition,_source,_projectile = false)
         && _definition.type == DamageType.KINETIC;
 
     return {
-        amount: max(0,_definition.amount),
+        amount: max(0, _definition.amount),
         type: _definition.type,
-        knockback_force: variable_struct_exists(_definition,"knockback_force")
-            ? max(0,_definition.knockback_force)
+        projectile_impact: _projectile,
+
+        knockback_force: variable_struct_exists(_definition, "knockback_force")
+            ? max(0, _definition.knockback_force)
             : 0,
 
         effect: {
             type: _effect,
-            chance: variable_struct_exists(_definition,"effect_chance") ? _definition.effect_chance : _effect_config.chance,
-            duration: variable_struct_exists(_definition,"effect_duration") ? _definition.effect_duration : _effect_config.duration,
-            strength: variable_struct_exists(_definition,"effect_strength") ? _definition.effect_strength : _effect_config.strength,
-            tick_interval: variable_struct_exists(_definition,"effect_tick_interval") ? _definition.effect_tick_interval : _effect_config.tick_interval
+            chance: variable_struct_exists(_definition, "effect_chance") ? _definition.effect_chance : _effect_config.chance,
+            duration: variable_struct_exists(_definition, "effect_duration") ? _definition.effect_duration : _effect_config.duration,
+            strength: variable_struct_exists(_definition, "effect_strength") ? _definition.effect_strength : _effect_config.strength,
+            tick_interval: variable_struct_exists(_definition, "effect_tick_interval") ? _definition.effect_tick_interval : _effect_config.tick_interval
         },
 
-        extraction: variable_struct_exists(_definition,"extraction")
+        extraction: variable_struct_exists(_definition, "extraction")
             ? variable_clone(_definition.extraction)
             : undefined,
 
         critical_hit: {
             triggered: _critical_eligible && random(1) < _critical_config.chance,
-            multiplier: max(1,_critical_config.multiplier),
+            multiplier: max(1, _critical_config.multiplier),
             armour_enabled: _critical_config.armour_enabled
         },
 
@@ -389,6 +394,65 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     }
     else if (_result.effect.type == DamageEffect.STAGGER && sc_damage_effect_triggered(_result.effect))
         sc_player_stagger_begin(_player, _result.effect);
+
+    return _result;
+}
+
+/// @description Applies damage, direct enemy demolition power, resource release and damage stages.
+function sc_asteroid_damage(_asteroid, _packet)
+{
+    var _health = _asteroid.asteroid.health;
+    var _damage_amount = sc_damage_packet_amount_get(_packet);
+
+    if (is_struct(_packet.extraction))
+        _damage_amount *= _packet.extraction.asteroid_damage_multiplier;
+
+    // Enemy demolition bonuses apply only to direct projectile impacts.
+    // Explosion areas, beams and other area attacks receive no bonus.
+    if (_packet.projectile_impact
+    && _packet.source.faction != Faction.PLAYER
+    && _packet.source.faction != noone)
+    {
+        _damage_amount *=
+            global.config.enemy.asteroid.destroy_damage_multiplier;
+    }
+
+    var _damage = min(_health.current, _damage_amount);
+    if (_damage <= 0) return false;
+
+    _health.current -= _damage;
+    sc_asteroid_yield_damage_add(_asteroid, _packet, _damage);
+
+    var _ratio = _health.current / _health.maximum;
+
+    _health.stage = _ratio <= 0.25
+        ? 3
+        : (_ratio <= 0.5
+            ? 2
+            : (_ratio <= 0.75 ? 1 : 0));
+
+    var _result = {
+        shield: 0,
+        armour: 0,
+        hull: _health.current,
+        impact_layer: DefenceLayer.HULL,
+
+        dealt: {
+            shield: 0,
+            armour: 0,
+            hull: _damage,
+            total: _damage
+        },
+
+        effect: _packet.effect,
+        source: _packet.source
+    };
+
+    if (_health.current <= 0)
+    {
+        _health.current = 0;
+        sc_asteroid_die(_asteroid, _packet);
+    }
 
     return _result;
 }

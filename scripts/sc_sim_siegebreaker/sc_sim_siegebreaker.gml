@@ -114,15 +114,34 @@ function sc_enemy_register_sim_siegebreaker()
 
         attack_controller: {
             selection: AttackSelection.WEIGHTED,
+            max_active_channels: 2,
+
+            channels: [
+                {
+                    key: "rockets",
+                    selection: AttackSelection.WEIGHTED,
+                    asteroid_target: true
+                },
+                {
+                    key: "pulse",
+                    selection: AttackSelection.WEIGHTED,
+                    asteroid_target: false
+                }
+            ],
 
             attacks: [
                 {
                     key: "twin_rocket_launch",
+                    channel: "rockets",
                     weight: 42,
                     hardpoint_group: "rockets",
                     weapon_key: "weapon_simulant_rocket",
 
-                    conditions: { line_of_sight: true, range_min: 300, range_max: 940 },
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 300,
+                        range_max: 940
+                    },
 
                     aim: {
                         mode: AimMode.TARGET,
@@ -142,11 +161,16 @@ function sc_enemy_register_sim_siegebreaker()
                 },
                 {
                     key: "centre_pulse_burst",
+                    channel: "pulse",
                     weight: 58,
                     hardpoint_group: "pulse",
                     weapon_key: "weapon_simulant_pulse",
 
-                    conditions: { line_of_sight: true, range_min: 140, range_max: 900 },
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 140,
+                        range_max: 900
+                    },
 
                     aim: {
                         mode: AimMode.TARGET,

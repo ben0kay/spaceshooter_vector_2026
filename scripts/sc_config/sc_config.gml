@@ -99,48 +99,59 @@ function sc_config_init()
 			},
 
             shield: {
-                radius_scale: 1.28,
-                field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,
-                inner_scale: 0.93, inner_alpha: 0.18,
-                glow_layers: 3, glow_spacing: 1, glow_alpha: 0.16, glow_alpha_falloff: 0.035,
-                outline_alpha: 0.88, inner_outline_offset: 2, inner_outline_alpha: 0.5,
-                runtime_alpha_base: 0.28, runtime_alpha_charge: 0.5, runtime_alpha_max: 0.82,
-                idle_pulse_base: 0.88, idle_pulse_amount: 0.12, idle_pulse_speed: 0.08,
-                idle_scale_amount: 0.008, idle_scale_speed: 0.06,
-                hit_scale_amount: 0.11, hit_flash_alpha: 0.48,
-				
-				particles: {
-    spacing: 11,
-    amount_min: 10,
-    amount_max: 28,
-    size_reference: 120,
-    direction_spread: 18,
+    radius_scale: 1.28,
+    field_centre_mix: 0.72, field_edge_mix: 0.28, field_alpha: 0.62,
+    inner_scale: 0.93, inner_alpha: 0.18,
+    glow_layers: 3, glow_spacing: 1, glow_alpha: 0.16, glow_alpha_falloff: 0.035,
+    outline_alpha: 0.88, inner_outline_offset: 2, inner_outline_alpha: 0.5,
+    runtime_alpha_base: 0.28, runtime_alpha_charge: 0.5, runtime_alpha_max: 0.82,
+    idle_pulse_base: 0.88, idle_pulse_amount: 0.12, idle_pulse_speed: 0.08,
+    idle_scale_amount: 0.008, idle_scale_speed: 0.06,
+    hit_scale_amount: 0.11, hit_flash_alpha: 0.48,
 
-    blur: {
-        size_min: 0.1,
-        size_max: 0.2,
-        growth: 0.005,
-        speed_min: 0.35,
-        speed_max: 1.4,
-        life_min: 14,
-        life_max: 26
-    },
+    break_effect: {
+        life: 26,
+        inner_scale_end: 1.28,
+        outer_scale_end: 1.7,
+        inner_alpha: 0.8,
+        outer_alpha: 0.38,
+        blur_alpha: 0.2,
+        blur_scale: 2.2,
+        rotation: 3,
 
-    streak: {
-        chance: 0.45,
-        size_min: 0.07,
-        size_max: 0.14,
-        growth: 0.002,
-        speed_min: 2.2,
-        speed_max: 5,
-        speed_reduction: -0.08,
-        life_min: 10,
-        life_max: 19,
-        length_scale: 1.3,
-        width_scale: 0.55
+        particles: {
+            spacing: 11,
+            amount_min: 10,
+            amount_max: 28,
+            size_reference: 120,
+            direction_spread: 18,
+
+            blur: {
+                size_min: 0.1,
+                size_max: 0.2,
+                growth: 0.005,
+                speed_min: 0.35,
+                speed_max: 1.4,
+                life_min: 14,
+                life_max: 26
+            },
+
+            streak: {
+                chance: 0.45,
+                size_min: 0.07,
+                size_max: 0.14,
+                growth: 0.002,
+                speed_min: 2.2,
+                speed_max: 5,
+                speed_reduction: -0.08,
+                life_min: 10,
+                life_max: 19,
+                length_scale: 1.3,
+                width_scale: 0.55
+            }
+        }
     }
 }
-            }
         },
 		
 		optimization: {
@@ -460,19 +471,7 @@ function sc_config_init()
                 activation_range: 4000
             },
 			
-			field_navigation: {
-			    check_interval: 30,
-
-			    class_penalty: [
-			        0.05,
-			        0.08,
-			        0.11,
-			        0.14,
-			        0.17,
-			        0.2,
-			        0.23
-			    ]
-			},
+		
         },
 			
 		asteroid: {

@@ -57,10 +57,10 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
         key: _enemy_key,
         identity: variable_clone(_data.identity),
         grade: sc_enemy_grade_create(
-		    _data.identity.name,
-		    _data.identity.faction,
-		    _data.identity.rank
-		),
+            _data.identity.name,
+            _data.identity.faction,
+            _data.identity.rank
+        ),
         doctrine: sc_enemy_init_doctrine_create(_data),
         reward: variable_clone(_data.reward),
 
@@ -107,16 +107,8 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
                 next_check_tick: GAME_TICK
             },
 
-            field: {
-                index: -1,
-                density: 0,
-                speed_multiplier: 1,
-                next_check_tick: GAME_TICK
-            },
-
             // Only specialized movement styles provide additional runtime data.
-            behaviour_runtime:
-                variable_struct_exists(_data.movement_controller, "runtime")
+            behaviour_runtime: variable_struct_exists(_data.movement_controller, "runtime")
                 ? variable_clone(_data.movement_controller.runtime)
                 : {}
         },
