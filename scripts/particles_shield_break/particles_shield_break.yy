@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"particles_shield_break",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"particles_shield_break",
+  "parent":{
+    "name":"particles",
+    "path":"folders/SCRIPTS---/effects/particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

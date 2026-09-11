@@ -130,6 +130,7 @@
     {"id":{"name":"particles_main","path":"scripts/particles_main/particles_main.yy",},},
     {"id":{"name":"particles_projectile_impact","path":"scripts/particles_projectile_impact/particles_projectile_impact.yy",},},
     {"id":{"name":"particles_projectile_trail","path":"scripts/particles_projectile_trail/particles_projectile_trail.yy",},},
+    {"id":{"name":"particles_shield_break","path":"scripts/particles_shield_break/particles_shield_break.yy",},},
     {"id":{"name":"particles_simulant","path":"scripts/particles_simulant/particles_simulant.yy",},},
     {"id":{"name":"particles_telegraph","path":"scripts/particles_telegraph/particles_telegraph.yy",},},
     {"id":{"name":"projectiles_shared","path":"scripts/projectiles_shared/projectiles_shared.yy",},},

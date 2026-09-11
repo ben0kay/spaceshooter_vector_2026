@@ -256,7 +256,7 @@ function sc_shield_break_effect_create(_entity, _sprite, _palette)
 {
     if (!sprite_exists(_sprite)) return false;
 
-    return instance_create_layer(_entity.x, _entity.y, _entity.layer, o_shield_break_effect, {
+    var _effect = instance_create_layer(_entity.x, _entity.y, _entity.layer, o_shield_break_effect, {
         shield_break_create: {
             sprite: _sprite,
             angle: _entity.draw_angle,
@@ -267,6 +267,16 @@ function sc_shield_break_effect_create(_entity, _sprite, _palette)
             depth: _entity.depth - 1
         }
     });
+
+    sc_particles_shield_break_emit(
+        _entity.x,
+        _entity.y,
+        _entity.draw_angle,
+        _sprite,
+        _palette
+    );
+
+    return _effect;
 }
 
 /// @description Creates a shield-break effect only on a positive-to-zero transition.

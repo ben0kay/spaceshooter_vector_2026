@@ -12,7 +12,12 @@ function sc_particles_init()
         return false;
     }
 
-    global.particles = { system: _system, impact_system: _impact_system, groups: {}, owned_types: [] };
+    global.particles = {
+        system: _system,
+        impact_system: _impact_system,
+        groups: {},
+        owned_types: []
+    };
 
     part_system_depth(_system, 10);
     part_system_depth(_impact_system, -10);
@@ -25,7 +30,8 @@ function sc_particles_init()
     || !sc_particles_register_shard()
     || !sc_particles_register_shockwave()
     || !sc_particles_register_beam_impact()
-	|| !sc_particles_resource_pickup_register()
+    || !sc_particles_register_shield_break()
+    || !sc_particles_resource_pickup_register()
     || !sc_particles_register_projectile_content()
     || !sc_particles_register_weapon_content())
     {

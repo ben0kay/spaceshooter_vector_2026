@@ -109,16 +109,37 @@ function sc_config_init()
                 idle_scale_amount: 0.008, idle_scale_speed: 0.06,
                 hit_scale_amount: 0.11, hit_flash_alpha: 0.48,
 				
-				break_effect: {
-				    life: 26,
-				    inner_scale_end: 1.28,
-				    outer_scale_end: 1.7,
-				    inner_alpha: 0.8,
-				    outer_alpha: 0.38,
-				    blur_alpha: 0.2,
-				    blur_scale: 2.2,
-				    rotation: 3
-				}
+				particles: {
+    spacing: 11,
+    amount_min: 10,
+    amount_max: 28,
+    size_reference: 120,
+    direction_spread: 18,
+
+    blur: {
+        size_min: 0.1,
+        size_max: 0.2,
+        growth: 0.005,
+        speed_min: 0.35,
+        speed_max: 1.4,
+        life_min: 14,
+        life_max: 26
+    },
+
+    streak: {
+        chance: 0.45,
+        size_min: 0.07,
+        size_max: 0.14,
+        growth: 0.002,
+        speed_min: 2.2,
+        speed_max: 5,
+        speed_reduction: -0.08,
+        life_min: 10,
+        life_max: 19,
+        length_scale: 1.3,
+        width_scale: 0.55
+    }
+}
             }
         },
 		
