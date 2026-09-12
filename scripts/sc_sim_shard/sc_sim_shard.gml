@@ -152,21 +152,22 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
     var _p = _visual.palette;
     var _r = _visual.radius;
     var _phase = (_frame/_frame_count)*pi*2;
-    var _pulse = 0.95+sin(_phase)*0.05;
+    var _pulse = 0.95 + sin(_phase) * 0.05;
 
-    var _front_x = _x+lengthdir_x(_r*1.34,_angle);
-    var _front_y = _y+lengthdir_y(_r*1.34,_angle);
-    var _rear_x = _x+lengthdir_x(-_r*0.92,_angle);
-    var _rear_y = _y+lengthdir_y(-_r*0.92,_angle);
-    var _left_x = _x+lengthdir_x(_r*0.82*_pulse,_angle+90);
-    var _left_y = _y+lengthdir_y(_r*0.82*_pulse,_angle+90);
-    var _right_x = _x+lengthdir_x(_r*0.82*_pulse,_angle-90);
-    var _right_y = _y+lengthdir_y(_r*0.82*_pulse,_angle-90);
+    // Slightly narrower outer aura.
+    var _front_x = _x + lengthdir_x(_r * 1.34, _angle);
+    var _front_y = _y + lengthdir_y(_r * 1.34, _angle);
+    var _rear_x = _x + lengthdir_x(-_r * 0.92, _angle);
+    var _rear_y = _y + lengthdir_y(-_r * 0.92, _angle);
+    var _left_x = _x + lengthdir_x(_r * 0.62 * _pulse, _angle + 90);
+    var _left_y = _y + lengthdir_y(_r * 0.62 * _pulse, _angle + 90);
+    var _right_x = _x + lengthdir_x(_r * 0.62 * _pulse, _angle - 90);
+    var _right_y = _y + lengthdir_y(_r * 0.62 * _pulse, _angle - 90);
 
     // Soft purple outer aura.
     gpu_set_blendmode(bm_add);
     draw_set_colour(_p.glow);
-    draw_set_alpha(0.26);
+    draw_set_alpha(0.24);
 
     draw_triangle(
         _front_x,_front_y,
@@ -184,15 +185,15 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
 
     gpu_set_blendmode(bm_normal);
 
-    // Main filled purple diamond.
-    var _body_front_x = _x+lengthdir_x(_r*1.2,_angle);
-    var _body_front_y = _y+lengthdir_y(_r*1.2,_angle);
-    var _body_rear_x = _x+lengthdir_x(-_r*0.76,_angle);
-    var _body_rear_y = _y+lengthdir_y(-_r*0.76,_angle);
-    var _body_left_x = _x+lengthdir_x(_r*0.65,_angle+90);
-    var _body_left_y = _y+lengthdir_y(_r*0.65,_angle+90);
-    var _body_right_x = _x+lengthdir_x(_r*0.65,_angle-90);
-    var _body_right_y = _y+lengthdir_y(_r*0.65,_angle-90);
+    // Main filled purple diamond - narrower than before.
+    var _body_front_x = _x + lengthdir_x(_r * 1.2, _angle);
+    var _body_front_y = _y + lengthdir_y(_r * 1.2, _angle);
+    var _body_rear_x = _x + lengthdir_x(-_r * 0.76, _angle);
+    var _body_rear_y = _y + lengthdir_y(-_r * 0.76, _angle);
+    var _body_left_x = _x + lengthdir_x(_r * 0.48, _angle + 90);
+    var _body_left_y = _y + lengthdir_y(_r * 0.48, _angle + 90);
+    var _body_right_x = _x + lengthdir_x(_r * 0.48, _angle - 90);
+    var _body_right_y = _y + lengthdir_y(_r * 0.48, _angle - 90);
 
     draw_set_alpha(1);
     draw_set_colour(_p.accent);
@@ -213,17 +214,17 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
         false
     );
 
-    // Darker interior gives the diamond some depth.
-    var _inner_front_x = _x+lengthdir_x(_r*0.86,_angle);
-    var _inner_front_y = _y+lengthdir_y(_r*0.86,_angle);
-    var _inner_rear_x = _x+lengthdir_x(-_r*0.48,_angle);
-    var _inner_rear_y = _y+lengthdir_y(-_r*0.48,_angle);
-    var _inner_left_x = _x+lengthdir_x(_r*0.34,_angle+90);
-    var _inner_left_y = _y+lengthdir_y(_r*0.34,_angle+90);
-    var _inner_right_x = _x+lengthdir_x(_r*0.34,_angle-90);
-    var _inner_right_y = _y+lengthdir_y(_r*0.34,_angle-90);
+    // Inner purple section - no dark/black interior now.
+    var _inner_front_x = _x + lengthdir_x(_r * 0.86, _angle);
+    var _inner_front_y = _y + lengthdir_y(_r * 0.86, _angle);
+    var _inner_rear_x = _x + lengthdir_x(-_r * 0.48, _angle);
+    var _inner_rear_y = _y + lengthdir_y(-_r * 0.48, _angle);
+    var _inner_left_x = _x + lengthdir_x(_r * 0.22, _angle + 90);
+    var _inner_left_y = _y + lengthdir_y(_r * 0.22, _angle + 90);
+    var _inner_right_x = _x + lengthdir_x(_r * 0.22, _angle - 90);
+    var _inner_right_y = _y + lengthdir_y(_r * 0.22, _angle - 90);
 
-    draw_set_colour(_p.hull_dark);
+    draw_set_colour(_p.energy);
 
     draw_triangle(
         _inner_front_x,_inner_front_y,
@@ -241,7 +242,7 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
         false
     );
 
-    // Purple lattice instead of a white outline.
+    // Purple lattice instead of white outline.
     gpu_set_blendmode(bm_add);
     draw_set_colour(_p.energy);
     draw_set_alpha(0.88);
@@ -256,10 +257,10 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
     draw_line_width(_body_left_x,_body_left_y,_inner_rear_x,_inner_rear_y,1.1);
     draw_line_width(_body_right_x,_body_right_y,_inner_rear_x,_inner_rear_y,1.1);
 
-    // Only the tiny reactor point approaches white.
+    // Only the tiny core approaches white.
     draw_set_colour(_p.core);
     draw_set_alpha(0.9);
-    draw_circle(_x,_y,max(1.2,_r*0.09*_pulse),false);
+    draw_circle(_x,_y,max(1.2,_r * 0.09 * _pulse),false);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);

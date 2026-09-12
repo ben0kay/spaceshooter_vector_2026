@@ -26,7 +26,7 @@ function sc_weapon_register_simulant_thin_beam()
 
             beam: {
                 shape: AttackAreaShape.CAPSULE,
-                geometry: { length: 1250, radius: 5 },
+                geometry: { length: 1450, radius: 5 },
 
                 behaviour: {
                     growth_speed: 120,
@@ -187,7 +187,7 @@ function sc_weapon_register_simulant_super_beam()
                 shape: AttackAreaShape.CAPSULE,
 
                 geometry: {
-                    length: 2400,
+                    length: 2500,
                     radius: 5
                 },
 

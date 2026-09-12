@@ -113,8 +113,8 @@ function sc_enemy_register_sim_wisp()
             combat_script: sc_enemy_movement_pursue,
 
             facing: {
-                default_mode: EnemyFacingMode.SPIN,
-                backaway_mode: EnemyFacingMode.SPIN,
+                default_mode: EnemyFacingMode.TARGET,
+                backaway_mode: EnemyFacingMode.MOVEMENT,
                 angle_offset: 0,
                 turn_speed_scale: 1,
                 spin_speed: 5

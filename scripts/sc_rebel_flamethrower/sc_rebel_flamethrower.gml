@@ -24,7 +24,7 @@ function sc_weapon_register_rebel_flamethrower()
                 shape: AttackAreaShape.CONE,
 
                 geometry: {
-                    range: 430,
+                    range: 490,
                     angle: 40
                 },
 

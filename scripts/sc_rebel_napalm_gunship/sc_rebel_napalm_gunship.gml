@@ -147,7 +147,7 @@ function sc_enemy_register_rebel_napalm_gunship()
                     conditions: {
                         line_of_sight: true,
                         range_min: 90,
-                        range_max: 430
+                        range_max: 490
                     },
 
                     aim: {
