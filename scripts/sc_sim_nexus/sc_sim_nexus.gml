@@ -341,82 +341,82 @@ function sc_enemy_register_sim_nexus()
         },
 
         hardpoints: [
-    // ==================================================
-    // DIAGONAL SUPER BEAMS
-    // ==================================================
-    {
-        key: "beam_ne",
-        group: "diagonal_beams",
-        forward: 0.54,
-        side: 0.54,
-        angle: 45,
-        muzzle_forward: 0.32,
+		    // ==================================================
+		    // DIAGONAL SUPER BEAMS
+		    // ==================================================
+		{
+		    key: "beam_ne",
+		    group: "diagonal_beams",
+		    forward: 0.62,
+		    side: 0.62,
+		    angle: 45,
+		    muzzle_forward: 0.2,
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+		    rotation: {
+		        mode: HardpointRotation.FIXED,
+		        turn_speed: 0,
+		        arc: 0,
+		        return_to_rest: true
+		    },
 
-        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-    },
+		    draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+		},
 
-    {
-        key: "beam_nw",
-        group: "diagonal_beams",
-        forward: -0.54,
-        side: 0.54,
-        angle: 135,
-        muzzle_forward: 0.32,
+		{
+		    key: "beam_nw",
+		    group: "diagonal_beams",
+		    forward: -0.62,
+		    side: 0.62,
+		    angle: 135,
+		    muzzle_forward: 0.2,
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+		    rotation: {
+		        mode: HardpointRotation.FIXED,
+		        turn_speed: 0,
+		        arc: 0,
+		        return_to_rest: true
+		    },
 
-        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-    },
+		    draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+		},
 
-    {
-        key: "beam_sw",
-        group: "diagonal_beams",
-        forward: -0.54,
-        side: -0.54,
-        angle: 225,
-        muzzle_forward: 0.32,
+		{
+		    key: "beam_sw",
+		    group: "diagonal_beams",
+		    forward: -0.62,
+		    side: -0.62,
+		    angle: 225,
+		    muzzle_forward: 0.2,
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+		    rotation: {
+		        mode: HardpointRotation.FIXED,
+		        turn_speed: 0,
+		        arc: 0,
+		        return_to_rest: true
+		    },
 
-        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-    },
+		    draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+		},
 
-    {
-        key: "beam_se",
-        group: "diagonal_beams",
-        forward: 0.54,
-        side: -0.54,
-        angle: 315,
-        muzzle_forward: 0.32,
+		{
+		    key: "beam_se",
+		    group: "diagonal_beams",
+		    forward: 0.62,
+		    side: -0.62,
+		    angle: 315,
+		    muzzle_forward: 0.2,
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+		    rotation: {
+		        mode: HardpointRotation.FIXED,
+		        turn_speed: 0,
+		        arc: 0,
+		        return_to_rest: true
+		    },
 
-        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-    },
+		    draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+		},
 
-                         // ==================================================
+            // ==================================================
             // THREE-WAY EAST ORB BATTERY
             // ==================================================
             sc_enemy_sim_nexus_orb_hardpoint(
@@ -782,347 +782,451 @@ function sc_enemy_sim_nexus_body_draw(_x,_y,_radius,_angle,_visual)
     sc_enemy_sim_nexus_armour_draw(_x,_y,_radius,_angle,_visual,0);
 }
 
-/// @description Draws the permanent radial Nexus hull.
+/// @description Draws the permanent eight-point radial Nexus hull.
 function sc_enemy_sim_nexus_hull_draw(_x,_y,_radius,_angle,_visual,_stage)
 {
-    var _p=_visual.palette;
+    var _p = _visual.palette;
 
-    // ==================================================
-    // CENTRAL MECHANICAL DISC
-    // ==================================================
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.34,_p.void,false);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.31,_p.hull_dark,false);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.27,_p.metal,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.21,_p.hull_mid,true);
+    // Large circular mechanical foundation.
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.39,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.365,_p.hull_dark,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.335,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.29,_p.hull_mid,true);
 
-    // Four structural reactor spokes.
-    for (var _i=0;_i<4;_i++)
+    // Eight separated structural necks establish the radial silhouette.
+    for (var _i = 0; _i < 8; _i++)
     {
-        var _a=_angle+_i*90;
+        var _a = _angle+_i*45;
+
+        sc_visual_quad(
+            _x,_y,_radius,_a,
+            0.25,-0.065,
+            0.52,-0.09,
+            0.52,0.09,
+            0.25,0.065,
+            _p.hull_dark
+        );
 
         sc_sim_visual_energy_conduit(
             _x,_y,_radius,_a,
-            0.14,0,
-            0.48,0,
-            4,_p
+            0.23,0,
+            0.55,0,
+            3,_p
+        );
+
+        // Mechanical collars around every spoke.
+        sc_visual_line(
+            _x,_y,_radius,_a,
+            0.32,-0.075,
+            0.32,0.075,
+            3,_p.metal
+        );
+
+        sc_visual_line(
+            _x,_y,_radius,_a,
+            0.43,-0.085,
+            0.43,0.085,
+            2,_p.hull_light
         );
     }
 
-    // ==================================================
-    // FOUR CARDINAL MODULES
-    // ==================================================
-    for (var _i=0;_i<4;_i++)
-    {
-        var _a=_angle+_i*90;
-
+    // Four heavy cardinal weapon blades.
+    for (var _i = 0; _i < 4; _i++)
         sc_enemy_sim_nexus_cardinal_module_draw(
-            _x,_y,_radius,_a,_visual,_stage
+            _x,_y,_radius,_angle+_i*90,_visual,_stage
         );
-    }
 
-    // ==================================================
-    // FOUR DIAGONAL ARMS
-    // ==================================================
-    for (var _i=0;_i<4;_i++)
-    {
-        var _a=_angle+45+_i*90;
-
+    // Four longer diagonal beam blades.
+    for (var _i = 0; _i < 4; _i++)
         sc_enemy_sim_nexus_diagonal_arm_draw(
-            _x,_y,_radius,_a,_visual,_stage
+            _x,_y,_radius,_angle+45+_i*90,_visual,_stage
+        );
+
+    // Layered reactor machinery remains visibly circular.
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.245,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.218,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.18,_p.hull_dark,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.15,_p.accent,true);
+
+    // Sixteen small radial reactor details.
+    for (var _i = 0; _i < 16; _i++)
+    {
+        var _a = _angle+_i*22.5;
+
+        sc_visual_line(
+            _x,_y,_radius,_a,
+            0.19,0,
+            0.235,0,
+            2,
+            (_i mod 2) == 0 ? _p.energy : _p.metal
         );
     }
 
-    // ==================================================
-    // REACTOR INNER RINGS
-    // ==================================================
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.175,_p.void,false);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.16,_p.metal,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.125,_p.accent,true);
-
-    // Progressive structural damage.
-    if (_stage>=1)
+    if (_stage >= 1)
     {
-        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.3,-0.2,5,_p.void);
-        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.28,-0.18,2,_p.energy);
+        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.31,-0.2,5,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.29,-0.18,2,_p.energy);
     }
 
-    if (_stage>=2)
+    if (_stage >= 2)
     {
         sc_visual_circle(_x,_y,_radius,_angle,0.32,0.12,0.07,_p.void,false);
-        sc_visual_line(_x,_y,_radius,_angle,0.3,0.11,0.43,0.19,3,_p.accent);
+        sc_visual_line(_x,_y,_radius,_angle,0.3,0.11,0.47,0.19,3,_p.accent);
     }
 
-    if (_stage>=3)
+    if (_stage >= 3)
     {
         sc_visual_circle(_x,_y,_radius,_angle,-0.24,0.25,0.1,_p.void,false);
         sc_visual_circle(_x,_y,_radius,_angle,0.18,-0.3,0.08,_p.void,false);
     }
 }
 
-/// @description Draws one cardinal Nexus weapon module.
+/// @description Draws one thick pointed cardinal Nexus weapon blade.
 function sc_enemy_sim_nexus_cardinal_module_draw(_x,_y,_radius,_angle,_visual,_stage)
 {
-    var _p=_visual.palette;
+    var _p = _visual.palette;
 
-    // Main heavy pod.
-    sc_sim_visual_blade_panel(
-        _x,_y,_radius,_angle,
-        0.25,-0.19,
-        0.78,-0.2,
-        0.9,-0.12,
-        0.27,-0.1,
-        _p.hull_dark,_p
-    );
-
-    sc_sim_visual_blade_panel(
-        _x,_y,_radius,_angle,
-        0.27,0.1,
-        0.9,0.12,
-        0.78,0.2,
-        0.25,0.19,
-        _p.hull_dark,_p
-    );
-
-    // Thick central machinery.
+    // Narrow inner neck leaves obvious gaps between all eight arms.
     sc_visual_quad(
         _x,_y,_radius,_angle,
-        0.28,-0.105,
-        0.84,-0.115,
-        0.84,0.115,
-        0.28,0.105,
+        0.27,-0.09,
+        0.48,-0.13,
+        0.48,0.13,
+        0.27,0.09,
         _p.hull_mid
     );
 
-    // Main central energy feed.
+    // Split upper and lower hull plates form one thick pointed module.
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.38,-0.105,
+        0.61,-0.22,
+        1.04,-0.075,
+        0.87,-0.025,
+        _p.hull_dark,_p
+    );
+
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.87,0.025,
+        1.04,0.075,
+        0.61,0.22,
+        0.38,0.105,
+        _p.hull_dark,_p
+    );
+
+    // Raised inner armour ridges.
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.46,-0.075,
+        0.7,-0.145,
+        0.91,-0.065,
+        0.62,-0.035,
+        _p.hull_mid
+    );
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.62,0.035,
+        0.91,0.065,
+        0.7,0.145,
+        0.46,0.075,
+        _p.hull_mid
+    );
+
+    // Long central energy channel.
     sc_sim_visual_energy_conduit(
         _x,_y,_radius,_angle,
         0.3,0,
-        0.82,0,
-        4,_p
-    );
-
-    // Twin side channels.
-    for (var _side=-1;_side<=1;_side+=2)
-    {
-        sc_sim_visual_energy_conduit(
-            _x,_y,_radius,_angle,
-            0.39,0.105*_side,
-            0.73,0.115*_side,
-            2,_p
-        );
-
-        // Paired gun socket housing.
-        sc_visual_circle(
-            _x,_y,_radius,_angle,
-            0.76,0.1*_side,
-            0.065,
-            _p.void,false
-        );
-
-        sc_visual_circle(
-            _x,_y,_radius,_angle,
-            0.76,0.1*_side,
-            0.052,
-            _p.metal,true
-        );
-    }
-
-    // Rear reinforcement attached to core.
-    sc_visual_quad(
-        _x,_y,_radius,_angle,
-        0.19,-0.13,
-        0.34,-0.17,
-        0.34,0.17,
-        0.19,0.13,
-        _p.metal
-    );
-
-    if (_stage>=2)
-    {
-        sc_visual_line(
-            _x,_y,_radius,_angle,
-            0.48,-0.16,
-            0.63,-0.08,
-            3,_p.void
-        );
-    }
-}
-
-/// @description Draws one large diagonal Nexus beam arm.
-function sc_enemy_sim_nexus_diagonal_arm_draw(_x,_y,_radius,_angle,_visual,_stage)
-{
-    var _p=_visual.palette;
-
-    // Inner mechanical neck.
-    sc_visual_quad(
-        _x,_y,_radius,_angle,
-        0.18,-0.09,
-        0.47,-0.13,
-        0.54,0.13,
-        0.18,0.09,
-        _p.hull_mid
-    );
-
-    sc_sim_visual_energy_conduit(
-        _x,_y,_radius,_angle,
-        0.2,0,
-        0.58,0,
-        4,_p
-    );
-
-    // Broad primary pointed blade.
-    sc_sim_visual_blade_panel(
-        _x,_y,_radius,_angle,
-        0.39,-0.17,
-        0.68,-0.29,
-        1.02,-0.08,
-        0.62,-0.08,
-        _p.hull_dark,_p
-    );
-
-    sc_sim_visual_blade_panel(
-        _x,_y,_radius,_angle,
-        0.62,0.08,
-        1.02,0.08,
-        0.68,0.29,
-        0.39,0.17,
-        _p.hull_dark,_p
-    );
-
-    // Secondary nested armour blades.
-    sc_sim_visual_swept_blade(
-        _x,_y,_radius,_angle,
-        0.58,-0.19,
-        0.46,0.09,0.1,
-        _p.hull_mid,_p,true
-    );
-
-    sc_sim_visual_swept_blade(
-        _x,_y,_radius,_angle,
-        0.58,0.19,
-        0.46,0.09,0.1,
-        _p.hull_mid,_p,true
-    );
-
-    // Bright long inner energy spine.
-    sc_sim_visual_energy_conduit(
-        _x,_y,_radius,_angle,
-        0.43,0,
-        0.95,0,
+        0.96,0,
         5,_p
     );
 
-    // Beam emitter socket.
-    sc_visual_circle(
-        _x,_y,_radius,_angle,
-        0.76,0,
-        0.095,
-        _p.void,false
-    );
-
-    sc_visual_circle(
-        _x,_y,_radius,_angle,
-        0.76,0,
-        0.075,
-        _p.metal,true
-    );
-
-    if (_stage>=1)
+    // Repeated armour seams and mechanical cross-braces.
+    for (var _i = 0; _i < 3; _i++)
     {
+        var _forward = 0.5+_i*0.15;
+        var _width = 0.105-_i*0.017;
+
         sc_visual_line(
             _x,_y,_radius,_angle,
-            0.55,-0.13,
-            0.72,-0.22,
-            3,_p.void
+            _forward,-_width,
+            _forward,_width,
+            2,_p.metal
         );
     }
 
-    if (_stage>=3)
+    // Side conduits leading toward the three orb mounts.
+    for (var _side = -1; _side <= 1; _side += 2)
+    {
+        sc_sim_visual_energy_conduit(
+            _x,_y,_radius,_angle,
+            0.5,0.095*_side,
+            0.8,0.13*_side,
+            2,_p
+        );
+
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            0.72,0.115*_side,
+            0.026,
+            _p.energy,false
+        );
+
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            0.84,0.07*_side,
+            0.018,
+            _p.core,false
+        );
+    }
+
+    // Jagged terminal cap rather than a broad square end.
+    sc_visual_triangle(
+        _x,_y,_radius,_angle,
+        0.82,-0.055,
+        1.075,0,
+        0.82,0.055,
+        _p.hull_light,false
+    );
+
+    sc_visual_line(
+        _x,_y,_radius,_angle,
+        0.84,0,
+        1.035,0,
+        3,_p.energy
+    );
+
+    if (_stage >= 2)
+    {
+        sc_visual_line(
+            _x,_y,_radius,_angle,
+            0.49,-0.14,
+            0.66,-0.06,
+            4,_p.void
+        );
+    }
+}
+
+/// @description Draws one long heavily layered diagonal Nexus beam blade.
+function sc_enemy_sim_nexus_diagonal_arm_draw(_x,_y,_radius,_angle,_visual,_stage)
+{
+    var _p = _visual.palette;
+
+    // Reinforced inner neck.
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.27,-0.085,
+        0.5,-0.125,
+        0.56,0.125,
+        0.27,0.085,
+        _p.hull_mid
+    );
+
+    // Wide shoulders taper into a distinct long blade.
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.4,-0.09,
+        0.63,-0.27,
+        1.1,-0.045,
+        0.69,-0.035,
+        _p.hull_dark,_p
+    );
+
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.69,0.035,
+        1.1,0.045,
+        0.63,0.27,
+        0.4,0.09,
+        _p.hull_dark,_p
+    );
+
+    // Layered swept armour makes the blade feel thick rather than flat.
+    sc_sim_visual_swept_blade(
+        _x,_y,_radius,_angle,
+        0.57,-0.16,
+        0.43,0.07,0.075,
+        _p.hull_mid,_p,true
+    );
+
+    sc_sim_visual_swept_blade(
+        _x,_y,_radius,_angle,
+        0.57,0.16,
+        0.43,0.07,0.075,
+        _p.hull_mid,_p,true
+    );
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.51,-0.06,
+        0.72,-0.105,
+        0.94,-0.035,
+        0.65,-0.025,
+        _p.hull_light
+    );
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.65,0.025,
+        0.94,0.035,
+        0.72,0.105,
+        0.51,0.06,
+        _p.hull_light
+    );
+
+    // Continuous beam-energy spine to the tip.
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.28,0,
+        1.055,0,
+        5,_p
+    );
+
+    // Segmented plating and fine mechanical details.
+    for (var _i = 0; _i < 4; _i++)
+    {
+        var _forward = 0.46+_i*0.135;
+        var _width = 0.1-_i*0.013;
+
+        sc_visual_line(
+            _x,_y,_radius,_angle,
+            _forward,-_width,
+            _forward,_width,
+            2,_p.metal
+        );
+
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            _forward,0,
+            0.012,
+            _p.core,false
+        );
+    }
+
+    // Beam emitter machinery around the existing hardpoint.
+    sc_visual_circle(_x,_y,_radius,_angle,0.76,0,0.105,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.76,0,0.085,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.76,0,0.045,_p.hull_mid,false);
+
+    // Final needle-like tip.
+    sc_visual_triangle(
+        _x,_y,_radius,_angle,
+        0.83,-0.045,
+        1.12,0,
+        0.83,0.045,
+        _p.hull_light,false
+    );
+
+    sc_visual_line(
+        _x,_y,_radius,_angle,
+        0.85,0,
+        1.085,0,
+        3,_p.energy
+    );
+
+    if (_stage >= 1)
+    {
+        sc_visual_line(
+            _x,_y,_radius,_angle,
+            0.54,-0.12,
+            0.72,-0.2,
+            4,_p.void
+        );
+    }
+
+    if (_stage >= 3)
     {
         sc_visual_circle(
             _x,_y,_radius,_angle,
-            0.62,0.11,
+            0.64,0.1,
             0.065,
             _p.void,false
         );
     }
 }
 
-/// @description Draws the Nexus's removable radial armour.
+/// @description Draws separated removable armour across all eight Nexus blades.
 function sc_enemy_sim_nexus_armour_draw(_x,_y,_radius,_angle,_visual,_stage)
 {
-    var _p=_visual.palette;
+    var _p = _visual.palette;
 
-    // Central armour quarters.
-    for (var _i=0;_i<4;_i++)
+    // Eight individual inner armour roots preserve the circular centre.
+    if (_stage <= 2)
     {
-        var _a=_angle+_i*90;
-
-        if (_stage<=2)
+        for (var _i = 0; _i < 8; _i++)
         {
+            var _a = _angle+_i*45;
+
             sc_sim_visual_blade_panel(
                 _x,_y,_radius,_a,
-                0.13,-0.12,
-                0.34,-0.18,
-                0.43,-0.1,
-                0.2,-0.06,
+                0.16,-0.075,
+                0.33,-0.135,
+                0.45,-0.075,
+                0.25,-0.035,
                 _p.hull_light,_p
             );
 
             sc_sim_visual_blade_panel(
                 _x,_y,_radius,_a,
-                0.2,0.06,
-                0.43,0.1,
-                0.34,0.18,
-                0.13,0.12,
+                0.25,0.035,
+                0.45,0.075,
+                0.33,0.135,
+                0.16,0.075,
                 _p.hull_light,_p
-            );
-        }
-
-        if (_stage<=1)
-        {
-            sc_visual_quad(
-                _x,_y,_radius,_a,
-                0.42,-0.2,
-                0.66,-0.22,
-                0.72,-0.15,
-                0.47,-0.13,
-                _p.metal
-            );
-
-            sc_visual_quad(
-                _x,_y,_radius,_a,
-                0.47,0.13,
-                0.72,0.15,
-                0.66,0.22,
-                0.42,0.2,
-                _p.metal
             );
         }
     }
 
-    // Intact outer diagonal armour caps.
-    if (_stage==0)
+    // Cardinal outer armour stays narrow and pointed.
+    if (_stage <= 1)
     {
-        for (var _i=0;_i<4;_i++)
+        for (var _i = 0; _i < 4; _i++)
         {
-            var _a=_angle+45+_i*90;
+            var _a = _angle+_i*90;
 
             sc_sim_visual_blade_panel(
                 _x,_y,_radius,_a,
-                0.63,-0.24,
-                0.82,-0.31,
-                1.05,-0.09,
-                0.78,-0.12,
+                0.48,-0.145,
+                0.67,-0.19,
+                0.98,-0.07,
+                0.7,-0.055,
+                _p.metal,_p
+            );
+
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.7,0.055,
+                0.98,0.07,
+                0.67,0.19,
+                0.48,0.145,
+                _p.metal,_p
+            );
+        }
+    }
+
+    // Diagonal armour caps create the four dominant corner blades.
+    if (_stage == 0)
+    {
+        for (var _i = 0; _i < 4; _i++)
+        {
+            var _a = _angle+45+_i*90;
+
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.56,-0.17,
+                0.72,-0.235,
+                1.075,-0.05,
+                0.75,-0.075,
                 _p.hull_light,_p
             );
 
             sc_sim_visual_blade_panel(
                 _x,_y,_radius,_a,
-                0.78,0.12,
-                1.05,0.09,
-                0.82,0.31,
-                0.63,0.24,
+                0.75,0.075,
+                1.075,0.05,
+                0.72,0.235,
+                0.56,0.17,
                 _p.hull_light,_p
             );
         }
