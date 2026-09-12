@@ -555,6 +555,12 @@ function sc_enemy_sim_nexus_visual_data()
                 sc_enemy_sim_nexus_fragment_module_draw
             ]
         },
+			
+		thrust: {
+            draw_script: sc_enemy_simulant_thrust_draw,
+            ignition_script: sc_particles_enemy_thrust_ignition,
+            particle_script: sc_particles_enemy_thrust_emit
+        },
 
         bake: {
             body_canvas_size: 768,
@@ -1150,67 +1156,55 @@ function sc_enemy_sim_nexus_death(_enemy,_data)
 }
 
 /// @description Draws the Nexus centre death fragment.
-function sc_enemy_sim_nexus_fragment_centre_draw(_x,_y,_radius,_angle,_visual,_alpha)
+function sc_enemy_sim_nexus_fragment_centre_draw(_x, _y, _radius, _angle, _visual)
 {
-    var _p=_visual.palette;
+    var _p = _visual.palette;
 
-    draw_set_alpha(_alpha);
-
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.32,_p.hull_dark,false);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.25,_p.metal,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.12,_p.accent,true);
-
-    draw_set_alpha(1);
+    sc_visual_circle(_x, _y, _radius, _angle, 0, 0, 0.32, _p.hull_dark, false);
+    sc_visual_circle(_x, _y, _radius, _angle, 0, 0, 0.25, _p.metal, true);
+    sc_visual_circle(_x, _y, _radius, _angle, 0, 0, 0.12, _p.accent, true);
 }
 
 /// @description Draws one detached Nexus diagonal-arm fragment.
-function sc_enemy_sim_nexus_fragment_arm_draw(_x,_y,_radius,_angle,_visual,_alpha)
+function sc_enemy_sim_nexus_fragment_arm_draw(_x, _y, _radius, _angle, _visual)
 {
-    var _p=_visual.palette;
-
-    draw_set_alpha(_alpha);
+    var _p = _visual.palette;
 
     sc_sim_visual_blade_panel(
-        _x,_y,_radius,_angle,
-        -0.28,-0.18,
-        0.18,-0.27,
-        0.55,0,
-        0.18,0.27,
-        _p.hull_dark,_p,_alpha
+        _x, _y, _radius, _angle,
+        -0.28, -0.18,
+        0.18, -0.27,
+        0.55, 0,
+        0.18, 0.27,
+        _p.hull_dark, _p, 1
     );
 
     sc_sim_visual_energy_conduit(
-        _x,_y,_radius,_angle,
-        -0.18,0,
-        0.43,0,
-        3,_p,_alpha
+        _x, _y, _radius, _angle,
+        -0.18, 0,
+        0.43, 0,
+        3, _p, 1
     );
-
-    draw_set_alpha(1);
 }
 
 /// @description Draws one detached Nexus cardinal-module fragment.
-function sc_enemy_sim_nexus_fragment_module_draw(_x,_y,_radius,_angle,_visual,_alpha)
+function sc_enemy_sim_nexus_fragment_module_draw(_x, _y, _radius, _angle, _visual)
 {
-    var _p=_visual.palette;
-
-    draw_set_alpha(_alpha);
+    var _p = _visual.palette;
 
     sc_visual_quad(
-        _x,_y,_radius,_angle,
-        -0.32,-0.2,
-        0.35,-0.18,
-        0.4,0.18,
-        -0.32,0.2,
+        _x, _y, _radius, _angle,
+        -0.32, -0.2,
+        0.35, -0.18,
+        0.4, 0.18,
+        -0.32, 0.2,
         _p.hull_dark
     );
 
     sc_sim_visual_energy_conduit(
-        _x,_y,_radius,_angle,
-        -0.2,0,
-        0.3,0,
-        3,_p,_alpha
+        _x, _y, _radius, _angle,
+        -0.2, 0,
+        0.3, 0,
+        3, _p, 1
     );
-
-    draw_set_alpha(1);
 }
