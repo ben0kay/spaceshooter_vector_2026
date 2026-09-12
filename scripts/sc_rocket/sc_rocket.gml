@@ -133,7 +133,7 @@ function sc_weapon_register_shard_missile_salvo()
                 turn_speed: 5.5,
                 reacquire_interval: 12,
                 lead_strength: 0.15,
-                guidance_delay: 10,
+                guidance_delay: 8,
                 lock_angle: 220,
 
                 // Preserve the evenly assigned target while it remains alive.
@@ -163,6 +163,7 @@ function sc_weapon_register_shard_missile_salvo()
             pattern: ShotPattern.RANDOM_CONE,
             amount: 6,
             angle_total: 38,
+			projectile_interval: 3,
             volley_target_script: sc_weapon_volley_targets_even
         },
 

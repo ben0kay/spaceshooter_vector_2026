@@ -107,10 +107,10 @@ function sc_enemy_register_sim_siegebreaker()
         ],
 
         thrusters: [
-            { key: "thruster_left", forward: -0.76, side: -0.43, angle: 180, scale: 0.9 },
-            { key: "thruster_centre", forward: -0.88, side: 0, angle: 180, scale: 1.05 },
-            { key: "thruster_right", forward: -0.76, side: 0.43, angle: 180, scale: 0.9 }
-        ],
+    { key: "thruster_left", forward: -0.78, side: -0.45, angle: 180, scale: 0.95 },
+    { key: "thruster_centre", forward: -0.90, side: 0, angle: 270, scale: 1.1 },
+    { key: "thruster_right", forward: -0.78, side: 0.45, angle: 180, scale: 0.95 }
+],
 
         attack_controller: {
             selection: AttackSelection.WEIGHTED,
@@ -195,7 +195,7 @@ function sc_enemy_register_sim_siegebreaker()
 function sc_enemy_sim_siegebreaker_visual_data()
 {
     return {
-        radius: 84,
+        radius: 90,
         motion_strength: 2,
         palette: sc_faction_palette_get(Faction.SIMULANT),
         core: { forward: -0.12, side: 0 },
@@ -245,265 +245,382 @@ function sc_enemy_sim_siegebreaker_body_draw(_x, _y, _radius, _angle, _visual)
 }
 
 /// @description Draws the permanent bulky mechanical hull.
-function sc_enemy_sim_siegebreaker_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
+function sc_enemy_sim_siegebreaker_hull_draw(_x,_y,_radius,_angle,_visual,_stage)
 {
-    var _p = _visual.palette;
+    var _p=_visual.palette;
 
-    // Heavy central silhouette.
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.08, 0, 0.42, -0.5, -0.92, -0.43, _p.hull_dark, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.08, 0, -0.92, -0.43, -0.92, 0.43, _p.hull_dark, false);
-    sc_visual_triangle(_x, _y, _radius, _angle, 1.08, 0, -0.92, 0.43, 0.42, 0.5, _p.hull_dark, false);
+    // Heavy central wedge.
+    sc_visual_triangle(_x,_y,_radius,_angle,1.1,0,0.44,-0.52,-0.96,-0.45,_p.hull_dark,false);
+    sc_visual_triangle(_x,_y,_radius,_angle,1.1,0,-0.96,-0.45,-0.96,0.45,_p.hull_dark,false);
+    sc_visual_triangle(_x,_y,_radius,_angle,1.1,0,-0.96,0.45,0.44,0.52,_p.hull_dark,false);
 
-    // Inner mechanical body.
-    sc_visual_quad(_x, _y, _radius, _angle, 0.75, -0.27, 0.24, -0.42, -0.72, -0.33, -0.72, 0.33, _p.hull_mid);
-    sc_visual_quad(_x, _y, _radius, _angle, 0.75, -0.27, -0.72, 0.33, 0.24, 0.42, 0.75, 0.27, _p.hull_mid);
+    // Thick inner mechanical body.
+    sc_visual_quad(_x,_y,_radius,_angle,0.78,-0.29,0.25,-0.44,-0.75,-0.35,-0.75,0.35,_p.hull_mid);
+    sc_visual_quad(_x,_y,_radius,_angle,0.78,-0.29,-0.75,0.35,0.25,0.44,0.78,0.29,_p.hull_mid);
 
-    // Heavy side shoulders and recessed rocket-launcher beds.
-    for (var _side = -1; _side <= 1; _side += 2)
+    // Heavy launcher shoulders.
+    for (var _side=-1;_side<=1;_side+=2)
     {
-        sc_visual_quad(_x, _y, _radius, _angle, 0.47, 0.3 * _side, 0.31, 0.76 * _side, -0.52, 0.73 * _side, -0.77, 0.36 * _side, _p.hull_dark);
-        sc_visual_quad(_x, _y, _radius, _angle, 0.34, 0.37 * _side, 0.22, 0.67 * _side, -0.43, 0.64 * _side, -0.62, 0.4 * _side, _p.hull_mid);
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.5,0.31*_side,
+            0.33,0.79*_side,
+            -0.55,0.76*_side,
+            -0.81,0.38*_side,
+            _p.hull_dark);
 
-        // Deep mechanical bed beneath rotating rocket launcher.
-        sc_visual_quad(_x, _y, _radius, _angle, 0.39, 0.46 * _side, 0.32, 0.67 * _side, -0.05, 0.67 * _side, -0.14, 0.46 * _side, _p.void);
-        sc_visual_quad(_x, _y, _radius, _angle, 0.33, 0.48 * _side, 0.27, 0.63 * _side, -0.01, 0.63 * _side, -0.08, 0.48 * _side, _p.hull_light);
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.37,0.39*_side,
+            0.24,0.7*_side,
+            -0.46,0.67*_side,
+            -0.65,0.42*_side,
+            _p.hull_mid);
 
-        // Launcher bearing/socket.
-        sc_visual_circle(_x, _y, _radius, _angle, 0.18, 0.57 * _side, 0.18, _p.void, false);
-        sc_visual_circle(_x, _y, _radius, _angle, 0.18, 0.57 * _side, 0.18, _p.metal, true);
-        sc_visual_circle(_x, _y, _radius, _angle, 0.18, 0.57 * _side, 0.12, _p.hull_mid, false);
-        sc_visual_circle(_x, _y, _radius, _angle, 0.18, 0.57 * _side, 0.055, _p.accent, true);
+        // Recessed rocket-launcher bed.
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.41,0.47*_side,
+            0.34,0.69*_side,
+            -0.07,0.69*_side,
+            -0.16,0.47*_side,
+            _p.void);
 
-        // Powered shoulder machinery.
-        sc_visual_line(_x, _y, _radius, _angle, 0.04, 0.43 * _side, -0.48, 0.48 * _side, 7, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.03, 0.43 * _side, -0.46, 0.48 * _side, 2, _p.energy);
-        sc_visual_circle(_x, _y, _radius, _angle, -0.38, 0.52 * _side, 0.11, _p.void, false);
-        sc_visual_circle(_x, _y, _radius, _angle, -0.38, 0.52 * _side, 0.07, _p.accent, true);
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.35,0.5*_side,
+            0.29,0.65*_side,
+            -0.03,0.65*_side,
+            -0.1,0.5*_side,
+            _p.hull_light);
 
-        // Structural edges.
-        sc_visual_line(_x, _y, _radius, _angle, 0.47, 0.3 * _side, 0.31, 0.76 * _side, 2, _p.outline);
-        sc_visual_line(_x, _y, _radius, _angle, 0.31, 0.76 * _side, -0.52, 0.73 * _side, 2, _p.metal);
+        // Launcher bearing.
+        sc_visual_circle(_x,_y,_radius,_angle,0.18,0.57*_side,0.195,_p.void,false);
+        sc_visual_circle(_x,_y,_radius,_angle,0.18,0.57*_side,0.195,_p.metal,true);
+        sc_visual_circle(_x,_y,_radius,_angle,0.18,0.57*_side,0.13,_p.hull_mid,false);
+        sc_visual_circle(_x,_y,_radius,_angle,0.18,0.57*_side,0.06,_p.accent,true);
+
+        // Heavy shoulder power feed.
+        sc_sim_visual_energy_conduit(
+            _x,_y,_radius,_angle,
+            0.03,0.44*_side,
+            -0.51,0.5*_side,
+            2,_p
+        );
+
+        sc_sim_visual_energy_socket(
+            _x,_y,_radius,_angle,
+            -0.4,0.54*_side,
+            0.07,_p
+        );
+
+        // Structural shoulder edges.
+        sc_visual_line(_x,_y,_radius,_angle,0.5,0.31*_side,0.33,0.79*_side,2,_p.outline);
+        sc_visual_line(_x,_y,_radius,_angle,0.33,0.79*_side,-0.55,0.76*_side,2,_p.metal);
     }
 
-    // Central energy trench.
-    sc_visual_line(_x, _y, _radius, _angle, -0.82, 0, 0.87, 0, 10, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, -0.72, 0, 0.82, 0, 4, _p.accent);
-    sc_visual_line(_x, _y, _radius, _angle, 0.16, 0, 0.83, 0, 2, _p.core);
+    // Heavy central energy trench.
+    sc_visual_line(_x,_y,_radius,_angle,-0.86,0,0.9,0,12,_p.void);
+
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        -0.76,0,
+        0.86,0,
+        3,_p
+    );
 
     // Reactor socket.
-    sc_visual_circle(_x, _y, _radius, _angle, -0.12, 0, 0.27, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.12, 0, 0.27, _p.metal, true);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.12, 0, 0.2, _p.hull_light, true);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.12,0,0.285,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.12,0,0.285,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.12,0,0.21,_p.hull_light,true);
 
-    // Centre pulse hardpoint socket only; rocket sockets are built into shoulder beds above.
-    sc_visual_circle(_x, _y, _radius, _angle, 0.69, 0, 0.14, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.69, 0, 0.14, _p.metal, true);
+    // Centre pulse hardpoint socket.
+    sc_visual_circle(_x,_y,_radius,_angle,0.69,0,0.155,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.69,0,0.155,_p.metal,true);
 
-    // Engine housings.
-    var _engine_side = [-0.43, 0, 0.43];
+    // Three heavy engine housings.
+    var _engine_side=[-0.45,0,0.45];
 
-    for (var _i = 0; _i < 3; _i++)
+    for (var _i=0;_i<3;_i++)
     {
-        sc_visual_quad(_x, _y, _radius, _angle, -0.58, _engine_side[_i] - 0.08, -0.89, _engine_side[_i] - 0.07, -0.89, _engine_side[_i] + 0.07, -0.58, _engine_side[_i] + 0.08, _p.hull_mid);
-        sc_visual_line(_x, _y, _radius, _angle, -0.63, _engine_side[_i], -0.9, _engine_side[_i], 7, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, -0.65, _engine_side[_i], -0.88, _engine_side[_i], 3, _p.energy);
+        sc_visual_quad(_x,_y,_radius,_angle,
+            -0.6,_engine_side[_i]-0.085,
+            -0.93,_engine_side[_i]-0.075,
+            -0.93,_engine_side[_i]+0.075,
+            -0.6,_engine_side[_i]+0.085,
+            _p.hull_mid);
+
+        sc_visual_line(_x,_y,_radius,_angle,-0.65,_engine_side[_i],-0.94,_engine_side[_i],8,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle,-0.67,_engine_side[_i],-0.92,_engine_side[_i],3,_p.energy);
     }
 
     // Progressive hull damage.
-    if (_stage >= 1)
+    if (_stage>=1)
     {
-        sc_visual_line(_x, _y, _radius, _angle, 0.22, -0.23, -0.08, -0.39, 4, _p.void);
-        sc_visual_line(_x, _y, _radius, _angle, 0.2, -0.23, -0.04, -0.35, 2, _p.accent);
+        sc_visual_line(_x,_y,_radius,_angle,0.22,-0.23,-0.08,-0.39,4,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle,0.2,-0.23,-0.04,-0.35,2,_p.accent);
     }
 
-    if (_stage >= 2)
+    if (_stage>=2)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, -0.42, 0.28, 0.16, _p.void, false);
-        sc_visual_line(_x, _y, _radius, _angle, -0.42, 0.28, -0.61, 0.41, 2, _p.energy);
+        sc_visual_circle(_x,_y,_radius,_angle,-0.42,0.28,0.16,_p.void,false);
+        sc_visual_line(_x,_y,_radius,_angle,-0.42,0.28,-0.61,0.41,2,_p.energy);
     }
 
-    if (_stage >= 3)
+    if (_stage>=3)
     {
-        sc_visual_circle(_x, _y, _radius, _angle, 0.16, 0.42, 0.14, _p.void, false);
-        sc_visual_circle(_x, _y, _radius, _angle, -0.58, -0.34, 0.18, _p.void, false);
-        sc_visual_line(_x, _y, _radius, _angle, -0.58, -0.34, -0.78, -0.44, 3, _p.accent);
+        sc_visual_circle(_x,_y,_radius,_angle,0.16,0.42,0.14,_p.void,false);
+        sc_visual_circle(_x,_y,_radius,_angle,-0.58,-0.34,0.18,_p.void,false);
+        sc_visual_line(_x,_y,_radius,_angle,-0.58,-0.34,-0.78,-0.44,3,_p.accent);
     }
 }
 
 /// @description Draws the Siegebreaker's layered armour around its heavy launcher beds.
-function sc_enemy_sim_siegebreaker_armour_draw(_x, _y, _radius, _angle, _visual, _stage)
+function sc_enemy_sim_siegebreaker_armour_draw(_x,_y,_radius,_angle,_visual,_stage)
 {
-    var _p = _visual.palette;
+    var _p=_visual.palette;
 
-    for (var _side = -1; _side <= 1; _side += 2)
+    for (var _side=-1;_side<=1;_side+=2)
     {
-        // Final inner armour remains at stage 3.
-        sc_visual_quad(_x, _y, _radius, _angle, 0.42, 0.18 * _side, 0.12, 0.31 * _side, -0.23, 0.3 * _side, -0.38, 0.17 * _side, _p.metal);
-        sc_visual_line(_x, _y, _radius, _angle, 0.42, 0.18 * _side, 0.12, 0.31 * _side, 1, _p.core);
+        // Permanent inner armour.
+        sc_visual_quad(_x,_y,_radius,_angle,
+            0.45,0.19*_side,
+            0.13,0.33*_side,
+            -0.25,0.32*_side,
+            -0.41,0.18*_side,
+            _p.metal);
 
-        // Armour collar wrapping around rocket launcher bed.
-        if (_stage <= 2)
+        sc_visual_line(_x,_y,_radius,_angle,
+            0.45,0.19*_side,
+            0.13,0.33*_side,
+            2,_p.core);
+
+        // Heavy launcher collar.
+        if (_stage<=2)
         {
-            sc_visual_quad(_x, _y, _radius, _angle, 0.42, 0.34 * _side, 0.29, 0.48 * _side, -0.14, 0.49 * _side, -0.36, 0.36 * _side, _p.hull_light);
-            sc_visual_line(_x, _y, _radius, _angle, 0.42, 0.34 * _side, 0.29, 0.48 * _side, 2, _p.metal);
+            sc_visual_quad(_x,_y,_radius,_angle,
+                0.45,0.35*_side,
+                0.31,0.5*_side,
+                -0.16,0.51*_side,
+                -0.39,0.37*_side,
+                _p.hull_light);
 
-            sc_visual_quad(_x, _y, _radius, _angle, 0.27, 0.66 * _side, 0.03, 0.72 * _side, -0.37, 0.68 * _side, -0.22, 0.59 * _side, _p.hull_light);
-            sc_visual_line(_x, _y, _radius, _angle, 0.27, 0.66 * _side, 0.03, 0.72 * _side, 1, _p.outline);
+            sc_visual_line(_x,_y,_radius,_angle,
+                0.45,0.35*_side,
+                0.31,0.5*_side,
+                2,_p.metal);
+
+            sc_visual_quad(_x,_y,_radius,_angle,
+                0.29,0.69*_side,
+                0.04,0.76*_side,
+                -0.4,0.72*_side,
+                -0.25,0.62*_side,
+                _p.hull_light);
+
+            sc_visual_line(_x,_y,_radius,_angle,
+                0.29,0.69*_side,
+                0.04,0.76*_side,
+                2,_p.outline);
         }
 
-        // Rear armour disappears after stage 1.
-        if (_stage <= 1)
+        // Rear armour.
+        if (_stage<=1)
         {
-            sc_visual_quad(_x, _y, _radius, _angle, -0.31, 0.37 * _side, -0.46, 0.58 * _side, -0.68, 0.49 * _side, -0.63, 0.28 * _side, _p.metal);
+            sc_visual_quad(_x,_y,_radius,_angle,
+                -0.33,0.39*_side,
+                -0.49,0.61*_side,
+                -0.72,0.52*_side,
+                -0.67,0.29*_side,
+                _p.metal);
         }
 
-        // Heavy outer launcher guard only while intact.
-        if (_stage == 0)
+        // Heavy intact launcher guard.
+        if (_stage==0)
         {
-            sc_visual_triangle(_x, _y, _radius, _angle, 0.22, 0.71 * _side, -0.47, 0.72 * _side, -0.67, 0.52 * _side, _p.hull_light, false);
-            sc_visual_line(_x, _y, _radius, _angle, 0.22, 0.71 * _side, -0.47, 0.72 * _side, 2, _p.metal);
-            sc_visual_line(_x, _y, _radius, _angle, 0.19, 0.685 * _side, -0.41, 0.685 * _side, 2, _p.accent);
+            sc_visual_triangle(_x,_y,_radius,_angle,
+                0.24,0.75*_side,
+                -0.5,0.76*_side,
+                -0.7,0.55*_side,
+                _p.hull_light,false);
+
+            sc_visual_line(_x,_y,_radius,_angle,
+                0.24,0.75*_side,
+                -0.5,0.76*_side,
+                3,_p.metal);
+
+            sc_visual_line(_x,_y,_radius,_angle,
+                0.21,0.72*_side,
+                -0.44,0.72*_side,
+                2,_p.accent);
         }
     }
 
-    // Armoured forward prow.
-    if (_stage <= 2)
+    // Broad armoured forward prow.
+    if (_stage<=2)
     {
-        sc_visual_triangle(_x, _y, _radius, _angle, 1.02, 0, 0.58, -0.18, 0.58, 0.18, _p.metal, false);
-        sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.58, -0.18, 2, _p.core);
-        sc_visual_line(_x, _y, _radius, _angle, 1.02, 0, 0.58, 0.18, 2, _p.core);
+        sc_visual_triangle(_x,_y,_radius,_angle,
+            1.08,0,
+            0.59,-0.2,
+            0.59,0.2,
+            _p.metal,false);
+
+        sc_visual_line(_x,_y,_radius,_angle,1.08,0,0.59,-0.2,3,_p.core);
+        sc_visual_line(_x,_y,_radius,_angle,1.08,0,0.59,0.2,3,_p.core);
     }
 }
 
 /// @description Draws one standardized Simulant heavy rocket-launcher tube.
-function sc_enemy_sim_siegebreaker_rocket_draw(_x, _y, _radius, _angle, _visual, _alpha)
+function sc_enemy_sim_siegebreaker_rocket_draw(_x,_y,_radius,_angle,_visual,_alpha)
 {
-    var _p = _visual.palette;
+    var _p=_visual.palette;
 
     draw_set_alpha(_alpha);
 
     // Heavy rotating bearing.
-    sc_visual_circle(_x, _y, _radius, _angle, -0.07, 0, 0.18, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.07, 0, 0.18, _p.metal, true);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.07, 0, 0.12, _p.hull_mid, false);
-    sc_visual_circle(_x, _y, _radius, _angle, -0.07, 0, 0.055, _p.accent, true);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.2,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.2,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.135,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.06,_p.accent,true);
 
-    // Wide armoured launcher cradle.
-    sc_visual_quad(_x, _y, _radius, _angle, -0.04, -0.18, 0.38, -0.17, 0.49, -0.13, -0.04, -0.13, _p.hull_dark);
-    sc_visual_quad(_x, _y, _radius, _angle, -0.04, 0.13, 0.49, 0.13, 0.38, 0.17, -0.04, 0.18, _p.hull_dark);
-    sc_visual_quad(_x, _y, _radius, _angle, 0.01, -0.135, 0.46, -0.12, 0.46, 0.12, 0.01, 0.135, _p.hull_light);
+    // Broad launcher cradle.
+    sc_visual_quad(_x,_y,_radius,_angle,
+        -0.05,-0.195,
+        0.4,-0.18,
+        0.52,-0.14,
+        -0.05,-0.14,
+        _p.hull_dark);
 
-    // Main cylindrical launch tube.
-    sc_visual_line(_x, _y, _radius, _angle, 0.02, 0, 0.54, 0, 18, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.04, 0, 0.5, 0, 12, _p.hull_mid);
-    sc_visual_line(_x, _y, _radius, _angle, 0.07, 0, 0.5, 0, 7, _p.metal);
-    sc_visual_line(_x, _y, _radius, _angle, 0.08, 0, 0.48, 0, 3, _p.hull_dark);
+    sc_visual_quad(_x,_y,_radius,_angle,
+        -0.05,0.14,
+        0.52,0.14,
+        0.4,0.18,
+        -0.05,0.195,
+        _p.hull_dark);
 
-    // Mechanical tube collars.
-    sc_visual_line(_x, _y, _radius, _angle, 0.11, -0.13, 0.11, 0.13, 3, _p.outline);
-    sc_visual_line(_x, _y, _radius, _angle, 0.28, -0.14, 0.28, 0.14, 3, _p.metal);
-    sc_visual_line(_x, _y, _radius, _angle, 0.33, -0.13, 0.33, 0.13, 2, _p.accent);
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0,-0.145,
+        0.49,-0.13,
+        0.49,0.13,
+        0,0.145,
+        _p.hull_light);
 
-    // Thin powered conduits along launcher body.
-    sc_visual_line(_x, _y, _radius, _angle, 0.04, -0.105, 0.43, -0.095, 5, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.06, -0.105, 0.42, -0.095, 2, _p.energy);
-    sc_visual_line(_x, _y, _radius, _angle, 0.04, 0.105, 0.43, 0.095, 5, _p.void);
-    sc_visual_line(_x, _y, _radius, _angle, 0.06, 0.105, 0.42, 0.095, 2, _p.energy);
+    // Main launch tube.
+    sc_visual_line(_x,_y,_radius,_angle,0.01,0,0.59,0,20,_p.void);
+    sc_visual_line(_x,_y,_radius,_angle,0.03,0,0.56,0,14,_p.hull_mid);
+    sc_visual_line(_x,_y,_radius,_angle,0.06,0,0.56,0,8,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle,0.07,0,0.54,0,4,_p.hull_dark);
 
-    // Thick muzzle collar.
-    sc_visual_quad(_x, _y, _radius, _angle, 0.42, -0.18, 0.57, -0.16, 0.57, 0.16, 0.42, 0.18, _p.hull_dark);
-    sc_visual_line(_x, _y, _radius, _angle, 0.44, -0.17, 0.56, -0.15, 2, _p.metal);
-    sc_visual_line(_x, _y, _radius, _angle, 0.44, 0.17, 0.56, 0.15, 2, _p.metal);
+    // Mechanical collars.
+    sc_visual_line(_x,_y,_radius,_angle,0.1,-0.145,0.1,0.145,4,_p.outline);
+    sc_visual_line(_x,_y,_radius,_angle,0.29,-0.155,0.29,0.155,4,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle,0.35,-0.145,0.35,0.145,2,_p.accent);
 
-    // Deep hollow rocket tube mouth: this is the primary recognition feature.
-    sc_visual_circle(_x, _y, _radius, _angle, 0.56, 0, 0.155, _p.metal, false);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.56, 0, 0.13, _p.void, false);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.535, 0, 0.085, _p.hull_dark, false);
+    // Powered tube feeds.
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.04,-0.115,
+        0.47,-0.105,
+        2,_p,_alpha
+    );
 
-    // Restrained Simulant powered ring around the launch aperture.
-    sc_visual_circle(_x, _y, _radius, _angle, 0.56, 0, 0.155, _p.hull_light, true);
-    sc_visual_circle(_x, _y, _radius, _angle, 0.56, 0, 0.112, _p.accent, true);
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.04,0.115,
+        0.47,0.105,
+        2,_p,_alpha
+    );
 
-    // Small central rocket ignition/arming point deep inside tube.
-    sc_visual_circle(_x, _y, _radius, _angle, 0.525, 0, 0.027, _p.energy, false);
+    // Heavy muzzle block.
+    sc_visual_quad(_x,_y,_radius,_angle,
+        0.45,-0.195,
+        0.62,-0.175,
+        0.62,0.175,
+        0.45,0.195,
+        _p.hull_dark);
+
+    sc_visual_line(_x,_y,_radius,_angle,0.47,-0.185,0.61,-0.165,3,_p.metal);
+    sc_visual_line(_x,_y,_radius,_angle,0.47,0.185,0.61,0.165,3,_p.metal);
+
+    // Large hollow rocket aperture.
+    sc_visual_circle(_x,_y,_radius,_angle,0.61,0,0.17,_p.metal,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.61,0,0.142,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.585,0,0.09,_p.hull_dark,false);
+
+    sc_visual_circle(_x,_y,_radius,_angle,0.61,0,0.17,_p.hull_light,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.61,0,0.125,_p.accent,true);
+
+    // Ignition point.
+    sc_visual_circle(_x,_y,_radius,_angle,0.57,0,0.03,_p.energy,false);
 
     draw_set_alpha(1);
 }
 
 /// @description Draws the Siegebreaker's central pulse cannon.
-function sc_enemy_sim_siegebreaker_pulse_draw(_x, _y, _radius, _angle, _visual, _alpha)
+function sc_enemy_sim_siegebreaker_pulse_draw(_x,_y,_radius,_angle,_visual,_alpha)
 {
-    var _p = _visual.palette;
+    var _p=_visual.palette;
 
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x, _y, _radius, _angle,
-        0, 0, 0.14, _p.void, false);
+    // Heavy rotating socket.
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.16,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.16,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.1,_p.accent,true);
 
-    sc_visual_circle(_x, _y, _radius, _angle,
-        0, 0, 0.14, _p.metal, true);
-
-    sc_visual_circle(_x, _y, _radius, _angle,
-        0, 0, 0.085, _p.accent, true);
-
-    sc_visual_quad(_x, _y, _radius, _angle,
-        -0.03, -0.075,
-        0.34, -0.055,
-        0.34, 0.055,
-        -0.03, 0.075,
+    // Armoured cannon housing.
+    sc_visual_quad(_x,_y,_radius,_angle,
+        -0.04,-0.085,
+        0.38,-0.065,
+        0.38,0.065,
+        -0.04,0.085,
         _p.hull_light);
 
-    sc_visual_line(_x, _y, _radius, _angle,
-        0.04, 0, 0.43, 0,
-        7, _p.void);
+    // Recessed powered barrel.
+    sc_visual_line(_x,_y,_radius,_angle,0.02,0,0.48,0,10,_p.void);
 
-    sc_visual_line(_x, _y, _radius, _angle,
-        0.08, 0, 0.43, 0,
-        2, _p.energy);
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.07,0,
+        0.48,0,
+        2,_p,_alpha
+    );
 
-    sc_visual_circle(_x, _y, _radius, _angle,
-        0.43, 0, 0.065,
-        _p.metal, true);
-
-    sc_visual_circle(_x, _y, _radius, _angle,
-        0.43, 0, 0.028,
-        _p.core, false);
+    // Heavy muzzle socket.
+    sc_visual_circle(_x,_y,_radius,_angle,0.48,0,0.08,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.48,0,0.045,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.48,0,0.028,_p.core,false);
 
     draw_set_alpha(1);
 }
 
 /// @description Draws the Siegebreaker's rotating reactor.
-function sc_enemy_sim_siegebreaker_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
+function sc_enemy_sim_siegebreaker_core_draw(_x,_y,_radius,_angle,_visual,_alpha)
 {
-    var _p = _visual.palette;
+    var _p=_visual.palette;
 
     sc_sim_visual_reactor(
-        _x, _y, _radius, _angle,
+        _x,_y,_radius,_angle,
         {
-            outer_scale: 0.22,
-            middle_scale: 0,
-            inner_scale: 0.08,
+            outer_scale: 0.25,
+            middle_scale: 0.17,
+            inner_scale: 0.085,
 
             socket_enabled: true,
             middle_colour: _p.hull_light,
             middle_filled: false,
 
-            glow_alpha: 0.25,
-            glow_scale: 1.5,
-            secondary_glow_alpha: 0,
-            secondary_glow_scale: 1,
+            glow_alpha: 0.3,
+            glow_scale: 1.6,
+            secondary_glow_alpha: 0.08,
+            secondary_glow_scale: 1.2,
 
             vane_amount: 6,
             vane_start: 0,
-            vane_twist: 18,
+            vane_twist: 20,
             vane_inner_scale: 1,
-            vane_outer_scale: 0.85,
+            vane_outer_scale: 0.86,
             vane_width: 3,
             vane_secondary_colour: _p.outline,
 
             accent_scale: 1.55,
             accent_filled: false,
-            core_scale: 0.4,
+            core_scale: 0.42,
             additive: false
         },
         _p,

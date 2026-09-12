@@ -165,29 +165,34 @@ function sc_player_init_movement(_player)
     };
 }
 
+/// @description Creates one reusable player weapon-channel runtime.
+function sc_player_weapon_runtime_create()
+{
+    return {
+        hardpoint_cursor: 0,
+        next_fire_tick: 0,
+        active_delivery_id: noone,
+
+        burst: {
+            active: false,
+            weapon_key: "",
+            shot_index: 0,
+            shot_amount: 0,
+            next_shot_tick: 0,
+            targets: []
+        }
+    };
+}
+
 /// @description Creates player weapon-channel, heat and focused-shield runtime values.
 function sc_player_init_combat(_player)
 {
     _player.combat = {
         weapons_allowed: true,
 
-        primary: {
-            hardpoint_cursor: 0,
-            next_fire_tick: 0,
-            active_delivery_id: noone
-        },
-
-        secondary: {
-            hardpoint_cursor: 0,
-            next_fire_tick: 0,
-            active_delivery_id: noone
-        },
-
-        equipment: {
-            hardpoint_cursor: 0,
-            next_fire_tick: 0,
-            active_delivery_id: noone
-        },
+        primary: sc_player_weapon_runtime_create(),
+        secondary: sc_player_weapon_runtime_create(),
+        equipment: sc_player_weapon_runtime_create(),
 
         debug_weapon: {
             enabled: false,

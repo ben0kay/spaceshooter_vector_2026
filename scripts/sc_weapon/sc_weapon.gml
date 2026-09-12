@@ -111,20 +111,14 @@ function sc_weapon_zoom_accuracy_apply(_owner, _weapon, _direction)
     return _direction + random_range(-_spread, _spread);
 }
 
-/// @description Evenly distributes one player projectile volley across nearby enemies.
-function sc_weapon_volley_targets_even(_projectiles, _owner, _weapon, _x, _y, _direction)
+/// @description Returns evenly distributed targets for one projectile volley.
+function sc_weapon_volley_targets_even(_owner, _weapon, _x, _y, _direction, _amount)
 {
-    var _projectile_count = array_length(_projectiles);
-    if (_projectile_count <= 0) return false;
-
     var _guidance = _weapon.delivery.guidance;
-    var _range = _guidance.acquire_range;
     var _candidates = ds_list_create();
 
-    // Ordered results prioritize the nearest enemies when there are
-    // more valid targets than available projectiles.
     var _candidate_count = collision_circle_list(
-        _x, _y, _range,
+        _x, _y, _guidance.acquire_range,
         o_enemy, false, true,
         _candidates, true
     );
@@ -139,30 +133,58 @@ function sc_weapon_volley_targets_even(_projectiles, _owner, _weapon, _x, _y, _d
         if (_target.entity.faction == _owner.entity.faction) continue;
 
         array_push(_targets, _target);
-
-        // Additional targets cannot be used by this volley.
-        if (array_length(_targets) >= _projectile_count) break;
+        if (array_length(_targets) >= _amount) break;
     }
 
     ds_list_destroy(_candidates);
 
     var _target_count = array_length(_targets);
-    if (_target_count <= 0) return false;
+    if (_target_count <= 0) return [];
 
-    // Round-robin assignment automatically produces:
-    // 6 rockets / 6 targets = 1 each
-    // 6 rockets / 3 targets = 2 each
-    // 6 rockets / 2 targets = 3 each
-    for (var _i = 0; _i < _projectile_count; ++_i)
+    var _assignments = [];
+
+    // Round-robin produces unique targets when enough exist,
+    // then distributes extra projectiles evenly.
+    for (var _i = 0; _i < _amount; ++_i)
+        array_push(_assignments, _targets[_i mod _target_count]);
+
+    return _assignments;
+}
+
+/// @description Returns the direction belonging to one projectile inside a shot pattern.
+function sc_weapon_shot_direction_get(_shot, _direction, _index)
+{
+    switch (_shot.pattern)
     {
-        var _projectile = _projectiles[_i];
-        var _target = _targets[_i mod _target_count];
+        case ShotPattern.SPREAD:
+        {
+            var _step = _shot.amount > 1
+                ? _shot.angle_total / (_shot.amount - 1)
+                : 0;
 
-        _projectile.projectile.runtime.target_id = _target;
-        _projectile.projectile.runtime.next_target_tick =
-            GAME_TICK + max(1, round(_guidance.reacquire_interval));
+            return _direction
+                - _shot.angle_total * 0.5
+                + _step * _index;
+        }
+
+        case ShotPattern.RANDOM_CONE:
+            return _direction + random_range(
+                -_shot.angle_total * 0.5,
+                _shot.angle_total * 0.5
+            );
     }
 
+    return _direction;
+}
+
+/// @description Gives one guided projectile its preselected volley target.
+function sc_weapon_projectile_target_apply(_projectile, _target)
+{
+    if (!instance_exists(_projectile)
+    || !instance_exists(_target))
+        return false;
+
+    _projectile.projectile.runtime.target_id = _target;
     return true;
 }
 
@@ -176,64 +198,48 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_
         damage_multiplier: _damage_multiplier
     };
 
-    var _has_volley_script = variable_struct_exists(_shot, "volley_target_script");
-    var _projectiles = _has_volley_script ? [] : undefined;
+    var _amount = _shot.pattern == ShotPattern.SINGLE
+        ? 1
+        : max(1, round(_shot.amount));
 
-    switch (_shot.pattern)
+    var _targets = variable_struct_exists(_shot, "volley_target_script")
+        ? _shot.volley_target_script(
+            _owner, _weapon,
+            _x, _y, _direction,
+            _amount
+        )
+        : [];
+
+    var _first_delivery = noone;
+
+    for (var _i = 0; _i < _amount; ++_i)
     {
-        case ShotPattern.SINGLE:
-            return sc_weapon_delivery_fire(
-                _owner, _weapon, _source,
-                _x, _y, _direction
-            );
-
-        case ShotPattern.SPREAD:
-        {
-            var _step = _shot.amount > 1
-                ? _shot.angle_total / (_shot.amount - 1)
-                : 0;
-
-            var _start = _direction - _shot.angle_total * 0.5;
-
-            for (var _i = 0; _i < _shot.amount; ++_i)
-            {
-                var _delivery = sc_weapon_delivery_fire(
-                    _owner, _weapon, _source,
-                    _x, _y, _start + _step * _i
-                );
-
-                if (_has_volley_script && instance_exists(_delivery))
-                    array_push(_projectiles, _delivery);
-            }
-        }
-        break;
-
-        case ShotPattern.RANDOM_CONE:
-        {
-            var _half_angle = _shot.angle_total * 0.5;
-
-            for (var _i = 0; _i < _shot.amount; ++_i)
-            {
-                var _delivery = sc_weapon_delivery_fire(
-                    _owner, _weapon, _source, _x, _y,
-                    _direction + random_range(-_half_angle, _half_angle)
-                );
-
-                if (_has_volley_script && instance_exists(_delivery))
-                    array_push(_projectiles, _delivery);
-            }
-        }
-        break;
-
-        default:
-            return false;
-    }
-
-    if (_has_volley_script && array_length(_projectiles) > 0)
-        _shot.volley_target_script(
-            _projectiles, _owner, _weapon,
-            _x, _y, _direction
+        var _shot_direction = sc_weapon_shot_direction_get(
+            _shot,
+            _direction,
+            _i
         );
 
-    return true;
+        var _delivery = sc_weapon_delivery_fire(
+            _owner,
+            _weapon,
+            _source,
+            _x,
+            _y,
+            _shot_direction
+        );
+
+        if (_i == 0)
+            _first_delivery = _delivery;
+
+        if (_i < array_length(_targets))
+            sc_weapon_projectile_target_apply(
+                _delivery,
+                _targets[_i]
+            );
+    }
+
+    return _amount == 1
+        ? _first_delivery
+        : true;
 }
