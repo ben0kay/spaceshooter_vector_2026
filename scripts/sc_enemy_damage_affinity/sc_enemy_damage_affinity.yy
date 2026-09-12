@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_enemy_damage_affinity",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_enemy_damage_affinity",
+  "parent":{
+    "name":"ENEMY",
+    "path":"folders/SCRIPTS---/ENEMY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

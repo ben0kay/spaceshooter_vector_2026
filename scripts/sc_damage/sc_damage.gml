@@ -96,7 +96,14 @@ function sc_damage_layer_multiplier_get(_type, _layer)
 }
 
 /// @description Resolves one damage packet through shield, armour and hull.
-function sc_damage_resolve(_packet,_shield,_armour,_hull,_armour_hull_multiplier = 1)
+function sc_damage_resolve(
+    _packet,
+    _shield,
+    _armour,
+    _hull,
+    _armour_hull_multiplier = 1,
+    _damage_affinity = undefined
+)
 {
     var _remaining = sc_damage_packet_amount_get(_packet);
     var _names = ["shield","armour","hull"];
@@ -104,25 +111,41 @@ function sc_damage_resolve(_packet,_shield,_armour,_hull,_armour_hull_multiplier
     var _current = [max(0,_shield),max(0,_armour),max(0,_hull)];
     var _dealt = [0,0,0];
     var _impact_layer = DefenceLayer.NONE;
+    var _has_affinity = is_struct(_damage_affinity);
 
     for (var _i = 0; _i < 3 && _remaining > 0; ++_i)
     {
         if (_current[_i] <= 0) continue;
 
-        var _multiplier = sc_damage_layer_multiplier_get(_packet.type,_names[_i]);
-        if (_i > 0) _multiplier *= _armour_hull_multiplier;
+        var _multiplier = sc_damage_layer_multiplier_get(
+            _packet.type,
+            _names[_i]
+        );
+
+        if (_has_affinity)
+        {
+            _multiplier *= sc_enemy_damage_affinity_multiplier_get(
+                _damage_affinity,
+                _packet.type,
+                _layers[_i]
+            );
+        }
+
+        if (_i > 0)
+            _multiplier *= _armour_hull_multiplier;
+
+        // A zero affinity completely stops this packet at the active layer.
+        if (_multiplier <= 0)
+        {
+            _remaining = 0;
+            break;
+        }
 
         var _critical_layer = _i == 2
             || (_i == 1 && _packet.critical_hit.armour_enabled);
 
         if (_packet.critical_hit.triggered && _critical_layer)
             _multiplier *= _packet.critical_hit.multiplier;
-
-        if (_multiplier <= 0)
-        {
-            _remaining = 0;
-            break;
-        }
 
         var _damage = min(_current[_i],_remaining * _multiplier);
         _current[_i] -= _damage;
@@ -291,7 +314,8 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
         _defence.shield.current,
         _defence.armour.current,
         _defence.hull.current,
-        _rear_multiplier
+        _rear_multiplier,
+        _data.damage_affinity
     );
 
     _result.rear_hit = _rear_angle

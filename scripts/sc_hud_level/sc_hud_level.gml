@@ -95,10 +95,10 @@ function sc_hud_level_data()
     fade_out_speed: 0.07,
 
     capacity: {
-    hp_min: 50,
-    hp_max: 5000,
-    panel_min_width: 320,
-    panel_max_width: 900
+    hp_min: 35,
+    hp_max: 6000,
+    panel_min_width: 256,
+    panel_max_width: 1600
 },
 
     background_alpha: 0.94,

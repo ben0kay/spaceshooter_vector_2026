@@ -49,9 +49,12 @@ function sc_enemy_init_awareness_controller_create(_data)
 }
 
 /// @description Creates the main runtime structure shared by every enemy.
-function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
+function sc_enemy_init_runtime_create(_enemy,_enemy_key,_data)
 {
     var _radius = _data.visual.radius;
+    var _affinity_definition = variable_struct_exists(_data,"damage_affinity")
+        ? _data.damage_affinity
+        : undefined;
 
     return {
         key: _enemy_key,
@@ -61,6 +64,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
             _data.identity.faction,
             _data.identity.rank
         ),
+
         doctrine: sc_enemy_init_doctrine_create(_data),
         reward: variable_clone(_data.reward),
 
@@ -70,6 +74,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
         stats: undefined,
         defence: undefined,
         rear_damage: sc_enemy_init_rear_damage_create(_data),
+        damage_affinity: sc_enemy_damage_affinity_create(_affinity_definition),
 
         // Controllers define how this enemy moves and responds to awareness.
         movement_controller: variable_clone(_data.movement_controller),
@@ -82,8 +87,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
             spawn_y: _enemy.y,
             orbit_direction: 0,
             strafe_phase: random(2 * pi),
-			
-			backaway_scale: random_range(0.88,1.12),
+            backaway_scale: random_range(0.88,1.12),
 
             command: {
                 active: false,
@@ -98,7 +102,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
                 active: false,
                 target_x: _enemy.x,
                 target_y: _enemy.y,
-                next_move_tick: GAME_TICK + irandom_range(30, 90)
+                next_move_tick: GAME_TICK + irandom_range(30,90)
             },
 
             obstacle: {
@@ -110,7 +114,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
             },
 
             // Only specialized movement styles provide additional runtime data.
-            behaviour_runtime: variable_struct_exists(_data.movement_controller, "runtime")
+            behaviour_runtime: variable_struct_exists(_data.movement_controller,"runtime")
                 ? variable_clone(_data.movement_controller.runtime)
                 : {}
         },
@@ -162,7 +166,7 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
         attack_controller: variable_clone(_data.attack_controller),
 
         // Utility channels are optional systems such as repair or clearance beams.
-        utility_controller: variable_struct_exists(_data, "utility_controller")
+        utility_controller: variable_struct_exists(_data,"utility_controller")
             ? variable_clone(_data.utility_controller)
             : undefined
     };

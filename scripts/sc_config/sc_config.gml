@@ -319,12 +319,12 @@ function sc_config_init()
 
         damage: {
             types: [
-                { name: "Kinetic", shield_multiplier: 0.65, armour_multiplier: 1.35, hull_multiplier: 1, default_effect: DamageEffect.NONE },
-                { name: "Energy", shield_multiplier: 1.5, armour_multiplier: 0.75, hull_multiplier: 1, default_effect: DamageEffect.NONE },
+                { name: "Kinetic", shield_multiplier: 0.45, armour_multiplier: 1.2, hull_multiplier: 1, default_effect: DamageEffect.NONE },
+                { name: "Energy", shield_multiplier: 1.3, armour_multiplier: 0.75, hull_multiplier: 1, default_effect: DamageEffect.NONE },
                 { name: "Explosive", shield_multiplier: 0.75, armour_multiplier: 1, hull_multiplier: 1.4, default_effect: DamageEffect.NONE },
-                { name: "Electric", shield_multiplier: 1.15, armour_multiplier: 0.55, hull_multiplier: 0.75, default_effect: DamageEffect.DISRUPTION },
+                { name: "Electric", shield_multiplier: 1.2, armour_multiplier: 0.4, hull_multiplier: 0.75, default_effect: DamageEffect.DISRUPTION },
                 { name: "Thermal", shield_multiplier: 0.4, armour_multiplier: 1.1, hull_multiplier: 1.25, default_effect: DamageEffect.BURN },
-                { name: "Corrosive", shield_multiplier: 0.55, armour_multiplier: 1.3, hull_multiplier: 1.2, default_effect: DamageEffect.CORROSION }
+                { name: "Corrosive", shield_multiplier: 0.5, armour_multiplier: 1.5, hull_multiplier: 1.2, default_effect: DamageEffect.CORROSION }
             ],
 
             effects: [

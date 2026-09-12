@@ -422,6 +422,17 @@ function sc_enemy_register_sim_nexus()
             damage_multiplier: 1.15,
             fire_rate_multiplier: 0.82
         },
+			
+		damage_affinity: {
+            shield: 0.2,
+
+            hull: [
+                {
+                    type: DamageType.THERMAL,
+                    multiplier: 0.5
+                }
+            ]
+        },
 
         movement_controller: {
             asteroid_response: AsteroidResponse.BOMBARD,
