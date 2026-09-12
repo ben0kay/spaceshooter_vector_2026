@@ -1,9 +1,19 @@
-/// @description Applies sparse affinity entries to one compiled lookup array.
-function sc_enemy_damage_affinity_entries_apply(_lookup,_entries)
+/// @description Applies either one whole-layer multiplier or sparse type entries.
+function sc_enemy_damage_affinity_layer_apply(_lookup,_definition)
 {
-    for (var _i = 0; _i < array_length(_entries); ++_i)
+    if (is_real(_definition))
     {
-        var _entry = _entries[_i];
+        var _multiplier = max(0,_definition);
+
+        for (var _i = 0; _i < array_length(_lookup); ++_i)
+            _lookup[_i] = _multiplier;
+
+        return _lookup;
+    }
+
+    for (var _i = 0; _i < array_length(_definition); ++_i)
+    {
+        var _entry = _definition[_i];
         var _type = _entry.type;
 
         if (_type < 0 || _type >= array_length(_lookup))
@@ -28,40 +38,40 @@ function sc_enemy_damage_affinity_create(_definition = undefined)
     if (!is_struct(_definition))
         return _affinity;
 
-    // Broad affinities establish defaults across every defence layer.
+    // Apply broad damage-type affinities across every layer first.
     if (variable_struct_exists(_definition,"all"))
     {
-        _affinity.shield = sc_enemy_damage_affinity_entries_apply(
+        _affinity.shield = sc_enemy_damage_affinity_layer_apply(
             _affinity.shield,
             _definition.all
         );
 
-        _affinity.armour = sc_enemy_damage_affinity_entries_apply(
+        _affinity.armour = sc_enemy_damage_affinity_layer_apply(
             _affinity.armour,
             _definition.all
         );
 
-        _affinity.hull = sc_enemy_damage_affinity_entries_apply(
+        _affinity.hull = sc_enemy_damage_affinity_layer_apply(
             _affinity.hull,
             _definition.all
         );
     }
 
-    // Layer-specific entries override matching broad affinities.
+    // Individual layers override matching broad affinities.
     if (variable_struct_exists(_definition,"shield"))
-        _affinity.shield = sc_enemy_damage_affinity_entries_apply(
+        _affinity.shield = sc_enemy_damage_affinity_layer_apply(
             _affinity.shield,
             _definition.shield
         );
 
     if (variable_struct_exists(_definition,"armour"))
-        _affinity.armour = sc_enemy_damage_affinity_entries_apply(
+        _affinity.armour = sc_enemy_damage_affinity_layer_apply(
             _affinity.armour,
             _definition.armour
         );
 
     if (variable_struct_exists(_definition,"hull"))
-        _affinity.hull = sc_enemy_damage_affinity_entries_apply(
+        _affinity.hull = sc_enemy_damage_affinity_layer_apply(
             _affinity.hull,
             _definition.hull
         );

@@ -419,12 +419,12 @@ function sc_enemy_register_sim_nexus()
                 alert_share: 2600
             },
 
-            damage_multiplier: 1.15,
-            fire_rate_multiplier: 0.82
+            damage_multiplier: 1,
+            fire_rate_multiplier: 1
         },
 			
 		damage_affinity: {
-            shield: 0.1,
+            shield: 0.5,
 
             hull: [
                 {
