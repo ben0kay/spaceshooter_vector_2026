@@ -176,6 +176,10 @@ function sc_config_init()
 		sector: {
             world_seed: 8122026,
             edge_spawn_padding: 640,
+			
+			enemy_spawning: {
+                enabled: true
+            },
 
             asteroid_fields: {
 			    amount_min: 5,
@@ -344,7 +348,7 @@ function sc_config_init()
 
         enemy: {
 			
-			 grade: {
+			grade: {
                 rank_chance_multiplier: [
                     1,      // COMMON
                     0.7,    // VETERAN

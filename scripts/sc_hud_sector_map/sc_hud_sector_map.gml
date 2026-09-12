@@ -751,9 +751,7 @@ function sc_hud_sector_map_player_draw(_hud, _layout)
 function sc_hud_sector_map_draw(_hud)
 {
     var _map = _hud.sector_map;
-
-    if (!_map.open)
-        return;
+    if (!_map.open) return;
 
     var _palette = _hud.data.palette;
     var _layout = sc_hud_sector_map_layout_get(_hud);
@@ -762,7 +760,6 @@ function sc_hud_sector_map_draw(_hud)
 
     draw_set_alpha(0.96);
     draw_set_colour(_palette.void);
-
     draw_rectangle(
         0,
         0,
@@ -773,7 +770,6 @@ function sc_hud_sector_map_draw(_hud)
 
     draw_set_alpha(1);
     draw_set_colour(_palette.panel);
-
     draw_rectangle(
         _layout.map_x,
         _layout.map_y,
@@ -783,7 +779,6 @@ function sc_hud_sector_map_draw(_hud)
     );
 
     draw_set_colour(_palette.outline);
-
     draw_rectangle(
         _layout.map_x,
         _layout.map_y,
@@ -797,12 +792,16 @@ function sc_hud_sector_map_draw(_hud)
         _layout
     );
 
-    // Debug-only visual background regions.
+    // Debug-only generated regions.
     sc_hud_sector_map_nebulas_draw(
         _layout
     );
 
-    // Environmental gameplay regions.
+    sc_hud_sector_map_enemy_zones_draw(
+        _layout
+    );
+
+    // Environmental and physical sector content.
     sc_hud_sector_map_environment_fields_draw(
         _hud,
         _layout
@@ -848,6 +847,8 @@ function sc_hud_sector_map_draw(_hud)
         "M CLOSE // "
         + string(global.level.asteroids_alive)
         + " ASTEROIDS // "
+        + string(global.level.enemies_alive)
+        + " ENEMIES // "
         + string(instance_number(o_environment_field))
         + " ENVIRONMENT FIELDS"
     );

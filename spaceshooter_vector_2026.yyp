@@ -256,6 +256,7 @@
     {"id":{"name":"sc_rocket","path":"scripts/sc_rocket/sc_rocket.yy",},},
     {"id":{"name":"sc_runtime_effects","path":"scripts/sc_runtime_effects/sc_runtime_effects.yy",},},
     {"id":{"name":"sc_sector_persistence","path":"scripts/sc_sector_persistence/sc_sector_persistence.yy",},},
+    {"id":{"name":"sc_sector_spawning_enemy","path":"scripts/sc_sector_spawning_enemy/sc_sector_spawning_enemy.yy",},},
     {"id":{"name":"sc_sector","path":"scripts/sc_sector/sc_sector.yy",},},
     {"id":{"name":"sc_shard_mine","path":"scripts/sc_shard_mine/sc_shard_mine.yy",},},
     {"id":{"name":"sc_shard_pulse_eventually","path":"scripts/sc_shard_pulse_eventually/sc_shard_pulse_eventually.yy",},},

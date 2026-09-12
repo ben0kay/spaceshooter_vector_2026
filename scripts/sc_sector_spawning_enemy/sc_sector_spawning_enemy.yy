@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sector_spawning_enemy",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sector_spawning_enemy",
+  "parent":{
+    "name":"SECTORS",
+    "path":"folders/SCRIPTS---/SECTORS.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

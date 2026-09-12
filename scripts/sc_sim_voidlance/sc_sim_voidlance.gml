@@ -38,7 +38,7 @@ function sc_enemy_register_sim_voidlance()
                 speed_max: 1.45,
                 acceleration: 0.045,
                 friction_coeff: 0.988,
-                turn_speed: 0.42,
+                turn_speed: 0.48,
                 directional: true,
                 directional_speed_min: 0.22,
                 directional_thrust_min: 0.32
@@ -54,7 +54,7 @@ function sc_enemy_register_sim_voidlance()
             },
 
             damage_multiplier: 1.35,
-            fire_rate_multiplier: 0.82
+            fire_rate_multiplier: 1
         },
 
         movement_controller: {
