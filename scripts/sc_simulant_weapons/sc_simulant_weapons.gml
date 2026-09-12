@@ -105,3 +105,39 @@ function sc_weapon_register_simulant_dividing_orb()
         }
     });
 }
+
+/// @description Registers the rapid-fire Simulant shard cannon.
+function sc_weapon_register_simulant_shard()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_simulant_shard",
+            name: "Simulant Shard Cannon"
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_simulant_shard",
+
+            projectile: {
+                scale: 0.72,
+                speed: 22,
+                life: 85
+            },
+
+            damage: {
+                amount: 3,
+                type: DamageType.KINETIC,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: 0
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.36,
+            pitch_range: 0.12
+        }
+    });
+}
