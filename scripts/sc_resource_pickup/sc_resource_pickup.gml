@@ -211,6 +211,11 @@ function sc_resource_pickup_update(_pickup)
 
         if (_result.accepted > 0)
         {
+            sc_player_statistics_resource_collected(
+                _data.item_key,
+                _result.accepted
+            );
+
             var _item = variable_struct_get(
                 global.data.items,
                 _data.item_key

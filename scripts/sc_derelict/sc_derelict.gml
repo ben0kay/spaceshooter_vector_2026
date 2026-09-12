@@ -358,23 +358,51 @@ function sc_derelict_nearest_find(_player)
     return _nearest;
 }
 
-/// @description Transfers one derelict cargo entry to the player.
-function sc_derelict_loot_take(_derelict, _player, _index)
+/// @description Transfers one derelict cargo entry and records successful salvage.
+function sc_derelict_loot_take(_derelict,_player,_index)
 {
-    var _loot = _derelict.derelict.loot;
-    if (_index < 0 || _index >= array_length(_loot)) return false;
+    var _runtime = _derelict.derelict;
+    var _loot = _runtime.loot;
+
+    if (_index < 0
+    || _index >= array_length(_loot))
+        return false;
 
     var _entry = _loot[_index];
-    var _grade = is_undefined(_entry.grade) ? ItemGrade.COMMON : _entry.grade;
-    var _result = sc_player_inventory_add(_player, _entry.key, _entry.amount, _grade);
+
+    var _grade = is_undefined(_entry.grade)
+        ? ItemGrade.COMMON
+        : _entry.grade;
+
+    var _result = sc_player_inventory_add(
+        _player,
+        _entry.key,
+        _entry.amount,
+        _grade
+    );
+
+    if (_result.accepted > 0)
+    {
+        sc_player_statistics_derelict_items_looted(
+            _entry.key,
+            _result.accepted
+        );
+    }
 
     _entry.amount = _result.remaining;
 
     if (_entry.amount <= 0)
-        array_delete(_loot, _index, 1);
+        array_delete(_loot,_index,1);
 
-    if (array_length(_loot) <= 0)
-        _derelict.derelict.state = DerelictState.DEPLETED;
+    if (array_length(_loot) <= 0
+    && _runtime.state != DerelictState.DEPLETED)
+    {
+        _runtime.state = DerelictState.DEPLETED;
+
+        sc_player_statistics_derelict_looted(
+            _derelict
+        );
+    }
 
     return _result.accepted > 0;
 }

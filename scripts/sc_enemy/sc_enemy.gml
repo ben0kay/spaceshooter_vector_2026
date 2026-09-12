@@ -697,7 +697,7 @@ function sc_enemy_remove(_enemy,_reason)
 }
 
 /// @description Processes one enemy death and its final killing source.
-function sc_enemy_die(_enemy, _packet)
+function sc_enemy_die(_enemy,_packet)
 {
     var _data = _enemy.enemy;
     var _source = _packet.source;
@@ -736,6 +736,10 @@ function sc_enemy_die(_enemy, _packet)
 
     if (_source.faction == Faction.PLAYER)
     {
+        sc_player_statistics_enemy_killed(
+            _enemy
+        );
+
         sc_player_reward_grant(
             _data.reward,
             _death_x,
@@ -743,8 +747,6 @@ function sc_enemy_die(_enemy, _packet)
             _death_layer,
             _data.grade.reward_multiplier
         );
-
-        // Increment player kill count and combat statistics here later.
     }
     else
     {

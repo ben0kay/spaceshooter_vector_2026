@@ -62,64 +62,87 @@ function sc_asteroid_modifier_register_unstable()
     });
 }
 
-/// @description Rolls one registered modifier without changing the surrounding generation RNG.
+/// @description Returns one deterministic 0-1 value without altering GameMaker's random state.
+function sc_asteroid_modifier_roll_value_get(_persistent_id,_salt)
+{
+    var _sector_seed = sc_sector_seed_get(
+        global.game.sector.x,
+        global.game.sector.y
+    );
+
+    var _value = sin(
+        _sector_seed * 0.000013
+        + (_persistent_id + 1) * 12.9898
+        + _salt * 78.233
+    ) * 43758.5453;
+
+    return frac(abs(_value));
+}
+
+/// @description Rolls one registered modifier without altering generation randomness.
 function sc_asteroid_modifier_roll(_persistent_id = -1)
 {
-    var _chance = clamp(GCFG.asteroid.modifiers.rare_chance,0,1);
-    if (_chance <= 0) return "";
+    var _chance = clamp(
+        GCFG.asteroid.modifiers.rare_chance,
+        0,
+        1
+    );
 
-    var _isolated = _persistent_id >= 0;
-    var _previous_seed = 0;
+    if (_chance <= 0)
+        return "";
 
-    if (_isolated)
+    var _chance_roll = _persistent_id >= 0
+        ? sc_asteroid_modifier_roll_value_get(_persistent_id,1)
+        : random(1);
+
+    if (_chance_roll >= _chance)
+        return "";
+
+    var _keys = variable_struct_get_names(
+        global.data.asteroid_modifiers
+    );
+
+    var _pool = [];
+    var _total_weight = 0;
+
+    for (var _i = 0; _i < array_length(_keys); ++_i)
     {
-        _previous_seed = random_get_seed();
-
-        var _seed = sc_sector_seed_get(
-            global.game.sector.x,
-            global.game.sector.y
+        var _definition = variable_struct_get(
+            global.data.asteroid_modifiers,
+            _keys[_i]
         );
 
-        _seed = abs((
-            _seed
-            + (_persistent_id+1)*1103515245
-        ) mod 2147483647);
+        if (global.game.sector.x
+            < _definition.spawn.min_sector_east
+        || _definition.spawn.weight <= 0)
+            continue;
 
-        random_set_seed(max(1,floor(_seed)));
+        array_push(_pool,{
+            key: _definition.identity.key,
+            weight: _definition.spawn.weight
+        });
+
+        _total_weight += _definition.spawn.weight;
     }
 
-    var _modifier_key = "";
+    if (array_length(_pool) <= 0
+    || _total_weight <= 0)
+        return "";
 
-    if (random(1) < _chance)
+    var _selection_roll = _persistent_id >= 0
+        ? sc_asteroid_modifier_roll_value_get(_persistent_id,2)
+            * _total_weight
+        : random(_total_weight);
+
+    for (var _i = 0; _i < array_length(_pool); ++_i)
     {
-        var _keys = variable_struct_get_names(global.data.asteroid_modifiers);
-        var _pool = [];
+        _selection_roll -= _pool[_i].weight;
 
-        for (var _i = 0; _i < array_length(_keys); ++_i)
-        {
-            var _definition = variable_struct_get(
-                global.data.asteroid_modifiers,
-                _keys[_i]
-            );
-
-            if (global.game.sector.x < _definition.spawn.min_sector_east
-            || _definition.spawn.weight <= 0)
-                continue;
-
-            array_push(_pool,{
-                key: _definition.identity.key,
-                weight: _definition.spawn.weight
-            });
-        }
-
-        if (array_length(_pool) > 0)
-            _modifier_key = sc_asteroid_weighted_choose(_pool).key;
+        if (_selection_roll < 0)
+            return _pool[_i].key;
     }
 
-    if (_isolated)
-        random_set_seed(_previous_seed);
-
-    return _modifier_key;
+    return _pool[array_length(_pool) - 1].key;
 }
 
 /// @description Creates independent runtime state for one modifier key.

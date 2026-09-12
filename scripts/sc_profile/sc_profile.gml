@@ -5,7 +5,7 @@ function sc_profile_path(_slot)
 }
 
 /// @description Creates a new default profile struct.
-function sc_profile_default(_slot, _pilot_name)
+function sc_profile_default(_slot,_pilot_name)
 {
     return {
         version: PROFILE_SAVE_VERSION,
@@ -14,9 +14,16 @@ function sc_profile_default(_slot, _pilot_name)
         created_at: date_current_datetime(),
         last_played_at: date_current_datetime(),
         credits: 0,
+
         selected_ship_key: "ship_fighter",
-        unlocked_ship_keys: ["ship_shard", "ship_fighter", "ship_bastion"],
+        unlocked_ship_keys: [
+            "ship_shard",
+            "ship_fighter",
+            "ship_bastion"
+        ],
+
         persistent_modifiers: [],
+        statistics: sc_player_statistics_default(),
 
         // Coordinate-keyed persistent sector changes.
         sector_states: {}
@@ -24,29 +31,56 @@ function sc_profile_default(_slot, _pilot_name)
 }
 
 /// @description Validates and supplies safe defaults for loaded profile data.
-function sc_profile_validate(_profile, _slot)
+function sc_profile_validate(_profile,_slot)
 {
     if (!is_struct(_profile)) return false;
 
-    if (!variable_struct_exists(_profile, "version")) _profile.version = 1;
-    if (!variable_struct_exists(_profile, "slot")) _profile.slot = _slot;
-    if (!variable_struct_exists(_profile, "pilot_name")) _profile.pilot_name = "Pilot " + string(_slot + 1);
-    if (!variable_struct_exists(_profile, "created_at")) _profile.created_at = date_current_datetime();
-    if (!variable_struct_exists(_profile, "last_played_at")) _profile.last_played_at = date_current_datetime();
-    if (!variable_struct_exists(_profile, "credits")) _profile.credits = 0;
-    if (!variable_struct_exists(_profile, "selected_ship_key")) _profile.selected_ship_key = "ship_fighter";
+    if (!variable_struct_exists(_profile,"version"))
+        _profile.version = 1;
 
-    if (!variable_struct_exists(_profile, "unlocked_ship_keys") || !is_array(_profile.unlocked_ship_keys))
-        _profile.unlocked_ship_keys = ["ship_shard", "ship_fighter", "ship_bastion"];
+    if (!variable_struct_exists(_profile,"slot"))
+        _profile.slot = _slot;
 
-    if (!variable_struct_exists(_profile, "persistent_modifiers") || !is_array(_profile.persistent_modifiers))
+    if (!variable_struct_exists(_profile,"pilot_name"))
+        _profile.pilot_name = "Pilot " + string(_slot + 1);
+
+    if (!variable_struct_exists(_profile,"created_at"))
+        _profile.created_at = date_current_datetime();
+
+    if (!variable_struct_exists(_profile,"last_played_at"))
+        _profile.last_played_at = date_current_datetime();
+
+    if (!variable_struct_exists(_profile,"credits"))
+        _profile.credits = 0;
+
+    if (!variable_struct_exists(_profile,"selected_ship_key"))
+        _profile.selected_ship_key = "ship_fighter";
+
+    if (!variable_struct_exists(_profile,"unlocked_ship_keys")
+    || !is_array(_profile.unlocked_ship_keys))
+    {
+        _profile.unlocked_ship_keys = [
+            "ship_shard",
+            "ship_fighter",
+            "ship_bastion"
+        ];
+    }
+
+    if (!variable_struct_exists(_profile,"persistent_modifiers")
+    || !is_array(_profile.persistent_modifiers))
         _profile.persistent_modifiers = [];
 
-    if (!variable_struct_exists(_profile, "sector_states") || !is_struct(_profile.sector_states))
+    if (!variable_struct_exists(_profile,"statistics")
+    || !is_struct(_profile.statistics))
+        _profile.statistics = sc_player_statistics_default();
+
+    if (!variable_struct_exists(_profile,"sector_states")
+    || !is_struct(_profile.sector_states))
         _profile.sector_states = {};
 
     _profile.version = PROFILE_SAVE_VERSION;
     _profile.slot = _slot;
+
     return true;
 }
 
