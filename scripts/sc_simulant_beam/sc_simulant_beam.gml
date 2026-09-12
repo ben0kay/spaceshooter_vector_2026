@@ -239,6 +239,20 @@ function sc_weapon_register_simulant_super_beam()
 					    source_flare_radius: 1.05,
 					    source_flare_alpha: 1
 					},
+						
+					origin: {
+					    particles_enabled: true,
+					    particle_interval: 2,
+
+					    scale: 2.25,
+					    fluid_amount: 2,
+					    cloud_amount: 1,
+					    glow_amount: 1,
+
+					    rear_offset: 12,
+					    origin_spread: 7,
+					    direction_spread: 42
+					},
 
                     impact: {
                         overlap_ratio: 0.3,

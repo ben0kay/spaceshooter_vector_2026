@@ -912,17 +912,17 @@ function sc_beam_impact_draw(_area, _data)
 }
 
 /// @description Updates one maintained capsule or cone delivery.
-function sc_beam_update(_area, _data)
+function sc_beam_update(_area,_data)
 {
     var _behaviour = _data.behaviour;
     var _runtime = _data.runtime;
 
-    if (GAME_TICK - _runtime.refreshed_tick > 1)
+    if (GAME_TICK-_runtime.refreshed_tick > 1)
         _runtime.releasing = true;
 
     if (_runtime.releasing)
     {
-        _runtime.release_alpha -= 1 / _behaviour.release_duration;
+        _runtime.release_alpha -= 1/_behaviour.release_duration;
 
         if (_runtime.release_alpha <= 0)
             instance_destroy(_area);
@@ -934,23 +934,26 @@ function sc_beam_update(_area, _data)
     {
         _runtime.growth_length = min(
             _runtime.maximum_length,
-            _runtime.growth_length + _behaviour.growth_speed
+            _runtime.growth_length+_behaviour.growth_speed
         );
 
-        sc_beam_hit_length_update(_area, _data);
+        sc_beam_hit_length_update(_area,_data);
     }
 
     if (GAME_TICK >= _runtime.next_damage_tick)
     {
         sc_attack_area_damage_apply(_area);
-        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
+        _runtime.next_damage_tick = GAME_TICK+_behaviour.tick_interval;
     }
 
-    if (variable_struct_exists(_data.visual, "particle_script"))
-        _data.visual.particle_script(_area, _data);
+    if (variable_struct_exists(_data.visual,"particle_script"))
+        _data.visual.particle_script(_area,_data);
+
+    if (variable_struct_exists(_data.visual,"origin"))
+        sc_particles_beam_origin_emit(_area,_data);
 
     if (_data.shape == AttackAreaShape.CAPSULE)
-        sc_particles_beam_impact_emit(_area, _data);
+        sc_particles_beam_impact_emit(_area,_data);
 }
 
 /// @description Draws one registered short-lived attack-area visual.

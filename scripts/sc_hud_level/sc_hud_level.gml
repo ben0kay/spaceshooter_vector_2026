@@ -88,14 +88,18 @@ function sc_hud_level_data()
     height: 106,
     y: 82,
     cut: 12,
-	hover_padding: 24,
+    hover_padding: 24,
 
     scan_interval: 6,
     fade_in_speed: 0.16,
     fade_out_speed: 0.07,
 
-    segments: 16,
-    segment_gap: 2,
+    capacity: {
+    hp_min: 50,
+    hp_max: 5000,
+    panel_min_width: 320,
+    panel_max_width: 900
+},
 
     background_alpha: 0.94,
     outline_alpha: 0.85,

@@ -30,6 +30,7 @@ function sc_particles_init()
     || !sc_particles_register_shard()
     || !sc_particles_register_shockwave()
     || !sc_particles_register_beam_impact()
+    || !sc_particles_register_beam_origin()
     || !sc_particles_register_shield_break()
     || !sc_particles_resource_pickup_register()
     || !sc_particles_register_projectile_content()
@@ -43,7 +44,6 @@ function sc_particles_init()
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
 }
-
 /// @description Registers reusable palette-driven beam contact particles.
 function sc_particles_register_beam_impact()
 {
@@ -115,6 +115,121 @@ function sc_particles_beam_impact_emit(_area, _data)
         _x, _y,
         _particles.mote,
         1
+    );
+
+    return true;
+}
+
+/// @description Registers reusable palette-driven beam-origin residue.
+function sc_particles_register_beam_origin()
+{
+    var _fluid = sc_particles_type_create();
+    var _cloud = sc_particles_type_create();
+    var _glow = sc_particles_type_create();
+
+    if (!part_type_exists(_fluid)
+    || !part_type_exists(_cloud)
+    || !part_type_exists(_glow))
+        return false;
+
+    // Long residual energy fluid flowing away from the emitter.
+    part_type_sprite(_fluid,s_broad_flame_body_white,false,false,false);
+    part_type_size(_fluid,0.08,0.14,0.003,0.012);
+    part_type_scale(_fluid,1,0.55);
+    part_type_alpha3(_fluid,0.32,0.16,0);
+    part_type_speed(_fluid,0.4,1.25,-0.025,0.04);
+    part_type_direction(_fluid,0,359,0,0);
+    part_type_orientation(_fluid,0,0,0,5,true);
+    part_type_life(_fluid,16,28);
+    part_type_blend(_fluid,true);
+
+    // Wider foggy residue expanding around the beam socket.
+    part_type_sprite(_cloud,s_particle_smokey_wisp_001,false,false,false);
+    part_type_size(_cloud,0.1,0.18,0.006,0.018);
+    part_type_alpha3(_cloud,0.2,0.1,0);
+    part_type_speed(_cloud,0.2,0.75,-0.012,0.025);
+    part_type_direction(_cloud,0,359,0,0);
+    part_type_orientation(_cloud,0,359,0,1,false);
+    part_type_life(_cloud,22,38);
+    part_type_blend(_cloud,true);
+
+    // Small soft bloom remaining directly around the muzzle.
+    part_type_sprite(_glow,s_blur,false,false,false);
+    part_type_size(_glow,0.08,0.13,0.004,0.012);
+    part_type_alpha3(_glow,0.38,0.16,0);
+    part_type_speed(_glow,0.05,0.3,-0.008,0.015);
+    part_type_direction(_glow,0,359,0,0);
+    part_type_life(_glow,10,20);
+    part_type_blend(_glow,true);
+
+    return sc_particles_group_register("beam_origin", {
+        fluid: _fluid,
+        cloud: _cloud,
+        glow: _glow
+    });
+}
+
+/// @description Emits configured energy residue from one active beam origin.
+function sc_particles_beam_origin_emit(_area,_data)
+{
+    var _origin = _data.visual.origin;
+    if (!_origin.particles_enabled) return false;
+    if ((GAME_TICK+real(_area.id)) mod max(1,round(_origin.particle_interval)) != 0) return false;
+    if (!sc_optimization_circle_visible(_area.x,_area.y,64,32)) return false;
+
+    var _particles = sc_particles_group_get("beam_origin");
+    if (!is_struct(_particles)) return false;
+
+    var _palette = _data.visual.palette;
+    var _scale = max(0.1,_origin.scale);
+    var _reverse = _data.direction+180;
+    var _side = _data.direction+90;
+    var _rear = random_range(0,_origin.rear_offset);
+    var _side_offset = random_range(-_origin.origin_spread,_origin.origin_spread);
+    var _x = _area.x+lengthdir_x(_rear,_reverse)+lengthdir_x(_side_offset,_side);
+    var _y = _area.y+lengthdir_y(_rear,_reverse)+lengthdir_y(_side_offset,_side);
+
+    part_type_colour3(_particles.fluid,_palette.core,_palette.energy,_palette.glow);
+    part_type_colour3(_particles.cloud,_palette.energy,_palette.glow,_palette.void);
+    part_type_colour3(_particles.glow,_palette.core,_palette.energy,_palette.glow);
+
+    part_type_size(_particles.fluid,0.08*_scale,0.14*_scale,0.003*_scale,0.012);
+    part_type_size(_particles.cloud,0.1*_scale,0.18*_scale,0.006*_scale,0.018);
+    part_type_size(_particles.glow,0.08*_scale,0.13*_scale,0.004*_scale,0.012);
+
+    part_type_direction(
+        _particles.fluid,
+        _reverse-_origin.direction_spread,
+        _reverse+_origin.direction_spread,
+        0,0
+    );
+
+    part_type_direction(
+        _particles.cloud,
+        _reverse-_origin.direction_spread*1.5,
+        _reverse+_origin.direction_spread*1.5,
+        0,0
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _x,_y,
+        _particles.fluid,
+        _origin.fluid_amount
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _x,_y,
+        _particles.cloud,
+        _origin.cloud_amount
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _area.x,_area.y,
+        _particles.glow,
+        _origin.glow_amount
     );
 
     return true;
