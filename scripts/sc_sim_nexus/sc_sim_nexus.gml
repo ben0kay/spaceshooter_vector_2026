@@ -416,34 +416,34 @@ function sc_enemy_register_sim_nexus()
         draw_script: sc_enemy_sim_nexus_beam_emitter_draw
     },
 
-                // ==================================================
+                         // ==================================================
             // THREE-WAY EAST ORB BATTERY
             // ==================================================
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_east_upper",
+                "orb_east_lower",
                 0.78,-0.14,
-                210
+                330
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
                 "orb_east_centre",
                 0.8,0,
-                180
+                0
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_east_lower",
+                "orb_east_upper",
                 0.78,0.14,
-                150
+                30
             ),
 
             // ==================================================
             // THREE-WAY NORTH ORB BATTERY
             // ==================================================
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_north_left",
+                "orb_north_right",
                 -0.14,-0.78,
-                300
+                240
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
@@ -453,30 +453,30 @@ function sc_enemy_register_sim_nexus()
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_north_right",
+                "orb_north_left",
                 0.14,-0.78,
-                240
+                300
             ),
 
             // ==================================================
             // THREE-WAY WEST ORB BATTERY
             // ==================================================
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_west_upper",
+                "orb_west_lower",
                 -0.78,-0.14,
-                30
+                210
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
                 "orb_west_centre",
                 -0.8,0,
-                0
+                180
             ),
 
             sc_enemy_sim_nexus_orb_hardpoint(
-                "orb_west_lower",
+                "orb_west_upper",
                 -0.78,0.14,
-                330
+                150
             ),
 
             // ==================================================
@@ -525,13 +525,17 @@ function sc_enemy_register_sim_nexus()
         // Distributed/internal propulsion. No visible rear thruster bank.
         thrusters: [],
 
-        attack_controller: {
+                attack_controller: {
             selection: AttackSelection.WEIGHTED,
-            max_active_channels: 2,
+            max_active_channels: 3,
 
             channels: [
                 {
-                    key: "main_weapons",
+                    key: "beams",
+                    selection: AttackSelection.WEIGHTED
+                },
+                {
+                    key: "orbs",
                     selection: AttackSelection.WEIGHTED
                 },
                 {
@@ -546,7 +550,7 @@ function sc_enemy_register_sim_nexus()
                 // ==================================================
                 {
                     key: "nexus_diagonal_beams",
-                    channel: "main_weapons",
+                    channel: "beams",
                     weight: 48,
                     hardpoint_group: "diagonal_beams",
                     weapon_key: "weapon_simulant_super_beam",
@@ -584,7 +588,7 @@ function sc_enemy_register_sim_nexus()
                     firing: {
                         order: HardpointFireOrder.ALL,
                         duration: 125,
-                        cooldown: 330
+                        cooldown: 400
                     }
                 },
 
@@ -593,7 +597,7 @@ function sc_enemy_register_sim_nexus()
                 // ==================================================
                 {
                     key: "nexus_dividing_orbs",
-                    channel: "main_weapons",
+                    channel: "orbs",
                     weight: 52,
                     hardpoint_group: "orb_batteries",
                     weapon_key: "weapon_simulant_dividing_orb",
@@ -628,8 +632,8 @@ function sc_enemy_register_sim_nexus()
 
                     firing: {
                         order: HardpointFireOrder.ALL,
-                        interval: 0,
-                        volley_max: 1,
+                        interval: 30,
+                        volley_max: 3,
                         cooldown: 260
                     }
                 },

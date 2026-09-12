@@ -85,7 +85,7 @@ function sc_weapon_register_simulant_dividing_orb()
 
             projectile: {
                 scale: 2,
-                speed: 9,
+                speed: 7,
                 life: 48
             },
 
