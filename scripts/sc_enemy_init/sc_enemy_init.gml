@@ -52,13 +52,22 @@ function sc_enemy_init_awareness_controller_create(_data)
 function sc_enemy_init_runtime_create(_enemy,_enemy_key,_data)
 {
     var _radius = _data.visual.radius;
-    var _affinity_definition = variable_struct_exists(_data,"damage_affinity")
+
+    var _affinity_definition =
+        variable_struct_exists(_data,"damage_affinity")
         ? _data.damage_affinity
         : undefined;
 
+    var _persistent_id =
+        variable_instance_exists(_enemy,"enemy_persistent_id")
+        ? string(_enemy.enemy_persistent_id)
+        : "";
+
     return {
         key: _enemy_key,
+        persistent_id: _persistent_id,
         identity: variable_clone(_data.identity),
+
         grade: sc_enemy_grade_create(
             _data.identity.name,
             _data.identity.faction,
@@ -114,15 +123,23 @@ function sc_enemy_init_runtime_create(_enemy,_enemy_key,_data)
             },
 
             // Only specialized movement styles provide additional runtime data.
-            behaviour_runtime: variable_struct_exists(_data.movement_controller,"runtime")
+            behaviour_runtime:
+                variable_struct_exists(_data.movement_controller,"runtime")
                 ? variable_clone(_data.movement_controller.runtime)
                 : {}
         },
 
         collision: {
-            radius_forward: _radius * _data.collision.radius_forward_scale,
-            radius_side: _radius * _data.collision.radius_side_scale,
-            blocks_player: _data.collision.blocks_player
+            radius_forward:
+                _radius
+                * _data.collision.radius_forward_scale,
+
+            radius_side:
+                _radius
+                * _data.collision.radius_side_scale,
+
+            blocks_player:
+                _data.collision.blocks_player
         },
 
         alert: {
@@ -166,7 +183,8 @@ function sc_enemy_init_runtime_create(_enemy,_enemy_key,_data)
         attack_controller: variable_clone(_data.attack_controller),
 
         // Utility channels are optional systems such as repair or clearance beams.
-        utility_controller: variable_struct_exists(_data,"utility_controller")
+        utility_controller:
+            variable_struct_exists(_data,"utility_controller")
             ? variable_clone(_data.utility_controller)
             : undefined
     };

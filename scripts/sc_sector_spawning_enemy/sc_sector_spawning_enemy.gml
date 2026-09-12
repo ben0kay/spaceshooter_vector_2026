@@ -255,7 +255,7 @@ function sc_sector_enemy_spawn_position_find(
     };
 }
 
-/// @description Populates one faction zone with independent registered enemies.
+/// @description Populates one faction zone with independent persistent enemies.
 function sc_sector_enemy_zone_population_spawn(_zone,_amount,_profile)
 {
     _zone.population_requested = _amount;
@@ -291,13 +291,21 @@ function sc_sector_enemy_zone_population_spawn(_zone,_amount,_profile)
         if (!_position.found)
             continue;
 
+        // Zone and member indices remain stable across deterministic generation.
+        var _persistent_id =
+            "zone_"
+            + string(_zone.id)
+            + "_enemy_"
+            + string(_i);
+
         var _enemy = instance_create_layer(
             _position.x,
             _position.y,
             "Enemy",
             o_enemy,
             {
-                enemy_key: _enemy_key
+                enemy_key: _enemy_key,
+                enemy_persistent_id: _persistent_id
             }
         );
 
@@ -307,6 +315,7 @@ function sc_sector_enemy_zone_population_spawn(_zone,_amount,_profile)
         array_push(_zone.spawns,{
             enemy_id: _enemy,
             enemy_key: _enemy_key,
+            persistent_id: _persistent_id,
             x: _position.x,
             y: _position.y
         });

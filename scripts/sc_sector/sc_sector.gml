@@ -520,7 +520,7 @@ function sc_sector_structures_spawn(_layer)
         && instance_exists(_derelict);
 }
 
-/// @description Generates the active sector, restores persistent changes and places the carried player.
+/// @description Generates the active sector, restores persistence and places the carried player.
 function sc_sector_room_create()
 {
     if (!sc_sector_campaign_active())
@@ -531,6 +531,7 @@ function sc_sector_room_create()
 
     var _sector = global.game.sector;
     var _previous_seed = random_get_seed();
+
     var _sector_seed = sc_sector_seed_get(
         _sector.x,
         _sector.y
@@ -545,8 +546,7 @@ function sc_sector_room_create()
     sc_sector_structures_spawn(_layer);
     sc_sector_asteroid_fields_spawn(_layer);
 
-    // Restore the complete deterministic physical baseline before enemy
-    // positions are selected.
+    // Physical persistence restores before enemy spawn-position validation.
     sc_sector_persistence_restore();
 
     sc_gas_cloud_sector_spawn(
@@ -554,10 +554,13 @@ function sc_sector_room_create()
         _sector_seed
     );
 
-    // Enemies generate after every physical obstacle has been established.
+    // Generate the complete deterministic enemy baseline first.
     sc_sector_enemy_spawning_generate_seeded(
         _sector_seed
     );
+
+    // Then remove dead enemies and restore surviving enemy state.
+    sc_sector_persistence_enemies_restore();
 
     random_set_seed(_previous_seed);
 

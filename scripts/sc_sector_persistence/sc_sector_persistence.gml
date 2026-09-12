@@ -365,21 +365,209 @@ function sc_sector_persistence_structures_restore()
     return true;
 }
 
+/// @description Records one persistent generated enemy as removed from the sector.
+function sc_sector_persistence_enemy_removed_add(_enemy)
+{
+    if (!sc_sector_campaign_active()
+    || !variable_struct_exists(global.game.sector,"persistence"))
+        return false;
+
+    var _data = _enemy.enemy;
+    if (_data.persistent_id == "") return false;
+
+    variable_struct_set(
+        global.game.sector.persistence.state.enemies,
+        _data.persistent_id,
+        {
+            key: _data.key,
+            destroyed: true
+        }
+    );
+
+    return true;
+}
+
+/// @description Captures the mutable state of every living persistent enemy.
+function sc_sector_persistence_enemies_capture()
+{
+    var _state = global.game.sector.persistence.state;
+    var _previous = _state.enemies;
+    var _captured = {};
+    var _keys = variable_struct_get_names(_previous);
+
+    // Preserve previously destroyed or escaped enemy records.
+    for (var _i = 0; _i < array_length(_keys); ++_i)
+    {
+        var _key = _keys[_i];
+        var _record = variable_struct_get(_previous,_key);
+
+        if (_record.destroyed)
+            variable_struct_set(
+                _captured,
+                _key,
+                _record
+            );
+    }
+
+    var _count = instance_number(o_enemy);
+
+    for (var _i = 0; _i < _count; ++_i)
+    {
+        var _enemy = instance_find(o_enemy,_i);
+
+        if (!_enemy.initialized)
+            continue;
+
+        var _data = _enemy.enemy;
+        var _persistent_id = _data.persistent_id;
+
+        // Debug, boss-test and manually spawned enemies do not persist.
+        if (_persistent_id == "")
+            continue;
+
+        variable_struct_set(
+            _captured,
+            _persistent_id,
+            {
+                key: _data.key,
+                destroyed: false,
+
+                x: _enemy.x,
+                y: _enemy.y,
+                draw_angle: _enemy.draw_angle,
+
+                shield: _data.defence.shield.current,
+                armour: _data.defence.armour.current,
+                hull: _data.defence.hull.current,
+
+                grade: variable_clone(_data.grade)
+            }
+        );
+    }
+
+    _state.enemies = _captured;
+    return true;
+}
+
+/// @description Restores or silently removes every generated persistent enemy.
+function sc_sector_persistence_enemies_restore()
+{
+    var _persistence = global.game.sector.persistence;
+    var _records = _persistence.state.enemies;
+    var _count = instance_number(o_enemy);
+    var _enemies = [];
+
+    for (var _i = 0; _i < _count; ++_i)
+        array_push(_enemies,instance_find(o_enemy,_i));
+
+    _persistence.restoring = true;
+
+    for (var _i = 0; _i < array_length(_enemies); ++_i)
+    {
+        var _enemy = _enemies[_i];
+
+        if (!instance_exists(_enemy)
+        || !_enemy.initialized)
+            continue;
+
+        var _data = _enemy.enemy;
+        var _persistent_id = _data.persistent_id;
+
+        if (_persistent_id == ""
+        || !variable_struct_exists(_records,_persistent_id))
+            continue;
+
+        var _record = variable_struct_get(
+            _records,
+            _persistent_id
+        );
+
+        // Baseline enemies removed previously disappear without death logic.
+        if (_record.destroyed)
+        {
+            sc_enemy_remove(
+                _enemy,
+                EnemyRemovalReason.DESPAWNED
+            );
+
+            continue;
+        }
+
+        _enemy.x = clamp(
+            _record.x,
+            _data.collision.radius_forward,
+            room_width - _data.collision.radius_forward
+        );
+
+        _enemy.y = clamp(
+            _record.y,
+            _data.collision.radius_side,
+            room_height - _data.collision.radius_side
+        );
+
+        _enemy.draw_angle = _record.draw_angle;
+        _data.grade = variable_clone(_record.grade);
+
+        _data.defence.shield.current = clamp(
+            _record.shield,
+            0,
+            _data.defence.shield.maximum
+        );
+
+        _data.defence.armour.current = clamp(
+            _record.armour,
+            0,
+            _data.defence.armour.maximum
+        );
+
+        _data.defence.hull.current = clamp(
+            _record.hull,
+            1,
+            _data.defence.hull.maximum
+        );
+
+        // Resume from a clean idle state instead of persisting transient AI.
+        _data.state = EnemyState.IDLE;
+        _data.target_id = noone;
+        _data.target_distance_sq = 0;
+
+        _data.movement.velocity_x = 0;
+        _data.movement.velocity_y = 0;
+        _data.movement.spawn_x = _enemy.x;
+        _data.movement.spawn_y = _enemy.y;
+
+        _data.movement.command.active = false;
+        _data.movement.command.apply_friction = true;
+
+        _data.movement.wander.active = false;
+        _data.movement.wander.target_x = _enemy.x;
+        _data.movement.wander.target_y = _enemy.y;
+
+        _data.awareness.last_known_x = _enemy.x;
+        _data.awareness.last_known_y = _enemy.y;
+        _data.awareness.arrived = false;
+        _data.awareness.search_until = 0;
+    }
+
+    _persistence.restoring = false;
+    return true;
+}
+
 /// @description Captures all currently supported mutable sector state.
 function sc_sector_persistence_capture()
 {
     if (!sc_sector_campaign_active()
-    || !variable_struct_exists(global.game.sector, "persistence"))
+    || !variable_struct_exists(global.game.sector,"persistence"))
         return false;
 
     sc_sector_persistence_asteroids_capture();
     sc_sector_persistence_structures_capture();
+    sc_sector_persistence_enemies_capture();
 
     var _state = global.game.sector.persistence.state;
     _state.last_saved_at = date_current_datetime();
 
     // Future capture functions:
-    // sc_sector_persistence_enemies_capture();
     // sc_sector_persistence_pickups_capture();
     // sc_sector_persistence_environment_capture();
 

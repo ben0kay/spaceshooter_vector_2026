@@ -675,19 +675,24 @@ function sc_enemy_draw(_enemy)
     }
 }
 
-
-/// @description Removes one enemy through the shared cleanup pathway.
-function sc_enemy_remove(_enemy, _reason)
+/// @description Removes one enemy and records permanent generated removals.
+function sc_enemy_remove(_enemy,_reason)
 {
     if (!instance_exists(_enemy)) return false;
 
     var _data = _enemy.enemy;
+
+    // Killed and escaped generated enemies should not return on sector reload.
+    if (_reason == EnemyRemovalReason.KILLED
+    || _reason == EnemyRemovalReason.ESCAPED)
+        sc_sector_persistence_enemy_removed_add(_enemy);
 
     _data.removal_reason = _reason;
     _data.target_id = noone;
 
     sc_enemy_attack_cancel(_enemy);
     instance_destroy(_enemy);
+
     return true;
 }
 
