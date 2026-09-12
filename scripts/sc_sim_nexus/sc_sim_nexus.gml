@@ -161,7 +161,7 @@ function sc_weapon_register_sim_nexus_seeker_core()
     });
 }
 
-/// @description Registers the original Nexus ring particles plus filled interior fire.
+/// @description Registers the original Nexus ring particles plus larger interior fire-smoke.
 function sc_particles_sim_nexus_shockwave_register()
 {
     var _p = sc_faction_palette_get(Faction.SIMULANT);
@@ -185,18 +185,18 @@ function sc_particles_sim_nexus_shockwave_register()
     part_type_orientation(_flame,-10,10,0,3,true);
     part_type_life(_flame,14,25);
 
-    // Original smoky wisps used around the edge and throughout the interior.
+    // Much larger, denser purple smoke filling the expanding area.
     part_type_sprite(_wisp,s_particle_smokey_wisp_001,false,false,true);
-    part_type_size(_wisp,0.07,0.14,0.002,0.012);
-    part_type_colour3(_wisp,_p.energy,_p.glow,_p.hull_dark);
-    part_type_alpha3(_wisp,0.34,0.2,0);
+    part_type_size(_wisp,0.21,0.42,0.008,0.026);
+    part_type_colour3(_wisp,_p.core,_p.energy,_p.glow);
+    part_type_alpha3(_wisp,0.4,0.24,0);
     part_type_blend(_wisp,true);
-    part_type_speed(_wisp,0.4,1.4,-0.02,0);
+    part_type_speed(_wisp,0.6,1.8,-0.03,0);
     part_type_direction(_wisp,0,359,0,0);
     part_type_orientation(_wisp,0,359,0,2,false);
-    part_type_life(_wisp,24,42);
+    part_type_life(_wisp,20,36);
 
-    // New broad, softer flames filling the area behind the damage edge.
+    // Broad flames filling the area behind the damage edge.
     part_type_sprite(_interior,s_broad_flame_body_white,false,false,false);
     part_type_size(_interior,0.15,0.3,0.006,0.022);
     part_type_scale(_interior,1.1,0.85);
@@ -215,7 +215,7 @@ function sc_particles_sim_nexus_shockwave_register()
     });
 }
 
-/// @description Keeps the original ring particles and fills its interior with purple fire-smoke.
+/// @description Keeps the original ring particles and densely fills its interior with fire-smoke.
 function sc_particles_sim_nexus_shockwave_emit(_area,_data)
 {
     if ((GAME_TICK mod 2) != 0) return true;
@@ -227,7 +227,7 @@ function sc_particles_sim_nexus_shockwave_emit(_area,_data)
     var _fill_amount = clamp(ceil(_radius/100),4,11);
     var _fill_radius = max(1,_radius-_thickness*0.3);
 
-    // Original flame and wisp particles around the damaging edge.
+    // Original flame particles and larger smoke around the damage edge.
     for (var _i = 0; _i < _edge_amount; _i++)
     {
         var _angle = random(360);
@@ -243,15 +243,15 @@ function sc_particles_sim_nexus_shockwave_emit(_area,_data)
 
         if (irandom(1) == 0)
         {
-            part_type_direction(_types.wisp,_angle-35,_angle+35,0,0);
+            part_type_direction(_types.wisp,_angle-45,_angle+45,0,0);
             part_particles_create(
                 global.particles.impact_system,
-                _x,_y,_types.wisp,1
+                _x,_y,_types.wisp,3
             );
         }
     }
 
-    // Additional flames and smoke filling the entire expanded area.
+    // Additional flames and much denser smoke throughout the interior.
     for (var _i = 0; _i < _fill_amount; _i++)
     {
         var _angle = random(360);
@@ -267,10 +267,10 @@ function sc_particles_sim_nexus_shockwave_emit(_area,_data)
 
         if (irandom(1) == 0)
         {
-            part_type_direction(_types.wisp,_angle-55,_angle+55,0,0);
+            part_type_direction(_types.wisp,_angle-65,_angle+65,0,0);
             part_particles_create(
                 global.particles.impact_system,
-                _x,_y,_types.wisp,1
+                _x,_y,_types.wisp,3
             );
         }
     }
