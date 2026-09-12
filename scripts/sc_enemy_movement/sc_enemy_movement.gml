@@ -689,15 +689,14 @@ function sc_enemy_movement_update(_enemy)
         case EnemyState.ATTACKING:
             if (instance_exists(_data.target_id))
             {
-                var _dx = _data.target_id.x - _enemy.x;
-                var _dy = _data.target_id.y - _enemy.y;
+                var _dx = _data.target_id.x-_enemy.x;
+                var _dy = _data.target_id.y-_enemy.y;
+                var _backaway = _data.stats.final.range.backaway*_data.movement.backaway_scale;
 
-                _data.target_distance_sq =
-                    _dx * _dx + _dy * _dy;
+                _data.target_distance_sq = _dx*_dx+_dy*_dy;
 
-                if (_data.stats.final.range.backaway > 0
-                && _data.target_distance_sq
-                < _data.stats.final.range.backaway_sq)
+                if (_backaway > 0
+                && _data.target_distance_sq < sqr(_backaway))
                 {
                     sc_enemy_movement_backaway(_enemy);
                     _backawaying = true;
@@ -731,11 +730,8 @@ function sc_enemy_movement_update(_enemy)
 
     var _territory_override = false;
 
-    if (variable_struct_exists(_data, "territory"))
-    {
-        _territory_override =
-            sc_enemy_territory_update(_enemy);
-    }
+    if (variable_struct_exists(_data,"territory"))
+        _territory_override = sc_enemy_territory_update(_enemy);
 
     if (_state == EnemyState.ATTACKING
     && !_backawaying
@@ -748,11 +744,7 @@ function sc_enemy_movement_update(_enemy)
 
     if (_state == EnemyState.RETREATING
     || _state == EnemyState.FLEEING)
-    {
-        return sc_enemy_critical_response_arrival_update(
-            _enemy
-        );
-    }
+        return sc_enemy_critical_response_arrival_update(_enemy);
 
     return false;
 }

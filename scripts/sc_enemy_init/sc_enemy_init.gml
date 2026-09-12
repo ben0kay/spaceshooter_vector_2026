@@ -82,6 +82,8 @@ function sc_enemy_init_runtime_create(_enemy, _enemy_key, _data)
             spawn_y: _enemy.y,
             orbit_direction: 0,
             strafe_phase: random(2 * pi),
+			
+			backaway_scale: random_range(0.88,1.12),
 
             command: {
                 active: false,
