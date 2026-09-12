@@ -1,5 +1,5 @@
 /// @description Registers one reusable configurable projectile-trail particle family.
-function sc_particles_projectile_trail_register(_key, _config)
+function sc_particles_projectile_trail_register(_key,_config)
 {
     var _particle = sc_particles_type_create();
 
@@ -13,13 +13,7 @@ function sc_particles_projectile_trail_register(_key, _config)
         return false;
     }
 
-    part_type_sprite(
-        _particle,
-        _config.sprite,
-        false,
-        false,
-        false
-    );
+    part_type_sprite(_particle,_config.sprite,false,false,false);
 
     part_type_colour3(
         _particle,
@@ -43,22 +37,35 @@ function sc_particles_projectile_trail_register(_key, _config)
         0
     );
 
-    part_type_direction(
-        _particle,
-        0,
-        359,
-        0,
-        0
-    );
+    part_type_direction(_particle,0,359,0,0);
 
-    part_type_orientation(
-        _particle,
-        0,
-        359,
-        0,
-        _config.rotation_speed,
-        false
-    );
+    var _direction_locked = variable_struct_exists(
+        _config,
+        "direction_locked"
+    ) && _config.direction_locked;
+
+    if (_direction_locked)
+    {
+        var _offset = variable_struct_exists(_config,"orientation_offset")
+            ? _config.orientation_offset
+            : 0;
+
+        part_type_orientation(
+            _particle,
+            _offset,_offset,
+            0,0,
+            true
+        );
+    }
+    else
+    {
+        part_type_orientation(
+            _particle,
+            0,359,
+            0,_config.rotation_speed,
+            false
+        );
+    }
 
     part_type_life(
         _particle,
@@ -71,7 +78,7 @@ function sc_particles_projectile_trail_register(_key, _config)
         _config.blend_additive
     );
 
-    return sc_particles_group_register(_key, {
+    return sc_particles_group_register(_key,{
         particle: _particle
     });
 }
