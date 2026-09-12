@@ -112,7 +112,7 @@ function sc_enemy_register_sim_nexus()
                 group: "diagonal_beams",
                 forward: 0.54,
                 side: -0.54,
-                angle: 45,
+                angle: 315,
                 muzzle_forward: 0.32,
 
                 rotation: {
@@ -130,7 +130,7 @@ function sc_enemy_register_sim_nexus()
                 group: "diagonal_beams",
                 forward: -0.54,
                 side: -0.54,
-                angle: 135,
+                angle: 45,
                 muzzle_forward: 0.32,
 
                 rotation: {
@@ -148,7 +148,7 @@ function sc_enemy_register_sim_nexus()
                 group: "diagonal_beams",
                 forward: -0.54,
                 side: 0.54,
-                angle: 225,
+                angle: 135,
                 muzzle_forward: 0.32,
 
                 rotation: {
@@ -166,7 +166,7 @@ function sc_enemy_register_sim_nexus()
                 group: "diagonal_beams",
                 forward: 0.54,
                 side: 0.54,
-                angle: 315,
+                angle: 225,
                 muzzle_forward: 0.32,
 
                 rotation: {
@@ -1009,21 +1009,32 @@ function sc_enemy_sim_nexus_orb_emitter_draw(_x,_y,_radius,_angle,_visual,_alpha
 
     draw_set_alpha(_alpha);
 
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.12,_p.void,false);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.1,_p.metal,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.067,_p.hull_mid,false);
+    // Rear mounting socket.
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.12,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.1,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.067,_p.hull_mid,false);
 
+    // Gun housing runs inward behind the actual muzzle point.
     sc_visual_quad(
         _x,_y,_radius,_angle,
-        -0.01,-0.06,
-        0.16,-0.048,
-        0.16,0.048,
-        -0.01,0.06,
+        -0.22,-0.06,
+        0.02,-0.048,
+        0.02,0.048,
+        -0.22,0.06,
         _p.hull_light
     );
 
-    sc_visual_circle(_x,_y,_radius,_angle,0.17,0,0.055,_p.accent,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0.17,0,0.025,_p.core,false);
+    // Energy channel toward muzzle.
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        -0.16,0,
+        0.04,0,
+        2,_p,_alpha
+    );
+
+    // Actual muzzle faces +angle.
+    sc_visual_circle(_x,_y,_radius,_angle,0.05,0,0.055,_p.accent,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.05,0,0.025,_p.core,false);
 
     draw_set_alpha(1);
 }
