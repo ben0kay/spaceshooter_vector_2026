@@ -233,6 +233,28 @@ function sc_attack_area_sim_nexus_shockwave_draw(_area,_data)
     draw_set_colour(c_white);
 }
 
+/// @description Creates one fixed Nexus dividing-orb hardpoint.
+function sc_enemy_sim_nexus_orb_hardpoint(_key,_forward,_side,_angle)
+{
+    return {
+        key: _key,
+        group: "orb_batteries",
+        forward: _forward,
+        side: _side,
+        angle: _angle,
+        muzzle_forward: 0.18,
+
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
+
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    };
+}
+
 /// @description Registers the Simulant Nexus champion capital ship.
 function sc_enemy_register_sim_nexus()
 {
@@ -394,161 +416,89 @@ function sc_enemy_register_sim_nexus()
         draw_script: sc_enemy_sim_nexus_beam_emitter_draw
     },
 
-    // ==================================================
-    // EAST ORB BATTERY
-    // ==================================================
-    {
-        key: "orb_east_upper",
-        group: "orb_batteries",
-        forward: 0.78,
-        side: 0.1,
-        angle: 0,
-        muzzle_forward: 0.18,
+                // ==================================================
+            // THREE-WAY EAST ORB BATTERY
+            // ==================================================
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_east_upper",
+                0.78,-0.14,
+                210
+            ),
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_east_centre",
+                0.8,0,
+                180
+            ),
 
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_east_lower",
+                0.78,0.14,
+                150
+            ),
 
-    {
-        key: "orb_east_lower",
-        group: "orb_batteries",
-        forward: 0.78,
-        side: -0.1,
-        angle: 0,
-        muzzle_forward: 0.18,
+            // ==================================================
+            // THREE-WAY NORTH ORB BATTERY
+            // ==================================================
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_north_left",
+                -0.14,-0.78,
+                300
+            ),
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_north_centre",
+                0,-0.8,
+                270
+            ),
 
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_north_right",
+                0.14,-0.78,
+                240
+            ),
 
-    // ==================================================
-    // NORTH ORB BATTERY
-    // ==================================================
-    {
-        key: "orb_north_left",
-        group: "orb_batteries",
-        forward: -0.1,
-        side: 0.78,
-        angle: 90,
-        muzzle_forward: 0.18,
+            // ==================================================
+            // THREE-WAY WEST ORB BATTERY
+            // ==================================================
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_west_upper",
+                -0.78,-0.14,
+                30
+            ),
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_west_centre",
+                -0.8,0,
+                0
+            ),
 
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_west_lower",
+                -0.78,0.14,
+                330
+            ),
 
-    {
-        key: "orb_north_right",
-        group: "orb_batteries",
-        forward: 0.1,
-        side: 0.78,
-        angle: 90,
-        muzzle_forward: 0.18,
+            // ==================================================
+            // THREE-WAY SOUTH ORB BATTERY
+            // ==================================================
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_south_left",
+                -0.14,0.78,
+                120
+            ),
 
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_south_centre",
+                0,0.8,
+                90
+            ),
 
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
-
-    // ==================================================
-    // WEST ORB BATTERY
-    // ==================================================
-    {
-        key: "orb_west_upper",
-        group: "orb_batteries",
-        forward: -0.78,
-        side: 0.1,
-        angle: 180,
-        muzzle_forward: 0.18,
-
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
-
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
-
-    {
-        key: "orb_west_lower",
-        group: "orb_batteries",
-        forward: -0.78,
-        side: -0.1,
-        angle: 180,
-        muzzle_forward: 0.18,
-
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
-
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
-
-    // ==================================================
-    // SOUTH ORB BATTERY
-    // ==================================================
-    {
-        key: "orb_south_left",
-        group: "orb_batteries",
-        forward: -0.1,
-        side: -0.78,
-        angle: 270,
-        muzzle_forward: 0.18,
-
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
-
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
-
-    {
-        key: "orb_south_right",
-        group: "orb_batteries",
-        forward: 0.1,
-        side: -0.78,
-        angle: 270,
-        muzzle_forward: 0.18,
-
-        rotation: {
-            mode: HardpointRotation.FIXED,
-            turn_speed: 0,
-            arc: 0,
-            return_to_rest: true
-        },
-
-        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-    },
+            sc_enemy_sim_nexus_orb_hardpoint(
+                "orb_south_right",
+                0.14,0.78,
+                60
+            ),
 
     // ==================================================
     // CENTRAL SEEKER CORE
