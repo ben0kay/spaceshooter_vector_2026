@@ -289,62 +289,79 @@ function sc_projectile_avoidance_direction_get(_projectile, _target_direction)
     return _best_direction;
 }
 
-/// @description Updates weapon-supplied projectile guidance.
+/// @description Updates predictive homing, volley assignments and optional obstacle avoidance.
 function sc_projectile_homing_update(_projectile)
 {
     var _data = _projectile.projectile;
     var _guidance = _data.guidance;
-
-    if (!_guidance.homing) return;
-
     var _runtime = _data.runtime;
-
-    // The projectile continues along its launch direction until guidance activates.
-    if (GAME_TICK < _runtime.guidance_start_tick) return;
-
     var _target = _runtime.target_id;
-    var _retain_target = variable_struct_exists(_guidance, "retain_assigned_target")
-        ? _guidance.retain_assigned_target
-        : false;
+    var _target_direction = _data.direction;
 
-    var _needs_target = !instance_exists(_target);
-
-    // Existing homing weapons retain their normal periodic reacquisition.
-    // Volley-assigned missiles keep valid assignments until the target disappears.
-    if (!_retain_target && GAME_TICK >= _runtime.next_target_tick)
-        _needs_target = true;
-
-    if (_needs_target)
+    if (GAME_TICK >= _runtime.guidance_ready_tick)
     {
-        _target = sc_projectile_target_find(
-            _projectile,
-            _guidance.acquire_range
-        );
+        var _retain_target = variable_struct_exists(_guidance, "retain_assigned_target")
+            ? _guidance.retain_assigned_target
+            : false;
 
-        _runtime.target_id = _target;
-        _runtime.next_target_tick =
-            GAME_TICK + max(1, round(_guidance.reacquire_interval));
+        var _needs_target = !instance_exists(_target);
+
+        // Ordinary missiles periodically reconsider their target.
+        // Volley-assigned missiles retain theirs until it is destroyed.
+        if (!_retain_target && GAME_TICK >= _runtime.next_target_tick)
+            _needs_target = true;
+
+        if (_needs_target)
+        {
+            _target = sc_projectile_target_find(
+                _projectile,
+                _guidance.acquire_range,
+                _guidance.lock_angle
+            );
+
+            _runtime.target_id = _target;
+            _runtime.next_target_tick =
+                GAME_TICK + _guidance.reacquire_interval;
+        }
+
+        if (instance_exists(_target))
+        {
+            _target_direction = sc_projectile_target_direction_get(
+                _projectile,
+                _target,
+                _guidance.lead_strength
+            );
+        }
     }
 
-    if (!instance_exists(_target)) return;
+    var _turn_speed = _guidance.turn_speed;
 
-    var _target_direction = point_direction(
-        _projectile.x, _projectile.y,
-        _target.x, _target.y
-    );
+    if (_guidance.avoidance != 0)
+    {
+        var _avoidance_direction = sc_projectile_avoidance_direction_get(
+            _projectile,
+            _target_direction
+        );
+
+        if (!is_undefined(_avoidance_direction))
+        {
+            _target_direction = _avoidance_direction;
+            _turn_speed =
+                GCFG.projectile.obstacle_avoidance.turn_speed_max
+                * _guidance.avoidance.strength;
+        }
+    }
 
     var _turn = angle_difference(
         _target_direction,
         _data.direction
     );
 
-    _data.direction += clamp(
-        _turn,
-        -_guidance.turn_speed,
-        _guidance.turn_speed
-    );
-
-    _data.direction = _data.direction mod 360;
+    _data.direction = (
+        _data.direction
+        + clamp(_turn, -_turn_speed, _turn_speed)
+        + 360
+    ) mod 360;
 }
 
 /// @description Creates a projectile's explosion and optional child emissions.

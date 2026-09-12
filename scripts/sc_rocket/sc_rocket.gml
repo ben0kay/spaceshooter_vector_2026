@@ -106,7 +106,7 @@ function sc_weapon_register_shard_missile_salvo()
             name: "Shard Micro-Missile Salvo"
         },
 
-        // Paid once for the complete six-rocket volley.
+        // This cost is paid once for the complete volley.
         resource: {
             type: ResourceType.EXPLOSIVES,
             cost: 2
@@ -129,16 +129,22 @@ function sc_weapon_register_shard_missile_salvo()
             },
 
             guidance: {
-                homing: 1,
                 acquire_range: 1200,
                 turn_speed: 5.5,
                 reacquire_interval: 12,
-
-                // Fly straight for ten steps before steering.
+                lead_strength: 0.15,
                 guidance_delay: 10,
+                lock_angle: 220,
 
-                // Keep the volley assignment until that target disappears.
-                retain_assigned_target: true
+                // Preserve the evenly assigned target while it remains alive.
+                retain_assigned_target: true,
+
+                avoidance: {
+                    strength: 0.7,
+                    asteroids: 1,
+                    structures: 1,
+                    clearance_scale: 0.75
+                }
             },
 
             detonation: {

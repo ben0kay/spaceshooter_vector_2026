@@ -41,41 +41,40 @@ function sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _direction)
     switch (_delivery.type)
     {
         case AttackDelivery.PROJECTILE:
-        {
-            var _projectile = sc_projectile_create(
-                _delivery.projectile_key, _source, _delivery,
-                _x, _y, _direction, _layer
+            return sc_projectile_create(
+                _delivery.projectile_key,
+                _source,
+                _delivery,
+                _x, _y, _direction,
+                _layer
             );
-
-            // Only guided projectiles receive a guidance activation time.
-            if (instance_exists(_projectile) && _delivery.guidance.homing)
-            {
-                var _delay = variable_struct_exists(_delivery.guidance, "guidance_delay")
-                    ? max(0, round(_delivery.guidance.guidance_delay))
-                    : 0;
-
-                _projectile.projectile.runtime.guidance_start_tick = GAME_TICK + _delay;
-            }
-
-            return _projectile;
-        }
 
         case AttackDelivery.AREA:
             return sc_attack_area_create(
-                _delivery.area, _source, _delivery.damage,
-                _x, _y, _direction, _layer, _delivery.scale
+                _delivery.area,
+                _source,
+                _delivery.damage,
+                _x, _y, _direction,
+                _layer,
+                _delivery.scale
             );
 
         case AttackDelivery.BEAM:
             return sc_beam_create(
-                _delivery.beam, _source, _delivery.damage,
-                _x, _y, _direction, _layer, _delivery.scale
+                _delivery.beam,
+                _source,
+                _delivery.damage,
+                _x, _y, _direction,
+                _layer,
+                _delivery.scale
             );
 
         case AttackDelivery.DEPLOYABLE:
             return _delivery.create_script(
-                _delivery, _source,
-                _x, _y, _direction, _layer
+                _delivery,
+                _source,
+                _x, _y, _direction,
+                _layer
             );
     }
 
