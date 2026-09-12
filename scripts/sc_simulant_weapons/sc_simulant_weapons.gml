@@ -120,7 +120,7 @@ function sc_weapon_register_simulant_shard()
             projectile_key: "projectile_simulant_shard",
 
             projectile: {
-                scale: 1,
+                scale: 1.5,
                 speed: 22,
                 life: 85
             },

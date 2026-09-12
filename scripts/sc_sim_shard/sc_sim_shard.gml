@@ -21,7 +21,7 @@ Weapons can later own:
 - spread / burst logic
 */
 
-/// @description Registers the reusable Simulant shard projectile.
+/// @description Registers the reusable Simulant data-shard projectile.
 function sc_projectile_register_simulant_shard()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
@@ -36,38 +36,42 @@ function sc_projectile_register_simulant_shard()
         projectile_class: ProjectileClass.REGULAR,
 
         collision: {
-            radius: 7
+            radius: 8
         },
 
         visual: {
-            radius: 10,
-            length: 30,
+            radius: 12,
+            length: 32,
             palette: _palette,
 
             draw_script: sc_projectile_simulant_shard_draw,
             impact_script: sc_projectile_simulant_shard_impact,
-            trail_script: sc_projectile_particle_trail_emit,
+            trail_script: sc_projectile_simulant_shard_trail_emit,
             particles_register_script: sc_projectile_simulant_shard_particles_register,
 
             particle_trail: {
                 group: "trail_simulant_shard",
-                interval: 3,
-                amount: 1,
-                rear_scale: 0.38,
-                spread: 0,
-                size_min: 0.035,
-                size_max: 0.065,
-                size_growth: -0.001,
+                interval: 2,
+                amount: 2,
+
+                rear_scale_min: 0.32,
+                rear_scale_max: 0.8,
+                side_spread: 9,
+
+                size_min: 0.055,
+                size_max: 0.095,
+                size_growth: -0.0015,
                 size_wiggle: 0
             },
 
+            // Narrow foundation beneath the visible data fragments.
             trail: {
                 enabled: true,
-                length: 48,
-                width: 2.2,
-                glow_width: 9,
-                alpha: 0.84,
-                glow_alpha: 0.2
+                length: 42,
+                width: 1.8,
+                glow_width: 7,
+                alpha: 0.72,
+                glow_alpha: 0.13
             },
 
             bake: {
@@ -79,7 +83,7 @@ function sc_projectile_register_simulant_shard()
     });
 }
 
-/// @description Registers the Simulant shard impact and direction-locked shard trail.
+/// @description Registers the shard impact and bright direction-locked data fragments.
 function sc_projectile_simulant_shard_particles_register()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
@@ -88,12 +92,12 @@ function sc_projectile_simulant_shard_particles_register()
         "impact_simulant_shard",
         _palette,
         {
-            scale: 0.9,
-            spark_amount: 6,
-            fragment_amount: 4,
-            spark_spread: 80,
+            scale: 0.95,
+            spark_amount: 7,
+            fragment_amount: 5,
+            spark_spread: 85,
             speed_min: 2.2,
-            speed_max: 5
+            speed_max: 5.2
         }
     )) return false;
 
@@ -103,22 +107,22 @@ function sc_projectile_simulant_shard_particles_register()
             sprite: s_particle_shard,
 
             colour_start: _palette.core,
-            colour_middle: _palette.accent,
+            colour_middle: _palette.energy,
             colour_end: _palette.glow,
 
-            alpha_start: 0.72,
-            alpha_middle: 0.24,
+            alpha_start: 0.95,
+            alpha_middle: 0.5,
 
-            speed_min: 0.15,
-            speed_max: 0.45,
-            speed_reduce: -0.01,
+            speed_min: 0.25,
+            speed_max: 0.75,
+            speed_reduce: -0.015,
 
-            life_min: 8,
-            life_max: 13,
+            life_min: 11,
+            life_max: 18,
 
             direction_locked: true,
 
-            // Particles travel backwards, so 180 faces them forwards.
+            // Particle movement is backward; 180 keeps its diamond facing forward.
             orientation_offset: 180,
             rotation_speed: 0,
             blend_additive: true
@@ -138,27 +142,27 @@ function sc_projectile_simulant_shard_impact(_x,_y,_direction,_target,_scale)
     );
 }
 
-/// @description Draws one clear animated Simulant diamond shard for baking.
+/// @description Draws one wide layered Simulant data shard for baking.
 function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_count)
 {
     var _p = _visual.palette;
     var _r = _visual.radius;
     var _phase = (_frame/_frame_count)*pi*2;
-    var _pulse = 0.94+sin(_phase)*0.06;
+    var _pulse = 0.95+sin(_phase)*0.05;
 
-    // Broad outer glow diamond.
-    var _front_x = _x+lengthdir_x(_r*1.45,_angle);
-    var _front_y = _y+lengthdir_y(_r*1.45,_angle);
-    var _rear_x = _x+lengthdir_x(-_r*0.95,_angle);
-    var _rear_y = _y+lengthdir_y(-_r*0.95,_angle);
-    var _left_x = _x+lengthdir_x(_r*0.72*_pulse,_angle+90);
-    var _left_y = _y+lengthdir_y(_r*0.72*_pulse,_angle+90);
-    var _right_x = _x+lengthdir_x(_r*0.72*_pulse,_angle-90);
-    var _right_y = _y+lengthdir_y(_r*0.72*_pulse,_angle-90);
+    var _front_x = _x+lengthdir_x(_r*1.34,_angle);
+    var _front_y = _y+lengthdir_y(_r*1.34,_angle);
+    var _rear_x = _x+lengthdir_x(-_r*0.92,_angle);
+    var _rear_y = _y+lengthdir_y(-_r*0.92,_angle);
+    var _left_x = _x+lengthdir_x(_r*0.82*_pulse,_angle+90);
+    var _left_y = _y+lengthdir_y(_r*0.82*_pulse,_angle+90);
+    var _right_x = _x+lengthdir_x(_r*0.82*_pulse,_angle-90);
+    var _right_y = _y+lengthdir_y(_r*0.82*_pulse,_angle-90);
 
+    // Wide soft outer diamond.
     gpu_set_blendmode(bm_add);
     draw_set_colour(_p.glow);
-    draw_set_alpha(0.24);
+    draw_set_alpha(0.3);
 
     draw_triangle(
         _front_x,_front_y,
@@ -174,85 +178,196 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
         false
     );
 
+    // Brighter middle diamond.
+    var _mid_front_x = _x+lengthdir_x(_r*1.17,_angle);
+    var _mid_front_y = _y+lengthdir_y(_r*1.17,_angle);
+    var _mid_rear_x = _x+lengthdir_x(-_r*0.75,_angle);
+    var _mid_rear_y = _y+lengthdir_y(-_r*0.75,_angle);
+    var _mid_left_x = _x+lengthdir_x(_r*0.63,_angle+90);
+    var _mid_left_y = _y+lengthdir_y(_r*0.63,_angle+90);
+    var _mid_right_x = _x+lengthdir_x(_r*0.63,_angle-90);
+    var _mid_right_y = _y+lengthdir_y(_r*0.63,_angle-90);
+
+    draw_set_colour(_p.accent);
+    draw_set_alpha(0.58);
+
+    draw_triangle(
+        _mid_front_x,_mid_front_y,
+        _mid_left_x,_mid_left_y,
+        _mid_rear_x,_mid_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _mid_front_x,_mid_front_y,
+        _mid_rear_x,_mid_rear_y,
+        _mid_right_x,_mid_right_y,
+        false
+    );
+
     gpu_set_blendmode(bm_normal);
 
-    // Solid main crystal.
-    _front_x = _x+lengthdir_x(_r*1.22,_angle);
-    _front_y = _y+lengthdir_y(_r*1.22,_angle);
-    _rear_x = _x+lengthdir_x(-_r*0.78,_angle);
-    _rear_y = _y+lengthdir_y(-_r*0.78,_angle);
-    _left_x = _x+lengthdir_x(_r*0.55,_angle+90);
-    _left_y = _y+lengthdir_y(_r*0.55,_angle+90);
-    _right_x = _x+lengthdir_x(_r*0.55,_angle-90);
-    _right_y = _y+lengthdir_y(_r*0.55,_angle-90);
+    // Solid inner crystal.
+    var _core_front_x = _x+lengthdir_x(_r*0.95,_angle);
+    var _core_front_y = _y+lengthdir_y(_r*0.95,_angle);
+    var _core_rear_x = _x+lengthdir_x(-_r*0.54,_angle);
+    var _core_rear_y = _y+lengthdir_y(-_r*0.54,_angle);
+    var _core_left_x = _x+lengthdir_x(_r*0.42,_angle+90);
+    var _core_left_y = _y+lengthdir_y(_r*0.42,_angle+90);
+    var _core_right_x = _x+lengthdir_x(_r*0.42,_angle-90);
+    var _core_right_y = _y+lengthdir_y(_r*0.42,_angle-90);
 
     draw_set_alpha(1);
     draw_set_colour(_p.hull_light);
 
     draw_triangle(
-        _front_x,_front_y,
-        _left_x,_left_y,
-        _rear_x,_rear_y,
+        _core_front_x,_core_front_y,
+        _core_left_x,_core_left_y,
+        _core_rear_x,_core_rear_y,
         false
     );
 
-    draw_set_colour(_p.accent);
-
-    draw_triangle(
-        _front_x,_front_y,
-        _rear_x,_rear_y,
-        _right_x,_right_y,
-        false
-    );
-
-    // Smaller bright inner diamond.
-    _front_x = _x+lengthdir_x(_r*0.87,_angle);
-    _front_y = _y+lengthdir_y(_r*0.87,_angle);
-    _rear_x = _x+lengthdir_x(-_r*0.48,_angle);
-    _rear_y = _y+lengthdir_y(-_r*0.48,_angle);
-    _left_x = _x+lengthdir_x(_r*0.27,_angle+90);
-    _left_y = _y+lengthdir_y(_r*0.27,_angle+90);
-    _right_x = _x+lengthdir_x(_r*0.27,_angle-90);
-    _right_y = _y+lengthdir_y(_r*0.27,_angle-90);
-
-    gpu_set_blendmode(bm_add);
     draw_set_colour(_p.energy);
-    draw_set_alpha(0.92);
 
     draw_triangle(
-        _front_x,_front_y,
-        _left_x,_left_y,
-        _rear_x,_rear_y,
+        _core_front_x,_core_front_y,
+        _core_rear_x,_core_rear_y,
+        _core_right_x,_core_right_y,
         false
     );
 
-    draw_triangle(
-        _front_x,_front_y,
-        _rear_x,_rear_y,
-        _right_x,_right_y,
-        false
-    );
-
-    // Bright central crystal spine.
+    // Bright diamond lattice like the reference.
+    gpu_set_blendmode(bm_add);
     draw_set_colour(_p.core);
-    draw_set_alpha(1);
+    draw_set_alpha(0.95);
 
     draw_line_width(
-        _x+lengthdir_x(-_r*0.4,_angle),
-        _y+lengthdir_y(-_r*0.4,_angle),
-        _x+lengthdir_x(_r*0.98,_angle),
-        _y+lengthdir_y(_r*0.98,_angle),
-        2
+        _front_x,_front_y,
+        _left_x,_left_y,
+        1.5
     );
 
-    draw_circle(
-        _x+lengthdir_x(_r*0.12,_angle),
-        _y+lengthdir_y(_r*0.12,_angle),
-        _r*0.12*_pulse,
-        false
+    draw_line_width(
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        1.5
     );
+
+    draw_line_width(
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        1.5
+    );
+
+    draw_line_width(
+        _right_x,_right_y,
+        _front_x,_front_y,
+        1.5
+    );
+
+    // Internal faceted connections.
+    draw_line_width(
+        _left_x,_left_y,
+        _core_front_x,_core_front_y,
+        1.2
+    );
+
+    draw_line_width(
+        _right_x,_right_y,
+        _core_front_x,_core_front_y,
+        1.2
+    );
+
+    draw_line_width(
+        _left_x,_left_y,
+        _core_rear_x,_core_rear_y,
+        1.2
+    );
+
+    draw_line_width(
+        _right_x,_right_y,
+        _core_rear_x,_core_rear_y,
+        1.2
+    );
+
+    // Central data eye.
+    draw_set_colour(c_white);
+    draw_set_alpha(1);
+    draw_circle(_x,_y,max(1.5,_r*0.11*_pulse),false);
+
+    draw_set_colour(_p.energy);
+    draw_set_alpha(0.8);
+    draw_circle(_x,_y,_r*0.25*_pulse,true);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
     draw_set_colour(c_white);
+}
+
+/// @description Emits visible data shards around, rather than directly beneath, the trail.
+function sc_projectile_simulant_shard_trail_emit(_projectile,_data)
+{
+    var _config = _data.visual.particle_trail;
+
+    if (((GAME_TICK+real(_projectile.id)) mod _config.interval) != 0)
+        return true;
+
+    if (!sc_optimization_circle_visible(
+        _projectile.x,
+        _projectile.y,
+        _data.visual.length*_data.scale,
+        96
+    )) return true;
+
+    var _types = sc_particles_group_get(_config.group);
+    if (!is_struct(_types)) return false;
+
+    var _scale = _data.scale;
+    var _direction = _data.direction;
+    var _trail_direction = _direction+180;
+
+    part_type_direction(
+        _types.particle,
+        _trail_direction-5,
+        _trail_direction+5,
+        0,0
+    );
+
+    part_type_size(
+        _types.particle,
+        _config.size_min*_scale,
+        _config.size_max*_scale,
+        _config.size_growth*_scale,
+        _config.size_wiggle
+    );
+
+    for (var _i = 0; _i < _config.amount; _i++)
+    {
+        var _rear = _data.visual.length*random_range(
+            _config.rear_scale_min,
+            _config.rear_scale_max
+        )*_scale;
+
+        var _side = random_range(
+            -_config.side_spread,
+            _config.side_spread
+        )*_scale;
+
+        var _x = _projectile.x
+            - lengthdir_x(_rear,_direction)
+            + lengthdir_x(_side,_direction+90);
+
+        var _y = _projectile.y
+            - lengthdir_y(_rear,_direction)
+            + lengthdir_y(_side,_direction+90);
+
+        part_particles_create(
+            global.particles.system,
+            _x,_y,
+            _types.particle,
+            1
+        );
+    }
+
+    return true;
 }
