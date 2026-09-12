@@ -23,6 +23,7 @@ function sc_enemy_register_sim_nexus()
 {
     return sc_enemy_register({
         identity: {
+            key: "enemy_sim_nexus",
             name: "Simulant Nexus",
             faction: Faction.SIMULANT,
             role: EnemyRole.FIGHTER,
