@@ -59,13 +59,13 @@ function sc_attack_area_init(_area, _create)
 }
 
 /// @description Initializes one ordinary timed circle, capsule or cone.
-function sc_attack_area_standard_init(_area, _create)
+function sc_attack_area_standard_init(_area,_create)
 {
     var _definition = variable_clone(_create.definition);
     var _geometry = variable_clone(_definition.geometry);
-    var _behaviour = _definition.behaviour;
-    var _scale = max(0.01, _create.scale);
-    var _interval = max(0, round(_behaviour.tick_interval));
+    var _source_behaviour = _definition.behaviour;
+    var _scale = max(0.01,_create.scale);
+    var _interval = max(0,round(_source_behaviour.tick_interval));
     var _falloff_distance = 1;
 
     switch (_definition.shape)
@@ -87,32 +87,25 @@ function sc_attack_area_standard_init(_area, _create)
         break;
     }
 
-    var _occlusion = variable_clone(
-        GCFG.damage.area_occlusion
-    );
+    // Optional travelling damage edge for circular attacks.
+    var _ring = variable_struct_exists(_source_behaviour,"expanding_ring")
+        ? variable_clone(_source_behaviour.expanding_ring)
+        : { enabled: false, start_radius: 0, thickness: 1 };
 
-    var _occlusion_supported =
-        _definition.shape
-        == AttackAreaShape.CIRCLE;
+    _ring.enabled = _definition.shape == AttackAreaShape.CIRCLE && _ring.enabled;
+    _ring.start_radius = clamp(_ring.start_radius*_scale,0,_falloff_distance);
+    _ring.thickness = max(1,_ring.thickness*_scale);
 
-    var _occlusion_default =
-        _occlusion_supported
-        && _create.damage.type
-        == DamageType.EXPLOSIVE;
+    var _occlusion = variable_clone(GCFG.damage.area_occlusion);
+    var _occlusion_supported = _definition.shape == AttackAreaShape.CIRCLE;
+    var _occlusion_default = _occlusion_supported && _create.damage.type == DamageType.EXPLOSIVE;
 
-    _occlusion.asteroids =
-        _occlusion.asteroids
-        && _occlusion_default;
+    _occlusion.asteroids = _occlusion.asteroids && _occlusion_default;
 
-    // A circular attack may explicitly override the damage-type default.
-    if (
-        _occlusion_supported
-        && variable_struct_exists(_behaviour, "occlusion")
-    )
-    {
-        _occlusion.asteroids =
-            _behaviour.occlusion.asteroids;
-    }
+    if (_occlusion_supported && variable_struct_exists(_source_behaviour,"occlusion"))
+        _occlusion.asteroids = _source_behaviour.occlusion.asteroids;
+
+    var _duration = max(1,round(_source_behaviour.duration));
 
     _area.attack_area = {
         delivery_type: AttackDelivery.AREA,
@@ -121,49 +114,27 @@ function sc_attack_area_standard_init(_area, _create)
         shape: _definition.shape,
         geometry: _geometry,
 
-        damage: sc_damage_packet_create(
-            _create.damage,
-            _create.source
-        ),
+        damage: sc_damage_packet_create(_create.damage,_create.source),
 
         behaviour: {
-            duration: max(1, round(_behaviour.duration)),
-            tick_interval: _interval,
-            hit_once: _behaviour.hit_once,
-            max_targets: _behaviour.max_targets,
-
-            falloff_minimum: clamp(
-                _behaviour.falloff_minimum,
-                0,
-                1
-            ),
-
-            falloff_exponent: max(
-                0.01,
-                _behaviour.falloff_exponent
-            ),
-
-            falloff_distance: max(
-                1,
-                _falloff_distance
-            ),
-
+            duration: _duration,
+            tick_interval: _ring.enabled ? max(1,_interval) : _interval,
+            hit_once: _source_behaviour.hit_once,
+            max_targets: _source_behaviour.max_targets,
+            falloff_minimum: clamp(_source_behaviour.falloff_minimum,0,1),
+            falloff_exponent: max(0.01,_source_behaviour.falloff_exponent),
+            falloff_distance: max(1,_falloff_distance),
+            expanding_ring: _ring,
             occlusion: _occlusion
         },
 
-        visual: variable_clone(
-            _definition.visual
-        ),
+        visual: variable_clone(_definition.visual),
 
         runtime: {
-            life: max(
-                1,
-                round(_behaviour.duration)
-            ),
-
-            next_damage_tick:
-                GAME_TICK + _interval,
-
+            life: _duration,
+            elapsed: 0,
+            ring_radius: _ring.start_radius,
+            next_damage_tick: GAME_TICK+(_ring.enabled ? 1 : _interval),
             hit_ids: []
         }
     };
@@ -171,23 +142,19 @@ function sc_attack_area_standard_init(_area, _create)
     _area.draw_angle = _create.direction;
     _area.initialized = true;
 
-    if (
-        variable_struct_exists(
-            _area.attack_area.visual,
-            "shockwave"
-        )
-    )
+    if (variable_struct_exists(_area.attack_area.visual,"shockwave"))
     {
         sc_shockwave_create(
-            _area.x,
-            _area.y,
-            _area.layer,
+            _area.x,_area.y,_area.layer,
             _area.attack_area.visual.shockwave,
             _falloff_distance
         );
     }
 
-    sc_attack_area_damage_apply(_area);
+    // Ordinary areas damage immediately. Expanding rings wait for their edge.
+    if (!_ring.enabled)
+        sc_attack_area_damage_apply(_area);
+
     return true;
 }
 
@@ -330,57 +297,66 @@ function sc_attack_area_candidates_get(_area)
     switch (_data.shape)
     {
         case AttackAreaShape.CIRCLE:
+        {
+            var _radius = _data.behaviour.expanding_ring.enabled
+                ? min(
+                    _geometry.radius,
+                    _data.runtime.ring_radius
+                    + _data.behaviour.expanding_ring.thickness*0.5
+                )
+                : _geometry.radius;
+
             collision_circle_list(
-                _area.x, _area.y,
-                _geometry.radius,
-                o_entity, false, true,
-                _list, false
+                _area.x,_area.y,_radius,
+                o_entity,false,true,
+                _list,false
             );
 
             collision_circle_list(
-                _area.x, _area.y,
-                _geometry.radius,
-                o_interceptable_projectile, false, true,
-                _list, false
+                _area.x,_area.y,_radius,
+                o_interceptable_projectile,false,true,
+                _list,false
             );
+        }
         break;
 
         case AttackAreaShape.CAPSULE:
-            var _end_x = _area.x + lengthdir_x(_geometry.length, _data.direction);
-            var _end_y = _area.y + lengthdir_y(_geometry.length, _data.direction);
+        {
+            var _end_x = _area.x+lengthdir_x(_geometry.length,_data.direction);
+            var _end_y = _area.y+lengthdir_y(_geometry.length,_data.direction);
             var _radius = _geometry.radius;
 
-            var _x1 = min(_area.x, _end_x) - _radius;
-            var _y1 = min(_area.y, _end_y) - _radius;
-            var _x2 = max(_area.x, _end_x) + _radius;
-            var _y2 = max(_area.y, _end_y) + _radius;
-
             collision_rectangle_list(
-                _x1, _y1, _x2, _y2,
-                o_entity, false, true,
-                _list, false
+                min(_area.x,_end_x)-_radius,
+                min(_area.y,_end_y)-_radius,
+                max(_area.x,_end_x)+_radius,
+                max(_area.y,_end_y)+_radius,
+                o_entity,false,true,
+                _list,false
             );
 
             collision_rectangle_list(
-                _x1, _y1, _x2, _y2,
-                o_interceptable_projectile, false, true,
-                _list, false
+                min(_area.x,_end_x)-_radius,
+                min(_area.y,_end_y)-_radius,
+                max(_area.x,_end_x)+_radius,
+                max(_area.y,_end_y)+_radius,
+                o_interceptable_projectile,false,true,
+                _list,false
             );
+        }
         break;
 
         case AttackAreaShape.CONE:
             collision_circle_list(
-                _area.x, _area.y,
-                _geometry.range,
-                o_entity, false, true,
-                _list, false
+                _area.x,_area.y,_geometry.range,
+                o_entity,false,true,
+                _list,false
             );
 
             collision_circle_list(
-                _area.x, _area.y,
-                _geometry.range,
-                o_interceptable_projectile, false, true,
-                _list, false
+                _area.x,_area.y,_geometry.range,
+                o_interceptable_projectile,false,true,
+                _list,false
             );
         break;
     }
@@ -389,7 +365,7 @@ function sc_attack_area_candidates_get(_area)
 }
 
 /// @description Performs the exact shape test after broad-phase collection.
-function sc_attack_area_target_inside(_area, _target)
+function sc_attack_area_target_inside(_area,_target)
 {
     var _data = _area.attack_area;
     var _geometry = _data.geometry;
@@ -398,26 +374,54 @@ function sc_attack_area_target_inside(_area, _target)
     switch (_data.shape)
     {
         case AttackAreaShape.CIRCLE:
-            var _radius = _geometry.radius + _target_radius;
-            return sc_point_distance_sq(_area.x, _area.y, _target.x, _target.y) <= _radius * _radius;
+        {
+            var _distance_sq = sc_point_distance_sq(
+                _area.x,_area.y,
+                _target.x,_target.y
+            );
+
+            var _ring = _data.behaviour.expanding_ring;
+
+            if (_ring.enabled)
+            {
+                var _half = _ring.thickness*0.5;
+                var _outer = _data.runtime.ring_radius+_half+_target_radius;
+                var _inner = max(0,_data.runtime.ring_radius-_half-_target_radius);
+
+                return _distance_sq <= _outer*_outer
+                    && _distance_sq >= _inner*_inner;
+            }
+
+            var _radius = _geometry.radius+_target_radius;
+            return _distance_sq <= _radius*_radius;
+        }
 
         case AttackAreaShape.CAPSULE:
-            var _end_x = _area.x + lengthdir_x(_geometry.length, _data.direction);
-            var _end_y = _area.y + lengthdir_y(_geometry.length, _data.direction);
-            var _radius = _geometry.radius + _target_radius;
+        {
+            var _end_x = _area.x+lengthdir_x(_geometry.length,_data.direction);
+            var _end_y = _area.y+lengthdir_y(_geometry.length,_data.direction);
+            var _radius = _geometry.radius+_target_radius;
 
             return sc_attack_area_point_segment_distance_sq(
-                _target.x, _target.y,
-                _area.x, _area.y,
-                _end_x, _end_y
-            ) <= _radius * _radius;
+                _target.x,_target.y,
+                _area.x,_area.y,
+                _end_x,_end_y
+            ) <= _radius*_radius;
+        }
 
         case AttackAreaShape.CONE:
-            var _distance = point_distance(_area.x, _area.y, _target.x, _target.y);
-            if (_distance > _geometry.range + _target_radius) return false;
+        {
+            var _distance = point_distance(_area.x,_area.y,_target.x,_target.y);
+            if (_distance > _geometry.range+_target_radius) return false;
 
-            var _target_direction = point_direction(_area.x, _area.y, _target.x, _target.y);
-            return abs(angle_difference(_target_direction, _data.direction)) <= _geometry.angle * 0.5;
+            var _target_direction = point_direction(
+                _area.x,_area.y,
+                _target.x,_target.y
+            );
+
+            return abs(angle_difference(_target_direction,_data.direction))
+                <= _geometry.angle*0.5;
+        }
     }
 
     return false;
@@ -682,16 +686,36 @@ function sc_attack_area_update(_area)
 }
 
 /// @description Updates one ordinary short-lived attack area.
-function sc_attack_area_standard_update(_area, _data)
+function sc_attack_area_standard_update(_area,_data)
 {
     var _behaviour = _data.behaviour;
     var _runtime = _data.runtime;
+    var _ring = _behaviour.expanding_ring;
+
+    _runtime.elapsed++;
+
+    if (_ring.enabled)
+    {
+        var _progress = clamp(
+            _runtime.elapsed/_behaviour.duration,
+            0,1
+        );
+
+        _runtime.ring_radius = lerp(
+            _ring.start_radius,
+            _data.geometry.radius,
+            _progress
+        );
+    }
 
     if (_behaviour.tick_interval > 0 && GAME_TICK >= _runtime.next_damage_tick)
     {
         sc_attack_area_damage_apply(_area);
-        _runtime.next_damage_tick = GAME_TICK + _behaviour.tick_interval;
+        _runtime.next_damage_tick = GAME_TICK+_behaviour.tick_interval;
     }
+
+    if (variable_struct_exists(_data.visual,"particle_script"))
+        _data.visual.particle_script(_area,_data);
 
     _runtime.life--;
 

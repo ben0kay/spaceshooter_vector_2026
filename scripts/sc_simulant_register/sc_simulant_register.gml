@@ -32,6 +32,7 @@ function sc_enemy_faction_simulant_weapons_register()
     if (!sc_weapon_register_simulant_seeker_core()) return false;
     if (!sc_weapon_register_simulant_orb()) return false;
     if (!sc_weapon_register_simulant_dividing_orb()) return false;
+    if (!sc_weapon_register_sim_nexus_shockwave()) return false;
     return true;
 }
 

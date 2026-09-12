@@ -18,6 +18,221 @@ The entire vessel slowly rotates constantly.
 No conventional rear thrusters.
 */
 
+/// @description Registers the Nexus's expanding purple fire shockwave.
+function sc_weapon_register_sim_nexus_shockwave()
+{
+    var _p = sc_faction_palette_get(Faction.SIMULANT);
+
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_sim_nexus_shockwave",
+            name: "Nexus Fire Shockwave"
+        },
+
+        delivery: {
+            type: AttackDelivery.AREA,
+            scale: 1,
+
+            damage: {
+                amount: 42,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.STAGGER,
+                knockback_force: 13
+            },
+
+            area: {
+                shape: AttackAreaShape.CIRCLE,
+
+                geometry: {
+                    radius: 950
+                },
+
+                behaviour: {
+                    duration: 72,
+                    tick_interval: 1,
+                    hit_once: true,
+                    max_targets: 0,
+                    falloff_minimum: 1,
+                    falloff_exponent: 1,
+
+                    expanding_ring: {
+                        enabled: true,
+                        start_radius: 285,
+                        thickness: 105
+                    },
+
+                    occlusion: {
+                        asteroids: false
+                    }
+                },
+
+                visual: {
+                    palette: _p,
+                    draw_script: sc_attack_area_sim_nexus_shockwave_draw,
+                    particles_register_script: sc_particles_sim_nexus_shockwave_register,
+                    particle_script: sc_particles_sim_nexus_shockwave_emit,
+
+                    // Broad secondary glow beneath the true damaging fire ring.
+                    shockwave: {
+                        radius_scale: 1,
+                        expansion_response: 0.055,
+                        fade_speed: 0.014,
+                        thickness: 8,
+                        colour: _p.energy,
+
+                        particles_enabled: true,
+                        particle_interval: 2,
+                        particle_min_radius: 285,
+
+                        smoke_enabled: true,
+                        smoke_amount_max: 12,
+                        smoke_colour: merge_colour(_p.glow,c_black,0.55),
+
+                        fragments_enabled: true,
+                        fragment_chance: 0.65,
+                        fragment_colour: _p.core
+                    }
+                }
+            }
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.9,
+            pitch_range: 0.04
+        }
+    });
+}
+
+/// @description Registers purple flame and smoky-wisp particles for the Nexus ring.
+function sc_particles_sim_nexus_shockwave_register()
+{
+    var _p = sc_faction_palette_get(Faction.SIMULANT);
+    var _flame = sc_particles_type_create();
+    var _wisp = sc_particles_type_create();
+
+    if (!part_type_exists(_flame) || !part_type_exists(_wisp))
+        return false;
+
+    part_type_sprite(_flame,s_broad_flame_body_white,false,false,false);
+    part_type_size(_flame,0.1,0.2,-0.004,0.015);
+    part_type_colour3(_flame,_p.core,_p.energy,_p.glow);
+    part_type_alpha3(_flame,0.85,0.55,0);
+    part_type_blend(_flame,true);
+    part_type_speed(_flame,1.5,4,-0.05,0);
+    part_type_direction(_flame,0,359,0,0);
+    part_type_orientation(_flame,-10,10,0,3,true);
+    part_type_life(_flame,14,25);
+
+    part_type_sprite(_wisp,s_particle_smokey_wisp_001,false,false,true);
+    part_type_size(_wisp,0.07,0.14,0.002,0.012);
+    part_type_colour3(_wisp,_p.energy,_p.glow,_p.hull_dark);
+    part_type_alpha3(_wisp,0.34,0.2,0);
+    part_type_blend(_wisp,true);
+    part_type_speed(_wisp,0.4,1.4,-0.02,0);
+    part_type_direction(_wisp,0,359,0,0);
+    part_type_orientation(_wisp,0,359,0,2,false);
+    part_type_life(_wisp,24,42);
+
+    return sc_particles_group_register("sim_nexus_shockwave",{
+        flame: _flame,
+        wisp: _wisp
+    });
+}
+
+/// @description Emits purple fire and wisps along the travelling damage edge.
+function sc_particles_sim_nexus_shockwave_emit(_area,_data)
+{
+    if ((GAME_TICK mod 2) != 0) return true;
+
+    var _types = sc_particles_group_get("sim_nexus_shockwave");
+    var _radius = _data.runtime.ring_radius;
+    var _amount = clamp(ceil(_radius/115),4,10);
+
+    for (var _i = 0; _i < _amount; _i++)
+    {
+        var _angle = random(360);
+        var _spread = random_range(
+            -_data.behaviour.expanding_ring.thickness*0.35,
+            _data.behaviour.expanding_ring.thickness*0.35
+        );
+
+        var _x = _area.x+lengthdir_x(_radius+_spread,_angle);
+        var _y = _area.y+lengthdir_y(_radius+_spread,_angle);
+
+        part_type_direction(_types.flame,_angle-16,_angle+16,0,0);
+        part_particles_create(
+            global.particles.impact_system,
+            _x,_y,_types.flame,1
+        );
+
+        if (irandom(1) == 0)
+        {
+            part_type_direction(_types.wisp,_angle-35,_angle+35,0,0);
+            part_particles_create(
+                global.particles.impact_system,
+                _x,_y,_types.wisp,1
+            );
+        }
+    }
+
+    return true;
+}
+
+/// @description Draws the Nexus's true travelling purple damage ring.
+function sc_attack_area_sim_nexus_shockwave_draw(_area,_data)
+{
+    var _p = _data.visual.palette;
+    var _radius = _data.runtime.ring_radius;
+    var _thickness = _data.behaviour.expanding_ring.thickness;
+    var _life_ratio = _data.runtime.life/_data.behaviour.duration;
+    var _alpha = clamp(_life_ratio*2.5,0,1);
+    var _pulse = 0.92+sin(GAME_TICK*0.65)*0.08;
+
+    gpu_set_blendmode(bm_add);
+
+    sc_visual_ellipse_outline(
+        _area.x,_area.y,
+        _radius+_thickness*0.55,
+        _radius+_thickness*0.55,
+        0,64,
+        _thickness*0.55,
+        _p.glow,
+        _alpha*0.12
+    );
+
+    sc_visual_ellipse_outline(
+        _area.x,_area.y,
+        _radius,_radius,
+        0,64,
+        _thickness*0.28,
+        _p.accent,
+        _alpha*0.4
+    );
+
+    sc_visual_ellipse_outline(
+        _area.x,_area.y,
+        _radius,_radius,
+        0,64,
+        max(3,_thickness*0.09*_pulse),
+        _p.energy,
+        _alpha*0.95
+    );
+
+    sc_visual_ellipse_outline(
+        _area.x,_area.y,
+        _radius,_radius,
+        0,64,
+        2,
+        _p.core,
+        _alpha
+    );
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
 /// @description Registers the Simulant Nexus champion capital ship.
 function sc_enemy_register_sim_nexus()
 {
@@ -104,258 +319,258 @@ function sc_enemy_register_sim_nexus()
         },
 
         hardpoints: [
-            // ==================================================
-            // DIAGONAL SUPER BEAMS
-            // ==================================================
-            {
-                key: "beam_ne",
-                group: "diagonal_beams",
-                forward: 0.54,
-                side: -0.54,
-                angle: 315,
-                muzzle_forward: 0.32,
+    // ==================================================
+    // DIAGONAL SUPER BEAMS
+    // ==================================================
+    {
+        key: "beam_ne",
+        group: "diagonal_beams",
+        forward: 0.54,
+        side: 0.54,
+        angle: 45,
+        muzzle_forward: 0.32,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+    },
 
-            {
-                key: "beam_nw",
-                group: "diagonal_beams",
-                forward: -0.54,
-                side: -0.54,
-                angle: 45,
-                muzzle_forward: 0.32,
+    {
+        key: "beam_nw",
+        group: "diagonal_beams",
+        forward: -0.54,
+        side: 0.54,
+        angle: 135,
+        muzzle_forward: 0.32,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+    },
 
-            {
-                key: "beam_sw",
-                group: "diagonal_beams",
-                forward: -0.54,
-                side: 0.54,
-                angle: 135,
-                muzzle_forward: 0.32,
+    {
+        key: "beam_sw",
+        group: "diagonal_beams",
+        forward: -0.54,
+        side: -0.54,
+        angle: 225,
+        muzzle_forward: 0.32,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+    },
 
-            {
-                key: "beam_se",
-                group: "diagonal_beams",
-                forward: 0.54,
-                side: 0.54,
-                angle: 225,
-                muzzle_forward: 0.32,
+    {
+        key: "beam_se",
+        group: "diagonal_beams",
+        forward: 0.54,
+        side: -0.54,
+        angle: 315,
+        muzzle_forward: 0.32,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+    },
 
-            // ==================================================
-            // EAST ORB BATTERY
-            // ==================================================
-            {
-                key: "orb_east_upper",
-                group: "orb_batteries",
-                forward: 0.78,
-                side: -0.1,
-                angle: 0,
-                muzzle_forward: 0.18,
+    // ==================================================
+    // EAST ORB BATTERY
+    // ==================================================
+    {
+        key: "orb_east_upper",
+        group: "orb_batteries",
+        forward: 0.78,
+        side: 0.1,
+        angle: 0,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            {
-                key: "orb_east_lower",
-                group: "orb_batteries",
-                forward: 0.78,
-                side: 0.1,
-                angle: 0,
-                muzzle_forward: 0.18,
+    {
+        key: "orb_east_lower",
+        group: "orb_batteries",
+        forward: 0.78,
+        side: -0.1,
+        angle: 0,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            // ==================================================
-            // NORTH ORB BATTERY
-            // ==================================================
-            {
-                key: "orb_north_left",
-                group: "orb_batteries",
-                forward: -0.1,
-                side: -0.78,
-                angle: 90,
-                muzzle_forward: 0.18,
+    // ==================================================
+    // NORTH ORB BATTERY
+    // ==================================================
+    {
+        key: "orb_north_left",
+        group: "orb_batteries",
+        forward: -0.1,
+        side: 0.78,
+        angle: 90,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            {
-                key: "orb_north_right",
-                group: "orb_batteries",
-                forward: 0.1,
-                side: -0.78,
-                angle: 90,
-                muzzle_forward: 0.18,
+    {
+        key: "orb_north_right",
+        group: "orb_batteries",
+        forward: 0.1,
+        side: 0.78,
+        angle: 90,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            // ==================================================
-            // WEST ORB BATTERY
-            // ==================================================
-            {
-                key: "orb_west_upper",
-                group: "orb_batteries",
-                forward: -0.78,
-                side: -0.1,
-                angle: 180,
-                muzzle_forward: 0.18,
+    // ==================================================
+    // WEST ORB BATTERY
+    // ==================================================
+    {
+        key: "orb_west_upper",
+        group: "orb_batteries",
+        forward: -0.78,
+        side: 0.1,
+        angle: 180,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            {
-                key: "orb_west_lower",
-                group: "orb_batteries",
-                forward: -0.78,
-                side: 0.1,
-                angle: 180,
-                muzzle_forward: 0.18,
+    {
+        key: "orb_west_lower",
+        group: "orb_batteries",
+        forward: -0.78,
+        side: -0.1,
+        angle: 180,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            // ==================================================
-            // SOUTH ORB BATTERY
-            // ==================================================
-            {
-                key: "orb_south_left",
-                group: "orb_batteries",
-                forward: -0.1,
-                side: 0.78,
-                angle: 270,
-                muzzle_forward: 0.18,
+    // ==================================================
+    // SOUTH ORB BATTERY
+    // ==================================================
+    {
+        key: "orb_south_left",
+        group: "orb_batteries",
+        forward: -0.1,
+        side: -0.78,
+        angle: 270,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            {
-                key: "orb_south_right",
-                group: "orb_batteries",
-                forward: 0.1,
-                side: 0.78,
-                angle: 270,
-                muzzle_forward: 0.18,
+    {
+        key: "orb_south_right",
+        group: "orb_batteries",
+        forward: 0.1,
+        side: -0.78,
+        angle: 270,
+        muzzle_forward: 0.18,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
-            },
+        draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+    },
 
-            // ==================================================
-            // CENTRAL SEEKER CORE
-            // ==================================================
-            {
-                key: "core_weapon",
-                group: "core_weapon",
-                forward: 0,
-                side: 0,
-                angle: 0,
-                muzzle_forward: 0,
+    // ==================================================
+    // CENTRAL SEEKER CORE
+    // ==================================================
+    {
+        key: "core_weapon",
+        group: "core_weapon",
+        forward: 0,
+        side: 0,
+        angle: 0,
+        muzzle_forward: 0,
 
-                rotation: {
-                    mode: HardpointRotation.FIXED,
-                    turn_speed: 0,
-                    arc: 0,
-                    return_to_rest: true
-                },
+        rotation: {
+            mode: HardpointRotation.FIXED,
+            turn_speed: 0,
+            arc: 0,
+            return_to_rest: true
+        },
 
-                draw_script: sc_enemy_sim_nexus_core_emitter_draw
-            }
-        ],
+        draw_script: sc_enemy_sim_nexus_core_emitter_draw
+    }
+],
 
         // Distributed/internal propulsion. No visible rear thruster bank.
         thrusters: [],
@@ -481,8 +696,8 @@ function sc_enemy_register_sim_nexus()
 
                     conditions: {
                         line_of_sight: true,
-                        range_min: 320,
-                        range_max: 1800
+                        range_min: 720,
+                        range_max: 2500
                     },
 
                     aim: {
@@ -515,7 +730,41 @@ function sc_enemy_register_sim_nexus()
                         volley_max: 1,
                         cooldown: 360
                     }
-                }
+                },
+				
+				{
+				    key: "nexus_core_shockwave",
+				    channel: "core",
+				    weight: 160,
+				    hardpoint_group: "core_weapon",
+				    weapon_key: "weapon_sim_nexus_shockwave",
+
+				    conditions: {
+				        asteroid_target: false,
+				        range_min: 0,
+				        range_max: 720
+				    },
+
+				    aim: {
+				        mode: AimMode.MOUNT,
+				        angle_offset: 0,
+				        inaccuracy: 0,
+				        fire_tolerance: 360
+				    },
+
+				    shot: {
+				        pattern: ShotPattern.SINGLE,
+				        amount: 1
+				    },
+
+				    // Intentionally instantaneous: the travelling ring is the warning.
+				    firing: {
+				        order: HardpointFireOrder.ALL,
+				        interval: 0,
+				        volley_max: 1,
+				        cooldown: 420
+				    }
+				}
             ]
         }
     });
@@ -1010,31 +1259,31 @@ function sc_enemy_sim_nexus_orb_emitter_draw(_x,_y,_radius,_angle,_visual,_alpha
     draw_set_alpha(_alpha);
 
     // Rear mounting socket.
-    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.12,_p.void,false);
-    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.1,_p.metal,true);
-    sc_visual_circle(_x,_y,_radius,_angle,-0.08,0,0.067,_p.hull_mid,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.12,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.1,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.067,_p.hull_mid,false);
 
-    // Gun housing runs inward behind the actual muzzle point.
+    // Housing extends toward +forward / muzzle.
     sc_visual_quad(
         _x,_y,_radius,_angle,
-        -0.22,-0.06,
-        0.02,-0.048,
-        0.02,0.048,
-        -0.22,0.06,
+        -0.04,-0.06,
+        0.17,-0.048,
+        0.17,0.048,
+        -0.04,0.06,
         _p.hull_light
     );
 
-    // Energy channel toward muzzle.
+    // Energy channel runs outward.
     sc_sim_visual_energy_conduit(
         _x,_y,_radius,_angle,
-        -0.16,0,
-        0.04,0,
+        0.01,0,
+        0.19,0,
         2,_p,_alpha
     );
 
-    // Actual muzzle faces +angle.
-    sc_visual_circle(_x,_y,_radius,_angle,0.05,0,0.055,_p.accent,true);
-    sc_visual_circle(_x,_y,_radius,_angle,0.05,0,0.025,_p.core,false);
+    // Muzzle at the forward end.
+    sc_visual_circle(_x,_y,_radius,_angle,0.2,0,0.055,_p.accent,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.2,0,0.025,_p.core,false);
 
     draw_set_alpha(1);
 }
@@ -1132,14 +1381,14 @@ function sc_enemy_sim_nexus_orb_telegraph_draw(_enemy,_attack,_transform,_progre
 }
 
 /// @description Creates the Nexus capital-ship death effect.
-function sc_enemy_sim_nexus_death(_enemy,_data)
+function sc_enemy_sim_nexus_death(_enemy)
 {
-    var _p=_data.visual.palette;
-    var _r=_data.visual.radius;
+    var _data = _enemy.enemy;
+    var _p = _data.visual.palette;
+    var _r = _data.visual.radius;
 
     sc_shockwave_create(
-        _enemy.x,
-        _enemy.y,
+        _enemy.x,_enemy.y,
         layer_get_id("Effects_Front"),
         {
             radius_scale: 1.4,
