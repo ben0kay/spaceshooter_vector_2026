@@ -143,121 +143,256 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
     var _pulse = 0.92 + sin(_phase) * 0.08;
     var _flicker = 0.92 + sin(_phase * 2 + 0.6) * 0.08;
 
-    var _px = function(_f,_s)
-    {
-        return _x + lengthdir_x(_f, _angle) + lengthdir_x(_s, _angle + 90);
-    };
-
-    var _py = function(_f,_s)
-    {
-        return _y + lengthdir_y(_f, _angle) + lengthdir_y(_s, _angle + 90);
-    };
-
-    var _draw_diamond = function(_front,_rear,_half,_colour,_alpha)
-    {
-        draw_set_colour(_colour);
-        draw_set_alpha(_alpha);
-
-        draw_triangle(
-            _px(_front,0), _py(_front,0),
-            _px(0,_half), _py(0,_half),
-            _px(_rear,0), _py(_rear,0),
-            false
-        );
-
-        draw_triangle(
-            _px(_front,0), _py(_front,0),
-            _px(_rear,0), _py(_rear,0),
-            _px(0,-_half), _py(0,-_half),
-            false
-        );
-    };
-
     // ==================================================
-    // ADDITIVE REAR GLOW / TAIL
+    // LONG REAR GLOW TAIL
     // ==================================================
     gpu_set_blendmode(bm_add);
 
     draw_set_colour(_p.glow);
-    draw_set_alpha(0.10);
+    draw_set_alpha(0.1);
+
     draw_line_width(
-        _px(-_r * 2.8,0), _py(-_r * 2.8,0),
-        _px(_r * 0.28,0), _py(_r * 0.28,0),
+        _x + lengthdir_x(-_r * 2.8, _angle),
+        _y + lengthdir_y(-_r * 2.8, _angle),
+        _x + lengthdir_x(_r * 0.28, _angle),
+        _y + lengthdir_y(_r * 0.28, _angle),
         _r * 0.95
     );
 
     draw_set_colour(_p.accent);
     draw_set_alpha(0.18);
+
     draw_line_width(
-        _px(-_r * 2.1,0), _py(-_r * 2.1,0),
-        _px(_r * 0.22,0), _py(_r * 0.22,0),
+        _x + lengthdir_x(-_r * 2.1, _angle),
+        _y + lengthdir_y(-_r * 2.1, _angle),
+        _x + lengthdir_x(_r * 0.22, _angle),
+        _y + lengthdir_y(_r * 0.22, _angle),
         _r * 0.52
     );
 
     draw_set_colour(_p.energy);
     draw_set_alpha(0.34);
+
     draw_line_width(
-        _px(-_r * 1.55,0), _py(-_r * 1.55,0),
-        _px(_r * 0.16,0), _py(_r * 0.16,0),
+        _x + lengthdir_x(-_r * 1.55, _angle),
+        _y + lengthdir_y(-_r * 1.55, _angle),
+        _x + lengthdir_x(_r * 0.16, _angle),
+        _y + lengthdir_y(_r * 0.16, _angle),
         _r * 0.24
     );
 
-    // Soft tail bloom pockets.
+    // Soft glow pockets behind shard.
     draw_set_colour(_p.glow);
     draw_set_alpha(0.08);
-    draw_circle(_px(-_r * 1.65,0), _py(-_r * 1.65,0), _r * 0.72 * _pulse, false);
+
+    draw_circle(
+        _x + lengthdir_x(-_r * 1.65, _angle),
+        _y + lengthdir_y(-_r * 1.65, _angle),
+        _r * 0.72 * _pulse,
+        false
+    );
 
     draw_set_colour(_p.accent);
     draw_set_alpha(0.12);
-    draw_circle(_px(-_r * 0.95,0), _py(-_r * 0.95,0), _r * 0.48 * _flicker, false);
 
-    // Outer aura shard.
-    _draw_diamond(_r * 1.45, -_r * 0.95, _r * 0.52, _p.glow, 0.16);
-    _draw_diamond(_r * 1.24, -_r * 0.78, _r * 0.38, _p.accent, 0.22);
+    draw_circle(
+        _x + lengthdir_x(-_r * 0.95, _angle),
+        _y + lengthdir_y(-_r * 0.95, _angle),
+        _r * 0.48 * _flicker,
+        false
+    );
+
+    // ==================================================
+    // OUTER ENERGY DIAMOND
+    // ==================================================
+    var _front_x = _x + lengthdir_x(_r * 1.45, _angle);
+    var _front_y = _y + lengthdir_y(_r * 1.45, _angle);
+
+    var _rear_x = _x + lengthdir_x(-_r * 0.95, _angle);
+    var _rear_y = _y + lengthdir_y(-_r * 0.95, _angle);
+
+    var _left_x = _x + lengthdir_x(_r * 0.52, _angle + 90);
+    var _left_y = _y + lengthdir_y(_r * 0.52, _angle + 90);
+
+    var _right_x = _x + lengthdir_x(_r * 0.52, _angle - 90);
+    var _right_y = _y + lengthdir_y(_r * 0.52, _angle - 90);
+
+    draw_set_colour(_p.glow);
+    draw_set_alpha(0.16);
+
+    draw_triangle(
+        _front_x,_front_y,
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _front_x,_front_y,
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        false
+    );
+
+    // ==================================================
+    // MID ENERGY DIAMOND
+    // ==================================================
+    _front_x = _x + lengthdir_x(_r * 1.24, _angle);
+    _front_y = _y + lengthdir_y(_r * 1.24, _angle);
+
+    _rear_x = _x + lengthdir_x(-_r * 0.78, _angle);
+    _rear_y = _y + lengthdir_y(-_r * 0.78, _angle);
+
+    _left_x = _x + lengthdir_x(_r * 0.38, _angle + 90);
+    _left_y = _y + lengthdir_y(_r * 0.38, _angle + 90);
+
+    _right_x = _x + lengthdir_x(_r * 0.38, _angle - 90);
+    _right_y = _y + lengthdir_y(_r * 0.38, _angle - 90);
+
+    draw_set_colour(_p.accent);
+    draw_set_alpha(0.22);
+
+    draw_triangle(
+        _front_x,_front_y,
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _front_x,_front_y,
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        false
+    );
 
     gpu_set_blendmode(bm_normal);
 
     // ==================================================
-    // MAIN SHARD BODY
+    // MAIN CRYSTAL BODY
     // ==================================================
-    _draw_diamond(_r * 1.05, -_r * 0.66, _r * 0.34, _p.hull_light, 1);
-    _draw_diamond(_r * 0.82, -_r * 0.44, _r * 0.21, _p.energy, 0.95);
-    _draw_diamond(_r * 0.56, -_r * 0.18, _r * 0.11, _p.core, 0.92);
+    _front_x = _x + lengthdir_x(_r * 1.05, _angle);
+    _front_y = _y + lengthdir_y(_r * 1.05, _angle);
 
-    // Crisp centre spine.
+    _rear_x = _x + lengthdir_x(-_r * 0.66, _angle);
+    _rear_y = _y + lengthdir_y(-_r * 0.66, _angle);
+
+    _left_x = _x + lengthdir_x(_r * 0.34, _angle + 90);
+    _left_y = _y + lengthdir_y(_r * 0.34, _angle + 90);
+
+    _right_x = _x + lengthdir_x(_r * 0.34, _angle - 90);
+    _right_y = _y + lengthdir_y(_r * 0.34, _angle - 90);
+
+    draw_set_colour(_p.hull_light);
+    draw_set_alpha(1);
+
+    draw_triangle(
+        _front_x,_front_y,
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _front_x,_front_y,
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        false
+    );
+
+    // ==================================================
+    // INNER ENERGY CORE
+    // ==================================================
+    _front_x = _x + lengthdir_x(_r * 0.82, _angle);
+    _front_y = _y + lengthdir_y(_r * 0.82, _angle);
+
+    _rear_x = _x + lengthdir_x(-_r * 0.44, _angle);
+    _rear_y = _y + lengthdir_y(-_r * 0.44, _angle);
+
+    _left_x = _x + lengthdir_x(_r * 0.21, _angle + 90);
+    _left_y = _y + lengthdir_y(_r * 0.21, _angle + 90);
+
+    _right_x = _x + lengthdir_x(_r * 0.21, _angle - 90);
+    _right_y = _y + lengthdir_y(_r * 0.21, _angle - 90);
+
+    draw_set_colour(_p.energy);
+    draw_set_alpha(0.95);
+
+    draw_triangle(
+        _front_x,_front_y,
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _front_x,_front_y,
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        false
+    );
+
+    // ==================================================
+    // HOT INNER SHARD
+    // ==================================================
+    _front_x = _x + lengthdir_x(_r * 0.56, _angle);
+    _front_y = _y + lengthdir_y(_r * 0.56, _angle);
+
+    _rear_x = _x + lengthdir_x(-_r * 0.18, _angle);
+    _rear_y = _y + lengthdir_y(-_r * 0.18, _angle);
+
+    _left_x = _x + lengthdir_x(_r * 0.11, _angle + 90);
+    _left_y = _y + lengthdir_y(_r * 0.11, _angle + 90);
+
+    _right_x = _x + lengthdir_x(_r * 0.11, _angle - 90);
+    _right_y = _y + lengthdir_y(_r * 0.11, _angle - 90);
+
+    draw_set_colour(_p.core);
+    draw_set_alpha(0.92);
+
+    draw_triangle(
+        _front_x,_front_y,
+        _left_x,_left_y,
+        _rear_x,_rear_y,
+        false
+    );
+
+    draw_triangle(
+        _front_x,_front_y,
+        _rear_x,_rear_y,
+        _right_x,_right_y,
+        false
+    );
+
+    // ==================================================
+    // CRYSTAL SPINE
+    // ==================================================
     draw_set_colour(_p.core);
     draw_set_alpha(0.95);
+
     draw_line_width(
-        _px(-_r * 0.42,0), _py(-_r * 0.42,0),
-        _px(_r * 0.88,0), _py(_r * 0.88,0),
+        _x + lengthdir_x(-_r * 0.42, _angle),
+        _y + lengthdir_y(-_r * 0.42, _angle),
+        _x + lengthdir_x(_r * 0.88, _angle),
+        _y + lengthdir_y(_r * 0.88, _angle),
         1.6
     );
 
-    // Side glints.
-    draw_set_colour(_p.accent);
-    draw_set_alpha(0.7);
-    draw_line_width(
-        _px(0.06,_r * 0.18), _py(0.06,_r * 0.18),
-        _px(_r * 0.48,0), _py(_r * 0.48,0),
-        1.2
-    );
-
-    draw_line_width(
-        _px(0.06,-_r * 0.18), _py(0.06,-_r * 0.18),
-        _px(_r * 0.48,0), _py(_r * 0.48,0),
-        1.2
-    );
-
-    // Forward hot tip.
+    // ==================================================
+    // FORWARD TIP GLOW
+    // ==================================================
     gpu_set_blendmode(bm_add);
+
+    var _tip_x = _x + lengthdir_x(_r * 0.98, _angle);
+    var _tip_y = _y + lengthdir_y(_r * 0.98, _angle);
 
     draw_set_colour(_p.energy);
     draw_set_alpha(0.3);
-    draw_circle(_px(_r * 0.98,0), _py(_r * 0.98,0), _r * 0.24, false);
+    draw_circle(_tip_x,_tip_y,_r * 0.24,false);
 
     draw_set_colour(_p.core);
     draw_set_alpha(0.95);
-    draw_circle(_px(_r * 0.98,0), _py(_r * 0.98,0), max(1.2, _r * 0.07), false);
+    draw_circle(_tip_x,_tip_y,max(1.2,_r * 0.07),false);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
