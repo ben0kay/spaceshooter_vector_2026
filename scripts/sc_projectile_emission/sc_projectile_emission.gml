@@ -163,16 +163,32 @@ function sc_projectile_emission_cone(_parent, _config)
     return true;
 }
 
-/// @description Runs every registered one-time detonation emission.
-function sc_projectile_detonation_emissions_emit(_projectile)
+/// @description Runs one supplied array of projectile emissions.
+function sc_projectile_emissions_emit(_projectile, _emissions)
 {
-    var _emissions = _projectile.projectile.detonation.emissions;
-
-    for (var _i = 0; _i < array_length(_emissions); _i++)
+    for (var _i = 0; _i < array_length(_emissions); ++_i)
     {
         var _emission = _emissions[_i];
         _emission.script(_projectile, _emission);
     }
 
     return array_length(_emissions) > 0;
+}
+
+/// @description Runs every registered one-time detonation emission.
+function sc_projectile_detonation_emissions_emit(_projectile)
+{
+    return sc_projectile_emissions_emit(
+        _projectile,
+        _projectile.projectile.detonation.emissions
+    );
+}
+
+/// @description Runs every registered emission after natural lifetime expiry.
+function sc_projectile_expiry_emissions_emit(_projectile)
+{
+    return sc_projectile_emissions_emit(
+        _projectile,
+        _projectile.projectile.expiry.emissions
+    );
 }

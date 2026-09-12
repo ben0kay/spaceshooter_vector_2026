@@ -32,11 +32,11 @@ function sc_projectile_register_simulant_orb()
         projectile_class: ProjectileClass.REGULAR,
 
         collision: {
-            radius: 8
+            radius: 9
         },
 
         visual: {
-            radius: 10,
+            radius: 12,
             length: 20,
             palette: _palette,
 
@@ -75,7 +75,76 @@ function sc_projectile_register_simulant_orb()
     });
 }
 
-/// @description Registers the Simulant orb impact and wispy trail particles.
+/// @description Registers a large Simulant orb which divides into two regular orbs on expiry.
+function sc_projectile_register_simulant_dividing_orb()
+{
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
+    return sc_projectile_register({
+        identity: {
+            key: "projectile_simulant_dividing_orb",
+            name: "Simulant Dividing Orb"
+        },
+
+        projectile_motion: ProjectileMotion.STANDARD,
+        projectile_class: ProjectileClass.HEAVY,
+
+        collision: {
+            radius: 11
+        },
+
+        expiry: {
+            emissions: [
+                sc_projectile_emission_cone_create(
+                    "weapon_simulant_orb",
+                    2,
+                    30,
+                    0
+                )
+            ]
+        },
+
+        visual: {
+            radius: 10,
+            length: 20,
+            palette: _palette,
+
+            draw_script: sc_projectile_simulant_orb_draw,
+            impact_script: sc_projectile_simulant_orb_impact,
+            trail_script: sc_projectile_particle_trail_emit,
+
+            // Reuses the particle groups registered by the regular orb.
+            particle_trail: {
+                group: "trail_simulant_orb",
+                interval: 1,
+                amount: 3,
+                rear_scale: 0.34,
+                spread: 25,
+                size_min: 0.15,
+                size_max: 0.3,
+                size_growth: 0.008,
+                size_wiggle: 0.05
+            },
+
+            trail: {
+                enabled: true,
+                length: 58,
+                width: 4,
+                glow_width: 14,
+                alpha: 0.82,
+                glow_alpha: 0.3
+            },
+
+            bake: {
+                canvas_size: 128,
+                frames: 8,
+                frame_speed: 2
+            }
+        }
+    });
+}
+
+/// @description Registers the Simulant orb's prominent impact and wispy trail particles.
 function sc_projectile_simulant_orb_particles_register()
 {
     var _palette = sc_faction_palette_get(Faction.SIMULANT);
@@ -84,12 +153,12 @@ function sc_projectile_simulant_orb_particles_register()
         "impact_simulant_orb",
         _palette,
         {
-            scale: 1.3,
-            spark_amount: 12,
-            fragment_amount: 6,
-            spark_spread: 160,
-            speed_min: 2.2,
-            speed_max: 5.8
+            scale: 2.2,
+            spark_amount: 18,
+            fragment_amount: 10,
+            spark_spread: 170,
+            speed_min: 2.8,
+            speed_max: 7
         }
     )) return false;
 
@@ -118,16 +187,46 @@ function sc_projectile_simulant_orb_particles_register()
     );
 }
 
-/// @description Emits the Simulant orb impact.
+/// @description Emits the Simulant orb impact and a cosmetic energy shockwave.
 function sc_projectile_simulant_orb_impact(_x, _y, _direction, _target, _scale)
 {
-    return sc_particles_projectile_impact_emit(
+    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+
+    sc_particles_projectile_impact_emit(
         "impact_simulant_orb",
         _x,
         _y,
         _direction,
         _scale
     );
+
+    sc_shockwave_create(
+        _x,
+        _y,
+        layer_get_id("Effects_Front"),
+        {
+            radius_scale: 1,
+            expansion_response: 0.3,
+            fade_speed: 0.095,
+            thickness: 2.5 * _scale,
+            colour: _palette.energy,
+
+            particles_enabled: false,
+            particle_interval: 1,
+            particle_min_radius: 0,
+
+            smoke_enabled: false,
+            smoke_amount_max: 1,
+            smoke_colour: _palette.glow,
+
+            fragments_enabled: false,
+            fragment_chance: 0,
+            fragment_colour: _palette.core
+        },
+        72 * _scale
+    );
+
+    return true;
 }
 
 /// @description Draws one animated Simulant orb frame for baking.
@@ -250,3 +349,4 @@ function sc_projectile_simulant_orb_draw(_x, _y, _angle, _visual, _frame, _frame
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
+

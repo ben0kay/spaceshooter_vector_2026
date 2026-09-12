@@ -1,4 +1,4 @@
-/// @description Initializes a reusable projectile with optional armour and hull.
+/// @description Initializes a reusable projectile with optional defence, detonation and expiry emissions.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -42,6 +42,14 @@ function sc_projectile_init(_projectile, _create)
                 : []
         };
     }
+
+    var _expiry = variable_struct_exists(_data, "expiry")
+        ? {
+            emissions: variable_struct_exists(_data.expiry, "emissions")
+                ? variable_clone(_data.expiry.emissions)
+                : []
+        }
+        : undefined;
 
     var _defence = undefined;
 
@@ -112,6 +120,7 @@ function sc_projectile_init(_projectile, _create)
         visual: _visual,
         defence: _defence,
         detonation: _detonation,
+        expiry: _expiry,
         runtime: _runtime
     };
 
@@ -424,6 +433,21 @@ function sc_projectile_active_update(_projectile, _data)
 
     _data.life.remaining--;
     if (_data.life.remaining > 0) return;
+
+    if (is_struct(_data.expiry)
+    && array_length(_data.expiry.emissions) > 0)
+    {
+        // Give an emitting projectile a visible breakup before it disappears.
+        _data.visual.impact_script(
+            _projectile.x,
+            _projectile.y,
+            _data.direction,
+            noone,
+            _data.scale
+        );
+
+        sc_projectile_expiry_emissions_emit(_projectile);
+    }
 
     sc_projectile_detonate(_projectile);
     instance_destroy(_projectile);

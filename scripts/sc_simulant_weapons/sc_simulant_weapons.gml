@@ -69,3 +69,39 @@ function sc_weapon_register_simulant_orb()
         }
     });
 }
+
+/// @description Registers the short-lived Simulant dividing-orb weapon.
+function sc_weapon_register_simulant_dividing_orb()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_simulant_dividing_orb",
+            name: "Simulant Dividing Orb"
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_simulant_dividing_orb",
+
+            projectile: {
+                scale: 2,
+                speed: 9,
+                life: 48
+            },
+
+            damage: {
+                amount: 14,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: 0
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.65,
+            pitch_range: 0.05
+        }
+    });
+}
