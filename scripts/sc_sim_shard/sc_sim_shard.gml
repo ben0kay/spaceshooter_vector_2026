@@ -52,26 +52,27 @@ function sc_projectile_register_simulant_shard()
             particle_trail: {
                 group: "trail_simulant_shard",
                 interval: 2,
-                amount: 2,
+                shard_amount: 2,
 
                 rear_scale_min: 0.32,
                 rear_scale_max: 0.8,
                 side_spread: 9,
 
-                size_min: 0.055,
-                size_max: 0.095,
-                size_growth: -0.0015,
-                size_wiggle: 0
+                shard_size_min: 0.055,
+                shard_size_max: 0.095,
+
+                flame_size_min: 0.09,
+                flame_size_max: 0.15,
+                flame_side_spread: 5
             },
 
-            // Narrow foundation beneath the visible data fragments.
             trail: {
                 enabled: true,
                 length: 42,
                 width: 1.8,
                 glow_width: 7,
-                alpha: 0.72,
-                glow_alpha: 0.13
+                alpha: 0.68,
+                glow_alpha: 0.11
             },
 
             bake: {
@@ -83,14 +84,14 @@ function sc_projectile_register_simulant_shard()
     });
 }
 
-/// @description Registers the shard impact and bright direction-locked data fragments.
+/// @description Registers shard fragments and faint purple broad-flame wake particles.
 function sc_projectile_simulant_shard_particles_register()
 {
-    var _palette = sc_faction_palette_get(Faction.SIMULANT);
+    var _p = sc_faction_palette_get(Faction.SIMULANT);
 
     if (!sc_particles_projectile_impact_register(
         "impact_simulant_shard",
-        _palette,
+        _p,
         {
             scale: 0.95,
             spark_amount: 7,
@@ -101,33 +102,36 @@ function sc_projectile_simulant_shard_particles_register()
         }
     )) return false;
 
-    return sc_particles_projectile_trail_register(
-        "trail_simulant_shard",
-        {
-            sprite: s_particle_shard,
+    var _shard = sc_particles_type_create();
+    var _flame = sc_particles_type_create();
 
-            colour_start: _palette.core,
-            colour_middle: _palette.energy,
-            colour_end: _palette.glow,
+    if (!part_type_exists(_shard) || !part_type_exists(_flame))
+        return false;
 
-            alpha_start: 0.95,
-            alpha_middle: 0.5,
+    // Small bright data fragments.
+    part_type_sprite(_shard,s_particle_shard,false,false,false);
+    part_type_colour3(_shard,_p.core,_p.energy,_p.glow);
+    part_type_alpha3(_shard,0.95,0.5,0);
+    part_type_speed(_shard,0.25,0.75,-0.015,0);
+    part_type_direction(_shard,0,359,0,0);
+    part_type_orientation(_shard,180,180,0,0,true);
+    part_type_life(_shard,11,18);
+    part_type_blend(_shard,true);
 
-            speed_min: 0.25,
-            speed_max: 0.75,
-            speed_reduce: -0.015,
+    // Faint cloudy energy body underneath the data fragments.
+    part_type_sprite(_flame,s_broad_flame_body_white,false,false,false);
+    part_type_colour3(_flame,_p.energy,_p.accent,_p.glow);
+    part_type_alpha3(_flame,0.28,0.14,0);
+    part_type_speed(_flame,0.15,0.5,-0.012,0);
+    part_type_direction(_flame,0,359,0,0);
+    part_type_orientation(_flame,180,180,0,0,true);
+    part_type_life(_flame,12,20);
+    part_type_blend(_flame,true);
 
-            life_min: 11,
-            life_max: 18,
-
-            direction_locked: true,
-
-            // Particle movement is backward; 180 keeps its diamond facing forward.
-            orientation_offset: 180,
-            rotation_speed: 0,
-            blend_additive: true
-        }
-    );
+    return sc_particles_group_register("trail_simulant_shard",{
+        particle: _shard,
+        flame: _flame
+    });
 }
 
 /// @description Emits the Simulant shard impact.
@@ -142,7 +146,7 @@ function sc_projectile_simulant_shard_impact(_x,_y,_direction,_target,_scale)
     );
 }
 
-/// @description Draws one wide layered Simulant data shard for baking.
+/// @description Draws one predominantly purple faceted Simulant data shard.
 function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_count)
 {
     var _p = _visual.palette;
@@ -159,10 +163,10 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
     var _right_x = _x+lengthdir_x(_r*0.82*_pulse,_angle-90);
     var _right_y = _y+lengthdir_y(_r*0.82*_pulse,_angle-90);
 
-    // Wide soft outer diamond.
+    // Soft purple outer aura.
     gpu_set_blendmode(bm_add);
     draw_set_colour(_p.glow);
-    draw_set_alpha(0.3);
+    draw_set_alpha(0.26);
 
     draw_triangle(
         _front_x,_front_y,
@@ -175,136 +179,94 @@ function sc_projectile_simulant_shard_draw(_x,_y,_angle,_visual,_frame,_frame_co
         _front_x,_front_y,
         _rear_x,_rear_y,
         _right_x,_right_y,
-        false
-    );
-
-    // Brighter middle diamond.
-    var _mid_front_x = _x+lengthdir_x(_r*1.17,_angle);
-    var _mid_front_y = _y+lengthdir_y(_r*1.17,_angle);
-    var _mid_rear_x = _x+lengthdir_x(-_r*0.75,_angle);
-    var _mid_rear_y = _y+lengthdir_y(-_r*0.75,_angle);
-    var _mid_left_x = _x+lengthdir_x(_r*0.63,_angle+90);
-    var _mid_left_y = _y+lengthdir_y(_r*0.63,_angle+90);
-    var _mid_right_x = _x+lengthdir_x(_r*0.63,_angle-90);
-    var _mid_right_y = _y+lengthdir_y(_r*0.63,_angle-90);
-
-    draw_set_colour(_p.accent);
-    draw_set_alpha(0.58);
-
-    draw_triangle(
-        _mid_front_x,_mid_front_y,
-        _mid_left_x,_mid_left_y,
-        _mid_rear_x,_mid_rear_y,
-        false
-    );
-
-    draw_triangle(
-        _mid_front_x,_mid_front_y,
-        _mid_rear_x,_mid_rear_y,
-        _mid_right_x,_mid_right_y,
         false
     );
 
     gpu_set_blendmode(bm_normal);
 
-    // Solid inner crystal.
-    var _core_front_x = _x+lengthdir_x(_r*0.95,_angle);
-    var _core_front_y = _y+lengthdir_y(_r*0.95,_angle);
-    var _core_rear_x = _x+lengthdir_x(-_r*0.54,_angle);
-    var _core_rear_y = _y+lengthdir_y(-_r*0.54,_angle);
-    var _core_left_x = _x+lengthdir_x(_r*0.42,_angle+90);
-    var _core_left_y = _y+lengthdir_y(_r*0.42,_angle+90);
-    var _core_right_x = _x+lengthdir_x(_r*0.42,_angle-90);
-    var _core_right_y = _y+lengthdir_y(_r*0.42,_angle-90);
+    // Main filled purple diamond.
+    var _body_front_x = _x+lengthdir_x(_r*1.2,_angle);
+    var _body_front_y = _y+lengthdir_y(_r*1.2,_angle);
+    var _body_rear_x = _x+lengthdir_x(-_r*0.76,_angle);
+    var _body_rear_y = _y+lengthdir_y(-_r*0.76,_angle);
+    var _body_left_x = _x+lengthdir_x(_r*0.65,_angle+90);
+    var _body_left_y = _y+lengthdir_y(_r*0.65,_angle+90);
+    var _body_right_x = _x+lengthdir_x(_r*0.65,_angle-90);
+    var _body_right_y = _y+lengthdir_y(_r*0.65,_angle-90);
 
     draw_set_alpha(1);
-    draw_set_colour(_p.hull_light);
+    draw_set_colour(_p.accent);
 
     draw_triangle(
-        _core_front_x,_core_front_y,
-        _core_left_x,_core_left_y,
-        _core_rear_x,_core_rear_y,
+        _body_front_x,_body_front_y,
+        _body_left_x,_body_left_y,
+        _body_rear_x,_body_rear_y,
         false
     );
 
     draw_set_colour(_p.energy);
 
     draw_triangle(
-        _core_front_x,_core_front_y,
-        _core_rear_x,_core_rear_y,
-        _core_right_x,_core_right_y,
+        _body_front_x,_body_front_y,
+        _body_rear_x,_body_rear_y,
+        _body_right_x,_body_right_y,
         false
     );
 
-    // Bright diamond lattice like the reference.
+    // Darker interior gives the diamond some depth.
+    var _inner_front_x = _x+lengthdir_x(_r*0.86,_angle);
+    var _inner_front_y = _y+lengthdir_y(_r*0.86,_angle);
+    var _inner_rear_x = _x+lengthdir_x(-_r*0.48,_angle);
+    var _inner_rear_y = _y+lengthdir_y(-_r*0.48,_angle);
+    var _inner_left_x = _x+lengthdir_x(_r*0.34,_angle+90);
+    var _inner_left_y = _y+lengthdir_y(_r*0.34,_angle+90);
+    var _inner_right_x = _x+lengthdir_x(_r*0.34,_angle-90);
+    var _inner_right_y = _y+lengthdir_y(_r*0.34,_angle-90);
+
+    draw_set_colour(_p.hull_dark);
+
+    draw_triangle(
+        _inner_front_x,_inner_front_y,
+        _inner_left_x,_inner_left_y,
+        _inner_rear_x,_inner_rear_y,
+        false
+    );
+
+    draw_set_colour(_p.accent);
+
+    draw_triangle(
+        _inner_front_x,_inner_front_y,
+        _inner_rear_x,_inner_rear_y,
+        _inner_right_x,_inner_right_y,
+        false
+    );
+
+    // Purple lattice instead of a white outline.
     gpu_set_blendmode(bm_add);
-    draw_set_colour(_p.core);
-    draw_set_alpha(0.95);
-
-    draw_line_width(
-        _front_x,_front_y,
-        _left_x,_left_y,
-        1.5
-    );
-
-    draw_line_width(
-        _left_x,_left_y,
-        _rear_x,_rear_y,
-        1.5
-    );
-
-    draw_line_width(
-        _rear_x,_rear_y,
-        _right_x,_right_y,
-        1.5
-    );
-
-    draw_line_width(
-        _right_x,_right_y,
-        _front_x,_front_y,
-        1.5
-    );
-
-    // Internal faceted connections.
-    draw_line_width(
-        _left_x,_left_y,
-        _core_front_x,_core_front_y,
-        1.2
-    );
-
-    draw_line_width(
-        _right_x,_right_y,
-        _core_front_x,_core_front_y,
-        1.2
-    );
-
-    draw_line_width(
-        _left_x,_left_y,
-        _core_rear_x,_core_rear_y,
-        1.2
-    );
-
-    draw_line_width(
-        _right_x,_right_y,
-        _core_rear_x,_core_rear_y,
-        1.2
-    );
-
-    // Central data eye.
-    draw_set_colour(c_white);
-    draw_set_alpha(1);
-    draw_circle(_x,_y,max(1.5,_r*0.11*_pulse),false);
-
     draw_set_colour(_p.energy);
-    draw_set_alpha(0.8);
-    draw_circle(_x,_y,_r*0.25*_pulse,true);
+    draw_set_alpha(0.88);
+
+    draw_line_width(_body_front_x,_body_front_y,_body_left_x,_body_left_y,1.5);
+    draw_line_width(_body_left_x,_body_left_y,_body_rear_x,_body_rear_y,1.5);
+    draw_line_width(_body_rear_x,_body_rear_y,_body_right_x,_body_right_y,1.5);
+    draw_line_width(_body_right_x,_body_right_y,_body_front_x,_body_front_y,1.5);
+
+    draw_line_width(_body_left_x,_body_left_y,_inner_front_x,_inner_front_y,1.1);
+    draw_line_width(_body_right_x,_body_right_y,_inner_front_x,_inner_front_y,1.1);
+    draw_line_width(_body_left_x,_body_left_y,_inner_rear_x,_inner_rear_y,1.1);
+    draw_line_width(_body_right_x,_body_right_y,_inner_rear_x,_inner_rear_y,1.1);
+
+    // Only the tiny reactor point approaches white.
+    draw_set_colour(_p.core);
+    draw_set_alpha(0.9);
+    draw_circle(_x,_y,max(1.2,_r*0.09*_pulse),false);
 
     gpu_set_blendmode(bm_normal);
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
 
-/// @description Emits visible data shards around, rather than directly beneath, the trail.
+/// @description Emits aligned data shards over a faint cloudy purple flame wake.
 function sc_projectile_simulant_shard_trail_emit(_projectile,_data)
 {
     var _config = _data.visual.particle_trail;
@@ -313,8 +275,7 @@ function sc_projectile_simulant_shard_trail_emit(_projectile,_data)
         return true;
 
     if (!sc_optimization_circle_visible(
-        _projectile.x,
-        _projectile.y,
+        _projectile.x,_projectile.y,
         _data.visual.length*_data.scale,
         96
     )) return true;
@@ -335,13 +296,13 @@ function sc_projectile_simulant_shard_trail_emit(_projectile,_data)
 
     part_type_size(
         _types.particle,
-        _config.size_min*_scale,
-        _config.size_max*_scale,
-        _config.size_growth*_scale,
-        _config.size_wiggle
+        _config.shard_size_min*_scale,
+        _config.shard_size_max*_scale,
+        -0.0015*_scale,
+        0
     );
 
-    for (var _i = 0; _i < _config.amount; _i++)
+    for (var _i = 0; _i < _config.shard_amount; _i++)
     {
         var _rear = _data.visual.length*random_range(
             _config.rear_scale_min,
@@ -368,6 +329,43 @@ function sc_projectile_simulant_shard_trail_emit(_projectile,_data)
             1
         );
     }
+
+    // Broader flame stays closer to the centre of the wake.
+    var _flame_rear = _data.visual.length*random_range(0.28,0.58)*_scale;
+    var _flame_side = random_range(
+        -_config.flame_side_spread,
+        _config.flame_side_spread
+    )*_scale;
+
+    var _flame_x = _projectile.x
+        - lengthdir_x(_flame_rear,_direction)
+        + lengthdir_x(_flame_side,_direction+90);
+
+    var _flame_y = _projectile.y
+        - lengthdir_y(_flame_rear,_direction)
+        + lengthdir_y(_flame_side,_direction+90);
+
+    part_type_direction(
+        _types.flame,
+        _trail_direction-8,
+        _trail_direction+8,
+        0,0
+    );
+
+    part_type_size(
+        _types.flame,
+        _config.flame_size_min*_scale,
+        _config.flame_size_max*_scale,
+        0.002*_scale,
+        0.006
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _flame_x,_flame_y,
+        _types.flame,
+        1
+    );
 
     return true;
 }
