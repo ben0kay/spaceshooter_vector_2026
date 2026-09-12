@@ -1,0 +1,1215 @@
+/*
+SIMULANT NEXUS
+
+Massive rotating Simulant champion capital ship.
+
+WEAPONS
+- 4 fixed diagonal Super Beam emitters.
+- 8 fixed dividing-orb emitters, two per cardinal module.
+- 1 central Seeker Core emitter.
+
+ATTACK CHANNELS
+- main_weapons:
+    diagonal beams OR dividing orbs.
+- core:
+    independent Seeker Core attack.
+
+The entire vessel slowly rotates constantly.
+No conventional rear thrusters.
+*/
+
+/// @description Registers the Simulant Nexus champion capital ship.
+function sc_enemy_register_sim_nexus()
+{
+    return sc_enemy_register({
+        identity: {
+            name: "Simulant Nexus",
+            faction: Faction.SIMULANT,
+            role: EnemyRole.FIGHTER,
+            ship_class: EnemyClass.CAPITAL,
+            rank: EnemyRank.CHAMPION,
+            threat_value: 125
+        },
+
+        reward: {
+            credits: 1100
+        },
+
+        stats_base: {
+            shield_max: 350,
+            armour_max: 2200,
+            hull_max: 1500,
+            mass: 10,
+
+            handling: {
+                speed_max: 0.58,
+                acceleration: 0.018,
+                friction_coeff: 0.994,
+                turn_speed: 0.22,
+                directional: false,
+                directional_speed_min: 0.1,
+                directional_thrust_min: 0.15
+            },
+
+            range: {
+                detection: 2300,
+                combat: 2200,
+                backaway: 850,
+                forget: 3200,
+                wander: 0,
+                alert_share: 2600
+            },
+
+            damage_multiplier: 1.15,
+            fire_rate_multiplier: 0.82
+        },
+
+        movement_controller: {
+            asteroid_response: AsteroidResponse.BOMBARD,
+
+            idle_script: sc_enemy_movement_hold,
+            chase_script: sc_enemy_movement_chase,
+            combat_script: sc_enemy_movement_hold_line_of_sight,
+
+            facing: {
+                default_mode: EnemyFacingMode.SPIN,
+                backaway_mode: EnemyFacingMode.SPIN,
+                angle_offset: 0,
+                turn_speed_scale: 1,
+                spin_speed: 0.16
+            },
+
+            strafe: {
+                amount: 0,
+                speed: 0
+            }
+        },
+
+        awareness_controller: {
+            unseen_damage_script: sc_enemy_awareness_investigate,
+            alert_receive_script: sc_enemy_awareness_investigate,
+            duration: 900,
+            arrival_radius: 220,
+            search_duration: 300,
+            speed_scale: 0.42
+        },
+
+        visual: sc_enemy_sim_nexus_visual_data(),
+
+        collision: {
+            radius_forward_scale: 0.94,
+            radius_side_scale: 0.94,
+            blocks_player: true
+        },
+
+        hardpoints: [
+            // ==================================================
+            // DIAGONAL SUPER BEAMS
+            // ==================================================
+            {
+                key: "beam_ne",
+                group: "diagonal_beams",
+                forward: 0.54,
+                side: -0.54,
+                angle: 45,
+                muzzle_forward: 0.32,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+            },
+
+            {
+                key: "beam_nw",
+                group: "diagonal_beams",
+                forward: -0.54,
+                side: -0.54,
+                angle: 135,
+                muzzle_forward: 0.32,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+            },
+
+            {
+                key: "beam_sw",
+                group: "diagonal_beams",
+                forward: -0.54,
+                side: 0.54,
+                angle: 225,
+                muzzle_forward: 0.32,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+            },
+
+            {
+                key: "beam_se",
+                group: "diagonal_beams",
+                forward: 0.54,
+                side: 0.54,
+                angle: 315,
+                muzzle_forward: 0.32,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_beam_emitter_draw
+            },
+
+            // ==================================================
+            // EAST ORB BATTERY
+            // ==================================================
+            {
+                key: "orb_east_upper",
+                group: "orb_batteries",
+                forward: 0.78,
+                side: -0.1,
+                angle: 0,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            {
+                key: "orb_east_lower",
+                group: "orb_batteries",
+                forward: 0.78,
+                side: 0.1,
+                angle: 0,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            // ==================================================
+            // NORTH ORB BATTERY
+            // ==================================================
+            {
+                key: "orb_north_left",
+                group: "orb_batteries",
+                forward: -0.1,
+                side: -0.78,
+                angle: 90,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            {
+                key: "orb_north_right",
+                group: "orb_batteries",
+                forward: 0.1,
+                side: -0.78,
+                angle: 90,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            // ==================================================
+            // WEST ORB BATTERY
+            // ==================================================
+            {
+                key: "orb_west_upper",
+                group: "orb_batteries",
+                forward: -0.78,
+                side: -0.1,
+                angle: 180,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            {
+                key: "orb_west_lower",
+                group: "orb_batteries",
+                forward: -0.78,
+                side: 0.1,
+                angle: 180,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            // ==================================================
+            // SOUTH ORB BATTERY
+            // ==================================================
+            {
+                key: "orb_south_left",
+                group: "orb_batteries",
+                forward: -0.1,
+                side: 0.78,
+                angle: 270,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            {
+                key: "orb_south_right",
+                group: "orb_batteries",
+                forward: 0.1,
+                side: 0.78,
+                angle: 270,
+                muzzle_forward: 0.18,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_orb_emitter_draw
+            },
+
+            // ==================================================
+            // CENTRAL SEEKER CORE
+            // ==================================================
+            {
+                key: "core_weapon",
+                group: "core_weapon",
+                forward: 0,
+                side: 0,
+                angle: 0,
+                muzzle_forward: 0,
+
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_nexus_core_emitter_draw
+            }
+        ],
+
+        // Distributed/internal propulsion. No visible rear thruster bank.
+        thrusters: [],
+
+        attack_controller: {
+            selection: AttackSelection.WEIGHTED,
+            max_active_channels: 2,
+
+            channels: [
+                {
+                    key: "main_weapons",
+                    selection: AttackSelection.WEIGHTED
+                },
+                {
+                    key: "core",
+                    selection: AttackSelection.WEIGHTED
+                }
+            ],
+
+            attacks: [
+                // ==================================================
+                // FOUR-WAY DIAGONAL BEAM BARRAGE
+                // ==================================================
+                {
+                    key: "nexus_diagonal_beams",
+                    channel: "main_weapons",
+                    weight: 48,
+                    hardpoint_group: "diagonal_beams",
+                    weapon_key: "weapon_simulant_super_beam",
+
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 350,
+                        range_max: 2250
+                    },
+
+                    aim: {
+                        mode: AimMode.MOUNT,
+                        angle_offset: 0,
+                        inaccuracy: 0,
+
+                        // Fixed radial weapons intentionally do not aim at target.
+                        fire_tolerance: 360
+                    },
+
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
+                    },
+
+                    telegraph: {
+                        duration: 95,
+                        aim_lock_remaining: 0,
+                        track_during_active: true,
+                        scale: 0.2,
+                        particle_interval: 1,
+                        draw_script: sc_enemy_sim_nexus_beam_telegraph_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
+                    },
+
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        duration: 125,
+                        cooldown: 330
+                    }
+                },
+
+                // ==================================================
+                // EIGHT-WAY DIVIDING ORB BARRAGE
+                // ==================================================
+                {
+                    key: "nexus_dividing_orbs",
+                    channel: "main_weapons",
+                    weight: 52,
+                    hardpoint_group: "orb_batteries",
+                    weapon_key: "weapon_simulant_dividing_orb",
+
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 250,
+                        range_max: 1900
+                    },
+
+                    aim: {
+                        mode: AimMode.MOUNT,
+                        angle_offset: 0,
+                        inaccuracy: 0,
+                        fire_tolerance: 360
+                    },
+
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
+                    },
+
+                    telegraph: {
+                        duration: 46,
+                        aim_lock_remaining: 0,
+                        track_during_active: true,
+                        scale: 0.18,
+                        particle_interval: 2,
+                        draw_script: sc_enemy_sim_nexus_orb_telegraph_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
+                    },
+
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        interval: 0,
+                        volley_max: 1,
+                        cooldown: 260
+                    }
+                },
+
+                // ==================================================
+                // INDEPENDENT CENTRAL SEEKER CORE
+                // ==================================================
+                {
+                    key: "nexus_core_launch",
+                    channel: "core",
+                    weight: 100,
+                    hardpoint_group: "core_weapon",
+                    weapon_key: "weapon_simulant_seeker_core",
+
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 320,
+                        range_max: 1800
+                    },
+
+                    aim: {
+                        mode: AimMode.TARGET,
+                        angle_offset: 0,
+                        inaccuracy: 0,
+                        fire_tolerance: 360
+                    },
+
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
+                    },
+
+                    telegraph: {
+                        duration: 88,
+                        aim_lock_remaining: 0,
+                        track_during_active: true,
+                        scale: 0.7,
+                        particle_interval: 1,
+
+                        // Existing collapsing Simulant seeker-core telegraph.
+                        draw_script: sc_enemy_sim_dreadwing_seeker_telegraph_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
+                    },
+
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        interval: 0,
+                        volley_max: 1,
+                        cooldown: 360
+                    }
+                }
+            ]
+        }
+    });
+}
+
+/// @description Returns the Nexus's complete visual definition.
+function sc_enemy_sim_nexus_visual_data()
+{
+    return {
+        radius: 300,
+        motion_strength: 0.65,
+        palette: sc_faction_palette_get(Faction.SIMULANT),
+
+        core: {
+            forward: 0,
+            side: 0
+        },
+
+        draw: {
+            body: sc_enemy_sim_nexus_body_draw,
+            core: sc_enemy_sim_nexus_core_draw
+        },
+
+        damage_layers: {
+            enabled: true,
+            damage_stages: 4,
+            hull_draw_script: sc_enemy_sim_nexus_hull_draw,
+            armour_draw_script: sc_enemy_sim_nexus_armour_draw
+        },
+
+        death: {
+            script: sc_enemy_sim_nexus_death,
+
+            draw_scripts: [
+                sc_enemy_sim_nexus_fragment_centre_draw,
+                sc_enemy_sim_nexus_fragment_arm_draw,
+                sc_enemy_sim_nexus_fragment_module_draw
+            ]
+        },
+
+        bake: {
+            body_canvas_size: 768,
+            core_canvas_size: 320,
+            hardpoint_canvas_size: 256,
+            thrust_canvas_size: 128,
+            fragment_canvas_size: 512
+        }
+    };
+}
+
+/// @description Draws the complete intact Nexus fallback body.
+function sc_enemy_sim_nexus_body_draw(_x,_y,_radius,_angle,_visual)
+{
+    sc_enemy_sim_nexus_hull_draw(_x,_y,_radius,_angle,_visual,0);
+    sc_enemy_sim_nexus_armour_draw(_x,_y,_radius,_angle,_visual,0);
+}
+
+/// @description Draws the permanent radial Nexus hull.
+function sc_enemy_sim_nexus_hull_draw(_x,_y,_radius,_angle,_visual,_stage)
+{
+    var _p=_visual.palette;
+
+    // ==================================================
+    // CENTRAL MECHANICAL DISC
+    // ==================================================
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.34,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.31,_p.hull_dark,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.27,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.21,_p.hull_mid,true);
+
+    // Four structural reactor spokes.
+    for (var _i=0;_i<4;_i++)
+    {
+        var _a=_angle+_i*90;
+
+        sc_sim_visual_energy_conduit(
+            _x,_y,_radius,_a,
+            0.14,0,
+            0.48,0,
+            4,_p
+        );
+    }
+
+    // ==================================================
+    // FOUR CARDINAL MODULES
+    // ==================================================
+    for (var _i=0;_i<4;_i++)
+    {
+        var _a=_angle+_i*90;
+
+        sc_enemy_sim_nexus_cardinal_module_draw(
+            _x,_y,_radius,_a,_visual,_stage
+        );
+    }
+
+    // ==================================================
+    // FOUR DIAGONAL ARMS
+    // ==================================================
+    for (var _i=0;_i<4;_i++)
+    {
+        var _a=_angle+45+_i*90;
+
+        sc_enemy_sim_nexus_diagonal_arm_draw(
+            _x,_y,_radius,_a,_visual,_stage
+        );
+    }
+
+    // ==================================================
+    // REACTOR INNER RINGS
+    // ==================================================
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.175,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.16,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.125,_p.accent,true);
+
+    // Progressive structural damage.
+    if (_stage>=1)
+    {
+        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.3,-0.2,5,_p.void);
+        sc_visual_line(_x,_y,_radius,_angle,-0.18,-0.09,-0.28,-0.18,2,_p.energy);
+    }
+
+    if (_stage>=2)
+    {
+        sc_visual_circle(_x,_y,_radius,_angle,0.32,0.12,0.07,_p.void,false);
+        sc_visual_line(_x,_y,_radius,_angle,0.3,0.11,0.43,0.19,3,_p.accent);
+    }
+
+    if (_stage>=3)
+    {
+        sc_visual_circle(_x,_y,_radius,_angle,-0.24,0.25,0.1,_p.void,false);
+        sc_visual_circle(_x,_y,_radius,_angle,0.18,-0.3,0.08,_p.void,false);
+    }
+}
+
+/// @description Draws one cardinal Nexus weapon module.
+function sc_enemy_sim_nexus_cardinal_module_draw(_x,_y,_radius,_angle,_visual,_stage)
+{
+    var _p=_visual.palette;
+
+    // Main heavy pod.
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.25,-0.19,
+        0.78,-0.2,
+        0.9,-0.12,
+        0.27,-0.1,
+        _p.hull_dark,_p
+    );
+
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.27,0.1,
+        0.9,0.12,
+        0.78,0.2,
+        0.25,0.19,
+        _p.hull_dark,_p
+    );
+
+    // Thick central machinery.
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.28,-0.105,
+        0.84,-0.115,
+        0.84,0.115,
+        0.28,0.105,
+        _p.hull_mid
+    );
+
+    // Main central energy feed.
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.3,0,
+        0.82,0,
+        4,_p
+    );
+
+    // Twin side channels.
+    for (var _side=-1;_side<=1;_side+=2)
+    {
+        sc_sim_visual_energy_conduit(
+            _x,_y,_radius,_angle,
+            0.39,0.105*_side,
+            0.73,0.115*_side,
+            2,_p
+        );
+
+        // Paired gun socket housing.
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            0.76,0.1*_side,
+            0.065,
+            _p.void,false
+        );
+
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            0.76,0.1*_side,
+            0.052,
+            _p.metal,true
+        );
+    }
+
+    // Rear reinforcement attached to core.
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.19,-0.13,
+        0.34,-0.17,
+        0.34,0.17,
+        0.19,0.13,
+        _p.metal
+    );
+
+    if (_stage>=2)
+    {
+        sc_visual_line(
+            _x,_y,_radius,_angle,
+            0.48,-0.16,
+            0.63,-0.08,
+            3,_p.void
+        );
+    }
+}
+
+/// @description Draws one large diagonal Nexus beam arm.
+function sc_enemy_sim_nexus_diagonal_arm_draw(_x,_y,_radius,_angle,_visual,_stage)
+{
+    var _p=_visual.palette;
+
+    // Inner mechanical neck.
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        0.18,-0.09,
+        0.47,-0.13,
+        0.54,0.13,
+        0.18,0.09,
+        _p.hull_mid
+    );
+
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.2,0,
+        0.58,0,
+        4,_p
+    );
+
+    // Broad primary pointed blade.
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.39,-0.17,
+        0.68,-0.29,
+        1.02,-0.08,
+        0.62,-0.08,
+        _p.hull_dark,_p
+    );
+
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        0.62,0.08,
+        1.02,0.08,
+        0.68,0.29,
+        0.39,0.17,
+        _p.hull_dark,_p
+    );
+
+    // Secondary nested armour blades.
+    sc_sim_visual_swept_blade(
+        _x,_y,_radius,_angle,
+        0.58,-0.19,
+        0.46,0.09,0.1,
+        _p.hull_mid,_p,true
+    );
+
+    sc_sim_visual_swept_blade(
+        _x,_y,_radius,_angle,
+        0.58,0.19,
+        0.46,0.09,0.1,
+        _p.hull_mid,_p,true
+    );
+
+    // Bright long inner energy spine.
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.43,0,
+        0.95,0,
+        5,_p
+    );
+
+    // Beam emitter socket.
+    sc_visual_circle(
+        _x,_y,_radius,_angle,
+        0.76,0,
+        0.095,
+        _p.void,false
+    );
+
+    sc_visual_circle(
+        _x,_y,_radius,_angle,
+        0.76,0,
+        0.075,
+        _p.metal,true
+    );
+
+    if (_stage>=1)
+    {
+        sc_visual_line(
+            _x,_y,_radius,_angle,
+            0.55,-0.13,
+            0.72,-0.22,
+            3,_p.void
+        );
+    }
+
+    if (_stage>=3)
+    {
+        sc_visual_circle(
+            _x,_y,_radius,_angle,
+            0.62,0.11,
+            0.065,
+            _p.void,false
+        );
+    }
+}
+
+/// @description Draws the Nexus's removable radial armour.
+function sc_enemy_sim_nexus_armour_draw(_x,_y,_radius,_angle,_visual,_stage)
+{
+    var _p=_visual.palette;
+
+    // Central armour quarters.
+    for (var _i=0;_i<4;_i++)
+    {
+        var _a=_angle+_i*90;
+
+        if (_stage<=2)
+        {
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.13,-0.12,
+                0.34,-0.18,
+                0.43,-0.1,
+                0.2,-0.06,
+                _p.hull_light,_p
+            );
+
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.2,0.06,
+                0.43,0.1,
+                0.34,0.18,
+                0.13,0.12,
+                _p.hull_light,_p
+            );
+        }
+
+        if (_stage<=1)
+        {
+            sc_visual_quad(
+                _x,_y,_radius,_a,
+                0.42,-0.2,
+                0.66,-0.22,
+                0.72,-0.15,
+                0.47,-0.13,
+                _p.metal
+            );
+
+            sc_visual_quad(
+                _x,_y,_radius,_a,
+                0.47,0.13,
+                0.72,0.15,
+                0.66,0.22,
+                0.42,0.2,
+                _p.metal
+            );
+        }
+    }
+
+    // Intact outer diagonal armour caps.
+    if (_stage==0)
+    {
+        for (var _i=0;_i<4;_i++)
+        {
+            var _a=_angle+45+_i*90;
+
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.63,-0.24,
+                0.82,-0.31,
+                1.05,-0.09,
+                0.78,-0.12,
+                _p.hull_light,_p
+            );
+
+            sc_sim_visual_blade_panel(
+                _x,_y,_radius,_a,
+                0.78,0.12,
+                1.05,0.09,
+                0.82,0.31,
+                0.63,0.24,
+                _p.hull_light,_p
+            );
+        }
+    }
+}
+
+/// @description Draws the Nexus's massive central reactor.
+function sc_enemy_sim_nexus_core_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    sc_sim_visual_reactor(
+        _x,_y,_radius,_angle,
+        {
+            outer_scale: 0.19,
+            middle_scale: 0.145,
+            inner_scale: 0.072,
+
+            socket_enabled: true,
+
+            middle_colour: _p.hull_light,
+            middle_filled: false,
+
+            glow_alpha: 0.34,
+            glow_scale: 1.85,
+
+            secondary_glow_alpha: 0.13,
+            secondary_glow_scale: 1.38,
+
+            vane_amount: 8,
+            vane_start: 0,
+            vane_twist: 20,
+            vane_inner_scale: 1,
+            vane_outer_scale: 0.9,
+            vane_width: 4,
+            vane_secondary_colour: _p.accent,
+
+            accent_scale: 1.6,
+            accent_filled: false,
+
+            core_scale: 0.46,
+            additive: true
+        },
+        _p,
+        _alpha
+    );
+}
+
+/// @description Draws one fixed diagonal Nexus Super Beam emitter.
+function sc_enemy_sim_nexus_beam_emitter_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.15,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.15,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.105,_p.hull_mid,false);
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        -0.02,-0.085,
+        0.25,-0.055,
+        0.25,0.055,
+        -0.02,0.085,
+        _p.hull_light
+    );
+
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        0.01,0,
+        0.3,0,
+        3,_p,_alpha
+    );
+
+    sc_visual_circle(_x,_y,_radius,_angle,0.3,0,0.075,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0.3,0,0.06,_p.accent,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.3,0,0.027,_p.core,false);
+
+    draw_set_alpha(1);
+}
+
+/// @description Draws one fixed Nexus dividing-orb emitter.
+function sc_enemy_sim_nexus_orb_emitter_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.12,_p.void,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.1,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.067,_p.hull_mid,false);
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        -0.01,-0.06,
+        0.16,-0.048,
+        0.16,0.048,
+        -0.01,0.06,
+        _p.hull_light
+    );
+
+    sc_visual_circle(_x,_y,_radius,_angle,0.17,0,0.055,_p.accent,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0.17,0,0.025,_p.core,false);
+
+    draw_set_alpha(1);
+}
+
+/// @description Draws the Nexus central Seeker Core emitter socket.
+function sc_enemy_sim_nexus_core_emitter_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_sim_visual_energy_socket(
+        _x,_y,_radius,_angle,
+        0,0,
+        0.16,
+        _p,
+        _alpha
+    );
+
+    draw_set_alpha(1);
+}
+
+/// @description Charges one Nexus diagonal beam muzzle.
+function sc_enemy_sim_nexus_beam_telegraph_draw(_enemy,_attack,_transform,_progress,_palette,_config)
+{
+    var _charge=_progress*_progress*(3-2*_progress);
+    var _pulse=0.88+sin(GAME_TICK*0.42)*0.12;
+    var _r=lerp(5,26,_charge)*_pulse;
+    var _direction=_transform.direction;
+
+    gpu_set_blendmode(bm_add);
+
+    draw_set_colour(_palette.glow);
+    draw_set_alpha(0.12+0.28*_charge);
+    draw_circle(_transform.x,_transform.y,_r*2.7,false);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.25+0.55*_charge);
+    draw_circle(_transform.x,_transform.y,_r*1.45,false);
+
+    draw_set_colour(_palette.energy);
+    draw_set_alpha(0.45+0.5*_charge);
+    draw_circle(_transform.x,_transform.y,_r,false);
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(_charge);
+    draw_circle(_transform.x,_transform.y,max(2,_r*0.28),false);
+
+    // Small energy packets collapse inward toward the muzzle.
+    for (var _i=0;_i<4;_i++)
+    {
+        var _a=_direction+_i*90+GAME_TICK*2.5;
+        var _distance=lerp(34,8,_charge);
+
+        draw_set_colour(_palette.energy);
+        draw_set_alpha(_charge*0.8);
+
+        draw_circle(
+            _transform.x+lengthdir_x(_distance,_a),
+            _transform.y+lengthdir_y(_distance,_a),
+            lerp(2,4,_charge),
+            false
+        );
+    }
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Charges one Nexus dividing-orb emitter.
+function sc_enemy_sim_nexus_orb_telegraph_draw(_enemy,_attack,_transform,_progress,_palette,_config)
+{
+    var _charge=_progress*_progress*(3-2*_progress);
+    var _pulse=0.88+sin(GAME_TICK*0.5)*0.12;
+    var _r=lerp(3,15,_charge)*_pulse;
+
+    gpu_set_blendmode(bm_add);
+
+    draw_set_colour(_palette.glow);
+    draw_set_alpha(_charge*0.25);
+    draw_circle(_transform.x,_transform.y,_r*2.4,false);
+
+    draw_set_colour(_palette.energy);
+    draw_set_alpha(_charge*0.75);
+    draw_circle(_transform.x,_transform.y,_r,false);
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(_charge);
+    draw_circle(_transform.x,_transform.y,max(2,_r*0.32),false);
+
+    gpu_set_blendmode(bm_normal);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Creates the Nexus capital-ship death effect.
+function sc_enemy_sim_nexus_death(_enemy,_data)
+{
+    var _p=_data.visual.palette;
+    var _r=_data.visual.radius;
+
+    sc_shockwave_create(
+        _enemy.x,
+        _enemy.y,
+        layer_get_id("Effects_Front"),
+        {
+            radius_scale: 1.4,
+            expansion_response: 0.09,
+            fade_speed: 0.018,
+            thickness: 8,
+            colour: _p.energy,
+
+            particles_enabled: true,
+            particle_interval: 1,
+            particle_min_radius: 16,
+
+            smoke_enabled: true,
+            smoke_amount_max: 10,
+            smoke_colour: _p.hull_dark,
+
+            fragments_enabled: true,
+            fragment_chance: 0.8,
+            fragment_colour: _p.energy
+        },
+        _r*1.2
+    );
+
+    return true;
+}
+
+/// @description Draws the Nexus centre death fragment.
+function sc_enemy_sim_nexus_fragment_centre_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.32,_p.hull_dark,false);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.25,_p.metal,true);
+    sc_visual_circle(_x,_y,_radius,_angle,0,0,0.12,_p.accent,true);
+
+    draw_set_alpha(1);
+}
+
+/// @description Draws one detached Nexus diagonal-arm fragment.
+function sc_enemy_sim_nexus_fragment_arm_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_sim_visual_blade_panel(
+        _x,_y,_radius,_angle,
+        -0.28,-0.18,
+        0.18,-0.27,
+        0.55,0,
+        0.18,0.27,
+        _p.hull_dark,_p,_alpha
+    );
+
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        -0.18,0,
+        0.43,0,
+        3,_p,_alpha
+    );
+
+    draw_set_alpha(1);
+}
+
+/// @description Draws one detached Nexus cardinal-module fragment.
+function sc_enemy_sim_nexus_fragment_module_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    var _p=_visual.palette;
+
+    draw_set_alpha(_alpha);
+
+    sc_visual_quad(
+        _x,_y,_radius,_angle,
+        -0.32,-0.2,
+        0.35,-0.18,
+        0.4,0.18,
+        -0.32,0.2,
+        _p.hull_dark
+    );
+
+    sc_sim_visual_energy_conduit(
+        _x,_y,_radius,_angle,
+        -0.2,0,
+        0.3,0,
+        3,_p,_alpha
+    );
+
+    draw_set_alpha(1);
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_nexus",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_nexus",
+  "parent":{
+    "name":"CAPITAL",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/CAPITAL.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

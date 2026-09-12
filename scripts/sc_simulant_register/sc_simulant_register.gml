@@ -44,7 +44,7 @@ function sc_enemy_faction_simulant_ships_register()
 	if (!sc_enemy_register_sim_dreadwing()) return false;
 	if (!sc_enemy_register_sim_voidlance()) return false;
 	if (!sc_enemy_register_sim_siegebreaker()) return false;
-	
+	if (!sc_enemy_register_sim_nexus()) return false;
 	if (!sc_enemy_register_sim_dreadnaught()) return false;
 
     return true;
