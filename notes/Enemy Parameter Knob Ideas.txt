@@ -1,0 +1,425 @@
+ENEMY PARAMETER / TUNING KNOB IDEAS
+
+General principle:
+Add parameters that change combat identity and behaviour, not just raw stat multipliers. Keep optional structs omitted when an enemy uses defaults so registrations stay readable.
+
+
+1. RANGE / COMBAT DISTANCE
+
+Possible generic range parameters:
+- preferred
+- preferred_tolerance
+- preferred_variance
+
+Meaning:
+preferred = where the enemy generally wants the fight to happen.
+preferred_tolerance = loose dead-band around preferred range.
+preferred_variance = one-time per-enemy variance so identical enemies do not all sit at exactly the same distance.
+
+Example:
+range: {
+    detection: 1120,
+    combat: 760,
+    preferred: 520,
+    preferred_tolerance: 90,
+    preferred_variance: 70,
+    backaway: 260,
+    forget: 1320,
+    wander: 0,
+    alert_share: 1200
+}
+
+Potential behaviour:
+- farther than preferred + tolerance -> bias inward
+- inside preferred band -> no radial correction / let combat script do its thing
+- closer than preferred - tolerance -> bias outward
+- inside backaway -> hard emergency retreat
+
+Important:
+Randomize preferred range once on spawn, not every frame, otherwise enemies will jitter.
+
+
+2. HANDLING / MOVEMENT
+
+Possible parameters:
+- brake_strength
+- reverse_speed_scale
+- combat_speed_scale
+- chase_speed_scale
+- backaway_speed_scale
+- turn_acceleration
+- drift_strength
+- lateral_damping
+- overshoot_allowance
+- boost_chance
+- boost_duration
+- boost_cooldown
+- dodge_chance
+- dodge_distance
+- dodge_cooldown
+
+These can make ships using the same basic movement scripts feel very different.
+
+
+3. FACING / AIMING MOVEMENT
+
+Possible parameters:
+- lead_target
+- lead_strength
+- deadzone
+- snap_threshold
+- return_speed_scale
+- face_velocity_when_idle
+- face_last_known_target
+- bank_strength (visual only)
+
+Useful for making some ships track tightly while others rotate lazily or mechanically.
+
+
+4. AWARENESS / SENSORS
+
+Possible parameters:
+- vision_angle
+- detection_build_rate
+- detection_decay_rate
+- minimum_signature
+- weapon_fire_response_range
+- mining_signature_multiplier
+- boost_signature_multiplier
+- investigate_random_radius
+- memory_duration
+- require_line_of_sight
+- sensor_quality
+- interference_resistance
+
+Potential grouped struct:
+sensors: {
+    quality: 1.25,
+    vision_arc: 220,
+    signature_threshold: 0.35,
+    interference_resistance: 0.6
+}
+
+This could connect to gas, nebulae, stealth, radar interference and future scanner gameplay.
+
+
+5. ASTEROID / TERRAIN RESPONSE
+
+Current AsteroidResponse enum could eventually gain finer tuning.
+
+Possible parameters:
+- avoidance_strength
+- clearance_scale
+- slowdown_resistance
+- concealment_detection_scale
+- can_push_through
+- can_destroy_blocking_asteroids
+- route_recalc_interval
+- panic_clearance_distance
+
+Potential grouped form:
+asteroid_response: {
+    mode: AsteroidResponse.AVOID,
+    clearance_scale: 1.4,
+    speed_penalty_scale: 0.75,
+    concealment_detection_scale: 0.8,
+    bombard_blocking_asteroids: false
+}
+
+
+6. DEFENCE / DAMAGE-STATE BEHAVIOUR
+
+Possible parameters:
+- shield_recharge_delay
+- shield_recharge_rate
+- shield_recharge_threshold
+- armour_damage_multiplier
+- hull_damage_multiplier
+- critical_hull_threshold
+- low_hull_speed_scale
+- low_hull_fire_rate_scale
+- low_hull_accuracy_scale
+- low_hull_behaviour_script
+- shield_break_stagger
+- armour_break_response
+
+Potential critical state:
+critical_state: {
+    hull_threshold: 0.25,
+    speed_scale: 1.1,
+    fire_rate_scale: 1.25,
+    damage_scale: 1.1
+}
+
+Could make damaged enemies change tactics rather than merely smoke more.
+
+
+7. MORALE / RETREAT
+
+Possible parameters:
+- flee_hull_ratio
+- flee_armour_ratio
+- flee_if_outnumbered
+- flee_if_support_dead
+- berserk_if_support_dead
+- retreat_chance
+- surrender_chance
+- regroup_distance
+- return_to_combat_ratio
+
+Faction flavour examples:
+- Rebels more chaotic / inconsistent retreat
+- Corp disciplined regrouping
+- Simulants low or zero morale response unless explicitly designed
+
+
+8. GROUP / FORMATION BEHAVIOUR
+
+Possible parameters:
+- formation_role
+- formation_spacing
+- leader_preference
+- follow_distance
+- break_formation_range
+- rejoin_distance
+- protect_role
+- protect_priority
+- escort_radius
+
+Useful for making factions feel coordinated instead of just several independent ships attacking at once.
+
+
+9. ATTACK SELECTION
+
+Possible controller parameters:
+- global_attack_cooldown
+- repeat_penalty
+- recent_attack_memory
+- range_weighting
+- target_health_weighting
+- target_shield_weighting
+- target_velocity_weighting
+- prefer_disabled_target
+- prefer_exposed_target
+
+High-value idea:
+selection_memory: {
+    recent_count: 2,
+    repeat_weight_scale: 0.25
+}
+
+This prevents weighted RNG from repeatedly choosing the same attack and makes attack sequences feel more intentional.
+
+
+10. PER-ATTACK CONDITIONS
+
+Possible generic condition parameters:
+- target_shield_min
+- target_shield_max
+- target_armour_min
+- target_armour_max
+- target_hull_min
+- target_hull_max
+- self_shield_min
+- self_shield_max
+- self_hull_min
+- self_hull_max
+- target_speed_min
+- target_speed_max
+- target_facing_min
+- target_facing_max
+- target_is_boosting
+- target_in_asteroid_field
+- minimum_allies_nearby
+- maximum_allies_nearby
+- requires_target_lock
+- requires_clear_muzzle
+- requires_no_friendly_in_path
+
+Example:
+conditions: {
+    line_of_sight: true,
+    range_min: 300,
+    range_max: 1600,
+    target_shield_max: 0.25,
+    target_speed_max: 5
+}
+
+This could let certain attacks punish exposed, slowed, shield-broken or isolated targets.
+
+
+11. ATTACK AIM PARAMETERS
+
+Possible parameters:
+- lead_strength
+- predictive_time
+- aim_smoothing
+- aim_jitter
+- inaccuracy_growth
+- inaccuracy_recovery
+- target_point
+
+Possible target-point concepts:
+- CENTRE
+- FRONT
+- REAR
+- VELOCITY_LEAD
+- RANDOM_HULL_POINT
+
+Some attacks could predict movement while others intentionally fire directly at current position.
+
+
+12. SHOT PATTERNS
+
+Potential ShotPattern additions:
+- BURST
+- SPREAD
+- FAN
+- RING
+- ALTERNATING
+- SEQUENTIAL
+- RANDOM_HARDPOINT
+- CROSS
+- SWEEP
+
+Example:
+shot: {
+    pattern: ShotPattern.FAN,
+    amount: 5,
+    angle_step: 8,
+    delay: 3
+}
+
+This gives many attack variants without requiring separate weapon scripts.
+
+
+13. TELEGRAPH PARAMETERS
+
+Possible parameters:
+- sound
+- sound_delay
+- flash_interval
+- colour_override
+- screen_edge_warning
+- hud_warning
+- camera_shake
+- target_marker
+- interruptible
+- interrupt_threshold
+- cancel_on_los_loss
+- cancel_on_target_loss
+
+Interesting combat mechanic:
+Heavy attacks could be interruptible if the player damages the emitter enough during the telegraph.
+
+
+14. FIRING PARAMETERS
+
+Possible parameters:
+- warmup
+- recovery
+- burst_interval
+- reload
+- ammo
+- ammo_regen
+- cooldown_random_min
+- cooldown_random_max
+- stop_movement_while_firing
+- speed_scale_while_firing
+- turn_scale_while_firing
+- lock_facing_while_firing
+
+Useful for making heavy attacks feel physically committed.
+Example: beam cruiser slows heavily and loses turn speed while firing.
+
+
+15. HARDPOINT PARAMETERS
+
+Possible parameters:
+- health
+- armour
+- targetable
+- destructible
+- disabled_when_destroyed
+- parent_damage_share
+- detonation_on_destroy
+- critical
+- repairable
+- target_priority
+- turn_acceleration
+- rest_angle
+- tracking_delay
+- tracking_error
+- minimum_range
+
+Very high-value future feature:
+Targetable/destructible hardpoints could let the player disarm dangerous weapons on large ships before killing the hull.
+
+
+16. THRUSTER PARAMETERS
+
+Possible parameters:
+- power_scale
+- damageable
+- health
+- movement_axis
+- particle_scale
+- boost_scale
+- disabled_effect
+- turn_contribution
+
+Potential future result:
+Destroying individual thrusters could reduce acceleration, top speed or turn performance.
+
+
+17. IDENTITY / SCANNER PRESENTATION
+
+Possible parameters:
+- callsign_pool
+- grade_bias
+- rarity
+- scanner_description
+- scanner_threat_text
+- icon_key
+- radar_signature
+- heat_signature
+- mass_signature
+
+These could tie enemy presentation directly into scanner and environmental systems.
+
+
+18. STRUCTURE / ORGANIZATION PRINCIPLE
+
+Do not put every possible knob directly into every enemy definition.
+Prefer optional grouped structs so simple enemies stay compact.
+
+Example:
+movement_controller: {
+    asteroid_response: AsteroidResponse.AVOID,
+    facing: {...},
+    strafe: {...},
+
+    tactics: {
+        preferred_distance: 760,
+        distance_tolerance: 100,
+        combat_speed_scale: 0.85
+    }
+}
+
+Omit entire optional structs when defaults are enough.
+
+
+HIGHEST-VALUE IDEAS TO CONSIDER FIRST
+
+1. Generic preferred combat range + tolerance + one-time variance
+2. Attack repeat penalty / recent attack memory
+3. Richer per-attack conditions based on target shield, hull, speed, state, terrain
+4. Movement scaling while firing
+5. Destructible / targetable hardpoints
+6. Critical-health behaviour state
+7. Sensor quality / interference resistance
+8. Richer asteroid-response tuning
+9. Predictive aiming / aim smoothing knobs
+10. More reusable shot patterns
+
+The goal is for two enemies using the same weapons and shared systems to still feel radically different through data alone.
