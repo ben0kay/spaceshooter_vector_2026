@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_orb",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_orb",
+  "parent":{
+    "name":"projectiles",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/projectiles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

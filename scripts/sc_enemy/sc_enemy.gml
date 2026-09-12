@@ -70,7 +70,7 @@ function sc_enemy_perception_update(_enemy)
     sc_enemy_engagement_try(_enemy, _candidate);
 }
 
-/// @description Updates enemy hardpoint aiming, temporary obstacle targeting, aim locks and recoil.
+/// @description Updates enemy hardpoint aiming, predictive tracking, aim locks and recoil.
 function sc_enemy_hardpoint_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -106,12 +106,25 @@ function sc_enemy_hardpoint_update(_enemy)
                         + lengthdir_y(_forward, _enemy.draw_angle)
                         + lengthdir_y(_side, _enemy.draw_angle + 90);
 
-                    var _target_angle = point_direction(
-                        _mount_x,
-                        _mount_y,
-                        _target.x,
-                        _target.y
+                    var _attack = sc_enemy_attack_hardpoint_attack_get(
+                        _enemy,
+                        _i
                     );
+
+                    var _target_angle = is_undefined(_attack)
+                        ? point_direction(
+                            _mount_x,
+                            _mount_y,
+                            _target.x,
+                            _target.y
+                        )
+                        : sc_enemy_attack_aim_direction_get(
+                            _enemy,
+                            _attack,
+                            _target,
+                            _mount_x,
+                            _mount_y
+                        );
 
                     var _arc_half = _rotation.arc * 0.5;
 

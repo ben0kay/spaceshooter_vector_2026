@@ -29,9 +29,9 @@ function sc_enemy_register_sim_voidlance()
         },
 
         stats_base: {
-            shield_max: 200,
+            shield_max: 250,
             armour_max: 700,
-            hull_max: 200,
+            hull_max: 275,
             mass: 4,
 
             handling: {

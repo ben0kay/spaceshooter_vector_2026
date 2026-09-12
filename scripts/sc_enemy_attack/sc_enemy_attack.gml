@@ -391,13 +391,87 @@ function sc_enemy_attack_is_committed_beam(_attack)
     return _weapon.delivery.type == AttackDelivery.BEAM;
 }
 
-/// @description Returns whether one hardpoint is aimed close enough to its current attack target.
+/// @description Returns the active attack currently controlling one enemy hardpoint.
+function sc_enemy_attack_hardpoint_attack_get(_enemy, _hardpoint_index)
+{
+    var _channels = _enemy.enemy.attack_controller.channels;
+
+    for (var _c = 0; _c < array_length(_channels); ++_c)
+    {
+        var _channel = _channels[_c];
+        var _attack_index = _channel.runtime.current_attack;
+
+        if (_attack_index < 0) continue;
+
+        var _attack = _channel.attacks[_attack_index];
+        var _indices = _attack.hardpoint_indices;
+
+        for (var _i = 0; _i < array_length(_indices); ++_i)
+        {
+            if (_indices[_i] == _hardpoint_index)
+                return _attack;
+        }
+    }
+
+    return undefined;
+}
+
+/// @description Returns direct or predictive aim for one enemy attack.
+function sc_enemy_attack_aim_direction_get(_enemy, _attack, _target, _x, _y)
+{
+    var _direct = point_direction(_x, _y, _target.x, _target.y);
+
+    if (_attack.aim.mode != AimMode.TARGET_LEAD)
+        return _direct;
+
+    var _weapon = variable_struct_get(
+        global.data.weapons,
+        _attack.weapon_key
+    );
+
+    // Beams, areas and deployables do not require travel-time prediction.
+    if (_weapon.delivery.type != AttackDelivery.PROJECTILE)
+        return _direct;
+
+    var _speed = _weapon.delivery.projectile.speed;
+    if (_speed <= 0) return _direct;
+
+    var _velocity_x = 0;
+    var _velocity_y = 0;
+
+    if (_target.object_index == o_player)
+    {
+        _velocity_x = _target.movement.velocity_x;
+        _velocity_y = _target.movement.velocity_y;
+    }
+    else if (_target.object_index == o_enemy)
+    {
+        _velocity_x = _target.enemy.movement.velocity_x;
+        _velocity_y = _target.enemy.movement.velocity_y;
+    }
+
+    var _strength = clamp(_attack.aim.prediction_strength, 0, 1);
+    var _travel_time = point_distance(_x, _y, _target.x, _target.y) / _speed;
+
+    var _predicted_x = _target.x + _velocity_x * _travel_time * _strength;
+    var _predicted_y = _target.y + _velocity_y * _travel_time * _strength;
+
+    return point_direction(
+        _x,
+        _y,
+        _predicted_x,
+        _predicted_y
+    );
+}
+
+/// @description Returns whether one hardpoint is aimed close enough to its attack solution.
 function sc_enemy_attack_hardpoint_aligned(_enemy, _attack, _hardpoint_index)
 {
     var _target = sc_enemy_attack_target_get(_enemy);
     if (!instance_exists(_target)) return false;
 
     var _transform = { x: 0, y: 0, direction: 0 };
+
     sc_enemy_hardpoint_attack_transform(
         _enemy,
         _attack,
@@ -405,11 +479,12 @@ function sc_enemy_attack_hardpoint_aligned(_enemy, _attack, _hardpoint_index)
         _transform
     );
 
-    var _target_direction = point_direction(
+    var _target_direction = sc_enemy_attack_aim_direction_get(
+        _enemy,
+        _attack,
+        _target,
         _transform.x,
-        _transform.y,
-        _target.x,
-        _target.y
+        _transform.y
     );
 
     return abs(angle_difference(
@@ -625,24 +700,17 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
         switch (_attack.aim.mode)
         {
             case AimMode.TARGET:
-                if (instance_exists(_target))
-                    _transform.direction = point_direction(
-                        _transform.x,
-                        _transform.y,
-                        _target.x,
-                        _target.y
-                    );
-            break;
-
             case AimMode.TARGET_LEAD:
-                // Target-leading solution goes here later.
                 if (instance_exists(_target))
-                    _transform.direction = point_direction(
+                {
+                    _transform.direction = sc_enemy_attack_aim_direction_get(
+                        _enemy,
+                        _attack,
+                        _target,
                         _transform.x,
-                        _transform.y,
-                        _target.x,
-                        _target.y
+                        _transform.y
                     );
+                }
             break;
 
             case AimMode.WORLD:

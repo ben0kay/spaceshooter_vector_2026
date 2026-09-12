@@ -33,3 +33,39 @@ function sc_weapon_register_simulant_pulse()
         }
     });
 }
+
+/// @description Registers the standard Simulant orb cannon.
+function sc_weapon_register_simulant_orb()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_simulant_orb",
+            name: "Simulant Orb Cannon"
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_simulant_orb",
+
+            projectile: {
+                scale: 1,
+                speed: 11,
+                life: 180
+            },
+
+            damage: {
+                amount: 9,
+                type: DamageType.ENERGY,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: 0
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.5,
+            pitch_range: 0.06
+        }
+    });
+}

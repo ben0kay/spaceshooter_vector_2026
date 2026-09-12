@@ -15,6 +15,7 @@ function sc_enemy_faction_simulant_projectiles_register()
     if (!sc_projectile_register_simulant_pulse()) return false;
     if (!sc_projectile_register_simulant_rocket()) return false;
     if (!sc_projectile_register_simulant_seeker_core()) return false;
+	if (!sc_projectile_register_simulant_orb()) return false;
     return true;
 }
 
@@ -28,6 +29,7 @@ function sc_enemy_faction_simulant_weapons_register()
     if (!sc_weapon_register_simulant_rocket()) return false;
     if (!sc_weapon_register_simulant_dreadnaught_rocket()) return false;
     if (!sc_weapon_register_simulant_seeker_core()) return false;
+	if (!sc_weapon_register_simulant_orb()) return false;
     return true;
 }
 

@@ -149,11 +149,12 @@ function sc_enemy_register_corporation_interceptor()
                     },
 
                     aim: {
-                        mode: AimMode.TARGET,
-                        angle_offset: 0,
-                        inaccuracy: 1.5,
-                        fire_tolerance: 6
-                    },
+					    mode: AimMode.TARGET_LEAD,
+					    prediction_strength: 0.8,
+					    angle_offset: 0,
+					    inaccuracy: 1.5,
+					    fire_tolerance: 6
+					},
 
                     shot: {
                         pattern: ShotPattern.SINGLE,
