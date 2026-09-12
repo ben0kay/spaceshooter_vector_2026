@@ -573,7 +573,6 @@ function sc_projectile_sprite_get(_projectile)
     return _cache.sprites[_frame];
 }
 
-
 /// @description Resolves one projectile striking an opposing interceptable projectile.
 function sc_projectile_projectile_collision(_projectile, _target)
 {
