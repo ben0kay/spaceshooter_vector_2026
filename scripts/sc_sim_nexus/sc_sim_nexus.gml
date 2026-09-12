@@ -161,20 +161,22 @@ function sc_weapon_register_sim_nexus_seeker_core()
     });
 }
 
-/// @description Registers the original Nexus ring particles plus larger interior fire-smoke.
+/// @description Registers layered purple flame-cloud particles for the Nexus shockwave.
 function sc_particles_sim_nexus_shockwave_register()
 {
     var _p = sc_faction_palette_get(Faction.SIMULANT);
     var _flame = sc_particles_type_create();
     var _wisp = sc_particles_type_create();
-    var _interior = sc_particles_type_create();
+    var _cloud = sc_particles_type_create();
+    var _streak = sc_particles_type_create();
 
     if (!part_type_exists(_flame)
     || !part_type_exists(_wisp)
-    || !part_type_exists(_interior))
+    || !part_type_exists(_cloud)
+    || !part_type_exists(_streak))
         return false;
 
-    // Original smaller flames travelling around the damage edge.
+    // Original bright flames around the travelling damage edge.
     part_type_sprite(_flame,s_broad_flame_body_white,false,false,false);
     part_type_size(_flame,0.1,0.2,-0.004,0.015);
     part_type_colour3(_flame,_p.core,_p.energy,_p.glow);
@@ -185,37 +187,49 @@ function sc_particles_sim_nexus_shockwave_register()
     part_type_orientation(_flame,-10,10,0,3,true);
     part_type_life(_flame,14,25);
 
-    // Much larger, denser purple smoke filling the expanding area.
-    part_type_sprite(_wisp,s_particle_smokey_wisp_001,false,false,true);
-    part_type_size(_wisp,0.21,0.42,0.008,0.026);
+    // Large detailed flame-smoke texture filling the expanded area.
+    part_type_sprite(_wisp,s_particle_smokey_wisp_001,false,false,false);
+    part_type_size(_wisp,0.7,1.25,0.012,0.035);
     part_type_colour3(_wisp,_p.core,_p.energy,_p.glow);
-    part_type_alpha3(_wisp,0.4,0.24,0);
+    part_type_alpha3(_wisp,0.3,0.16,0);
     part_type_blend(_wisp,true);
-    part_type_speed(_wisp,0.6,1.8,-0.03,0);
+    part_type_speed(_wisp,1.2,3.8,-0.045,0);
     part_type_direction(_wisp,0,359,0,0);
-    part_type_orientation(_wisp,0,359,0,2,false);
-    part_type_life(_wisp,20,36);
+    part_type_orientation(_wisp,-25,25,0,3,true);
+    part_type_life(_wisp,17,30);
 
-    // Broad flames filling the area behind the damage edge.
-    part_type_sprite(_interior,s_broad_flame_body_white,false,false,false);
-    part_type_size(_interior,0.15,0.3,0.006,0.022);
-    part_type_scale(_interior,1.1,0.85);
-    part_type_colour3(_interior,_p.core,_p.energy,_p.glow);
-    part_type_alpha3(_interior,0.48,0.28,0);
-    part_type_blend(_interior,true);
-    part_type_speed(_interior,2.5,6,-0.06,0);
-    part_type_direction(_interior,0,359,0,0);
-    part_type_orientation(_interior,-14,14,0,3,true);
-    part_type_life(_interior,22,38);
+    // Very large faint clouds connecting the individual flame wisps.
+    part_type_sprite(_cloud,s_particle_cloud_002,false,false,true);
+    part_type_size(_cloud,0.55,0.95,0.01,0.03);
+    part_type_colour3(_cloud,_p.energy,_p.glow,_p.void);
+    part_type_alpha3(_cloud,0.16,0.09,0);
+    part_type_blend(_cloud,true);
+    part_type_speed(_cloud,0.35,1.25,-0.02,0);
+    part_type_direction(_cloud,0,359,0,0);
+    part_type_orientation(_cloud,0,359,0,2,false);
+    part_type_life(_cloud,19,32);
+
+    // Occasional bright outward streaks resembling flame veins.
+    part_type_sprite(_streak,s_particle_streak_004,false,false,false);
+    part_type_size(_streak,0.22,0.42,-0.004,0.02);
+    part_type_scale(_streak,1.15,0.7);
+    part_type_colour3(_streak,_p.core,_p.energy,_p.glow);
+    part_type_alpha3(_streak,0.58,0.3,0);
+    part_type_blend(_streak,true);
+    part_type_speed(_streak,4,9,-0.09,0);
+    part_type_direction(_streak,0,359,0,0);
+    part_type_orientation(_streak,-12,12,0,2,true);
+    part_type_life(_streak,13,23);
 
     return sc_particles_group_register("sim_nexus_shockwave",{
         flame: _flame,
         wisp: _wisp,
-        interior: _interior
+        cloud: _cloud,
+        streak: _streak
     });
 }
 
-/// @description Keeps the original ring particles and densely fills its interior with fire-smoke.
+/// @description Fills the Nexus shockwave with connected purple flame, smoke and streaks.
 function sc_particles_sim_nexus_shockwave_emit(_area,_data)
 {
     if ((GAME_TICK mod 2) != 0) return true;
@@ -223,54 +237,62 @@ function sc_particles_sim_nexus_shockwave_emit(_area,_data)
     var _types = sc_particles_group_get("sim_nexus_shockwave");
     var _radius = _data.runtime.ring_radius;
     var _thickness = _data.behaviour.expanding_ring.thickness;
-    var _edge_amount = clamp(ceil(_radius/115),4,10);
-    var _fill_amount = clamp(ceil(_radius/100),4,11);
-    var _fill_radius = max(1,_radius-_thickness*0.3);
 
-    // Original flame particles and larger smoke around the damage edge.
+    if (!sc_optimization_circle_visible(_area.x,_area.y,_radius,64))
+        return true;
+
+    var _edge_amount = clamp(ceil(_radius/115),4,10);
+    var _fill_amount = clamp(ceil(_radius/55),10,22);
+    var _fill_radius = max(1,_radius-_thickness*0.2);
+
+    // Preserve the original flames around the travelling damage edge.
     for (var _i = 0; _i < _edge_amount; _i++)
     {
         var _angle = random(360);
-        var _spread = random_range(-_thickness*0.35,_thickness*0.35);
-        var _x = _area.x+lengthdir_x(_radius+_spread,_angle);
-        var _y = _area.y+lengthdir_y(_radius+_spread,_angle);
+        var _distance = _radius+random_range(-_thickness*0.35,_thickness*0.35);
+        var _x = _area.x+lengthdir_x(_distance,_angle);
+        var _y = _area.y+lengthdir_y(_distance,_angle);
 
         part_type_direction(_types.flame,_angle-16,_angle+16,0,0);
         part_particles_create(
             global.particles.impact_system,
             _x,_y,_types.flame,1
         );
-
-        if (irandom(1) == 0)
-        {
-            part_type_direction(_types.wisp,_angle-45,_angle+45,0,0);
-            part_particles_create(
-                global.particles.impact_system,
-                _x,_y,_types.wisp,3
-            );
-        }
     }
 
-    // Additional flames and much denser smoke throughout the interior.
+    // Fill most of the expanded area with large overlapping flame-smoke.
     for (var _i = 0; _i < _fill_amount; _i++)
     {
         var _angle = random(360);
-        var _distance = sqrt(random(1))*_fill_radius;
+
+        // Biases detail toward the outer region while retaining interior coverage.
+        var _distance = sqrt(random_range(0.12,1))*_fill_radius;
         var _x = _area.x+lengthdir_x(_distance,_angle);
         var _y = _area.y+lengthdir_y(_distance,_angle);
 
-        part_type_direction(_types.interior,_angle-30,_angle+30,0,0);
+        part_type_direction(_types.wisp,_angle-35,_angle+35,0,0);
         part_particles_create(
             global.particles.impact_system,
-            _x,_y,_types.interior,1
+            _x,_y,_types.wisp,1
         );
 
+        // Large faint clouds overlap the wisps and remove empty gaps.
         if (irandom(1) == 0)
         {
-            part_type_direction(_types.wisp,_angle-65,_angle+65,0,0);
+            part_type_direction(_types.cloud,_angle-60,_angle+60,0,0);
             part_particles_create(
                 global.particles.impact_system,
-                _x,_y,_types.wisp,3
+                _x,_y,_types.cloud,1
+            );
+        }
+
+        // Bright outward veins break up the cloud mass.
+        if (irandom(2) == 0)
+        {
+            part_type_direction(_types.streak,_angle-18,_angle+18,0,0);
+            part_particles_create(
+                global.particles.impact_system,
+                _x,_y,_types.streak,1
             );
         }
     }
