@@ -97,6 +97,84 @@ function sc_projectile_register_shard_rocket()
     });
 }
 
+/// @description Registers the Shard's evenly distributed mini-rocket salvo.
+function sc_weapon_register_shard_missile_salvo()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_shard_missile_salvo",
+            name: "Shard Micro-Missile Salvo"
+        },
+
+        // Paid once for the complete six-rocket volley.
+        resource: {
+            type: ResourceType.EXPLOSIVES,
+            cost: 2
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_shard_rocket",
+
+            projectile: {
+                scale: 0.5,
+                speed: 18,
+                life: 165
+            },
+
+            damage: {
+                amount: 6,
+                type: DamageType.EXPLOSIVE,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: {
+                homing: 1,
+                acquire_range: 1200,
+                turn_speed: 5.5,
+                reacquire_interval: 12,
+
+                // Fly straight for ten steps before steering.
+                guidance_delay: 10,
+
+                // Keep the volley assignment until that target disappears.
+                retain_assigned_target: true
+            },
+
+            detonation: {
+                scale: 0.5,
+
+                damage: {
+                    amount: 4,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.NONE,
+                    knockback_force: 1
+                }
+            }
+        },
+
+        shot: {
+            pattern: ShotPattern.RANDOM_CONE,
+            amount: 6,
+            angle_total: 38,
+            volley_target_script: sc_weapon_volley_targets_even
+        },
+
+        firing: {
+            mount_mode: WeaponMountMode.HARDPOINT,
+            interval: 60,
+            recoil: 4,
+            muzzle_flash_duration: 6
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.5,
+            pitch_range: 0.08
+        }
+    });
+}
+
 /// @description Registers the Shard's homing rocket launcher.
 function sc_weapon_register_shard_rocket()
 {

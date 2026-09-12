@@ -477,7 +477,7 @@ function sc_config_init()
 		asteroid: {
 			
 			modifiers: {
-		        rare_chance: 0.002,
+		        rare_chance: 0.025,
 
 		        unstable: {
 		            health_multiplier: 0.8,

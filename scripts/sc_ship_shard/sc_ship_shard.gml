@@ -75,6 +75,7 @@ function sc_ship_register_shard()
 		    secondary_slots: [
 		        "weapon_shard_mining_beam",
 		        "weapon_shard_rocket",
+				"weapon_shard_missile_salvo",
 		        "weapon_shard_laser",
 				"weapon_shard_demolition_rocket",
 		    ],

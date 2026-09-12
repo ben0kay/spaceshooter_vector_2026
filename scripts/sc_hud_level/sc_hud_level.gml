@@ -40,9 +40,27 @@ function sc_hud_level_data()
             height: 82,
             margin_bottom: 10,
             bar_segments: 10,
+			
+			defence_warning: {
+			    warning_ratio: 0.5,
+			    danger_ratio: 0.25,
+			    critical_ratio: 0.1,
+
+			    background_alpha: 0.1,
+			    outline_alpha: 0.6,
+
+			    pulse_base: 0.65,
+			    pulse_amount: 0.35,
+			    pulse_speed: 0.1,
+
+			    shield_strength: 0.65,
+			    armour_strength: 0.8,
+			    hull_strength: 1
+			},
+			
             effect_frames: 12,
             effect_speed: 4,
-
+			
             cells: {
                 shield: { x: 28, width: 112 },
                 armour: { x: 148, width: 112 },
@@ -710,8 +728,90 @@ function sc_hud_minimap_dock_primitive_draw(_data)
     draw_set_colour(c_white);
 }
 
-/// @description Draws one live labelled segmented HUD bar.
-function sc_hud_level_bar_draw(_hud, _origin_x, _origin_y, _cell, _label, _value, _ratio, _colour)
+/// @description Returns progressive warning visuals for one defence layer.
+function sc_hud_level_defence_warning_get(_hud, _ratio, _base_colour, _strength, _quiet_when_empty = false)
+{
+    var _config = _hud.data.bottom.defence_warning;
+    var _palette = _hud.data.palette;
+    var _ratio_clamped = clamp(_ratio, 0, 1);
+
+    if (_ratio_clamped > _config.warning_ratio)
+    {
+        return {
+            active: false,
+            colour: _base_colour,
+            background_alpha: 0,
+            outline_alpha: 0,
+            text_colour: _hud.data.palette.text
+        };
+    }
+
+    var _severity = 1 - _ratio_clamped / max(0.01, _config.warning_ratio);
+    var _colour;
+
+    if (_ratio_clamped > _config.danger_ratio)
+    {
+        var _blend = 1 - (
+            _ratio_clamped - _config.danger_ratio
+        ) / max(0.01, _config.warning_ratio - _config.danger_ratio);
+
+        _colour = merge_colour(
+            _base_colour,
+            _palette.warning,
+            _blend * _strength
+        );
+    }
+    else
+    {
+        var _blend = 1 - _ratio_clamped / max(0.01, _config.danger_ratio);
+
+        _colour = merge_colour(
+            _palette.warning,
+            _palette.danger,
+            _blend * _strength
+        );
+    }
+
+    var _pulse = 1;
+
+    if (_ratio_clamped <= _config.critical_ratio)
+    {
+        _pulse = _config.pulse_base
+            + (sin(GAME_TICK * _config.pulse_speed) * 0.5 + 0.5)
+            * _config.pulse_amount;
+    }
+
+    // A depleted rechargeable shield remains visibly failed without
+    // continuously flashing after its separate break effect has played.
+    if (_quiet_when_empty && _ratio_clamped <= 0)
+        _pulse = _config.pulse_base;
+
+    return {
+        active: true,
+        colour: _colour,
+
+        background_alpha:
+            _config.background_alpha
+            * _severity
+            * _strength
+            * _pulse,
+
+        outline_alpha:
+            _config.outline_alpha
+            * _severity
+            * _strength
+            * _pulse,
+
+        text_colour: merge_colour(
+            _hud.data.palette.text,
+            _colour,
+            _severity * _strength
+        )
+    };
+}
+
+/// @description Draws one live labelled segmented HUD bar with optional warning visuals.
+function sc_hud_level_bar_draw(_hud, _origin_x, _origin_y, _cell, _label, _value, _ratio, _colour, _warning = undefined)
 {
     var _data = _hud.data;
     var _palette = _data.palette;
@@ -721,28 +821,82 @@ function sc_hud_level_bar_draw(_hud, _origin_x, _origin_y, _cell, _label, _value
     var _gap = 2;
     var _segment_width = (_available - (_segments - 1) * _gap) / _segments;
     var _filled = ceil(clamp(_ratio, 0, 1) * _segments);
+    var _draw_colour = _colour;
+    var _text_colour = _palette.text;
+
+    if (is_struct(_warning) && _warning.active)
+    {
+        _draw_colour = _warning.colour;
+        _text_colour = _warning.text_colour;
+
+        draw_set_colour(_warning.colour);
+        draw_set_alpha(_warning.background_alpha);
+        draw_rectangle(
+            _left + 3,
+            _origin_y + 5,
+            _left + _cell.width - 3,
+            _origin_y + _data.bottom.height - 6,
+            false
+        );
+
+        draw_set_alpha(_warning.outline_alpha);
+        draw_rectangle(
+            _left + 3,
+            _origin_y + 5,
+            _left + _cell.width - 3,
+            _origin_y + _data.bottom.height - 6,
+            true
+        );
+    }
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
-    draw_set_colour(_palette.muted);
+    draw_set_colour(
+        is_struct(_warning) && _warning.active
+            ? merge_colour(_palette.muted, _draw_colour, 0.55)
+            : _palette.muted
+    );
+
+    draw_set_alpha(1);
     draw_text(_left + 19, _origin_y + 12, _label);
 
-    for (var _segment = 0; _segment < _filled; _segment++)
+    for (var _segment = 0; _segment < _filled; ++_segment)
     {
-        var _segment_x = _left + 7 + _segment * (_segment_width + _gap);
+        var _segment_x =
+            _left + 7
+            + _segment * (_segment_width + _gap);
 
-        draw_set_colour(_colour);
+        draw_set_colour(_draw_colour);
         draw_set_alpha(0.22);
-        draw_rectangle(_segment_x - 1, _origin_y + 36, _segment_x + _segment_width + 1, _origin_y + 50, false);
+
+        draw_rectangle(
+            _segment_x - 1,
+            _origin_y + 36,
+            _segment_x + _segment_width + 1,
+            _origin_y + 50,
+            false
+        );
 
         draw_set_alpha(0.95);
-        draw_rectangle(_segment_x, _origin_y + 38, _segment_x + _segment_width, _origin_y + 48, false);
+
+        draw_rectangle(
+            _segment_x,
+            _origin_y + 38,
+            _segment_x + _segment_width,
+            _origin_y + 48,
+            false
+        );
     }
 
     draw_set_alpha(1);
     draw_set_halign(fa_center);
-    draw_set_colour(_palette.text);
-    draw_text(_left + _cell.width * 0.5, _origin_y + 55, _value);
+    draw_set_colour(_text_colour);
+
+    draw_text(
+        _left + _cell.width * 0.5,
+        _origin_y + 55,
+        _value
+    );
 }
 
 /// @description Draws one compact live numeric or textual HUD value.
@@ -762,7 +916,14 @@ function sc_hud_level_value_draw(_origin_x, _origin_y, _cell, _label, _value, _p
 
     draw_set_colour(_palette.accent);
     draw_set_alpha(0.8);
-    draw_line_width(_centre_x - 12, _origin_y + 57, _centre_x + 12, _origin_y + 57, 2);
+    draw_line_width(
+        _centre_x - 12,
+        _origin_y + 57,
+        _centre_x + 12,
+        _origin_y + 57,
+        2
+    );
+
     draw_set_alpha(1);
 }
 
@@ -772,39 +933,162 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     var _data = _hud.data;
     var _palette = _data.palette;
     var _cells = _data.bottom.cells;
+    var _warning = _data.bottom.defence_warning;
     var _defence = _player.defence;
     var _resources = _player.resources;
     var _dash = _player.movement.dash;
     var _stats = _player.ship.stats.final;
 
-    var _shield_ratio = _defence.shield.maximum > 0 ? _defence.shield.current / _defence.shield.maximum : 0;
-    var _armour_ratio = _defence.armour.maximum > 0 ? _defence.armour.current / _defence.armour.maximum : 0;
-    var _hull_ratio = _defence.hull.maximum > 0 ? _defence.hull.current / _defence.hull.maximum : 0;
-    var _energy_ratio = _resources.energy.maximum > 0 ? _resources.energy.current / _resources.energy.maximum : 0;
-    var _fuel_ratio = _resources.fuel.maximum > 0 ? _resources.fuel.current / _resources.fuel.maximum : 0;
-    var _dash_ratio = _stats.dash_cooldown > 0 ? 1 - _dash.cooldown_remaining / _stats.dash_cooldown : 1;
-    var _cargo_ratio = _resources.cargo.capacity > 0 ? _resources.cargo.weight / _resources.cargo.capacity : 0;
+    var _shield_ratio = _defence.shield.maximum > 0
+        ? _defence.shield.current / _defence.shield.maximum
+        : 0;
 
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.shield, "SHIELD", string(round(_shield_ratio * 100)) + "%", _shield_ratio, _palette.shield);
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.armour, "ARMOUR", string(round(_armour_ratio * 100)) + "%", _armour_ratio, _palette.armour);
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.hull, "HULL", string(round(_hull_ratio * 100)) + "%", _hull_ratio, _palette.hull);
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.energy, "ENERGY", string(floor(_resources.energy.current)) + " / " + string(floor(_resources.energy.maximum)), _energy_ratio, _palette.energy);
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.fuel, "FUEL", string(floor(_resources.fuel.current)) + " / " + string(floor(_resources.fuel.maximum)), _fuel_ratio, _palette.fuel);
+    var _armour_ratio = _defence.armour.maximum > 0
+        ? _defence.armour.current / _defence.armour.maximum
+        : 0;
 
-    sc_hud_level_value_draw(_x, _y, _cells.bullets, "BULLETS", string(floor(_resources.bullets.current)), _palette);
-    sc_hud_level_value_draw(_x, _y, _cells.explosives, "EXPLOSIVES", string(floor(_resources.explosives.current)), _palette);
+    var _hull_ratio = _defence.hull.maximum > 0
+        ? _defence.hull.current / _defence.hull.maximum
+        : 0;
 
-    var _dash_text = _dash.cooldown_remaining <= 0 ? "READY" : string(ceil(_dash.cooldown_remaining));
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.dash, "DASH", _dash_text, _dash_ratio, _palette.dash);
+    var _energy_ratio = _resources.energy.maximum > 0
+        ? _resources.energy.current / _resources.energy.maximum
+        : 0;
 
-        var _cargo_text = string(floor(_resources.cargo.weight)) + " / " + string(floor(_resources.cargo.capacity));
-    sc_hud_level_bar_draw(_hud, _x, _y, _cells.cargo, "CARGO", _cargo_text, _cargo_ratio, _palette.cargo);
+    var _fuel_ratio = _resources.fuel.maximum > 0
+        ? _resources.fuel.current / _resources.fuel.maximum
+        : 0;
 
-    var _weapon = variable_struct_get(global.data.weapons, _player.ship.loadout.primary);
-    sc_hud_level_value_draw(_x, _y, _cells.weapon, "PRIMARY WEAPON", _weapon.identity.name, _palette);
+    var _dash_ratio = _stats.dash_cooldown > 0
+        ? 1 - _dash.cooldown_remaining / _stats.dash_cooldown
+        : 1;
+
+    var _cargo_ratio = _resources.cargo.capacity > 0
+        ? _resources.cargo.weight / _resources.cargo.capacity
+        : 0;
+
+    var _shield_warning = sc_hud_level_defence_warning_get(
+        _hud,
+        _shield_ratio,
+        _palette.shield,
+        _warning.shield_strength,
+        true
+    );
+
+    var _armour_warning = sc_hud_level_defence_warning_get(
+        _hud,
+        _armour_ratio,
+        _palette.armour,
+        _warning.armour_strength
+    );
+
+    var _hull_warning = sc_hud_level_defence_warning_get(
+        _hud,
+        _hull_ratio,
+        _palette.hull,
+        _warning.hull_strength
+    );
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.shield,
+        "SHIELD",
+        string(round(_shield_ratio * 100)) + "%",
+        _shield_ratio,
+        _palette.shield,
+        _shield_warning
+    );
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.armour,
+        "ARMOUR",
+        string(round(_armour_ratio * 100)) + "%",
+        _armour_ratio,
+        _palette.armour,
+        _armour_warning
+    );
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.hull,
+        "HULL",
+        string(round(_hull_ratio * 100)) + "%",
+        _hull_ratio,
+        _palette.hull,
+        _hull_warning
+    );
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.energy,
+        "ENERGY",
+        string(floor(_resources.energy.current))
+            + " / "
+            + string(floor(_resources.energy.maximum)),
+        _energy_ratio,
+        _palette.energy
+    );
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.fuel,
+        "FUEL",
+        string(floor(_resources.fuel.current))
+            + " / "
+            + string(floor(_resources.fuel.maximum)),
+        _fuel_ratio,
+        _palette.fuel
+    );
+
+    sc_hud_level_value_draw(
+        _x, _y, _cells.bullets,
+        "BULLETS",
+        string(floor(_resources.bullets.current)),
+        _palette
+    );
+
+    sc_hud_level_value_draw(
+        _x, _y, _cells.explosives,
+        "EXPLOSIVES",
+        string(floor(_resources.explosives.current)),
+        _palette
+    );
+
+    var _dash_text = _dash.cooldown_remaining <= 0
+        ? "READY"
+        : string(ceil(_dash.cooldown_remaining));
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.dash,
+        "DASH",
+        _dash_text,
+        _dash_ratio,
+        _palette.dash
+    );
+
+    var _cargo_text =
+        string(floor(_resources.cargo.weight))
+        + " / "
+        + string(floor(_resources.cargo.capacity));
+
+    sc_hud_level_bar_draw(
+        _hud, _x, _y, _cells.cargo,
+        "CARGO",
+        _cargo_text,
+        _cargo_ratio,
+        _palette.cargo
+    );
+
+    var _weapon = variable_struct_get(
+        global.data.weapons,
+        _player.ship.loadout.primary
+    );
+
+    sc_hud_level_value_draw(
+        _x, _y, _cells.weapon,
+        "PRIMARY WEAPON",
+        _weapon.identity.name,
+        _palette
+    );
 }
 
-/// @description Draws credits, location, navigation and coordinates.
+/// @description Draws credits, location and live navigation telemetry.
 function sc_hud_level_top_content_draw(_hud, _player, _x, _y)
 {
     var _data = _hud.data;
@@ -820,30 +1104,80 @@ function sc_hud_level_top_content_draw(_hud, _player, _x, _y)
         gpu_set_blendmode(bm_add);
         draw_set_colour(_palette.accent);
         draw_set_alpha(_pulse * 0.22);
-        draw_rectangle(_x + 48, _y + 12, _x + 147, _y + _data.top.height - 12, false);
+
+        draw_rectangle(
+            _x + 48,
+            _y + 12,
+            _x + 147,
+            _y + _data.top.height - 12,
+            false
+        );
+
         gpu_set_blendmode(bm_normal);
     }
 
     draw_set_alpha(1);
     draw_set_halign(fa_center);
-    draw_set_colour(_pulse > 0 ? _palette.core : _palette.accent);
+    draw_set_colour(
+        _pulse > 0
+            ? _palette.core
+            : _palette.accent
+    );
 
-    var _credit_text = "CR " + string(floor(_runtime.credits_display));
-    if (_runtime.credit_gain > 0 && _pulse > 0) _credit_text += "  +" + string(_runtime.credit_gain);
-    draw_text(_x + 98, _centre_y, _credit_text);
+    var _credit_text =
+        "CR "
+        + string(floor(_runtime.credits_display));
+
+    if (_runtime.credit_gain > 0 && _pulse > 0)
+    {
+        _credit_text +=
+            "  +"
+            + string(_runtime.credit_gain);
+    }
+
+    draw_text(
+        _x + 98,
+        _centre_y,
+        _credit_text
+    );
 
     draw_set_halign(fa_left);
     draw_set_colour(_palette.muted);
-    draw_text(_x + 162, _centre_y, "AREA // " + string_upper(room_get_name(room)));
+
+    draw_text(
+        _x + 162,
+        _centre_y,
+        "AREA // "
+            + string_upper(room_get_name(room))
+    );
 
     draw_set_halign(fa_center);
     draw_set_colour(_palette.core);
-    draw_text(_x + _data.top.width * 0.5, _centre_y, "VECTOR NAVIGATION");
+
+    draw_text(
+        _x + _data.top.width * 0.5,
+        _centre_y,
+        "VECTOR NAVIGATION"
+    );
+
+    var _navigation_text =
+        "X "
+        + string(round(_player.x))
+        + "  Y "
+        + string(round(_player.y))
+        + "  HDG "
+        + string(round(_player.draw_angle))
+        + "  SPD "
+        + string_format(_player.movement.speed, 1, 1);
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
-    draw_text(_x + _data.top.width - 58, _centre_y,
-        "X " + string(round(_player.x)) + "  Y " + string(round(_player.y)) + "  HDG " + string(round(_player.draw_angle)));
+
+    draw_text(
+        _x + _data.top.width - 58,
+        _centre_y,
+        _navigation_text
+    );
 }
 
 /// @description Draws the complete permanent HUD in GUI space.
