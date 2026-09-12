@@ -424,7 +424,7 @@ function sc_enemy_register_sim_nexus()
         },
 			
 		damage_affinity: {
-            shield: 0.2,
+            shield: 0.1,
 
             hull: [
                 {
