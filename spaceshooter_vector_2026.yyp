@@ -347,6 +347,7 @@
     {"id":{"name":"s_particle_wisp_001","path":"sprites/s_particle_wisp_001/s_particle_wisp_001.yy",},},
     {"id":{"name":"s_ring","path":"sprites/s_ring/s_ring.yy",},},
     {"id":{"name":"s_sharp","path":"sprites/s_sharp/s_sharp.yy",},},
+    {"id":{"name":"s_sim_dreadwing_cannon","path":"sprites/s_sim_dreadwing_cannon/s_sim_dreadwing_cannon.yy",},},
     {"id":{"name":"s_sim_dreadwing_hull","path":"sprites/s_sim_dreadwing_hull/s_sim_dreadwing_hull.yy",},},
     {"id":{"name":"s_sim_pulse","path":"sprites/s_sim_pulse/s_sim_pulse.yy",},},
     {"id":{"name":"s_smoke_puff","path":"sprites/s_smoke_puff/s_smoke_puff.yy",},},
