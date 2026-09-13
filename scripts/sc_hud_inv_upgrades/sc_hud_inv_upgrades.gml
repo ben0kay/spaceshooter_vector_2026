@@ -66,63 +66,6 @@ function sc_player_upgrade_hexagon_draw(_x,_y,_radius,_colour,_alpha,_outline)
     draw_primitive_end();
 }
 
-/// @description Draws a compact symbol inside an upgrade node.
-function sc_player_upgrade_symbol_draw(_upgrade,_x,_y,_colour)
-{
-    draw_set_colour(_colour);
-    draw_set_alpha(1);
-
-    switch (_upgrade.category)
-    {
-        case UpgradeCategory.WEAPONS:
-        {
-            draw_line_width(_x - 11,_y + 8,_x + 10,_y - 8,3);
-            draw_line_width(_x - 5,_y + 12,_x + 14,_y - 3,2);
-            draw_circle(_x + 11,_y - 9,3,false);
-        }
-        break;
-
-        case UpgradeCategory.DEFENCE:
-        {
-            draw_primitive_begin(pr_trianglefan);
-            draw_vertex(_x,_y + 13);
-            draw_vertex(_x - 12,_y - 8);
-            draw_vertex(_x,_y - 14);
-            draw_vertex(_x + 12,_y - 8);
-            draw_vertex(_x,_y + 13);
-            draw_primitive_end();
-
-            draw_set_colour(make_colour_rgb(2,10,14));
-            draw_circle(_x,_y - 2,5,false);
-        }
-        break;
-
-        case UpgradeCategory.MOBILITY:
-        {
-            draw_line_width(_x - 13,_y - 10,_x - 2,_y,3);
-            draw_line_width(_x - 2,_y,_x - 13,_y + 10,3);
-            draw_line_width(_x,_y - 10,_x + 11,_y,3);
-            draw_line_width(_x + 11,_y,_x,_y + 10,3);
-        }
-        break;
-
-        case UpgradeCategory.SYSTEMS:
-        {
-            draw_rectangle(_x - 10,_y - 10,_x + 10,_y + 10,true);
-            draw_rectangle(_x - 5,_y - 5,_x + 5,_y + 5,false);
-
-            for (var _i = -8; _i <= 8; _i += 8)
-            {
-                draw_line(_x + _i,_y - 15,_x + _i,_y - 11);
-                draw_line(_x + _i,_y + 11,_x + _i,_y + 15);
-                draw_line(_x - 15,_y + _i,_x - 11,_y + _i);
-                draw_line(_x + 11,_y + _i,_x + 15,_y + _i);
-            }
-        }
-        break;
-    }
-}
-
 /// @description Returns a readable description of one stat modifier.
 function sc_player_upgrade_modifier_text_get(_modifier)
 {
