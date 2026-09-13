@@ -1,41 +1,42 @@
-/// @description Creates the expandable content registries.
+/// @description Creates expandable content registries and identifies registration failures.
 function sc_data_init()
 {
     global.data = {
         factions: array_create(Faction.AUTOMATED+1,undefined),
-        faction_hostility: [],
+        faction_devices: [],
         ships: {},
         enemies: {},
         weapons: {},
         projectiles: {},
-		drones: {},
+        drones: {},
         attacks: {},
         items: {},
-		recipes: {},
+        recipes: {},
         asteroids: {},
-		asteroid_modifiers: {},
-		asteroid_spawns: {},
-		asteroid_spawn_pool: [],
-		structures: {},
-		devices: {},
-		environment_fields: {}
+        asteroid_modifiers: {},
+        asteroid_spawns: {},
+        asteroid_spawn_pools: {},
+        structures: {},
+        devices: {},
+        environment_fields: {}
     };
-	if (!sc_faction_register_player()) return false;
-    if (!sc_faction_hostility_init()) return false;
-    if (!sc_item_register_all()) return false;
-	if (!sc_recipe_register_all()) return false;
-    if (!sc_asteroid_register_all()) return false;
-	if (!sc_asteroid_modifier_register_all()) return false;
-	if (!sc_asteroid_spawn_register_all()) return false;
-	if (!sc_gas_cloud_register_all()) return false;
-    if (!sc_projectiles_shared_register_all()) return false;
-	if (!sc_drone_register_all()) return false;
-    if (!sc_enemy_register_all()) return false;
-	if (!sc_faction_device_register_all()) return false;
-    if (!sc_plyr_register_all()) return false;
-	if (!sc_world_structure_register_all()) return false;
 
-    show_debug_message("SPACE SHOOTER VECTOR 2026 - DATA INITIALIZED");
+    if (!sc_faction_register_player()) { show_debug_message("DATA INIT FAILED - PLAYER FACTION"); return false; }
+    if (!sc_faction_hostility_init()) { show_debug_message("DATA INIT FAILED - FACTION HOSTILITY"); return false; }
+    if (!sc_item_register_all()) { show_debug_message("DATA INIT FAILED - ITEMS"); return false; }
+    if (!sc_recipe_register_all()) { show_debug_message("DATA INIT FAILED - RECIPES"); return false; }
+    if (!sc_asteroid_register_all()) { show_debug_message("DATA INIT FAILED - ASTEROIDS"); return false; }
+    if (!sc_asteroid_modifier_register_all()) { show_debug_message("DATA INIT FAILED - ASTEROID MODIFIERS"); return false; }
+    if (!sc_asteroid_spawn_register_all()) { show_debug_message("DATA INIT FAILED - ASTEROID SPAWNS"); return false; }
+    if (!sc_gas_cloud_register_all()) { show_debug_message("DATA INIT FAILED - GAS CLOUDS"); return false; }
+    if (!sc_projectiles_shared_register_all()) { show_debug_message("DATA INIT FAILED - PROJECTILES"); return false; }
+    if (!sc_drone_register_all()) { show_debug_message("DATA INIT FAILED - DRONES"); return false; }
+    if (!sc_enemy_register_all()) { show_debug_message("DATA INIT FAILED - ENEMIES"); return false; }
+    if (!sc_faction_device_register_all()) { show_debug_message("DATA INIT FAILED - FACTION DEVICES"); return false; }
+    if (!sc_plyr_register_all()) { show_debug_message("DATA INIT FAILED - PLAYER CONTENT"); return false; }
+    if (!sc_world_structure_register_all()) { show_debug_message("DATA INIT FAILED - WORLD STRUCTURES"); return false; }
+
+    show_debug_message("GAME DATA INITIALIZED");
     return true;
 }
 

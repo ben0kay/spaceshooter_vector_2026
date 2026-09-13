@@ -10,6 +10,7 @@ function sc_enemy_faction_rebel_register_all()
 
 function sc_enemy_faction_rebel_projectiles_register(){
 	if (!sc_projectile_register_rebel_salvo_rocket()) return false;
+	return true;
 }
 
 /// @description Registers every Rebel weapon.

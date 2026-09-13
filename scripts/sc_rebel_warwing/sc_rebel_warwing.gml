@@ -273,7 +273,7 @@ function sc_enemy_register_rebel_warwing()
                     },
 
                     firing:{
-                        order:HardpointFireOrder.ALTERNATE,
+                        order:HardpointFireOrder.SEQUENTIAL,
                         interval:3,
                         volley_max:18,
                         cooldown:65

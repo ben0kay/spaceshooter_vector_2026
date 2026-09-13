@@ -1,4 +1,4 @@
-/// @description Initializes top-level game and registered content once.
+/// @description Initializes top-level game content and identifies failed startup stages.
 function sc_game_init()
 {
     global.GameState = GameState.BOOT;
@@ -14,21 +14,21 @@ function sc_game_init()
     global.level = undefined;
     global.player_id = noone;
 
-    if (!sc_config_init()) return false;
-    if (!sc_optimization_init()) return false;
-    if (!sc_data_init()) return false;
-    if (!sc_particles_init()) return false;
-    if (!sc_ship_visual_cache_init()) return false;
-    if (!sc_enemy_visual_cache_init()) return false;
-    if (!sc_drone_visual_cache_init()) return false;
-    if (!sc_faction_device_visual_cache_init()) return false;
-    if (!sc_projectile_visual_cache_init()) return false;
-    if (!sc_asteroid_visual_cache_init()) return false;
-    if (!sc_asteroid_modifier_visual_cache_init()) return false;
-    if (!sc_world_structure_visual_cache_init()) return false;
-    if (!sc_resource_pickup_visual_cache_init()) return false;
-    if (!sc_environment_field_visual_cache_init()) return false;
-    if (!sc_input_init()) return false;
+    if (!sc_config_init()) { show_debug_message("GAME INIT FAILED - CONFIG"); return false; }
+    if (!sc_optimization_init()) { show_debug_message("GAME INIT FAILED - OPTIMIZATION"); return false; }
+    if (!sc_data_init()) { show_debug_message("GAME INIT FAILED - DATA"); return false; }
+    if (!sc_particles_init()) { show_debug_message("GAME INIT FAILED - PARTICLES"); return false; }
+    if (!sc_ship_visual_cache_init()) { show_debug_message("GAME INIT FAILED - SHIP VISUAL CACHE"); return false; }
+    if (!sc_enemy_visual_cache_init()) { show_debug_message("GAME INIT FAILED - ENEMY VISUAL CACHE"); return false; }
+    if (!sc_drone_visual_cache_init()) { show_debug_message("GAME INIT FAILED - DRONE VISUAL CACHE"); return false; }
+    if (!sc_faction_device_visual_cache_init()) { show_debug_message("GAME INIT FAILED - DEVICE VISUAL CACHE"); return false; }
+    if (!sc_projectile_visual_cache_init()) { show_debug_message("GAME INIT FAILED - PROJECTILE VISUAL CACHE"); return false; }
+    if (!sc_asteroid_visual_cache_init()) { show_debug_message("GAME INIT FAILED - ASTEROID VISUAL CACHE"); return false; }
+    if (!sc_asteroid_modifier_visual_cache_init()) { show_debug_message("GAME INIT FAILED - ASTEROID MODIFIER CACHE"); return false; }
+    if (!sc_world_structure_visual_cache_init()) { show_debug_message("GAME INIT FAILED - WORLD STRUCTURE CACHE"); return false; }
+    if (!sc_resource_pickup_visual_cache_init()) { show_debug_message("GAME INIT FAILED - RESOURCE PICKUP CACHE"); return false; }
+    if (!sc_environment_field_visual_cache_init()) { show_debug_message("GAME INIT FAILED - ENVIRONMENT FIELD CACHE"); return false; }
+    if (!sc_input_init()) { show_debug_message("GAME INIT FAILED - INPUT"); return false; }
 
     global.game.initialized = true;
     show_debug_message("SPACE SHOOTER VECTOR 2026 - GAME INITIALIZED");
