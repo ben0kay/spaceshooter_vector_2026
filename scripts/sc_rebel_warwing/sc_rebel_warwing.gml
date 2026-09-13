@@ -9,54 +9,64 @@ A wide, scrappy Veteran Superheavy Rebel missile-fighter.
 - 1 huge rear thruster
 */
 
-/// @description Registers the Rebel Salvo Rocket weapon.
+/// @description Registers the guided Rebel Salvo Rocket weapon.
 function sc_weapon_register_rebel_salvo_rocket()
 {
     return sc_weapon_register({
-        identity:{
-            key:"weapon_rebel_salvo_rocket",
-            name:"Rebel Salvo Rocket"
+        identity: {
+            key: "weapon_rebel_salvo_rocket",
+            name: "Rebel Salvo Rocket"
         },
 
-        delivery:{
-            type:AttackDelivery.PROJECTILE,
-            projectile_key:"projectile_rebel_salvo_rocket",
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_rebel_salvo_rocket",
 
-            projectile:{
-                scale:1,
-                speed:14,
-                life:135
+            projectile: {
+                scale: 1,
+                speed: 14,
+                life: 135
             },
 
-            damage:{
-                amount:4,
-                type:DamageType.EXPLOSIVE,
-                effect:DamageEffect.NONE
+            damage: {
+                amount: 4,
+                type: DamageType.EXPLOSIVE,
+                effect: DamageEffect.NONE
             },
 
-            guidance:{
-                enabled:true,
-                strength:0.5,
-                turn_speed:1.7,
-                acquire_range:760,
-                forget_range:1100,
-                avoid_asteroids:true,
-                avoid_structures:true
+            guidance: {
+                acquire_range: 760,
+                turn_speed: 1.7,
+                reacquire_interval: 12,
+                lead_strength: 0.15,
+                guidance_delay: 10,
+                lock_angle: 180,
+                retain_assigned_target: true,
+
+                avoidance: {
+                    strength: 0.65,
+                    asteroids: 1,
+                    structures: 1,
+                    clearance_scale: 0.8
+                }
             },
 
-            detonation:{
-                enabled:true,
-                radius:52,
-                damage:5,
-                type:DamageType.EXPLOSIVE,
-                falloff:0.45
+            detonation: {
+                scale: 1,
+
+                damage: {
+                    amount: 5,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.NONE,
+                    knockback_force: 1
+                }
             }
         },
 
-        audio:{
-            sound:noone,
-            volume:0.6,
-            pitch_range:0.05
+        audio: {
+            sound: noone,
+            volume: 0.6,
+            pitch_range: 0.05
         }
     });
 }

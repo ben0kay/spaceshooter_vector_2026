@@ -1,56 +1,106 @@
-/// @description Registers the Rebel Salvo Rocket projectile.
+/// @description Registers the guided and explosive Rebel Salvo Rocket projectile.
 function sc_projectile_register_rebel_salvo_rocket()
 {
-    var _palette=sc_faction_palette_get(Faction.REBEL);
+    var _palette = sc_faction_palette_get(Faction.REBEL);
 
     return sc_projectile_register({
-        identity:{
-            key:"projectile_rebel_salvo_rocket",
-            name:"Rebel Salvo Rocket"
+        identity: {
+            key: "projectile_rebel_salvo_rocket",
+            name: "Rebel Salvo Rocket"
         },
 
-        projectile_motion:ProjectileMotion.STANDARD,
-        projectile_class:ProjectileClass.REGULAR,
+        projectile_motion: ProjectileMotion.STANDARD,
+        projectile_class: ProjectileClass.REGULAR,
 
-        collision:{
-            radius:8
+        collision: {
+            radius: 8
+        },
+		
+		defence: {
+            armour: 0,
+            hull: 4,
+            detonate_on_destroy: true
         },
 
-        visual:{
-            radius:8,
-            length:28,
-            palette:_palette,
+        detonation: {
+            area: {
+                shape: AttackAreaShape.CIRCLE,
 
-            draw_script:sc_projectile_rebel_salvo_rocket_draw,
-            impact_script:sc_projectile_rebel_salvo_rocket_impact,
-            trail_script:sc_projectile_particle_trail_emit,
-            particles_register_script:sc_projectile_rebel_salvo_rocket_particles_register,
+                geometry: {
+                    radius: 52
+                },
 
-            particle_trail:{
-                group:"trail_rebel_salvo_rocket",
-                interval:1,
-                amount:1,
-                rear_scale:0.32,
-                spread:10,
-                size_min:0.14,
-                size_max:0.24,
-                size_growth:0.004,
-                size_wiggle:0.03
+                behaviour: {
+                    duration: 14,
+                    tick_interval: 0,
+                    hit_once: true,
+                    max_targets: 0,
+                    falloff_minimum: 0.45,
+                    falloff_exponent: 1
+                },
+
+                visual: {
+                    palette: _palette,
+                    draw_script: sc_attack_area_shard_rocket_explosion_draw,
+
+                    shockwave: {
+                        radius_scale: 1.05,
+                        expansion_response: 0.24,
+                        fade_speed: 0.07,
+                        thickness: 3,
+                        colour: _palette.energy,
+
+                        particles_enabled: true,
+                        particle_interval: 1,
+                        particle_min_radius: 6,
+
+                        smoke_enabled: true,
+                        smoke_amount_max: 2,
+                        smoke_colour: make_colour_rgb(92,75,60),
+
+                        fragments_enabled: true,
+                        fragment_chance: 0.35,
+                        fragment_colour: _palette.energy
+                    }
+                }
+            }
+        },
+
+        visual: {
+            radius: 8,
+            length: 28,
+            palette: _palette,
+
+            draw_script: sc_projectile_rebel_salvo_rocket_draw,
+            impact_script: sc_projectile_rebel_salvo_rocket_impact,
+            trail_script: sc_projectile_particle_trail_emit,
+            particles_register_script: sc_projectile_rebel_salvo_rocket_particles_register,
+
+            particle_trail: {
+                group: "trail_rebel_salvo_rocket",
+                interval: 1,
+                amount: 1,
+                rear_scale: 0.32,
+                spread: 10,
+                size_min: 0.14,
+                size_max: 0.24,
+                size_growth: 0.004,
+                size_wiggle: 0.03
             },
 
-            trail:{
-                enabled:true,
-                length:34,
-                width:2.8,
-                glow_width:8,
-                alpha:0.72,
-                glow_alpha:0.18
+            trail: {
+                enabled: true,
+                length: 34,
+                width: 2.8,
+                glow_width: 8,
+                alpha: 0.72,
+                glow_alpha: 0.18
             },
 
-            bake:{
-                canvas_size:96,
-                frames:6,
-                frame_speed:2
+            bake: {
+                canvas_size: 96,
+                frames: 6,
+                frame_speed: 2
             }
         }
     });
