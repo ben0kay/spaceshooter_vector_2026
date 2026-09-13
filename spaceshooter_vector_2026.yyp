@@ -211,6 +211,7 @@
     {"id":{"name":"sc_health_bar","path":"scripts/sc_health_bar/sc_health_bar.yy",},},
     {"id":{"name":"sc_hud_bake","path":"scripts/sc_hud_bake/sc_hud_bake.yy",},},
     {"id":{"name":"sc_hud_inv_module","path":"scripts/sc_hud_inv_module/sc_hud_inv_module.yy",},},
+    {"id":{"name":"sc_hud_inv_statistics","path":"scripts/sc_hud_inv_statistics/sc_hud_inv_statistics.yy",},},
     {"id":{"name":"sc_hud_inv_upgrades","path":"scripts/sc_hud_inv_upgrades/sc_hud_inv_upgrades.yy",},},
     {"id":{"name":"sc_hud_level","path":"scripts/sc_hud_level/sc_hud_level.yy",},},
     {"id":{"name":"sc_hud_minimap","path":"scripts/sc_hud_minimap/sc_hud_minimap.yy",},},
