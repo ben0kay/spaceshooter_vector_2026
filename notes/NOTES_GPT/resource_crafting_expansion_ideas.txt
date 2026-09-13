@@ -8,7 +8,66 @@ RAW -> MATERIAL -> PART -> PRODUCT
 
 Each resource should have a recognizable gameplay identity so the player learns what finding that asteroid means.
 
-CURRENT + PROPOSED RESOURCE ROLES
+====================================================================
+CURRENT ORES / RAW RESOURCES
+====================================================================
+
+These are already present in the game.
+
+| Resource / Ore            | Current Role / Identity                                  |
+|---------------------------|-----------------------------------------------------------|
+| Rock                      | Common construction filler / basic industrial material    |
+| Carbon Ore                | Carbon processing, composites, propellant-related uses    |
+| Iron Ore                  | Basic structural metal                                    |
+| Copper Ore                | Conductive electrical metal                               |
+| Silicate Deposit          | Semiconductor / electronics source                        |
+| Titanium Ore              | Advanced lightweight structural metal                     |
+| Resonant Crystal Deposit  | Energy-reactive / exotic electrical material              |
+| Ice                       | Volatiles, fuel and coolant potential                     |
+| Sulfur Deposit            | Explosives / propellant chemistry                         |
+| Quartz Deposit            | Optics / sensors / beam technology potential              |
+| Uranium Ore               | Reactor / nuclear power resource                          |
+
+CURRENT MATERIALS ALREADY IN GAME
+
+| Material              | Main Identity                         |
+|-----------------------|---------------------------------------|
+| Refined Iron          | Basic structural metal               |
+| Refined Copper        | Electrical conductor                 |
+| Silicon Wafer         | Electronics / processing             |
+| Industrial Carbon     | Carbon manufacturing base            |
+| Industrial Sulfur     | Explosive / ammunition chemistry     |
+| Refined Titanium      | Advanced structural metal            |
+| Resonant Crystal      | Energy conduction / exotic systems   |
+| Carbon Composite      | Lightweight structure                |
+| Steel Alloy           | Durable reinforced structure         |
+| Titanium Alloy        | Advanced armour / engine structure   |
+
+CURRENT PARTS ALREADY IN GAME
+
+| Part           | Identity / Use                         |
+|----------------|----------------------------------------|
+| Iron Plate     | Structural component                   |
+| Copper Wire    | Electrical wiring                      |
+| Copper Coil    | Motors / electrical systems            |
+| Circuit Board  | Electronic control                     |
+| Motor          | Mechanical assemblies                  |
+
+CURRENT FINISHED PRODUCTS ALREADY IN GAME
+
+| Product                    | Current Purpose                    |
+|----------------------------|------------------------------------|
+| Armour Plate               | Armour module                      |
+| Lightweight Armour Plate   | Lightweight armour module          |
+| Radar Array                | Targeting / sensor module          |
+| Scanning Drone             | Drone / scanning utility           |
+
+Current item grades:
+COMMON -> IMPROVED -> ADVANCED -> SUPERIOR -> PROTOTYPE
+
+====================================================================
+RESOURCE ROLE MASTER TABLE - CURRENT + PROPOSED
+====================================================================
 
 | Resource   | Refined Material              | Manufactured Parts                     | Main Gameplay Uses                         |
 |------------|-------------------------------|----------------------------------------|--------------------------------------------|
@@ -47,6 +106,50 @@ COBALT    = magnetics
 TUNGSTEN  = heavy weapons
 PLATINUM  = precision tech
 IRIDIUM   = exotic / endgame
+
+====================================================================
+PROPOSED NORMAL / INDUSTRIAL ORE EXPANSION
+====================================================================
+
+NICKEL
+- Early-mid game.
+- Refines into Refined Nickel.
+- Used in engine housings, high-temperature components and superalloys.
+- Natural fit for thrusters, turbines and reactor structures.
+
+LITHIUM
+- Mid game.
+- Refines into Lithium Compound.
+- Main battery / energy-storage resource.
+- Used for Battery Cells, Battery Packs, Capacitor Banks, drones and shield systems.
+
+COBALT
+- Mid game.
+- Refines into Refined Cobalt.
+- Main magnetic / high-temperature resource.
+- Used for Magnetic Cores, Field Coils, motors, advanced reactors and shields.
+
+TUNGSTEN
+- Mid-late game.
+- Refines into Refined Tungsten.
+- Very dense / heat-resistant.
+- Used in armour penetrators, heavy armour, heat shielding, gun barrels and high-impact kinetic weapons.
+
+PLATINUM
+- Late game.
+- Refines into Refined Platinum.
+- Used for precision contacts, catalysts, sensor electronics and high-end reactor systems.
+
+IRIDIUM
+- Very late / rare.
+- Refines into Iridium Matrix.
+- Used for exotic containment, advanced reactor internals and prototype technology.
+
+Avoid adding too many extra periodic-table ores without a gameplay identity. The player should immediately understand why each asteroid is valuable.
+
+====================================================================
+CURRENT RESOURCE CHAINS TO EXPAND
+====================================================================
 
 QUARTZ / OPTICS CHAIN
 
@@ -167,20 +270,26 @@ Uses:
 - Induction Coil = high-performance thrusters
 - Resonance Coil = plasma / exotic energy systems
 
+====================================================================
 MECHANICAL PART EXPANSION
+====================================================================
 
-| Part               | Example Inputs                 | Used In                         |
-|--------------------|--------------------------------|---------------------------------|
-| Bearing Assembly   | Steel Alloy                    | Motors, turrets, thrusters      |
-| Servo              | Motor + Circuit Board          | Turrets, drones                 |
-| Actuator           | Motor + Steel                  | Mining systems, weapon mounts   |
-| Pump               | Motor + Iron + Copper          | Fuel / coolant systems          |
-| Turbine            | Titanium Alloy + Bearings      | Thrusters, reactors             |
-| Gyroscope          | Motor + Circuit Board          | Drones, ship handling           |
-| Pressure Vessel    | Steel Alloy                    | Tanks, reactors                 |
-| Heat Sink          | Copper + Carbon                | Weapons, reactors               |
-| Radiator Assembly  | Copper + Titanium              | High-output systems             |
-| Fuel Injector      | Copper + Steel + Precision part| Thrusters                       |
+| Part               | Example Inputs                  | Used In                         |
+|--------------------|---------------------------------|---------------------------------|
+| Bearing Assembly   | Steel Alloy                     | Motors, turrets, thrusters      |
+| Servo              | Motor + Circuit Board           | Turrets, drones                 |
+| Actuator           | Motor + Steel                   | Mining systems, weapon mounts   |
+| Pump               | Motor + Iron + Copper           | Fuel / coolant systems          |
+| Turbine            | Titanium Alloy + Bearings       | Thrusters, reactors             |
+| Gyroscope          | Motor + Circuit Board           | Drones, ship handling           |
+| Pressure Vessel    | Steel Alloy                     | Tanks, reactors                 |
+| Heat Sink          | Copper + Carbon                 | Weapons, reactors               |
+| Radiator Assembly  | Copper + Titanium               | High-output systems             |
+| Fuel Injector      | Copper + Steel + Precision Part | Thrusters                       |
+| Gearbox            | Steel + Bearings                | Heavy mechanical systems        |
+| Weapon Mount       | Steel + Actuator                | Guns / turrets                  |
+| Cargo Clamp        | Steel + Actuator                | Salvage / cargo drones          |
+| Drill Head         | Tungsten + Steel                | Mining systems / mining drones  |
 
 Thruster Module example:
 - 1 Turbine
@@ -190,7 +299,9 @@ Thruster Module example:
 - 2 Copper Wire
 - 1 Fuel Injector
 
+====================================================================
 ELECTRONICS EXPANSION
+====================================================================
 
 Copper Wire
 Silicon Wafer
@@ -208,8 +319,32 @@ Additional parts:
 - Resonance Controller = high-end energy systems
 - Precision Contacts = advanced electrical assemblies
 - Optical Lens = targeting / sensors / beam weapons
+- Navigation Processor = advanced drones / autopilot systems
+- Targeting Processor = weapon tracking / missile defence
+- Shield Controller = shield modules
+- Reactor Controller = reactor modules
 
-SHIELD CRAFTING
+====================================================================
+SHIP SYSTEM CRAFTING TARGETS
+====================================================================
+
+ARMOUR
+- Armour Plate
+- Lightweight Armour
+- Reinforced Armour
+- Titanium Armour
+- Heavy Ablative Armour
+- Reactive Armour
+- Prototype Composite Armour
+
+Suggested progression:
+Iron Plate -> Armour Plate
+Carbon Composite -> Lightweight Armour
+Steel Alloy -> Reinforced Armour
+Titanium Alloy -> Titanium Armour
+Tungsten + Titanium -> Heavy Ablative Armour
+
+SHIELDS
 
 Basic Shield Generator example:
 - 2 Copper Coil
@@ -226,34 +361,52 @@ Advanced Shield Array example:
 - 1 Power Regulator
 
 Shield archetypes:
-- High Capacity: more shield, slower recharge
-- Rapid Cycling: lower capacity, faster recharge
-- Deflector: kinetic-focused protection
-- Thermal Barrier: thermal-focused protection
-- Prototype Resonance Shield: expensive crystal-heavy variant
+- High Capacity = more shield, slower recharge
+- Rapid Cycling = lower capacity, faster recharge
+- Deflector = kinetic-focused protection
+- Thermal Barrier = thermal-focused protection
+- Prototype Resonance Shield = expensive crystal-heavy variant
 
-ARMOUR FAMILIES
+REACTORS
+- Compact Reactor
+- Industrial Reactor
+- High-Output Reactor
+- Overcharged Reactor
+- Shield Reactor
+- Resonance Reactor
+- Prototype Exotic Reactor
 
-Iron Plate
- -> Armour Plate
+THRUSTERS
+- Basic Thruster Assembly
+- High-Efficiency Thruster
+- Heavy Thruster
+- Afterburner Thruster
+- Vectoring Thruster
+- Prototype Phase Thruster later
 
-Carbon Composite
- -> Lightweight Armour
+TARGETING / SENSORS
+- Radar Array
+- Long Range Radar
+- Targeting Computer
+- Missile Guidance Computer
+- Deep Scanner
+- Resource Scanner
+- Threat Detection Array
 
-Steel Alloy
- -> Reinforced Armour
+UTILITY / AUXILIARY
+- Cargo Expansion
+- Tractor Emitter
+- Salvage System
+- Repair System
+- Coolant System
+- Backup Battery
+- Energy Buffer
+- ECM / Decoy System
+- Mining Booster
 
-Titanium Alloy
- -> Titanium Armour
-
-Tungsten + Titanium
- -> Heavy Ablative Armour
-
-Material determines module archetype.
-Crafted grade determines quality:
-COMMON -> IMPROVED -> ADVANCED -> SUPERIOR -> PROTOTYPE
-
+====================================================================
 DRONE EXPANSION
+====================================================================
 
 | Drone                 | Core Special Components                  |
 |-----------------------|------------------------------------------|
@@ -267,35 +420,407 @@ DRONE EXPANSION
 | Decoy Drone           | Signal Amplifier + Battery               |
 | Survey Drone          | Long-range Optics + Navigation Processor |
 
-RECOMMENDED NEW ASTEROID ORES
+====================================================================
+ENDGAME / FANTASY ASTEROID ORES
+====================================================================
 
-1. Nickel
-   Early-mid game.
-   Engines, superalloys, reactor construction.
+These should be extremely rare, visually unmistakable and mechanically strange.
+They should NOT simply be better versions of Titanium.
+Each should unlock a unique endgame technology family.
 
-2. Lithium
-   Mid game.
-   Batteries, capacitors, shields, drones.
+VOIDGLASS
+Visual:
+- Near-black translucent asteroid.
+- Violet / indigo light trapped inside fractures.
+- Surface appears to swallow nearby light.
+- Could be unusually difficult to detect on radar.
 
-3. Cobalt
-   Mid game.
-   Magnetics, motors, high-temperature systems.
+Refined form:
+- Refined Voidglass
+- Voidglass Lens
+- Null-Frequency Matrix
 
-4. Tungsten
-   Mid-late game.
-   Heavy armour, penetrators, heat-resistant parts.
+Technology identity:
+VOID / STEALTH / SHIELD MANIPULATION
 
-5. Platinum
-   Late game.
-   Precision electronics, catalysts, advanced reactor components.
+Possible uses:
+- Signature reduction modules
+- Stealth systems
+- Exotic shield emitters
+- Shield bypass / suppression weapons
+- Dark beam weapons
+- Voidglass armour inserts
+- Advanced sensor cloaking
 
-6. Iridium
-   Very late / rare.
-   Exotic containment and prototype energy technology.
+Unique asteroid behaviour ideas:
+- Reduced radar signature
+- Very dark except for internal fractures
+- Faint projectile-light absorption effect
+- Low yield but extremely high value
 
-Do not add too many extra periodic-table ores without a gameplay identity. Avoid ending up with many visually similar ingots the player cannot distinguish by purpose.
+------------------------------------------------------------
+STARCORE ORE
+Visual:
+- Obsidian-black shell.
+- White-hot / orange-gold molten veins.
+- Looks like a tiny piece of a star trapped inside rock.
 
+Refined form:
+- Starcore Ingot
+- Stellar Fuel Pellet
+- Solar Conduction Core
+
+Technology identity:
+EXTREME POWER / HEAT / REACTORS
+
+Possible uses:
+- Extreme-output reactors
+- Solar lance weapons
+- High-energy beam emitters
+- Thermal superweapons
+- Advanced thrusters
+- Overcharge modules
+- High-temperature armour
+
+Unique asteroid behaviour ideas:
+- Damaging heat aura at close range
+- Visibly molten fractures
+- Heat shimmer
+- Can burst when over-mined
+
+------------------------------------------------------------
+PHASE CRYSTAL
+Visual:
+- Cyan / violet translucent crystal.
+- Multiple ghost afterimages offset around it.
+- Appears fractionally out of sync with normal space.
+
+Refined form:
+- Stabilized Phase Crystal
+- Phase Matrix
+- Phase Coupler
+
+Technology identity:
+PHASING / TELEPORT / EVASION
+
+Possible uses:
+- Phase dash modules
+- Short-range blink systems
+- Projectile phasing
+- Temporary collision bypass
+- Phase shields
+- Exotic drone movement
+- Teleport beacon devices
+
+Unique asteroid behaviour ideas:
+- Flickers partly invisible
+- Briefly becomes unmineable
+- Periodically shifts a short distance
+- Leaves visual afterimages
+- Requires very high mining strength
+
+------------------------------------------------------------
+GRAVITITE
+Visual:
+- Black-purple metallic mineral.
+- Small fragments of debris orbit around the asteroid.
+- Subtle space-distortion / lensing effect.
+
+Refined form:
+- Refined Gravitite
+- Gravity Core
+- Mass Driver Matrix
+
+Technology identity:
+GRAVITY / MASS / TRACTOR SYSTEMS
+
+Possible uses:
+- Tractor emitters
+- Gravity mines
+- Mass manipulation modules
+- Knockback amplifiers
+- Knockback resistance modules
+- Gravity cannons
+- Black-hole precursor technology
+- Heavy cargo handling systems
+
+Unique asteroid behaviour ideas:
+- Pulls small pickups/debris toward itself
+- Nearby particles curve around it
+- Alters movement slightly when very close
+- Orbiting rock fragments make it instantly recognizable
+
+------------------------------------------------------------
+AETHERIUM
+Visual:
+- Luminous white-blue mineral.
+- Soft mist / energy vapor surrounding it.
+- Clean, almost impossibly bright internal glow.
+
+Refined form:
+- Refined Aetherium
+- Aether Conductor
+- Aetheric Capacitor
+
+Technology identity:
+PURE ENERGY / SHIELDS / BEAMS
+
+Possible uses:
+- Extremely efficient energy conductors
+- Fast shield recharge systems
+- High-end beam focusing
+- Energy storage
+- Energy weapon efficiency
+- Advanced healing / repair fields
+
+Unique asteroid behaviour ideas:
+- Strong ambient glow
+- Intermittent energy pulses
+- Nearby electronics / scanner distortion
+
+------------------------------------------------------------
+CHRONITE
+Visual:
+- Silver / teal crystal.
+- Repeating visual echoes or delayed afterimages.
+- Tiny fragments appear to jitter between positions.
+
+Refined form:
+- Stabilized Chronite
+- Chrono Lattice
+- Temporal Regulator
+
+Technology identity:
+TIME / COOLDOWN / TEMPORAL CONTROL
+
+Possible uses:
+- Cooldown reduction devices
+- Temporal slowdown fields
+- Weapon-cycle acceleration
+- Dash cooldown systems
+- Projectile time manipulation
+- Temporary local stasis devices
+
+Unique asteroid behaviour ideas:
+- Animation runs irregularly
+- Damage / mining flashes appear slightly delayed
+- Fragments leave repeated temporal echoes
+
+------------------------------------------------------------
+NULLSTONE
+Visual:
+- Matte charcoal / black asteroid.
+- Almost no specular glow.
+- Nearby energy effects look visibly dampened around it.
+
+Refined form:
+- Refined Nullstone
+- Null Matrix
+- Suppression Core
+
+Technology identity:
+ANTI-ENERGY / EMP / SUPPRESSION
+
+Possible uses:
+- EMP resistance
+- Anti-energy armour
+- Shield suppression weapons
+- Energy dampening modules
+- Reactor stabilization
+- Electronic warfare systems
+
+Unique asteroid behaviour ideas:
+- Dampens glow effects nearby
+- Difficult to scan
+- Resistant to energy mining tools
+
+------------------------------------------------------------
+SINGULARITY SHARD
+Visual:
+- Tiny impossibly dark central mass.
+- Bright ring / gravitational lens around it.
+- Distorted stars / particles nearby.
+
+Refined form:
+- Contained Singularity Shard
+- Singularity Core
+- Event-Horizon Matrix
+
+Technology identity:
+BLACK HOLES / GRAVITY SUPERWEAPONS / FINAL-TIER REACTORS
+
+Possible uses:
+- Black-hole weapons
+- Gravity implosion mines
+- Singularity reactor
+- Extreme tractor systems
+- Capital-class prototype weapons
+- Endgame containment technology
+
+Unique asteroid behaviour ideas:
+- Very rare special encounter rather than normal field material
+- Pulls nearby debris
+- Strong visual lensing
+- Dangerous mining pulses
+- Mining failure could trigger an implosion / shockwave
+
+------------------------------------------------------------
+SOLARITE
+Visual:
+- Brilliant yellow-white mineral veins inside a dark crust.
+- Looks molten but crystalline at the same time.
+
+Refined form:
+- Refined Solarite
+- Solar Focusing Element
+- Thermal Core
+
+Technology identity:
+THERMAL / SOLAR / EXTREME HEAT
+
+Possible uses:
+- Solar lances
+- Thermal weapons
+- Heat-resistant armour
+- Thruster overdrive
+- Weapon heat management
+- High-output reactor components
+
+Unique asteroid behaviour ideas:
+- Constant ember / flare particles
+- Heat aura
+- Violent thermal burst on destruction
+
+------------------------------------------------------------
+DREAM CRYSTAL
+Visual:
+- Iridescent shifting colours.
+- Slightly organic-looking crystalline growth.
+- Colour appears to change depending on viewing angle.
+
+Refined form:
+- Stabilized Dream Crystal
+- Neural Crystal
+- Cognition Matrix
+
+Technology identity:
+AI / EXOTIC SENSORS / ALIEN TECHNOLOGY
+
+Possible uses:
+- Advanced AI cores
+- Autonomous drones
+- Predictive targeting
+- Exotic scanners
+- Neural control devices
+- Alien-derived modules
+
+Unique asteroid behaviour ideas:
+- Strange scanner readings
+- Faint pulsing patterns
+- Could appear around anomalies / alien sectors rather than ordinary asteroid fields
+
+====================================================================
+ENDGAME RESOURCE IDENTITY SUMMARY
+====================================================================
+
+VOIDGLASS          = stealth / void / shield manipulation
+STARCORE ORE       = extreme reactor power / heat
+PHASE CRYSTAL      = phasing / teleportation / evasion
+GRAVITITE          = gravity / mass manipulation
+AETHERIUM          = pure energy / shields / beams
+CHRONITE           = time / cooldown / temporal systems
+NULLSTONE          = anti-energy / EMP / suppression
+SINGULARITY SHARD  = black-hole / final-tier gravity technology
+SOLARITE           = thermal / solar weapons
+DREAM CRYSTAL      = AI / alien / exotic sensors
+
+Suggested strongest core set if limiting fantasy ores initially:
+1. Voidglass
+2. Gravitite
+3. Phase Crystal
+4. Starcore Ore
+5. Singularity Shard
+
+These five alone create very distinct endgame branches.
+
+====================================================================
+EXAMPLE ENDGAME CRAFTS
+====================================================================
+
+PHASE THRUSTER
+- Phase Matrix
+- Titanium Alloy
+- Induction Coil
+- Capacitor Bank
+- Navigation Processor
+
+Effect ideas:
+- Better dash
+- Short blink
+- Temporary collision / projectile phasing
+
+VOID SHIELD ARRAY
+- Voidglass Lens
+- Field Coil
+- Resonant Crystal
+- Capacitor Bank
+- Power Regulator
+
+Effect ideas:
+- Lower ship signature
+- Improved shield efficiency
+- Temporary shield suppression resistance
+
+GRAVITY CANNON
+- Gravity Core
+- Tungsten Barrel Assembly
+- Magnetic Coil
+- Capacitor Bank
+- Targeting Processor
+
+Effect ideas:
+- Pull / push targets
+- Extreme knockback
+- Mass-scaled damage
+
+STARCORE REACTOR
+- Stellar Fuel Pellet
+- Iridium Matrix
+- Titanium Pressure Vessel
+- Coolant System
+- Reactor Controller
+
+Effect ideas:
+- Massive energy output
+- High heat / risk
+- Supports energy-heavy builds
+
+SINGULARITY DEVICE
+- Contained Singularity Shard
+- Gravitite Core
+- Iridium Matrix
+- Null Matrix
+- Prototype Control Unit
+
+Effect ideas:
+- Black-hole mine
+- Implosion weapon
+- Capital-class prototype device
+
+CHRONO REGULATOR
+- Chrono Lattice
+- Aetheric Capacitor
+- Resonance Controller
+- Platinum Contacts
+
+Effect ideas:
+- Reduced cooldowns
+- Short temporal slowdown
+- Weapon cycling bonus
+
+====================================================================
 EXAMPLE FULL SHIELD PRODUCTION JOURNEY
+====================================================================
 
 Mine Lithium
  -> refine Lithium Compound
@@ -324,9 +849,12 @@ SHIELD GENERATOR
 
 Final craft can roll a quality grade, e.g. SUPERIOR SHIELD GENERATOR.
 
+====================================================================
 OVERALL DIRECTION
+====================================================================
 
-The goal is not simply more ores. The goal is a large interconnected industrial catalogue where nearly every ship system visibly consumes manufactured components.
+The goal is not simply more ores.
+The goal is a large interconnected industrial catalogue where nearly every ship system visibly consumes manufactured components.
 
 Good content targets:
 - Armour
@@ -348,5 +876,12 @@ Good content targets:
 - Mechanical assemblies
 - Electronics
 - Advanced alloys
+- Exotic endgame technologies
 
-This should make asteroid discovery meaningful because the player knows what each resource unlocks.
+NORMAL ORES should support believable industrial manufacturing.
+
+FANTASY ORES should unlock mechanics the player cannot obtain through ordinary materials.
+
+This should make asteroid discovery meaningful because the player knows what each resource unlocks, while still preserving the excitement of discovering a truly strange late-game asteroid and immediately thinking:
+
+"What the hell is THAT?"
