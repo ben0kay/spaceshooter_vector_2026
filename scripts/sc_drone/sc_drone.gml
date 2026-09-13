@@ -5,7 +5,7 @@ The generic drone object resolves a registered definition and delegates
 role-specific behaviour through update and draw callbacks.
 */
 
-/// @description Initializes one deployed registered drone.
+/// @description Initializes one deployed registered and damageable drone.
 function sc_drone_init(_drone,_create)
 {
     if (!is_struct(_create)
@@ -19,7 +19,14 @@ function sc_drone_init(_drone,_create)
         _create.key
     );
 
+    var _armour = max(0,_definition.defence.armour);
+    var _hull = max(1,_definition.defence.hull);
+
     _drone.draw_angle = 0;
+    _drone.health_bar = sc_health_bar_create(false);
+    _drone.health_bar.width = 36;
+    _drone.health_bar.height = 3;
+    _drone.health_bar.offset_y = 7;
 
     _drone.drone = {
         key: _create.key,
@@ -32,6 +39,12 @@ function sc_drone_init(_drone,_create)
             ? _create.target_id
             : noone,
 
+        defence: {
+            shield: { current: 0, maximum: 0 },
+            armour: { current: _armour, maximum: _armour },
+            hull: { current: _hull, maximum: _hull }
+        },
+
         movement: {
             speed: _definition.movement.speed
         },
@@ -41,6 +54,76 @@ function sc_drone_init(_drone,_create)
         }
     };
 
+    if (!sc_entity_init(
+        _drone,
+        _create.owner_id.entity.faction,
+        sc_drone_damage,
+        {
+            radius_forward: _definition.collision.radius,
+            radius_side: _definition.collision.radius
+        },
+        true
+    ))
+        return false;
+
+    return true;
+}
+
+/// @description Applies layered damage to one deployed drone.
+function sc_drone_damage(_drone,_packet,_impact = undefined)
+{
+    var _data = _drone.drone;
+    var _defence = _data.defence;
+
+    var _result = sc_damage_resolve(
+        _packet,
+        0,
+        _defence.armour.current,
+        _defence.hull.current
+    );
+
+    _defence.armour.current = _result.armour;
+    _defence.hull.current = _result.hull;
+
+    if (_result.dealt.total <= 0)
+        return false;
+
+    sc_health_bar_damage_show(_drone.health_bar);
+
+    if (_defence.hull.current <= 0)
+    {
+        _defence.hull.current = 0;
+        sc_drone_die(_drone,_packet);
+    }
+
+    return _result;
+}
+
+/// @description Destroys one drone and runs its optional cleanup callback.
+function sc_drone_die(_drone,_packet = undefined)
+{
+    var _data = _drone.drone;
+    var _behaviour = _data.definition.behaviour;
+
+    if (!_data.runtime.cleaned)
+    {
+        _data.runtime.cleaned = true;
+
+        if (!is_undefined(_behaviour.destroy_script))
+            _behaviour.destroy_script(_drone);
+    }
+
+    sc_world_feedback_create(
+        _drone.x,
+        _drone.y-18,
+        _drone.layer,
+        "DRONE DESTROYED",
+        make_colour_rgb(255,80,90),
+        0.85
+    );
+
+    // Insert drone-destruction particles and audio here later.
+    instance_destroy(_drone);
     return true;
 }
 
@@ -90,11 +173,21 @@ function sc_drone_update(_drone)
     );
 }
 
-/// @description Draws one generic drone through its registered behaviour.
+/// @description Draws one generic drone and its temporary health bar.
 function sc_drone_draw(_drone)
 {
-    _drone.drone.definition.behaviour.draw_script(
+    var _data = _drone.drone;
+
+    _data.definition.behaviour.draw_script(
         _drone
+    );
+
+    sc_health_bar_draw(
+        _drone.x,
+        _drone.y,
+        _data.definition.visual.radius,
+        _data.defence,
+        _drone.health_bar
     );
 }
 
@@ -223,6 +316,26 @@ function sc_drone_scanner_update(_drone)
         }
         break;
     }
+
+    return true;
+}
+
+/// @description Releases a scanner's derelict when the drone is destroyed.
+function sc_drone_scanner_destroy(_drone)
+{
+    var _data = _drone.drone;
+    if (!instance_exists(_data.target_id)) return false;
+
+    var _runtime = _data.target_id.derelict;
+
+    if (_runtime.state == DerelictState.SCANNING)
+    {
+        _runtime.state = DerelictState.UNKNOWN;
+        _runtime.scan_progress = 0;
+    }
+
+    if (_runtime.scanner_id == _drone)
+        _runtime.scanner_id = noone;
 
     return true;
 }

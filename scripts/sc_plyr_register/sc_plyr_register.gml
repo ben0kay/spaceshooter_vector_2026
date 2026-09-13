@@ -27,7 +27,11 @@ function sc_shard_register_all()
     if (!sc_weapon_register_shard_demolition_rocket()) return false;
 
     if (!sc_weapon_register_shard_mine()) return false;
+	if (!sc_weapon_register_player_point_defence_drone()) return false;
+	
     if (!sc_weapon_register_shard_mining_beam()) return false;
+	
+	
 
     return true;
 }

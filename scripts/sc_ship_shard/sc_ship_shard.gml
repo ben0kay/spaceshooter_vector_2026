@@ -80,7 +80,7 @@ function sc_ship_register_shard()
 				"weapon_shard_demolition_rocket",
 		    ],
 
-		    equipment: "weapon_shard_mine"
+		    equipment: "equipment_point_defence_drone"
 		}
     });
 }

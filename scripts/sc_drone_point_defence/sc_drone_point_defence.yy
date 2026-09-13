@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_drone_point_defence",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_drone_point_defence",
+  "parent":{
+    "name":"DRONE",
+    "path":"folders/SCRIPTS---/DRONE.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
