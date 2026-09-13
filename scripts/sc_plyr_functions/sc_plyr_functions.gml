@@ -445,9 +445,9 @@ function sc_player_update_active(_player)
 
     if (sc_player_dash_input_update(_player))
     {
-        sc_player_combat.radial.open = false;
-        sc_player_combat.radial.hold_frames = 0;
-        sc_player_combat.radial.block_combat = false;
+        _player.combat.radial.open = false;
+        _player.combat.radial.hold_frames = 0;
+        _player.combat.radial.block_combat = false;
 
         sc_player_weapon_runtime_release(
             _player.combat.drone
