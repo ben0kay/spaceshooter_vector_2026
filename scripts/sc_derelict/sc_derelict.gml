@@ -289,12 +289,15 @@ function sc_derelict_runtime_draw(_derelict)
 }
 
 /// @description Begins scanning one unknown derelict.
-function sc_derelict_scan_begin(_derelict, _player)
+function sc_derelict_scan_begin(_derelict,_player)
 {
     var _runtime = _derelict.derelict;
 
     if (_runtime.state != DerelictState.UNKNOWN
-    || sc_player_inventory_item_count(_player, "item_scanning_drone") <= 0)
+    || sc_player_inventory_item_count(
+        _player,
+        "item_scanning_drone"
+    ) <= 0)
         return false;
 
     var _drone = instance_create_layer(
@@ -304,14 +307,15 @@ function sc_derelict_scan_begin(_derelict, _player)
         o_drone,
         {
             drone_create: {
-                role: DroneRole.SCANNER,
+                key: "drone_scanner",
                 owner_id: _player,
                 target_id: _derelict
             }
         }
     );
 
-    if (!instance_exists(_drone)) return false;
+    if (!instance_exists(_drone))
+        return false;
 
     _runtime.state = DerelictState.SCANNING;
     _runtime.scanner_id = _drone;

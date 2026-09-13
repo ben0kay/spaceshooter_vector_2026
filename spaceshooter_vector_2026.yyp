@@ -181,6 +181,7 @@
     {"id":{"name":"sc_debug_visuals","path":"scripts/sc_debug_visuals/sc_debug_visuals.yy",},},
     {"id":{"name":"sc_debug_weapon_test","path":"scripts/sc_debug_weapon_test/sc_debug_weapon_test.yy",},},
     {"id":{"name":"sc_derelict","path":"scripts/sc_derelict/sc_derelict.yy",},},
+    {"id":{"name":"sc_drone_register","path":"scripts/sc_drone_register/sc_drone_register.yy",},},
     {"id":{"name":"sc_drone","path":"scripts/sc_drone/sc_drone.yy",},},
     {"id":{"name":"sc_effect_hud_transfer","path":"scripts/sc_effect_hud_transfer/sc_effect_hud_transfer.yy",},},
     {"id":{"name":"sc_enemy_asteroid_interaction","path":"scripts/sc_enemy_asteroid_interaction/sc_enemy_asteroid_interaction.yy",},},

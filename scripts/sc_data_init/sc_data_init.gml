@@ -8,6 +8,7 @@ function sc_data_init()
         enemies: {},
         weapons: {},
         projectiles: {},
+		drones: {},
         attacks: {},
         items: {},
 		recipes: {},
@@ -28,6 +29,7 @@ function sc_data_init()
 	if (!sc_asteroid_spawn_register_all()) return false;
 	if (!sc_gas_cloud_register_all()) return false;
     if (!sc_projectiles_shared_register_all()) return false;
+	if (!sc_drone_register_all()) return false;
     if (!sc_enemy_register_all()) return false;
 	if (!sc_faction_device_register_all()) return false;
     if (!sc_plyr_register_all()) return false;
