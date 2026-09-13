@@ -214,7 +214,11 @@ function sc_player_init_combat(_player)
             open: false,
             hold_frames: 0,
             tap_remaining: 0,
-            block_combat: false
+            block_combat: false,
+
+            category: PlayerRadialCategory.NONE,
+            hover_index: -1,
+            entries: []
         },
 
         debug_weapon: {

@@ -259,7 +259,7 @@ function sc_enemy_register_rebel_warwing()
                 {
                     key:"nose_minigun_burst",
                     channel:"guns",
-                    weight:100,
+                    weight: 100,
                     hardpoint_group:"nose_miniguns",
                     weapon_key:"weapon_rebel_minigun",
 
@@ -311,18 +311,19 @@ function sc_enemy_register_rebel_warwing()
                         fire_tolerance:20
                     },
 
-                    shot:{
-                        pattern:ShotPattern.RANDOM_CONE,
-                        amount:6,
-                        angle_total:30,
-                        projectile_interval:4
-                    },
+                    shot: {
+					    pattern: ShotPattern.RANDOM_CONE,
+					    amount: 1,
+					    angle_total: 30,
+					    projectile_interval: 0
+					},
 
-                    firing:{
-                        order:HardpointFireOrder.ALL,
-                        volley_max:1,
-                        cooldown:190
-                    }
+					firing: {
+					    order: HardpointFireOrder.SEQUENTIAL,
+					    interval: 4,
+					    volley_max: 12,
+					    cooldown: 190
+					}
                 }
             ]
         }

@@ -46,42 +46,48 @@ function sc_ship_register_shard()
             utility: []
         },
 
-        starting_loadout: {
-		    primary: "weapon_shard_pulse",
-		    primary_slot: 0,
-		    primary_slots: [
-		        "weapon_shard_pulse"
-		    ],
+                starting_loadout: {
+            primary: "weapon_shard_pulse",
+            primary_slot: 0,
+            primary_slots: [
+                "weapon_shard_pulse"
+            ],
 
-		    secondary: "weapon_shard_mining_beam",
-		    secondary_slot: 0,
-		    secondary_slots: [
-		        "weapon_shard_mining_beam"
-		    ],
+            secondary: "weapon_shard_mining_beam",
+            secondary_slot: 0,
+            secondary_slots: [
+                "weapon_shard_mining_beam"
+            ],
 
-		    equipment: undefined
-		},
+            equipment: undefined,
+            equipment_slot: 0,
+            equipment_slots: []
+        },
 
-		debug_loadout: {
-		    primary: "weapon_shard_pulse",
-		    primary_slot: 0,
-		    primary_slots: [
-		        "weapon_shard_pulse",
-		        "weapon_minigun"
-		    ],
+        debug_loadout: {
+            primary: "weapon_shard_pulse",
+            primary_slot: 0,
+            primary_slots: [
+                "weapon_shard_pulse",
+                "weapon_minigun"
+            ],
 
-		    secondary: "weapon_shard_mining_beam",
-		    secondary_slot: 0,
-		    secondary_slots: [
-		        "weapon_shard_mining_beam",
-		        "weapon_shard_rocket",
-				"weapon_shard_missile_salvo",
-		        "weapon_shard_laser",
-				"weapon_shard_demolition_rocket",
-		    ],
+            secondary: "weapon_shard_mining_beam",
+            secondary_slot: 0,
+            secondary_slots: [
+                "weapon_shard_mining_beam",
+                "weapon_shard_rocket",
+                "weapon_shard_missile_salvo",
+                "weapon_shard_laser",
+                "weapon_shard_demolition_rocket"
+            ],
 
-		    equipment: "equipment_point_defence_drone"
-		}
+            equipment: "weapon_shard_mine",
+            equipment_slot: 0,
+            equipment_slots: [
+                "weapon_shard_mine"
+            ]
+        }
     });
 }
 

@@ -14,6 +14,7 @@ enum GUIButtonStyle { STANDARD, TAB, PRIMARY, DANGER }
 enum HudTopBannerMode { NONE, ENEMY, ALERT, DISCOVERY }
 enum HudTransferType { EXPERIENCE, CREDITS, DATA_SHARD }
 enum UpgradeCategory { WEAPONS, DEFENCE, MOBILITY, SYSTEMS }
+enum PlayerRadialCategory { NONE, PRIMARY, SECONDARY, EQUIPMENT, DRONE }
 //==================================================
 // FACTIONS / ENEMY STATE
 //==================================================
