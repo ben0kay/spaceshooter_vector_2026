@@ -12,6 +12,7 @@ enum InventoryTab { CARGO, EQUIPMENT, SYSTEMS, UPGRADES, NAVIGATION, LOG, STATIS
 enum MainMenuAction { DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT }
 enum GUIButtonStyle { STANDARD, TAB, PRIMARY, DANGER }
 enum HudTopBannerMode { NONE, ENEMY, ALERT, DISCOVERY }
+enum HudTransferType { EXPERIENCE, CREDITS, DATA_SHARD }
 //==================================================
 // FACTIONS / ENEMY STATE
 //==================================================

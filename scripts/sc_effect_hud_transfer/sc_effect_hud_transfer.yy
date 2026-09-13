@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_effect_hud_transfer",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_effect_hud_transfer",
+  "parent":{
+    "name":"effects",
+    "path":"folders/SCRIPTS---/effects.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

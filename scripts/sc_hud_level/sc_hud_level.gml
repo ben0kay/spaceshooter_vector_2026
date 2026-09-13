@@ -30,8 +30,8 @@ function sc_hud_level_data()
             fuel: make_colour_rgb(20, 205, 218),
             dash: make_colour_rgb(105, 250, 255),
             cargo: make_colour_rgb(45, 225, 205),
-			experience: make_colour_rgb(155, 85, 255),
-			data_shard: make_colour_rgb(205, 145, 255),
+			experience: make_colour_rgb(90,235,255),
+			data_shard: make_colour_rgb(215,255,255),
 			
 			warning: make_colour_rgb(255, 170, 45),
 			danger: make_colour_rgb(255, 70, 85),
@@ -317,10 +317,14 @@ function sc_hud_level_init(_hud_object)
         data: _data,
 
         runtime: {
-            credits_display: global.profile.credits,
-            credit_gain: 0,
-            credit_pulse: 0
-        },
+		    credits_display: global.profile.credits,
+		    credit_gain: 0,
+		    credit_pulse: 0,
+
+		    experience_gain: 0,
+		    experience_pulse: 0,
+		    data_shard_pulse: 0
+		},
 
 		minimap: {
             x: max(12, display_get_gui_width() - _data.minimap.width - 24),
@@ -442,6 +446,13 @@ function sc_hud_level_credit_gain(_hud, _amount)
     _hud.runtime.credit_pulse = 1;
 }
 
+/// @description Triggers the XP-bar arrival animation.
+function sc_hud_level_experience_gain(_hud,_amount)
+{
+    _hud.runtime.experience_gain += _amount;
+    _hud.runtime.experience_pulse = 1;
+}
+
 /// @description Smoothly updates lightweight HUD runtime values.
 function sc_hud_level_update(_hud)
 {
@@ -451,12 +462,31 @@ function sc_hud_level_update(_hud)
 
     if (_difference != 0)
     {
-        var _step = max(1, ceil(abs(_difference) * 0.14));
-        _runtime.credits_display += sign(_difference) * min(abs(_difference), _step);
+        var _step = max(1,ceil(abs(_difference) * 0.14));
+        _runtime.credits_display += sign(_difference)
+            * min(abs(_difference),_step);
     }
 
-    _runtime.credit_pulse = max(0, _runtime.credit_pulse - 0.045);
-    if (_runtime.credit_pulse <= 0) _runtime.credit_gain = 0;
+    _runtime.credit_pulse = max(
+        0,
+        _runtime.credit_pulse - 0.045
+    );
+
+    _runtime.experience_pulse = max(
+        0,
+        _runtime.experience_pulse - 0.055
+    );
+
+    _runtime.data_shard_pulse = max(
+        0,
+        _runtime.data_shard_pulse - 0.045
+    );
+
+    if (_runtime.credit_pulse <= 0)
+        _runtime.credit_gain = 0;
+
+    if (_runtime.experience_pulse <= 0)
+        _runtime.experience_gain = 0;
 }
 
 /// @description Draws one reusable dark jagged HUD panel.
@@ -1102,13 +1132,15 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     );
 }
 
-/// @description Draws the player's current experience progress.
+/// @description Draws experience progress and its transfer-arrival pulse.
 function sc_hud_level_experience_draw(_hud,_x,_y)
 {
     var _data = _hud.data;
     var _config = _data.top.experience;
     var _palette = _data.palette;
+    var _runtime = _hud.runtime;
     var _progress = sc_player_level_progress_get();
+    var _pulse = _runtime.experience_pulse;
 
     var _left = _x + _config.x;
     var _top = _y + _config.y;
@@ -1125,12 +1157,18 @@ function sc_hud_level_experience_draw(_hud,_x,_y)
         gpu_set_blendmode(bm_add);
 
         draw_set_colour(_palette.experience);
-        draw_set_alpha(0.9);
+        draw_set_alpha(0.82 + _pulse * 0.18);
         draw_rectangle(_left,_top,_filled,_bottom,false);
 
         draw_set_colour(_palette.data_shard);
-        draw_set_alpha(0.32);
-        draw_rectangle(_left,_top - 2,_filled,_bottom + 2,false);
+        draw_set_alpha(0.18 + _pulse * 0.42);
+        draw_rectangle(
+            _left,
+            _top - 2 - _pulse * 2,
+            _filled,
+            _bottom + 2 + _pulse * 2,
+            false
+        );
 
         gpu_set_blendmode(bm_normal);
     }
@@ -1138,6 +1176,20 @@ function sc_hud_level_experience_draw(_hud,_x,_y)
     draw_set_colour(_palette.outline);
     draw_set_alpha(0.75);
     draw_rectangle(_left,_top,_right,_bottom,true);
+
+    if (_pulse > 0 && _runtime.experience_gain > 0)
+    {
+        draw_set_halign(fa_left);
+        draw_set_valign(fa_middle);
+        draw_set_colour(_palette.data_shard);
+        draw_set_alpha(_pulse);
+
+        draw_text(
+            _right + 12,
+            _top + _config.height * 0.5,
+            "+" + string(_runtime.experience_gain) + " XP"
+        );
+    }
 }
 
 /// @description Draws progression, currency, location and navigation telemetry.

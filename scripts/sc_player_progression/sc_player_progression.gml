@@ -94,7 +94,7 @@ function sc_player_experience_grant(_amount)
     return _levels_gained;
 }
 
-/// @description Calculates and grants experience for one player enemy kill.
+/// @description Calculates enemy XP and creates its visual HUD transfer.
 function sc_player_experience_enemy_grant(_enemy)
 {
     var _data = _enemy.enemy;
@@ -108,15 +108,14 @@ function sc_player_experience_enemy_grant(_enemy)
         * _data.grade.reward_multiplier
     );
 
+    // XP is permanent immediately; the HUD transfer is visual only.
     sc_player_experience_grant(_experience);
 
-    sc_world_feedback_create(
+    sc_hud_transfer_experience_create(
         _enemy.x,
-        _enemy.y + 22,
-        _enemy.layer,
-        "+" + string(_experience) + " XP",
-        make_colour_rgb(180,105,255),
-        0.85
+        _enemy.y,
+        _experience,
+        _data.visual.palette
     );
 
     return _experience;
