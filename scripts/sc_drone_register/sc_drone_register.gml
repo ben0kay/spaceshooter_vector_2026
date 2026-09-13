@@ -34,6 +34,8 @@ function sc_drone_register_all()
 /// @description Registers the existing derelict scanner drone.
 function sc_drone_register_scanner()
 {
+    var _palette = sc_faction_palette_get(Faction.PLAYER);
+
     return sc_drone_register({
         identity: {
             key: "drone_scanner",
@@ -57,7 +59,14 @@ function sc_drone_register_scanner()
         },
 
         visual: {
-            radius: 13
+            radius: 13,
+            palette: _palette,
+
+            bake: {
+                canvas_size: 64
+            },
+
+            draw_script: sc_drone_scanner_body_draw
         },
 
         behaviour: {
@@ -126,7 +135,13 @@ function sc_drone_register_player_point_defence()
 
         visual: {
             radius: 14,
-            palette: _palette
+            palette: _palette,
+
+            bake: {
+                canvas_size: 64
+            },
+
+            draw_script: sc_drone_point_defence_body_draw
         },
 
         behaviour: {

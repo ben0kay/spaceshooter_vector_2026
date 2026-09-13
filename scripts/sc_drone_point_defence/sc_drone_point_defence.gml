@@ -295,74 +295,28 @@ function sc_drone_point_defence_update(_drone)
     return true;
 }
 
-/// @description Draws the player point-defence drone and its protected radius.
-function sc_drone_point_defence_draw(_drone)
+/// @description Draws the point-defence drone's static body for visual baking.
+function sc_drone_point_defence_body_draw(_x,_y,_radius,_angle,_visual)
 {
-    var _data = _drone.drone;
-    var _definition = _data.definition;
-    var _runtime = _data.runtime;
-    var _owner = _data.owner_id;
-    var _palette = _definition.visual.palette;
-    var _radius = _definition.visual.radius;
-    var _angle = _drone.draw_angle;
-
-    if (instance_exists(_owner))
-    {
-        var _range = _definition.targeting.range;
-        var _pulse = 0.82+sin(GAME_TICK*0.05)*0.18;
-
-        gpu_set_blendmode(bm_add);
-
-        draw_set_colour(_palette.energy);
-        draw_set_alpha(0.035*_pulse);
-        draw_circle(_owner.x,_owner.y,_range,false);
-
-        draw_set_alpha(0.13*_pulse);
-        draw_circle(_owner.x,_owner.y,_range,true);
-
-        for (var _i = 0; _i < 4; ++_i)
-        {
-            var _node_angle =
-                GAME_TICK*0.08
-                +_i*90;
-
-            var _node_x =
-                _owner.x
-                +lengthdir_x(_range,_node_angle);
-
-            var _node_y =
-                _owner.y
-                +lengthdir_y(_range,_node_angle);
-
-            draw_set_alpha(0.35);
-            draw_circle(_node_x,_node_y,2.5,false);
-        }
-
-        gpu_set_blendmode(bm_normal);
-    }
+    var _palette = _visual.palette;
 
     gpu_set_blendmode(bm_add);
     draw_set_colour(_palette.glow);
     draw_set_alpha(0.18);
-    draw_circle(
-        _drone.x,
-        _drone.y,
-        _radius*1.55,
-        false
-    );
+    draw_circle(_x,_y,_radius*1.55,false);
     gpu_set_blendmode(bm_normal);
 
     draw_set_alpha(1);
     draw_set_colour(_palette.hull_dark);
-    draw_circle(_drone.x,_drone.y,_radius,false);
+    draw_circle(_x,_y,_radius,false);
 
     draw_set_colour(_palette.outline);
-    draw_circle(_drone.x,_drone.y,_radius-1,true);
+    draw_circle(_x,_y,_radius-1,true);
 
     for (var _side = -1; _side <= 1; _side += 2)
     {
         sc_visual_triangle(
-            _drone.x,_drone.y,
+            _x,_y,
             _radius,_angle,
             -0.45,0.25*_side,
             0,0.92*_side,
@@ -374,15 +328,53 @@ function sc_drone_point_defence_draw(_drone)
 
     draw_set_colour(_palette.energy);
     draw_line_width(
-        _drone.x+lengthdir_x(4,_angle),
-        _drone.y+lengthdir_y(4,_angle),
-        _drone.x+lengthdir_x(18,_angle),
-        _drone.y+lengthdir_y(18,_angle),
+        _x+lengthdir_x(4,_angle),
+        _y+lengthdir_y(4,_angle),
+        _x+lengthdir_x(18,_angle),
+        _y+lengthdir_y(18,_angle),
         3
     );
 
     draw_set_colour(_palette.core);
-    draw_circle(_drone.x,_drone.y,3,false);
+    draw_circle(_x,_y,3,false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws the point-defence drone's dynamic protected radius and target.
+function sc_drone_point_defence_draw(_drone)
+{
+    var _data = _drone.drone;
+    var _definition = _data.definition;
+    var _owner = _data.owner_id;
+    var _palette = _definition.visual.palette;
+
+    if (instance_exists(_owner))
+    {
+        var _range = _definition.targeting.range;
+        var _pulse = 0.82+sin(GAME_TICK*0.05)*0.18;
+
+        gpu_set_blendmode(bm_add);
+        draw_set_colour(_palette.energy);
+        draw_set_alpha(0.035*_pulse);
+        draw_circle(_owner.x,_owner.y,_range,false);
+
+        draw_set_alpha(0.13*_pulse);
+        draw_circle(_owner.x,_owner.y,_range,true);
+
+        for (var _i = 0; _i < 4; ++_i)
+        {
+            var _node_angle = GAME_TICK*0.08+_i*90;
+            var _node_x = _owner.x+lengthdir_x(_range,_node_angle);
+            var _node_y = _owner.y+lengthdir_y(_range,_node_angle);
+
+            draw_set_alpha(0.35);
+            draw_circle(_node_x,_node_y,2.5,false);
+        }
+
+        gpu_set_blendmode(bm_normal);
+    }
 
     if (instance_exists(_data.target_id))
     {

@@ -173,19 +173,32 @@ function sc_drone_update(_drone)
     );
 }
 
-/// @description Draws one generic drone and its temporary health bar.
+/// @description Draws one baked drone, its runtime effects and health bar.
 function sc_drone_draw(_drone)
 {
     var _data = _drone.drone;
+    var _definition = _data.definition;
 
-    _data.definition.behaviour.draw_script(
-        _drone
+    _definition.behaviour.draw_script(_drone);
+
+    var _sprite = sc_drone_visual_cache_get(_data.key);
+
+    draw_sprite_ext(
+        _sprite,
+        0,
+        _drone.x,
+        _drone.y,
+        1,
+        1,
+        _drone.draw_angle,
+        c_white,
+        1
     );
 
     sc_health_bar_draw(
         _drone.x,
         _drone.y,
-        _data.definition.visual.radius,
+        _definition.visual.radius,
         _data.defence,
         _drone.health_bar
     );
@@ -340,127 +353,84 @@ function sc_drone_scanner_destroy(_drone)
     return true;
 }
 
-/// @description Draws one scanner drone and its active scanning field.
-function sc_drone_scanner_draw(_drone)
+/// @description Draws the scanner drone's static body for visual baking.
+function sc_drone_scanner_body_draw(_x,_y,_radius,_angle,_visual)
 {
-    var _data = _drone.drone;
-    var _angle = _drone.draw_angle;
-    var _aqua = make_colour_rgb(0,225,240);
-    var _core = make_colour_rgb(185,255,255);
-
-    if (_data.state == DroneState.WORKING
-    && instance_exists(_data.target_id))
-    {
-        var _target = _data.target_id;
-        var _direction = point_direction(
-            _drone.x,
-            _drone.y,
-            _target.x,
-            _target.y
-        );
-
-        var _half_width = 82;
-
-        var _end_x1 =
-            _target.x
-            +lengthdir_x(_half_width,_direction-90);
-
-        var _end_y1 =
-            _target.y
-            +lengthdir_y(_half_width,_direction-90);
-
-        var _end_x2 =
-            _target.x
-            +lengthdir_x(_half_width,_direction+90);
-
-        var _end_y2 =
-            _target.y
-            +lengthdir_y(_half_width,_direction+90);
-
-        draw_set_colour(_aqua);
-        draw_set_alpha(0.08);
-
-        draw_triangle(
-            _drone.x,
-            _drone.y,
-            _end_x1,
-            _end_y1,
-            _end_x2,
-            _end_y2,
-            false
-        );
-
-        draw_set_alpha(0.5);
-        draw_line_width(
-            _drone.x,
-            _drone.y,
-            _end_x1,
-            _end_y1,
-            1
-        );
-
-        draw_line_width(
-            _drone.x,
-            _drone.y,
-            _end_x2,
-            _end_y2,
-            1
-        );
-
-        for (var _i = 0; _i < 5; ++_i)
-        {
-            var _phase = frac(
-                GAME_TICK*0.012
-                +_i/5
-            );
-
-            var _centre_x = lerp(
-                _drone.x,
-                _target.x,
-                _phase
-            );
-
-            var _centre_y = lerp(
-                _drone.y,
-                _target.y,
-                _phase
-            );
-
-            var _width = lerp(
-                5,
-                _half_width,
-                _phase
-            );
-
-            draw_set_alpha((1-_phase)*0.75);
-
-            draw_line_width(
-                _centre_x+lengthdir_x(_width,_direction-90),
-                _centre_y+lengthdir_y(_width,_direction-90),
-                _centre_x+lengthdir_x(_width,_direction+90),
-                _centre_y+lengthdir_y(_width,_direction+90),
-                2
-            );
-        }
-    }
+    var _palette = _visual.palette;
 
     draw_set_alpha(1);
-    draw_set_colour(make_colour_rgb(12,35,42));
-    draw_circle(_drone.x,_drone.y,13,false);
+    draw_set_colour(_palette.hull_dark);
+    draw_circle(_x,_y,_radius,false);
 
-    draw_set_colour(_aqua);
-    draw_circle(_drone.x,_drone.y,11,true);
+    draw_set_colour(_palette.outline);
+    draw_circle(_x,_y,_radius-2,true);
 
+    draw_set_colour(_palette.energy);
     draw_line_width(
-        _drone.x+lengthdir_x(7,_angle),
-        _drone.y+lengthdir_y(7,_angle),
-        _drone.x+lengthdir_x(17,_angle),
-        _drone.y+lengthdir_y(17,_angle),
+        _x+lengthdir_x(7,_angle),
+        _y+lengthdir_y(7,_angle),
+        _x+lengthdir_x(17,_angle),
+        _y+lengthdir_y(17,_angle),
         3
     );
 
-    draw_set_colour(_core);
-    draw_circle(_drone.x,_drone.y,3,false);
+    draw_set_colour(_palette.core);
+    draw_circle(_x,_y,3,false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
+/// @description Draws the scanner drone's dynamic scanning field.
+function sc_drone_scanner_draw(_drone)
+{
+    var _data = _drone.drone;
+    if (_data.state != DroneState.WORKING
+    || !instance_exists(_data.target_id))
+        return;
+
+    var _target = _data.target_id;
+    var _colour = _data.definition.visual.palette.energy;
+    var _direction = point_direction(
+        _drone.x,_drone.y,
+        _target.x,_target.y
+    );
+
+    var _half_width = 82;
+    var _end_x1 = _target.x+lengthdir_x(_half_width,_direction-90);
+    var _end_y1 = _target.y+lengthdir_y(_half_width,_direction-90);
+    var _end_x2 = _target.x+lengthdir_x(_half_width,_direction+90);
+    var _end_y2 = _target.y+lengthdir_y(_half_width,_direction+90);
+
+    draw_set_colour(_colour);
+    draw_set_alpha(0.08);
+    draw_triangle(
+        _drone.x,_drone.y,
+        _end_x1,_end_y1,
+        _end_x2,_end_y2,
+        false
+    );
+
+    draw_set_alpha(0.5);
+    draw_line_width(_drone.x,_drone.y,_end_x1,_end_y1,1);
+    draw_line_width(_drone.x,_drone.y,_end_x2,_end_y2,1);
+
+    for (var _i = 0; _i < 5; ++_i)
+    {
+        var _phase = frac(GAME_TICK*0.012+_i/5);
+        var _centre_x = lerp(_drone.x,_target.x,_phase);
+        var _centre_y = lerp(_drone.y,_target.y,_phase);
+        var _width = lerp(5,_half_width,_phase);
+
+        draw_set_alpha((1-_phase)*0.75);
+        draw_line_width(
+            _centre_x+lengthdir_x(_width,_direction-90),
+            _centre_y+lengthdir_y(_width,_direction-90),
+            _centre_x+lengthdir_x(_width,_direction+90),
+            _centre_y+lengthdir_y(_width,_direction+90),
+            2
+        );
+    }
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
