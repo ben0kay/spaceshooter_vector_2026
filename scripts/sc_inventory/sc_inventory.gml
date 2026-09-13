@@ -6,7 +6,46 @@ Interface selection and the baked window belong to o_hud_level.
 Static panel, tabs and empty cargo slots are baked once.
 Items, quantities, selection and descriptions are drawn dynamically.
 */
+/// @description Creates the player's persistent cargo, equipment and drone bay.
+function sc_player_inventory_create()
+{
+    var _columns = 8;
+    var _rows = 5;
 
+    return {
+        columns: _columns,
+        rows: _rows,
+        slots: array_create(_columns*_rows,undefined),
+
+        equipment: {
+            armour: {
+                key: "item_armour_plate",
+                name: "Armour Plate",
+                grade: ItemGrade.COMMON
+            },
+
+            shield: undefined,
+            reactor: undefined,
+            thruster: undefined,
+            targeting: undefined,
+            utility: undefined,
+            auxiliary: undefined
+        },
+
+        // Temporary three-slot test bay. Upgrade stats can control this later.
+        drone_bay: sc_player_drone_bay_create(3),
+
+        installation: {
+            active: false,
+            replacing: false,
+            slot: -1,
+            item: undefined,
+            duration: 0,
+            remaining: 0,
+            cancelled_remaining: 0
+        }
+    };
+}
 
 /// @description Opens or closes Ship Command without affecting other player states.
 function sc_inventory_toggle(_hud)
