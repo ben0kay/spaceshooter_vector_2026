@@ -2,7 +2,7 @@
 var _camera = camera_data;
 var _camera_id = _camera.camera_id;
 
-if (keyboard_check(vk_control))
+if (keyboard_check(vk_control) && global.PlayerState == PlayerState.ACTIVE)
 {
     if (mouse_wheel_down()) _camera.zoom.target += _camera.zoom.step;
     if (mouse_wheel_up()) _camera.zoom.target -= _camera.zoom.step;

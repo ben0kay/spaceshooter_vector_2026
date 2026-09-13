@@ -13,6 +13,7 @@ enum MainMenuAction { DEPLOY, HANGAR, OPTIONS, CHANGE_PROFILE, EXIT }
 enum GUIButtonStyle { STANDARD, TAB, PRIMARY, DANGER }
 enum HudTopBannerMode { NONE, ENEMY, ALERT, DISCOVERY }
 enum HudTransferType { EXPERIENCE, CREDITS, DATA_SHARD }
+enum UpgradeCategory { WEAPONS, DEFENCE, MOBILITY, SYSTEMS }
 //==================================================
 // FACTIONS / ENEMY STATE
 //==================================================

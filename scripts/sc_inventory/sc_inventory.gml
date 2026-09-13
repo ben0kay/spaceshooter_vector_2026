@@ -285,7 +285,7 @@ function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _rele
     _runtime.drag.source_slot = -1;
 }
 
-/// @description Updates Ship Command buttons and cargo dragging.
+/// @description Updates Ship Command buttons and active-tab interaction.
 function sc_inventory_update(_hud)
 {
     var _runtime = _hud.inventory;
@@ -306,18 +306,18 @@ function sc_inventory_update(_hud)
     var _pressed = global.input.action.ui_select_pressed;
     var _released = global.input.action.ui_select_released;
 
-    if (sc_gui_button_update(_buttons.close, _mouse_x, _mouse_y, _pressed))
+    if (sc_gui_button_update(_buttons.close,_mouse_x,_mouse_y,_pressed))
     {
         sc_inventory_toggle(_hud);
         return;
     }
 
-    for (var _i = 0; _i < array_length(_buttons.tabs); _i++)
+    for (var _i = 0; _i < array_length(_buttons.tabs); ++_i)
     {
         var _button = _buttons.tabs[_i];
         _button.selected = _runtime.tab == _button.id;
 
-        if (sc_gui_button_update(_button, _mouse_x, _mouse_y, _pressed))
+        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
         {
             _runtime.drag.active = false;
             _runtime.drag.source_slot = -1;
@@ -326,29 +326,43 @@ function sc_inventory_update(_hud)
         }
     }
 
-    if (_runtime.tab == InventoryTab.EQUIPMENT)
-	{
-	    sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _released);
-	    return;
-	}
+    switch (_runtime.tab)
+    {
+        case InventoryTab.EQUIPMENT:
+            sc_inventory_equipment_update(
+                _hud,_mouse_x,_mouse_y,_pressed,_released
+            );
+            return;
 
-	if (_runtime.tab != InventoryTab.CARGO) return;
+        case InventoryTab.UPGRADES:
+            sc_player_upgrades_interface_update(
+                _hud,_mouse_x,_mouse_y,_pressed
+            );
+            return;
+
+        case InventoryTab.CARGO:
+        break;
+
+        default:
+            return;
+    }
 
     var _selected = _player.inventory.slots[_runtime.selected_slot];
+
     _buttons.sort.enabled = true;
     _buttons.transfer.enabled = false;
     _buttons.drop.enabled = !is_undefined(_selected);
 
-    if (sc_gui_button_update(_buttons.sort, _mouse_x, _mouse_y, _pressed))
+    if (sc_gui_button_update(_buttons.sort,_mouse_x,_mouse_y,_pressed))
     {
         sc_player_inventory_sort(_player);
         _runtime.selected_slot = 0;
         return;
     }
 
-    sc_gui_button_update(_buttons.transfer, _mouse_x, _mouse_y, _pressed);
+    sc_gui_button_update(_buttons.transfer,_mouse_x,_mouse_y,_pressed);
 
-    if (sc_gui_button_update(_buttons.drop, _mouse_x, _mouse_y, _pressed))
+    if (sc_gui_button_update(_buttons.drop,_mouse_x,_mouse_y,_pressed))
     {
         sc_inventory_selected_drop(_hud);
         return;
@@ -356,7 +370,9 @@ function sc_inventory_update(_hud)
 
     if (_pressed)
     {
-        var _slot = sc_inventory_slot_at_position(_data, _mouse_x, _mouse_y);
+        var _slot = sc_inventory_slot_at_position(
+            _data,_mouse_x,_mouse_y
+        );
 
         if (_slot >= 0)
         {
@@ -372,7 +388,9 @@ function sc_inventory_update(_hud)
 
     if (_runtime.drag.active && _released)
     {
-        var _target = sc_inventory_slot_at_position(_data, _mouse_x, _mouse_y);
+        var _target = sc_inventory_slot_at_position(
+            _data,_mouse_x,_mouse_y
+        );
 
         if (_target >= 0)
         {
@@ -883,8 +901,7 @@ function sc_inventory_draw(_hud)
     draw_set_alpha(0.62);
     draw_set_colour(c_black);
     draw_rectangle(
-        0,
-        0,
+        0,0,
         display_get_gui_width(),
         display_get_gui_height(),
         false
@@ -908,21 +925,10 @@ function sc_inventory_draw(_hud)
     {
         var _button = _runtime.buttons.tabs[_i];
         _button.selected = _runtime.tab == _button.id;
-
-        sc_gui_button_draw(
-            _button,
-            _x,
-            _y,
-            _palette
-        );
+        sc_gui_button_draw(_button,_x,_y,_palette);
     }
 
-    sc_gui_button_draw(
-        _runtime.buttons.close,
-        _x,
-        _y,
-        _palette
-    );
+    sc_gui_button_draw(_runtime.buttons.close,_x,_y,_palette);
 
     switch (_runtime.tab)
     {
@@ -932,6 +938,10 @@ function sc_inventory_draw(_hud)
 
         case InventoryTab.EQUIPMENT:
             sc_inventory_equipment_draw(_hud,_x,_y);
+        break;
+
+        case InventoryTab.UPGRADES:
+            sc_player_upgrades_interface_draw(_hud,_x,_y);
         break;
 
         case InventoryTab.STATISTICS:

@@ -86,7 +86,7 @@ function sc_hud_level_cache_bake(_hud)
     return true;
 }
 
-/// @description Deletes all generated HUD sprites.
+/// @description Deletes all generated HUD sprites and surfaces.
 function sc_hud_level_cleanup(_hud)
 {
     var _cache = _hud.cache;
@@ -96,11 +96,18 @@ function sc_hud_level_cleanup(_hud)
     if (sprite_exists(_cache.minimap_dock)) sprite_delete(_cache.minimap_dock);
     if (sprite_exists(_cache.inventory_body)) sprite_delete(_cache.inventory_body);
 
-    for (var _i = 0; _i < array_length(_cache.bottom_effects); _i++)
-        if (sprite_exists(_cache.bottom_effects[_i])) sprite_delete(_cache.bottom_effects[_i]);
+    for (var _i = 0; _i < array_length(_cache.bottom_effects); ++_i)
+        if (sprite_exists(_cache.bottom_effects[_i]))
+            sprite_delete(_cache.bottom_effects[_i]);
 
-    for (var _i = 0; _i < array_length(_cache.top_effects); _i++)
-        if (sprite_exists(_cache.top_effects[_i])) sprite_delete(_cache.top_effects[_i]);
+    for (var _i = 0; _i < array_length(_cache.top_effects); ++_i)
+        if (sprite_exists(_cache.top_effects[_i]))
+            sprite_delete(_cache.top_effects[_i]);
+
+    if (surface_exists(_hud.inventory.upgrades.surface))
+        surface_free(_hud.inventory.upgrades.surface);
+
+    _hud.inventory.upgrades.surface = -1;
 
     _cache.bottom_body = -1;
     _cache.top_body = -1;

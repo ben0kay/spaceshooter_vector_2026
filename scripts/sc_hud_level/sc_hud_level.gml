@@ -416,6 +416,37 @@ function sc_hud_level_init(_hud_object)
 			    active: false,
 			    source_slot: -1
 			},
+				
+			upgrades: {
+    selected_key: "weapon_calibration",
+
+    view: {
+        x: 45, y: 205,
+        width: 1030, height: 590,
+        design_centre_x: 475,
+        design_centre_y: 425,
+
+        pan_x: 0,
+        pan_y: 0,
+        zoom: 1,
+        zoom_min: 0.6,
+        zoom_max: 1.6,
+        zoom_step: 0.1,
+
+        dragging: false,
+        drag_mouse_x: 0,
+        drag_mouse_y: 0
+    },
+
+    surface: -1,
+
+    purchase_button: sc_gui_button_create(
+        "purchase_upgrade",
+        1170,745,300,48,
+        "INSTALL UPGRADE",
+        GUIButtonStyle.PRIMARY
+    )
+},
 
             buttons: {
                 tabs: _tabs,

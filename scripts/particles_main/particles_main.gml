@@ -1,13 +1,18 @@
-/// @description Creates the shared background and foreground particle systems.
+/// @description Creates the shared world, impact and HUD particle systems.
 function sc_particles_init()
 {
     var _system = part_system_create();
     var _impact_system = part_system_create();
+    var _hud_system = part_system_create();
 
-    if (!part_system_exists(_system) || !part_system_exists(_impact_system))
+    if (!part_system_exists(_system)
+    || !part_system_exists(_impact_system)
+    || !part_system_exists(_hud_system))
     {
         if (part_system_exists(_system)) part_system_destroy(_system);
         if (part_system_exists(_impact_system)) part_system_destroy(_impact_system);
+        if (part_system_exists(_hud_system)) part_system_destroy(_hud_system);
+
         show_debug_message("PARTICLE SYSTEM ERROR - creation failed");
         return false;
     }
@@ -15,12 +20,17 @@ function sc_particles_init()
     global.particles = {
         system: _system,
         impact_system: _impact_system,
+        hud_system: _hud_system,
         groups: {},
         owned_types: []
     };
 
-    part_system_depth(_system, 10);
-    part_system_depth(_impact_system, -10);
+    part_system_depth(_system,10);
+    part_system_depth(_impact_system,-10);
+
+    // HUD particles update automatically but are drawn manually in Draw GUI.
+    part_system_automatic_update(_hud_system,true);
+    part_system_automatic_draw(_hud_system,false);
 
     if (!sc_particles_register_attack_telegraph()
     || !sc_particles_register_enemy_thrust()
@@ -33,6 +43,7 @@ function sc_particles_init()
     || !sc_particles_register_beam_origin()
     || !sc_particles_register_shield_break()
     || !sc_particles_resource_pickup_register()
+    || !sc_particles_hud_transfer_register()
     || !sc_particles_register_projectile_content()
     || !sc_particles_register_weapon_content())
     {
@@ -40,10 +51,10 @@ function sc_particles_init()
         return false;
     }
 
-    // Register additional particle families here.
     show_debug_message("PARTICLE SYSTEMS INITIALIZED");
     return true;
 }
+
 /// @description Registers reusable palette-driven beam contact particles.
 function sc_particles_register_beam_impact()
 {
@@ -346,7 +357,7 @@ function sc_particles_destroy()
 
     var _owned_types = global.particles.owned_types;
 
-    for (var _i = 0; _i < array_length(_owned_types); _i++)
+    for (var _i = 0; _i < array_length(_owned_types); ++_i)
     {
         var _type = _owned_types[_i];
 
@@ -356,9 +367,11 @@ function sc_particles_destroy()
 
     var _system = global.particles.system;
     var _impact_system = global.particles.impact_system;
+    var _hud_system = global.particles.hud_system;
 
     if (part_system_exists(_system)) part_system_destroy(_system);
     if (part_system_exists(_impact_system)) part_system_destroy(_impact_system);
+    if (part_system_exists(_hud_system)) part_system_destroy(_hud_system);
 
     global.particles = undefined;
     show_debug_message("PARTICLE SYSTEMS DESTROYED");

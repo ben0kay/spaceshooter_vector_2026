@@ -1,6 +1,8 @@
 /// @description Creates the player stat pipeline from immutable ship base stats.
-function sc_player_stats_init(_player, _stats_base)
+function sc_player_stats_init(_player,_stats_base)
 {
+    sc_player_upgrades_modifiers_rebuild();
+
     _player.ship.stats = {
         base: variable_clone(_stats_base),
 

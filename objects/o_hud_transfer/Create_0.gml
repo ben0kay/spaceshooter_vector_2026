@@ -1,4 +1,4 @@
-/// @description Initializes one visual HUD transfer.
+/// @description Initializes one visual HUD transfer and its opening particle burst.
 transfer = {
     type: transfer_create.type,
     amount: transfer_create.amount,
@@ -26,4 +26,5 @@ transfer = {
     curve_variation: transfer_create.curve_variation
 };
 
-depth = -100000;
+depth = -15000;
+sc_particles_hud_transfer_burst_emit(transfer);

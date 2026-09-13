@@ -1,21 +1,16 @@
-/// @description Bursts briefly before accelerating towards the HUD.
+/// @description Bursts briefly, travels towards the HUD and emits a residual trail.
 transfer.age++;
 transfer.remaining--;
 
-var _travel_time = transfer.life
-    - transfer.launch_delay;
+var _travel_time = transfer.life-transfer.launch_delay;
 
 transfer.progress = clamp(
-    (transfer.age - transfer.launch_delay)
-    / _travel_time,
+    (transfer.age-transfer.launch_delay)/_travel_time,
     0,
     1
 );
 
-transfer.travel = power(
-    transfer.progress,
-    1.35
-);
+transfer.travel = power(transfer.progress,1.35);
 
 var _position = sc_hud_transfer_curve_position(
     transfer,
@@ -24,6 +19,12 @@ var _position = sc_hud_transfer_curve_position(
 
 transfer.x = _position.x;
 transfer.y = _position.y;
+
+if (transfer.age > transfer.launch_delay
+&& transfer.remaining > 1)
+{
+    sc_particles_hud_transfer_trail_emit(transfer);
+}
 
 if (transfer.remaining <= 0)
 {
