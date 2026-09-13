@@ -1,19 +1,25 @@
-/// @description Accelerates one visual transfer towards its HUD destination.
+/// @description Bursts briefly before accelerating towards the HUD.
+transfer.age++;
 transfer.remaining--;
+
+var _travel_time = transfer.life
+    - transfer.launch_delay;
+
 transfer.progress = clamp(
-    1 - transfer.remaining / transfer.life,
+    (transfer.age - transfer.launch_delay)
+    / _travel_time,
     0,
     1
 );
 
-var _travel = power(
+transfer.travel = power(
     transfer.progress,
-    1.55
+    1.35
 );
 
 var _position = sc_hud_transfer_curve_position(
     transfer,
-    _travel
+    transfer.travel
 );
 
 transfer.x = _position.x;

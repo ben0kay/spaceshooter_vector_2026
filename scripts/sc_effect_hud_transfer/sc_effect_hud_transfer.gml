@@ -81,7 +81,7 @@ function sc_hud_transfer_curve_position(_transfer,_progress)
     };
 }
 
-/// @description Creates an enemy-coloured experience transfer.
+/// @description Creates a visible enemy-coloured experience transfer.
 function sc_hud_transfer_experience_create(
     _world_x,
     _world_y,
@@ -99,9 +99,9 @@ function sc_hud_transfer_experience_create(
         _world_y
     );
 
-    // Off-screen kills begin from the nearest visible screen edge.
-    _start.x = clamp(_start.x,24,_gui_width - 24);
-    _start.y = clamp(_start.y,90,_gui_height - 24);
+    // Off-screen kills begin at the nearest visible screen edge.
+    _start.x = clamp(_start.x,32,_gui_width - 32);
+    _start.y = clamp(_start.y,100,_gui_height - 32);
 
     var _target = sc_hud_transfer_target_get(
         HudTransferType.EXPERIENCE
@@ -113,10 +113,10 @@ function sc_hud_transfer_experience_create(
 
     var _control = {
         x: lerp(_start.x,_target.x,0.32)
-            + random_range(-90,90),
+            + random_range(-130,130),
 
         y: _start.y
-            - max(80,_vertical_distance * 0.38)
+            - max(120,_vertical_distance * 0.42)
     };
 
     return instance_create_depth(
@@ -138,12 +138,13 @@ function sc_hud_transfer_experience_create(
                 glow_colour: merge_colour(
                     _palette.glow,
                     _palette.accent,
-                    0.45
+                    0.55
                 ),
 
-                life: 34,
-                fragment_amount: 5,
-                fragment_spread: 18,
+                life: 64,
+                launch_delay: 8,
+                fragment_amount: 8,
+                fragment_spread: 34,
                 curve_variation: random(1000)
             }
         }

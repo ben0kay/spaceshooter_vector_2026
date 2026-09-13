@@ -12,8 +12,11 @@ transfer = {
     glow_colour: transfer_create.glow_colour,
 
     life: transfer_create.life,
+    launch_delay: transfer_create.launch_delay,
     remaining: transfer_create.life,
+    age: 0,
     progress: 0,
+    travel: 0,
 
     x: transfer_create.start.x,
     y: transfer_create.start.y,
