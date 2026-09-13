@@ -710,18 +710,14 @@ function sc_enemy_die(_enemy,_packet)
     _data.visual.death.script(_enemy);
 
     var _shake_magnitude = clamp(
-        _shake_config.shake_base
-        + _mass * _shake_config.shake_per_mass,
+        _shake_config.shake_base + _mass * _shake_config.shake_per_mass,
         _shake_config.shake_min,
         _shake_config.shake_max
     );
 
     var _shake_time = min(
         _shake_config.time_max,
-        round(
-            _shake_config.time_base
-            + _mass * _shake_config.time_per_mass
-        )
+        round(_shake_config.time_base + _mass * _shake_config.time_per_mass)
     );
 
     sc_camera_shake_at(
@@ -736,9 +732,8 @@ function sc_enemy_die(_enemy,_packet)
 
     if (_source.faction == Faction.PLAYER)
     {
-        sc_player_statistics_enemy_killed(
-            _enemy
-        );
+        sc_player_statistics_enemy_killed(_enemy);
+        sc_player_experience_enemy_grant(_enemy);
 
         sc_player_reward_grant(
             _data.reward,

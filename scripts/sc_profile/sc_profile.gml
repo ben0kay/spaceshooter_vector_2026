@@ -13,7 +13,9 @@ function sc_profile_default(_slot,_pilot_name)
         pilot_name: _pilot_name,
         created_at: date_current_datetime(),
         last_played_at: date_current_datetime(),
+
         credits: 0,
+        progression: sc_player_progression_default(),
 
         selected_ship_key: "ship_fighter",
         unlocked_ship_keys: [
@@ -52,6 +54,25 @@ function sc_profile_validate(_profile,_slot)
 
     if (!variable_struct_exists(_profile,"credits"))
         _profile.credits = 0;
+
+    if (!variable_struct_exists(_profile,"progression")
+    || !is_struct(_profile.progression))
+        _profile.progression = sc_player_progression_default();
+
+    var _progression = _profile.progression;
+
+    if (!variable_struct_exists(_progression,"level"))
+        _progression.level = 1;
+
+    if (!variable_struct_exists(_progression,"experience"))
+        _progression.experience = 0;
+
+    if (!variable_struct_exists(_progression,"data_shards"))
+        _progression.data_shards = 0;
+
+    if (!variable_struct_exists(_progression,"upgrade_ranks")
+    || !is_struct(_progression.upgrade_ranks))
+        _progression.upgrade_ranks = {};
 
     if (!variable_struct_exists(_profile,"selected_ship_key"))
         _profile.selected_ship_key = "ship_fighter";
