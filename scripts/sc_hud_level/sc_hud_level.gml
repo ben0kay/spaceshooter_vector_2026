@@ -428,7 +428,7 @@ function sc_hud_level_init(_hud_object)
 
         pan_x: 0,
         pan_y: 0,
-        zoom: 1,
+        zoom: 0.7,
         zoom_min: 0.6,
         zoom_max: 1.6,
         zoom_step: 0.1,

@@ -488,7 +488,7 @@ function sc_player_upgrade_symbol_draw(_upgrade,_x,_y,_colour,_scale)
     }
 }
 
-/// @description Draws transformed prerequisite connections inside the clipped surface.
+/// @description Draws directional prerequisite connections inside the clipped surface.
 function sc_player_upgrades_connections_draw(_runtime,_palette)
 {
     var _view = _runtime.view;
@@ -498,17 +498,9 @@ function sc_player_upgrades_connections_draw(_runtime,_palette)
     for (var _i = 0; _i < array_length(_upgrades); ++_i)
     {
         var _upgrade = _upgrades[_i];
-        var _colour = sc_player_upgrade_category_colour_get(
-            _upgrade.category
-        );
-
-        var _end_x = sc_player_upgrade_view_x(
-            _view,_upgrade.position.x
-        );
-
-        var _end_y = sc_player_upgrade_view_y(
-            _view,_upgrade.position.y
-        );
+        var _end_x = sc_player_upgrade_view_x(_view,_upgrade.position.x);
+        var _end_y = sc_player_upgrade_view_y(_view,_upgrade.position.y);
+        var _colour = sc_player_upgrade_category_colour_get(_upgrade.category);
 
         for (var _j = 0; _j < array_length(_upgrade.requirements); ++_j)
         {
@@ -516,33 +508,35 @@ function sc_player_upgrades_connections_draw(_runtime,_palette)
             var _parent = sc_player_upgrade_get(_requirement.key);
             if (is_undefined(_parent)) continue;
 
-            var _active = sc_player_upgrade_rank_get(_parent.key)
-                >= _requirement.rank;
+            var _start_x = sc_player_upgrade_view_x(_view,_parent.position.x);
+            var _start_y = sc_player_upgrade_view_y(_view,_parent.position.y);
+            var _distance = max(1,point_distance(_start_x,_start_y,_end_x,_end_y));
+            var _normal_x = (_end_x - _start_x) / _distance;
+            var _normal_y = (_end_y - _start_y) / _distance;
 
-            var _start_x = sc_player_upgrade_view_x(
-                _view,_parent.position.x
-            );
+            var _x1 = _start_x + _normal_x * _node_radius;
+            var _y1 = _start_y + _normal_y * _node_radius;
+            var _x2 = _end_x - _normal_x * _node_radius;
+            var _y2 = _end_y - _normal_y * _node_radius;
+            var _active = sc_player_upgrade_rank_get(_parent.key) >= _requirement.rank;
 
-            var _start_y = sc_player_upgrade_view_y(
-                _view,_parent.position.y
-            );
-
-            var _direction = sign(_end_x - _start_x);
-            var _x1 = _start_x + _node_radius * _direction;
-            var _x2 = _end_x - _node_radius * _direction;
-            var _middle_x = (_x1 + _x2) * 0.5;
+            if (_active)
+            {
+                gpu_set_blendmode(bm_add);
+                draw_set_colour(_colour);
+                draw_set_alpha(0.12);
+                draw_line_width(_x1,_y1,_x2,_y2,max(3,6 * _view.zoom));
+                gpu_set_blendmode(bm_normal);
+            }
 
             draw_set_colour(_active ? _colour : _palette.outline);
-            draw_set_alpha(_active ? 0.9 : 0.25);
-
-            draw_line_width(_x1,_start_y,_middle_x,_start_y,2);
-            draw_line_width(_middle_x,_start_y,_middle_x,_end_y,2);
-            draw_line_width(_middle_x,_end_y,_x2,_end_y,2);
+            draw_set_alpha(_active ? 0.9 : 0.28);
+            draw_line_width(_x1,_y1,_x2,_y2,max(1,2 * _view.zoom));
         }
     }
 }
 
-/// @description Draws one transformed ranked upgrade node.
+/// @description Draws one transformed upgrade node with a subtle outline glow.
 function sc_player_upgrade_node_draw(_upgrade,_selected,_runtime,_palette)
 {
     var _view = _runtime.view;
@@ -557,13 +551,15 @@ function sc_player_upgrade_node_draw(_upgrade,_selected,_runtime,_palette)
     var _fill = _palette.void;
     var _border = _palette.outline;
     var _symbol = _palette.muted;
-    var _alpha = 0.45;
+    var _border_alpha = 0.45;
+    var _glow_alpha = 0.05;
 
     if (_requirements_met)
     {
         _border = _colour;
         _symbol = _colour;
-        _alpha = 0.85;
+        _border_alpha = 0.85;
+        _glow_alpha = 0.11;
     }
 
     if (_rank > 0)
@@ -571,19 +567,38 @@ function sc_player_upgrade_node_draw(_upgrade,_selected,_runtime,_palette)
         _fill = merge_colour(_palette.panel,_colour,0.3);
         _border = _colour;
         _symbol = _palette.core;
-        _alpha = 1;
+        _border_alpha = 1;
+        _glow_alpha = 0.17;
     }
 
     if (_selected)
+        _glow_alpha = 0.25;
+
+    // Soft additive outline glow.
+    gpu_set_blendmode(bm_add);
+
+    sc_player_upgrade_hexagon_draw(
+        _x,_y,48 * _zoom,
+        _requirements_met ? _colour : _palette.outline,
+        _glow_alpha * 0.35,
+        true
+    );
+
+    sc_player_upgrade_hexagon_draw(
+        _x,_y,44 * _zoom,
+        _requirements_met ? _colour : _palette.outline,
+        _glow_alpha,
+        true
+    );
+
+    if (_selected)
     {
-        gpu_set_blendmode(bm_add);
-
         sc_player_upgrade_hexagon_draw(
-            _x,_y,45 * _zoom,_colour,0.14,false
+            _x,_y,43 * _zoom,_colour,0.1,false
         );
-
-        gpu_set_blendmode(bm_normal);
     }
+
+    gpu_set_blendmode(bm_normal);
 
     sc_player_upgrade_hexagon_draw(
         _x,_y,36 * _zoom,_fill,0.96,false
@@ -593,7 +608,7 @@ function sc_player_upgrade_node_draw(_upgrade,_selected,_runtime,_palette)
         _x,_y,
         (_selected ? 41 : 37) * _zoom,
         _selected ? _palette.core : _border,
-        _selected ? 1 : _alpha,
+        _selected ? 1 : _border_alpha,
         true
     );
 
@@ -613,7 +628,7 @@ function sc_player_upgrade_node_draw(_upgrade,_selected,_runtime,_palette)
     );
 }
 
-/// @description Draws the pannable tree contents into surface-local space.
+/// @description Draws the four-direction upgrade cross into surface-local space.
 function sc_player_upgrades_canvas_draw(_hud)
 {
     var _runtime = _hud.inventory.upgrades;
@@ -623,57 +638,113 @@ function sc_player_upgrades_canvas_draw(_hud)
 
     draw_clear_alpha(_palette.background,1);
 
-    var _categories = [
-        UpgradeCategory.WEAPONS,
-        UpgradeCategory.DEFENCE,
-        UpgradeCategory.MOBILITY,
-        UpgradeCategory.SYSTEMS
+    var _core_x = sc_player_upgrade_view_x(_view,475);
+    var _core_y = sc_player_upgrade_view_y(_view,425);
+
+    var _branches = [
+        {
+            key: "weapon_calibration",
+            label: "WEAPONS",
+            label_x: 610,
+            label_y: 350,
+            colour: sc_player_upgrade_category_colour_get(UpgradeCategory.WEAPONS)
+        },
+        {
+            key: "defence_hull",
+            label: "DEFENCE",
+            label_x: 340,
+            label_y: 350,
+            colour: sc_player_upgrade_category_colour_get(UpgradeCategory.DEFENCE)
+        },
+        {
+            key: "systems_reactor",
+            label: "SYSTEMS",
+            label_x: 535,
+            label_y: 290,
+            colour: sc_player_upgrade_category_colour_get(UpgradeCategory.SYSTEMS)
+        },
+        {
+            key: "mobility_thrusters",
+            label: "MOBILITY",
+            label_x: 535,
+            label_y: 560,
+            colour: sc_player_upgrade_category_colour_get(UpgradeCategory.MOBILITY)
+        }
     ];
 
-    var _lane_y = [245,365,485,605];
-
-    for (var _i = 0; _i < array_length(_categories); ++_i)
+    // Connect the central command core to each root branch.
+    for (var _i = 0; _i < array_length(_branches); ++_i)
     {
-        var _colour = sc_player_upgrade_category_colour_get(
-            _categories[_i]
-        );
+        var _branch = _branches[_i];
+        var _root = sc_player_upgrade_get(_branch.key);
+        var _root_x = sc_player_upgrade_view_x(_view,_root.position.x);
+        var _root_y = sc_player_upgrade_view_y(_view,_root.position.y);
+        var _distance = max(1,point_distance(_core_x,_core_y,_root_x,_root_y));
+        var _normal_x = (_root_x - _core_x) / _distance;
+        var _normal_y = (_root_y - _core_y) / _distance;
 
-        var _label_x = sc_player_upgrade_view_x(_view,55);
-        var _line_x = sc_player_upgrade_view_x(_view,145);
-        var _end_x = sc_player_upgrade_view_x(_view,950);
-        var _y = sc_player_upgrade_view_y(_view,_lane_y[_i]);
+        var _x1 = _core_x + _normal_x * 31 * _view.zoom;
+        var _y1 = _core_y + _normal_y * 31 * _view.zoom;
+        var _x2 = _root_x - _normal_x * 38 * _view.zoom;
+        var _y2 = _root_y - _normal_y * 38 * _view.zoom;
 
-        draw_set_halign(fa_left);
+        gpu_set_blendmode(bm_add);
+        draw_set_colour(_branch.colour);
+        draw_set_alpha(0.1);
+        draw_line_width(_x1,_y1,_x2,_y2,max(3,6 * _view.zoom));
+        gpu_set_blendmode(bm_normal);
+
+        draw_set_colour(_branch.colour);
+        draw_set_alpha(0.7);
+        draw_line_width(_x1,_y1,_x2,_y2,max(1,2 * _view.zoom));
+
+        draw_set_halign(fa_center);
         draw_set_valign(fa_middle);
-        draw_set_colour(_colour);
-        draw_set_alpha(1);
+        draw_set_colour(_branch.colour);
+        draw_set_alpha(0.9);
 
         draw_text(
-            _label_x,
-            _y,
-            sc_player_upgrade_category_name_get(_categories[_i])
+            sc_player_upgrade_view_x(_view,_branch.label_x),
+            sc_player_upgrade_view_y(_view,_branch.label_y),
+            _branch.label
         );
-
-        draw_set_alpha(0.18);
-        draw_line(_line_x,_y,_end_x,_y);
     }
+
+    // Decorative centre from which all four categories divide.
+    gpu_set_blendmode(bm_add);
+    sc_player_upgrade_hexagon_draw(
+        _core_x,_core_y,39 * _view.zoom,
+        _palette.accent,0.08,false
+    );
+    sc_player_upgrade_hexagon_draw(
+        _core_x,_core_y,36 * _view.zoom,
+        _palette.core,0.22,true
+    );
+    gpu_set_blendmode(bm_normal);
+
+    sc_player_upgrade_hexagon_draw(
+        _core_x,_core_y,29 * _view.zoom,
+        _palette.panel,0.98,false
+    );
+    sc_player_upgrade_hexagon_draw(
+        _core_x,_core_y,30 * _view.zoom,
+        _palette.accent,0.95,true
+    );
+
+    draw_set_colour(_palette.core);
+    draw_set_alpha(1);
+    draw_circle(_core_x,_core_y,7 * _view.zoom,true);
+    draw_circle(_core_x,_core_y,3 * _view.zoom,false);
 
     sc_player_upgrades_connections_draw(_runtime,_palette);
 
     for (var _i = 0; _i < array_length(_upgrades); ++_i)
     {
         var _upgrade = _upgrades[_i];
-        var _x = sc_player_upgrade_view_x(
-            _view,_upgrade.position.x
-        );
-
-        var _y = sc_player_upgrade_view_y(
-            _view,_upgrade.position.y
-        );
-
+        var _x = sc_player_upgrade_view_x(_view,_upgrade.position.x);
+        var _y = sc_player_upgrade_view_y(_view,_upgrade.position.y);
         var _margin = 70 * _view.zoom;
 
-        // Cheap culling before drawing detailed node primitives.
         if (_x < -_margin || _x > _view.width + _margin
         || _y < -_margin || _y > _view.height + _margin)
             continue;
