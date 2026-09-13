@@ -226,7 +226,7 @@ function sc_hud_level_data()
     width: 1560,
     height: 860,
 
-    tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG"],
+    tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG", "STATISTICS"],
     tab_x: 385,
     tab_y: 82,
     tab_width: 128,
