@@ -70,12 +70,12 @@ function sc_player_upgrades_get()
         ),
 
         sc_player_upgrade_create(
-            "defence_shield","SHIELD CAPACITORS",
-            "Increases maximum shield by 20 per rank.",
-            UpgradeCategory.DEFENCE,40,425,3,
-            [{ key: "defence_armour", rank: 1 }],
-            [{ stat: "shield_max", add_per_rank: 20 }]
-        ),
+		    "defence_shield","SHIELD GENERATOR",
+		    "Installs a defensive shield generator and increases shield capacity by 40 per rank.",
+		    UpgradeCategory.DEFENCE,40,425,3,
+		    [{ key: "defence_armour", rank: 1 }],
+		    [{ stat: "shield_max", add_per_rank: 40 }]
+		),
 
         // Systems branch: up.
         sc_player_upgrade_create(

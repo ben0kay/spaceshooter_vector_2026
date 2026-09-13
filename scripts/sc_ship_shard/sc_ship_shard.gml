@@ -6,7 +6,7 @@ function sc_ship_register_shard()
 
         stats_base: {
 			mass: 1,
-            hull_max: 100, armour_max: 100, shield_max: 100,
+            hull_max: 100, armour_max: 100, shield_max: 0,
             shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
 			
 			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
