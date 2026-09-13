@@ -25,152 +25,16 @@ function sc_player_upgrade_create(
     };
 }
 
-/// @description Returns the universal four-direction player upgrade tree.
+/// @description Returns the complete universal four-direction player upgrade tree.
 function sc_player_upgrades_get()
 {
-    static _upgrades = [
-        // Weapons branch: right.
-        sc_player_upgrade_create(
-            "weapon_calibration","WEAPON CALIBRATION",
-            "Increases all player weapon damage by 5% per rank.",
-            UpgradeCategory.WEAPONS,610,425,3,[],
-            [{ stat: "damage_multiplier", multiply_per_rank: 0.05 }]
-        ),
-
-        sc_player_upgrade_create(
-            "weapon_cycling","CYCLING SYSTEMS",
-            "Increases weapon fire rate by 4% per rank.",
-            UpgradeCategory.WEAPONS,760,425,3,
-            [{ key: "weapon_calibration", rank: 1 }],
-            [{ stat: "fire_rate_multiplier", multiply_per_rank: 0.04 }]
-        ),
-
-        sc_player_upgrade_create(
-            "weapon_ordnance","ORDNANCE RACKS",
-            "Increases explosive ammunition capacity by 20 per rank.",
-            UpgradeCategory.WEAPONS,910,425,3,
-            [{ key: "weapon_calibration", rank: 2 }],
-            [{ stat: "explosives_max", add_per_rank: 20 }]
-        ),
-
-        // Defence branch: left.
-        sc_player_upgrade_create(
-            "defence_hull","REINFORCED FRAME",
-            "Increases maximum hull by 20 per rank.",
-            UpgradeCategory.DEFENCE,340,425,3,[],
-            [{ stat: "hull_max", add_per_rank: 20 }]
-        ),
-
-        sc_player_upgrade_create(
-            "defence_armour","COMPOSITE ARMOUR",
-            "Increases maximum armour by 20 per rank.",
-            UpgradeCategory.DEFENCE,190,425,3,
-            [{ key: "defence_hull", rank: 1 }],
-            [{ stat: "armour_max", add_per_rank: 20 }]
-        ),
-
-        sc_player_upgrade_create(
-		    "defence_shield","SHIELD GENERATOR",
-		    "Installs a defensive shield generator and increases shield capacity by 40 per rank.",
-		    UpgradeCategory.DEFENCE,40,425,3,
-		    [{ key: "defence_armour", rank: 1 }],
-		    [{ stat: "shield_max", add_per_rank: 40 }]
-		),
-
-        // Systems branch: up.
-        sc_player_upgrade_create(
-            "systems_reactor","REACTOR CAPACITY",
-            "Increases maximum energy by 40 per rank.",
-            UpgradeCategory.SYSTEMS,475,290,3,[],
-            [{ stat: "energy_max", add_per_rank: 40 }]
-        ),
-
-        sc_player_upgrade_create(
-            "systems_cargo","CARGO EXPANSION",
-            "Increases cargo capacity by 15 per rank.",
-            UpgradeCategory.SYSTEMS,475,140,3,
-            [{ key: "systems_reactor", rank: 1 }],
-            [{ stat: "cargo_capacity", add_per_rank: 15 }]
-        ),
-
-        sc_player_upgrade_create(
-		    "systems_extraction","EXTRACTION ANALYSIS",
-		    "Increases mining strength and asteroid resource yield per rank.",
-		    UpgradeCategory.SYSTEMS,475,-10,3,
-		    [{ key: "systems_cargo", rank: 1 }],
-		    [
-		        { stat: "mining_strength", add_per_rank: 1 },
-		        { stat: "resource_yield_multiplier", multiply_per_rank: 0.05 }
-		    ]
-		),
-
-        // Mobility branch: down.
-        sc_player_upgrade_create(
-            "mobility_thrusters","THRUSTER RESPONSE",
-            "Increases acceleration by 0.04 per rank.",
-            UpgradeCategory.MOBILITY,475,560,3,[],
-            [{ stat: "acceleration", add_per_rank: 0.04 }]
-        ),
-
-        sc_player_upgrade_create(
-            "mobility_velocity","VECTOR DRIVE",
-            "Increases maximum speed by 0.35 per rank.",
-            UpgradeCategory.MOBILITY,475,710,3,
-            [{ key: "mobility_thrusters", rank: 1 }],
-            [{ stat: "speed_max", add_per_rank: 0.35 }]
-        ),
-
-        sc_player_upgrade_create(
-            "mobility_handling","MANEUVERING JETS",
-            "Increases turning speed by 0.4 per rank.",
-            UpgradeCategory.MOBILITY,475,860,3,
-            [{ key: "mobility_velocity", rank: 1 }],
-            [{ stat: "turn_speed", add_per_rank: 0.4 }]
-        ),
-
-        // Cross-category hybrid nodes.
-        sc_player_upgrade_create(
-            "hybrid_overcharge","WEAPON OVERCHARGE",
-            "Combines weapon calibration and reactor output for greater damage and energy.",
-            UpgradeCategory.WEAPONS,680,225,1,
-            [
-                { key: "weapon_cycling", rank: 2 },
-                { key: "systems_reactor", rank: 2 }
-            ],
-            [
-                { stat: "damage_multiplier", multiply_per_rank: 0.08 },
-                { stat: "energy_max", add_per_rank: 60 }
-            ]
-        ),
-
-        sc_player_upgrade_create(
-            "hybrid_vector_armour","VECTOR ARMOUR",
-            "Improves armour and reduces dash recovery time.",
-            UpgradeCategory.DEFENCE,270,625,1,
-            [
-                { key: "defence_armour", rank: 2 },
-                { key: "mobility_velocity", rank: 2 }
-            ],
-            [
-                { stat: "armour_max", add_per_rank: 30 },
-                { stat: "dash_cooldown", add_per_rank: -10 }
-            ]
-        ),
-
-        sc_player_upgrade_create(
-            "hybrid_expedition","EXPEDITION MATRIX",
-            "Combines mobility and industrial systems for extended operations.",
-            UpgradeCategory.SYSTEMS,680,625,1,
-            [
-                { key: "mobility_handling", rank: 2 },
-                { key: "systems_cargo", rank: 2 }
-            ],
-            [
-                { stat: "fuel_max", add_per_rank: 150 },
-                { stat: "resource_yield_multiplier", multiply_per_rank: 0.08 }
-            ]
-        )
-    ];
+    static _upgrades = array_concat(
+        sc_player_upgrades_weapons_get(),
+        sc_player_upgrades_defence_get(),
+        sc_player_upgrades_systems_get(),
+        sc_player_upgrades_mobility_get(),
+        sc_player_upgrades_hybrid_get()
+    );
 
     return _upgrades;
 }

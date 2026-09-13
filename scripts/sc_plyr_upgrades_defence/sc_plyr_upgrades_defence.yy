@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_upgrades_defence",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_upgrades_defence",
+  "parent":{
+    "name":"upgrades",
+    "path":"folders/SCRIPTS---/PLAYER/upgrades.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
