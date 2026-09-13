@@ -99,8 +99,8 @@ function sc_asteroid_init(_asteroid,_create)
         },
 			
 		mining: {
-		    power_required: _definition.mining.power_required
-		},
+    strength_required: _definition.mining.strength_required
+},
 
         yield: {
             total: _yield,
@@ -148,26 +148,26 @@ function sc_asteroid_init(_asteroid,_create)
     return true;
 }
 
-/// @description Returns the extraction power supplied by the damage packet or player stats.
-function sc_asteroid_extraction_power_get(_packet)
+/// @description Returns the mining strength supplied by the extraction packet or player stats.
+function sc_asteroid_mining_strength_get(_packet)
 {
     if (!is_struct(_packet.extraction))
         return 0;
 
-    var _power = variable_struct_exists(_packet.extraction,"power")
-        ? max(0,_packet.extraction.power)
+    var _strength = variable_struct_exists(_packet.extraction,"strength")
+        ? max(0,_packet.extraction.strength)
         : 0;
 
     if (_packet.source.faction == Faction.PLAYER
     && instance_exists(_packet.source.owner_id))
     {
-        _power = max(
-            _power,
-            _packet.source.owner_id.ship.stats.final.mining_power
+        _strength = max(
+            _strength,
+            _packet.source.owner_id.ship.stats.final.mining_strength
         );
     }
 
-    return _power;
+    return _strength;
 }
 
 /// @description Returns the yield multiplier supplied by the damage source and extraction method.
@@ -260,7 +260,7 @@ function sc_asteroid_yield_emit(
 /// @description Adds recoverable extraction progress from one mining hit.
 function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
 {
-    if (sc_asteroid_extraction_power_get(_packet) <= 0)
+    if (sc_asteroid_mining_strength_get(_packet) <= 0)
         return 0;
 
     var _data = _asteroid.asteroid;
@@ -287,7 +287,7 @@ function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
 /// @description Releases final recoverable yield only when destroyed through extraction.
 function sc_asteroid_yield_destruction_release(_asteroid,_packet)
 {
-    if (sc_asteroid_extraction_power_get(_packet) <= 0)
+    if (sc_asteroid_mining_strength_get(_packet) <= 0)
         return 0;
 
     var _yield = _asteroid.asteroid.yield;

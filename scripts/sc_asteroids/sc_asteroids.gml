@@ -41,6 +41,7 @@ function sc_asteroid_register_rock()
     return sc_asteroid_register({
         identity: { key: "asteroid_rock", name: "Rock Asteroid" },
         item_key: "item_rock",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 0.7, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(8, 8, 8), dark: make_colour_rgb(28, 27, 25),
@@ -57,6 +58,7 @@ function sc_asteroid_register_carbon()
     return sc_asteroid_register({
         identity: { key: "asteroid_carbon", name: "Carbon Asteroid" },
         item_key: "item_carbon",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 0.85, yield_multiplier: 1.2 },
         palette: {
             void: make_colour_rgb(6, 8, 10), dark: make_colour_rgb(18, 22, 25),
@@ -72,6 +74,7 @@ function sc_asteroid_register_iron()
     return sc_asteroid_register({
         identity: { key: "asteroid_iron", name: "Iron Asteroid" },
         item_key: "item_iron",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 1.2, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(10, 11, 13), dark: make_colour_rgb(31, 34, 38),
@@ -87,6 +90,7 @@ function sc_asteroid_register_copper()
     return sc_asteroid_register({
         identity: { key: "asteroid_copper", name: "Copper Asteroid" },
         item_key: "item_copper",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 1, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(14, 8, 6), dark: make_colour_rgb(43, 25, 19),
@@ -106,7 +110,7 @@ function sc_asteroid_register_silicon()
         },
 
         item_key: "item_silicon",
-
+		mining: { strength_required: 1 },
         stats: {
             health_multiplier: 1.05,
             yield_multiplier: 0.9
@@ -129,6 +133,7 @@ function sc_asteroid_register_titanium()
     return sc_asteroid_register({
         identity: { key: "asteroid_titanium", name: "Titanium Asteroid" },
         item_key: "item_titanium",
+		mining: { strength_required: 3 },
         stats: { health_multiplier: 1.55, yield_multiplier: 0.7 },
         palette: {
             void: make_colour_rgb(7, 10, 14), dark: make_colour_rgb(22, 31, 42),
@@ -144,6 +149,7 @@ function sc_asteroid_register_crystal()
     return sc_asteroid_register({
         identity: { key: "asteroid_crystal", name: "Crystal Asteroid" },
         item_key: "item_crystal",
+		mining: { strength_required: 3 },
         stats: { health_multiplier: 1.1, yield_multiplier: 0.55 },
         palette: {
             void: make_colour_rgb(9, 7, 15), dark: make_colour_rgb(27, 22, 44),
@@ -159,6 +165,7 @@ function sc_asteroid_register_ice()
     return sc_asteroid_register({
         identity: { key: "asteroid_ice", name: "Ice Asteroid" },
         item_key: "item_ice",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 0.65, yield_multiplier: 1.3 },
         palette: {
             void: make_colour_rgb(6, 12, 18), dark: make_colour_rgb(21, 43, 57),
@@ -174,6 +181,7 @@ function sc_asteroid_register_sulfur()
     return sc_asteroid_register({
         identity: { key: "asteroid_sulfur", name: "Sulfur Asteroid" },
         item_key: "item_sulfur",
+		mining: { strength_required: 1 },
         stats: { health_multiplier: 0.9, yield_multiplier: 0.9 },
         palette: {
             void: make_colour_rgb(13,10,4), dark: make_colour_rgb(43,34,13),
@@ -193,7 +201,7 @@ function sc_asteroid_register_quartz()
         },
 
         item_key: "item_quartz",
-
+		mining: { strength_required: 2 },
         stats: {
             health_multiplier: 1,
             yield_multiplier: 0.85
@@ -220,7 +228,7 @@ function sc_asteroid_register_uranium()
         },
 
         item_key: "item_uranium",
-
+		mining: { strength_required: 4 },
         stats: {
             health_multiplier: 1.3,
             yield_multiplier: 0.55

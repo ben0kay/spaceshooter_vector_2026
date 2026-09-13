@@ -471,16 +471,16 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     return _result;
 }
 
-/// @description Applies damage, extraction requirements, modifier responses and damage stages.
+/// @description Applies damage, mining requirements, modifier responses and damage stages.
 function sc_asteroid_damage(_asteroid,_packet)
 {
     var _data = _asteroid.asteroid;
     var _health = _data.health;
-    var _extraction_power = sc_asteroid_extraction_power_get(_packet);
+    var _mining_strength = sc_asteroid_mining_strength_get(_packet);
 
-    // Extraction-capable attacks cannot damage materials above their power.
-    if (_extraction_power > 0
-    && _extraction_power < _data.mining.power_required)
+    // Mining attacks cannot damage materials above their extraction strength.
+    if (_mining_strength > 0
+    && _mining_strength < _data.mining.strength_required)
         return false;
 
     var _damage_amount = sc_damage_packet_amount_get(_packet);
@@ -517,7 +517,7 @@ function sc_asteroid_damage(_asteroid,_packet)
 
     _health.current -= _damage;
 
-    if (_extraction_power > 0)
+    if (_mining_strength > 0)
         sc_asteroid_yield_damage_add(_asteroid,_packet,_damage);
 
     var _ratio = _health.current/_health.maximum;

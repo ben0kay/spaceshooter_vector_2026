@@ -94,12 +94,15 @@ function sc_player_upgrades_get()
         ),
 
         sc_player_upgrade_create(
-            "systems_extraction","EXTRACTION ANALYSIS",
-            "Increases resources recovered from asteroids by 5% per rank.",
-            UpgradeCategory.SYSTEMS,475,-10,3,
-            [{ key: "systems_cargo", rank: 1 }],
-            [{ stat: "resource_yield_multiplier", multiply_per_rank: 0.05 }]
-        ),
+		    "systems_extraction","EXTRACTION ANALYSIS",
+		    "Increases mining strength and asteroid resource yield per rank.",
+		    UpgradeCategory.SYSTEMS,475,-10,3,
+		    [{ key: "systems_cargo", rank: 1 }],
+		    [
+		        { stat: "mining_strength", add_per_rank: 1 },
+		        { stat: "resource_yield_multiplier", multiply_per_rank: 0.05 }
+		    ]
+		),
 
         // Mobility branch: down.
         sc_player_upgrade_create(
