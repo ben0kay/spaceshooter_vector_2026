@@ -122,7 +122,7 @@ function sc_hud_transfer_experience_create(
     return instance_create_depth(
         0,
         0,
-        -100000,
+        -10000,
         o_hud_transfer,
         {
             transfer_create: {
