@@ -763,12 +763,36 @@ function sc_player_upgrades_canvas_draw(_hud)
     draw_set_valign(fa_top);
 }
 
-/// @description Draws the clipped pannable upgrade tree and fixed inspector.
+/// @description Draws the clipped upgrade tree over a clean tab background.
 function sc_player_upgrades_interface_draw(_hud,_origin_x,_origin_y)
 {
     var _runtime = _hud.inventory.upgrades;
     var _view = _runtime.view;
     var _palette = _hud.data.palette;
+    var _inventory = _hud.data.inventory;
+
+    // Hide the Cargo-specific artwork baked into inventory_body.
+    draw_set_alpha(1);
+    draw_set_colour(_palette.background);
+
+    draw_rectangle(
+        _origin_x + 18,
+        _origin_y + 145,
+        _origin_x + _inventory.width - 18,
+        _origin_y + _inventory.height - 18,
+        false
+    );
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.55);
+
+    draw_rectangle(
+        _origin_x + 18,
+        _origin_y + 145,
+        _origin_x + _inventory.width - 18,
+        _origin_y + _inventory.height - 18,
+        true
+    );
 
     if (!surface_exists(_runtime.surface))
         _runtime.surface = surface_create(_view.width,_view.height);
@@ -789,7 +813,6 @@ function sc_player_upgrades_interface_draw(_hud,_origin_x,_origin_y)
         );
     }
 
-    // The viewport border, title and inspector are not affected by pan/zoom.
     draw_set_colour(_palette.outline);
     draw_set_alpha(0.8);
 
@@ -823,6 +846,7 @@ function sc_player_upgrades_interface_draw(_hud,_origin_x,_origin_y)
     );
 
     draw_set_colour(_palette.muted);
+
     draw_text(
         _origin_x + 1055,
         _origin_y + 810,
@@ -831,7 +855,9 @@ function sc_player_upgrades_interface_draw(_hud,_origin_x,_origin_y)
         + "%"
     );
 
-    sc_player_upgrade_inspector_draw(_hud,_origin_x,_origin_y);
+    sc_player_upgrade_inspector_draw(
+        _hud,_origin_x,_origin_y
+    );
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
