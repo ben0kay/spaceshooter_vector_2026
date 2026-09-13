@@ -19,7 +19,7 @@ function sc_config_init()
 		            experience_per_packet: 10,
 		            packet_maximum: 10,
 		            packet_spawn_delay: 3,
-		            body_scale: 1
+		            body_scale: 0.75
 		        }
 		    },
 			
