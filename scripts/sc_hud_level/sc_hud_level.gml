@@ -30,6 +30,8 @@ function sc_hud_level_data()
             fuel: make_colour_rgb(20, 205, 218),
             dash: make_colour_rgb(105, 250, 255),
             cargo: make_colour_rgb(45, 225, 205),
+			experience: make_colour_rgb(155, 85, 255),
+			data_shard: make_colour_rgb(205, 145, 255),
 			
 			warning: make_colour_rgb(255, 170, 45),
 			danger: make_colour_rgb(255, 70, 85),
@@ -76,12 +78,20 @@ function sc_hud_level_data()
         },
 
         top: {
-            width: 960,
-            height: 54,
-            margin_top: 16,
-            effect_frames: 10,
-            effect_speed: 5
-        },
+		    width: 1320,
+		    height: 62,
+		    margin_top: 16,
+		    effect_frames: 10,
+		    effect_speed: 5,
+
+		    experience: {
+		        x: 132,
+		        y: 42,
+		        width: 240,
+		        height: 6,
+		        background_alpha: 0.22
+		    }
+		},
 
 		top_banner: {
     width: 640,
@@ -1092,96 +1102,151 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
     );
 }
 
-/// @description Draws credits, location and live navigation telemetry.
-function sc_hud_level_top_content_draw(_hud, _player, _x, _y)
+/// @description Draws the player's current experience progress.
+function sc_hud_level_experience_draw(_hud,_x,_y)
+{
+    var _data = _hud.data;
+    var _config = _data.top.experience;
+    var _palette = _data.palette;
+    var _progress = sc_player_level_progress_get();
+
+    var _left = _x + _config.x;
+    var _top = _y + _config.y;
+    var _right = _left + _config.width;
+    var _bottom = _top + _config.height;
+    var _filled = _left + _config.width * _progress.ratio;
+
+    draw_set_colour(_palette.experience);
+    draw_set_alpha(_config.background_alpha);
+    draw_rectangle(_left,_top,_right,_bottom,false);
+
+    if (_progress.ratio > 0)
+    {
+        gpu_set_blendmode(bm_add);
+
+        draw_set_colour(_palette.experience);
+        draw_set_alpha(0.9);
+        draw_rectangle(_left,_top,_filled,_bottom,false);
+
+        draw_set_colour(_palette.data_shard);
+        draw_set_alpha(0.32);
+        draw_rectangle(_left,_top - 2,_filled,_bottom + 2,false);
+
+        gpu_set_blendmode(bm_normal);
+    }
+
+    draw_set_colour(_palette.outline);
+    draw_set_alpha(0.75);
+    draw_rectangle(_left,_top,_right,_bottom,true);
+}
+
+/// @description Draws progression, currency, location and navigation telemetry.
+function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
 {
     var _data = _hud.data;
     var _runtime = _hud.runtime;
     var _palette = _data.palette;
-    var _centre_y = _y + _data.top.height * 0.5;
+    var _progression = global.profile.progression;
+    var _experience = sc_player_level_progress_get();
     var _pulse = _runtime.credit_pulse;
 
-    draw_set_valign(fa_middle);
+    var _top_y = _y + 20;
+    var _bottom_y = _y + 45;
 
+    draw_set_valign(fa_middle);
+    draw_set_alpha(1);
+
+    // Persistent player progression.
+    draw_set_halign(fa_left);
+    draw_set_colour(_palette.core);
+    draw_text(
+        _x + 42,
+        _top_y,
+        "LVL " + string(_progression.level)
+    );
+
+    draw_set_colour(_palette.data_shard);
+    draw_text(
+        _x + 132,
+        _top_y,
+        "XP "
+        + string(_experience.current)
+        + " / "
+        + string(_experience.required)
+    );
+
+    draw_set_colour(_palette.data_shard);
+    draw_text(
+        _x + 400,
+        _top_y,
+        "DATA SHARDS // "
+        + string(_progression.data_shards)
+    );
+
+    // Credit gain pulse.
     if (_pulse > 0)
     {
         gpu_set_blendmode(bm_add);
+
         draw_set_colour(_palette.accent);
         draw_set_alpha(_pulse * 0.22);
-
         draw_rectangle(
-            _x + 48,
-            _y + 12,
-            _x + 147,
-            _y + _data.top.height - 12,
+            _x + 570,
+            _y + 10,
+            _x + 720,
+            _y + 32,
             false
         );
 
         gpu_set_blendmode(bm_normal);
     }
 
-    draw_set_alpha(1);
-    draw_set_halign(fa_center);
-    draw_set_colour(
-        _pulse > 0
-            ? _palette.core
-            : _palette.accent
-    );
-
-    var _credit_text =
-        "CR "
-        + string(floor(_runtime.credits_display));
+    var _credit_text = "CR " + string(floor(_runtime.credits_display));
 
     if (_runtime.credit_gain > 0 && _pulse > 0)
-    {
-        _credit_text +=
-            "  +"
-            + string(_runtime.credit_gain);
-    }
+        _credit_text += "  +" + string(_runtime.credit_gain);
 
-    draw_text(
-        _x + 98,
-        _centre_y,
-        _credit_text
-    );
+    draw_set_alpha(1);
+    draw_set_colour(_pulse > 0 ? _palette.core : _palette.accent);
+    draw_text(_x + 585,_top_y,_credit_text);
 
-    draw_set_halign(fa_left);
-    draw_set_colour(_palette.muted);
-
-    draw_text(
-        _x + 162,
-        _centre_y,
-        "AREA // "
-            + string_upper(room_get_name(room))
-    );
-
+    // Central HUD identity and current area.
     draw_set_halign(fa_center);
     draw_set_colour(_palette.core);
-
     draw_text(
         _x + _data.top.width * 0.5,
-        _centre_y,
-        "VECTOR NAVIGATION"
+        _bottom_y,
+        "AREA // " + string_upper(room_get_name(room))
     );
 
+    // Live navigation telemetry.
     var _navigation_text =
-        "X "
-        + string(round(_player.x))
-        + "  Y "
-        + string(round(_player.y))
-        + "  HDG "
-        + string(round(_player.draw_angle))
-        + "  SPD "
-        + string_format(_player.movement.speed, 1, 1);
+        "X " + string(round(_player.x))
+        + "  Y " + string(round(_player.y))
+        + "  HDG " + string(round(_player.draw_angle))
+        + "  SPD " + string_format(_player.movement.speed,1,1);
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
-
     draw_text(
-        _x + _data.top.width - 58,
-        _centre_y,
+        _x + _data.top.width - 42,
+        _bottom_y,
         _navigation_text
     );
+
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + _data.top.width - 42,
+        _top_y,
+        "VECTOR NAVIGATION"
+    );
+
+    sc_hud_level_experience_draw(_hud,_x,_y);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
 }
 
 /// @description Draws the complete permanent HUD in GUI space.
