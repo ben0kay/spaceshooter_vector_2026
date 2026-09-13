@@ -1,13 +1,23 @@
-/// @description Bursts briefly, travels towards the HUD and emits a residual trail.
+/// @description Delays activation, then travels and emits a residual trail.
+if (!transfer.spawned)
+{
+    transfer.spawn_delay--;
+
+    if (transfer.spawn_delay > 0)
+        exit;
+
+    transfer.spawned = true;
+    sc_particles_hud_transfer_burst_emit(transfer);
+}
+
 transfer.age++;
 transfer.remaining--;
 
-var _travel_time = transfer.life-transfer.launch_delay;
+var _travel_time = transfer.life - transfer.launch_delay;
 
 transfer.progress = clamp(
-    (transfer.age-transfer.launch_delay)/_travel_time,
-    0,
-    1
+    (transfer.age - transfer.launch_delay) / _travel_time,
+    0,1
 );
 
 transfer.travel = power(transfer.progress,1.35);

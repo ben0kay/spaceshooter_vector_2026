@@ -1,4 +1,4 @@
-/// @description Initializes one visual HUD transfer and its opening particle burst.
+/// @description Initializes one configurable delayed HUD transfer.
 transfer = {
     type: transfer_create.type,
     amount: transfer_create.amount,
@@ -10,6 +10,10 @@ transfer = {
     colour: transfer_create.colour,
     core_colour: transfer_create.core_colour,
     glow_colour: transfer_create.glow_colour,
+
+    spawn_delay: transfer_create.spawn_delay,
+    spawned: transfer_create.spawn_delay <= 0,
+    body_scale: transfer_create.body_scale,
 
     life: transfer_create.life,
     launch_delay: transfer_create.launch_delay,
@@ -27,4 +31,6 @@ transfer = {
 };
 
 depth = -15000;
-sc_particles_hud_transfer_burst_emit(transfer);
+
+if (transfer.spawned)
+    sc_particles_hud_transfer_burst_emit(transfer);

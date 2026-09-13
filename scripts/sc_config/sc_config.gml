@@ -13,6 +13,16 @@ function sc_config_init()
 		},
 		
         visual: {
+			
+			hud: {
+		        experience: {
+		            experience_per_packet: 10,
+		            packet_maximum: 10,
+		            packet_spawn_delay: 3,
+		            body_scale: 1
+		        }
+		    },
+			
             ship_motion: {
                 side_amount: 0.6, side_speed: 0.018,
                 forward_amount: 1.2, forward_speed: 0.012

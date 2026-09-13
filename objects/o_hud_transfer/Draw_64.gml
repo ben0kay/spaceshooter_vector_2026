@@ -1,22 +1,25 @@
-/// @description Draws the compact glowing XP packet and its amount.
+/// @description Draws the configurable compact XP packet and its amount.
+if (!transfer.spawned) exit;
+
 var _progress = transfer.progress;
 var _launch_progress = clamp(
     transfer.age / transfer.launch_delay,
     0,1
 );
 
+var _body_scale = transfer.body_scale;
 var _pulse = 0.9 + sin(GAME_TICK * 0.4) * 0.1;
-var _packet_scale = lerp(0.28,0.135,_progress) * _pulse;
+var _packet_scale = lerp(0.28,0.135,_progress) * _pulse * _body_scale;
 var _packet_alpha = lerp(0.35,1,_launch_progress);
 var _rotation = transfer.curve_variation + GAME_TICK * 3;
+var _blur_scale = lerp(1.88,1,_progress) * _body_scale;
 
 gpu_set_blendmode(bm_add);
 
 draw_sprite_ext(
     s_blur,0,
     transfer.x,transfer.y,
-    lerp(1.88,1,_progress),
-    lerp(1.88,1,_progress),
+    _blur_scale,_blur_scale,
     0,
     transfer.glow_colour,
     0.48 * _packet_alpha
@@ -35,8 +38,7 @@ draw_sprite_ext(
 draw_sprite_ext(
     s_particle_shard,0,
     transfer.x,transfer.y,
-    _packet_scale,
-    _packet_scale,
+    _packet_scale,_packet_scale,
     _rotation,
     transfer.core_colour,
     _packet_alpha
@@ -55,7 +57,7 @@ if (transfer.age > transfer.launch_delay
 
     draw_text(
         transfer.x,
-        transfer.y - 16,
+        transfer.y - 16 * _body_scale,
         "+" + string(transfer.amount) + " XP"
     );
 }

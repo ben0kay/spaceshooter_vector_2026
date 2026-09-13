@@ -81,20 +81,24 @@ function sc_hud_transfer_curve_position(_transfer,_progress)
     };
 }
 
-/// @description Returns the visual packet count for an experience reward.
+/// @description Returns the configured visual packet count for an XP reward.
 function sc_hud_transfer_experience_packet_count_get(_amount)
 {
-    if (_amount > 500) return 4;
-    if (_amount > 200) return 3;
-    if (_amount > 50) return 2;
-    return 1;
+    var _config = GCFG.visual.hud.experience;
+
+    return clamp(
+        ceil(_amount / max(1,_config.experience_per_packet)),
+        1,
+        _config.packet_maximum
+    );
 }
 
-/// @description Creates one scattered visual experience packet.
+/// @description Creates one configured, delayed visual experience packet.
 function sc_hud_transfer_experience_packet_create(
     _start,_target,_amount,_palette,_index,_packet_count
 )
 {
+    var _config = GCFG.visual.hud.experience;
     var _angle = random(360);
     var _distance = _packet_count > 1
         ? random_range(10,30)
@@ -144,8 +148,11 @@ function sc_hud_transfer_experience_packet_create(
                     0.55
                 ),
 
-                life: 60 + _index * 3,
-                launch_delay: 7 + _index * 2,
+                spawn_delay: _index * _config.packet_spawn_delay,
+                body_scale: _config.body_scale,
+
+                life: 60,
+                launch_delay: 7,
 
                 fragment_amount: _packet_count > 1 ? 6 : 8,
                 fragment_spread: 26,
