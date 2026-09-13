@@ -639,15 +639,9 @@ function sc_weapon_register_shard_demolition_rocket()
 
             // Direct impact can destroy the asteroid the rocket strikes.
             damage: {
-                amount: 35,
+                amount: 75,
                 type: DamageType.EXPLOSIVE,
                 effect: DamageEffect.STAGGER,
-
-                extraction: {
-                    efficiency: 0.15,
-                    yield_multiplier: 1,
-                    asteroid_damage_multiplier: 30
-                }
             },
 
             // Completely unguided.
@@ -658,7 +652,7 @@ function sc_weapon_register_shard_demolition_rocket()
                 scale: 7.5,
 
                 damage: {
-                    amount: 28,
+                    amount: 50,
                     type: DamageType.EXPLOSIVE,
                     effect: DamageEffect.STAGGER,
                     knockback_force: 12,

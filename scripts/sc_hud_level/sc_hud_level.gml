@@ -1002,6 +1002,64 @@ function sc_hud_level_value_draw(_origin_x, _origin_y, _cell, _label, _value, _p
     draw_set_alpha(1);
 }
 
+/// @description Draws compact primary, secondary and equipped-item names inside one HUD cell.
+function sc_hud_level_loadout_draw(
+    _origin_x,
+    _origin_y,
+    _cell,
+    _primary_name,
+    _secondary_name,
+    _equipment_name,
+    _palette
+)
+{
+    var _left = _origin_x + _cell.x;
+    var _name_x = _left + 62;
+    var _rows = [
+        { label: "PRI", name: _primary_name, colour: _palette.core },
+        { label: "SEC", name: _secondary_name, colour: _palette.text },
+        { label: "EQP", name: _equipment_name, colour: _palette.text }
+    ];
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_alpha(1);
+
+    for (var _i = 0; _i < array_length(_rows); ++_i)
+    {
+        var _row = _rows[_i];
+        var _row_y = _origin_y + 9 + _i*18;
+
+        draw_set_colour(_palette.muted);
+        draw_text(_left + 19,_row_y,_row.label);
+
+        draw_set_colour(_palette.accent);
+        draw_text(_left + 43,_row_y,"//");
+
+        draw_set_colour(_row.colour);
+        draw_text_transformed(
+            _name_x,
+            _row_y,
+            _row.name,
+            0.68,
+            0.68,
+            0
+        );
+    }
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.8);
+    draw_line_width(
+        _left + _cell.width*0.5 - 12,
+        _origin_y + 64,
+        _left + _cell.width*0.5 + 12,
+        _origin_y + 64,
+        2
+    );
+
+    draw_set_alpha(1);
+}
+
 /// @description Draws changing player data over the baked bottom HUD.
 function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
 {
@@ -1150,17 +1208,44 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
         _palette.cargo
     );
 
-    var _weapon = variable_struct_get(
-        global.data.weapons,
-        _player.ship.loadout.primary
-    );
+		var _loadout = _player.ship.loadout;
+		var _primary = variable_struct_get(
+		    global.data.weapons,
+		    _loadout.primary
+		);
 
-    sc_hud_level_value_draw(
-        _x, _y, _cells.weapon,
-        "PRIMARY WEAPON",
-        _weapon.identity.name,
-        _palette
-    );
+		var _secondary_name = "NONE";
+		var _equipment_name = "NONE";
+
+		if (!is_undefined(_loadout.secondary))
+		{
+		    var _secondary = variable_struct_get(
+		        global.data.weapons,
+		        _loadout.secondary
+		    );
+
+		    _secondary_name = _secondary.identity.name;
+		}
+
+		if (!is_undefined(_loadout.equipment))
+		{
+		    var _equipment = variable_struct_get(
+		        global.data.weapons,
+		        _loadout.equipment
+		    );
+
+		    _equipment_name = _equipment.identity.name;
+		}
+
+		sc_hud_level_loadout_draw(
+		    _x,
+		    _y,
+		    _cells.weapon,
+		    _primary.identity.name,
+		    _secondary_name,
+		    _equipment_name,
+		    _palette
+		);
 }
 
 /// @description Draws experience progress and its transfer-arrival pulse.
