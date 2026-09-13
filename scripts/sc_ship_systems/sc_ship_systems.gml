@@ -1,7 +1,7 @@
 /// @description Returns the standard internal-system foundation for a ship.
 
 
-/// @description Creates the player's persistent cargo and equipment foundation.
+/// @description Creates the player's persistent cargo, equipment and drone bay.
 function sc_player_inventory_create()
 {
     var _columns = 8;
@@ -10,7 +10,7 @@ function sc_player_inventory_create()
     return {
         columns: _columns,
         rows: _rows,
-        slots: array_create(_columns * _rows, undefined),
+        slots: array_create(_columns*_rows,undefined),
 
         equipment: {
             armour: {
@@ -27,15 +27,18 @@ function sc_player_inventory_create()
             auxiliary: undefined
         },
 
+        // Temporary three-slot test bay. Upgrade stats can control this later.
+        drone_bay: sc_player_drone_bay_create(3),
+
         installation: {
-		    active: false,
-		    replacing: false,
-		    slot: -1,
-		    item: undefined,
-		    duration: 0,
-		    remaining: 0,
-		    cancelled_remaining: 0
-		}
+            active: false,
+            replacing: false,
+            slot: -1,
+            item: undefined,
+            duration: 0,
+            remaining: 0,
+            cancelled_remaining: 0
+        }
     };
 }
 

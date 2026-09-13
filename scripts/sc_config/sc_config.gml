@@ -634,6 +634,13 @@ function sc_config_init()
 			    multiplier: 0.5,
 			    margin: 96
 			},
+				
+			radial: {
+                hold_threshold: 10,
+                double_tap_window: 15,
+                dock_offset_x: 145,
+                dock_offset_y: 0
+            },
 		},
 			
 		player_collision: {
@@ -666,17 +673,17 @@ function sc_input_init()
             move_down: vk_down,
 
             fire_primary: mb_left,
-			fire_secondary: mb_middle,
-			shield_focus: mb_right,
-			equipment: ord("Q"),
+            fire_secondary: mb_middle,
+            shield_focus: mb_right,
+            equipment: ord("Q"),
+            drone_command: vk_delete,
             inventory: ord("E"),
-			interact: ord("F"),
-			map: ord("M"),
+            interact: ord("F"),
+            map: ord("M"),
             dash: vk_shift,
-			
-			debug_enemy_spawn: vk_f1,
-			debug_weapon_test: vk_f2,
 
+            debug_enemy_spawn: vk_f1,
+            debug_weapon_test: vk_f2,
             fullscreen: vk_f11
         },
 
@@ -687,12 +694,16 @@ function sc_input_init()
             move_down: false,
 
             fire_primary: false,
-			fire_secondary: false,
-			shield_focus: false,
-			equipment_pressed: false,
+            fire_secondary: false,
+            shield_focus: false,
+            equipment_pressed: false,
 
-			primary_cycle: 0,
-			secondary_cycle: 0,
+            drone_command_held: false,
+            drone_command_pressed: false,
+            drone_command_released: false,
+
+            primary_cycle: 0,
+            secondary_cycle: 0,
 
             ui_select_held: false,
             ui_select_pressed: false,
@@ -700,14 +711,13 @@ function sc_input_init()
 
             fullscreen_pressed: false,
             inventory_pressed: false,
-			interact_pressed: false,
+            interact_pressed: false,
             dash_held: false,
             dash_pressed: false,
-			
-			debug_enemy_spawn_pressed: false,
-			debug_weapon_test_pressed: false,
-			
-			map_pressed: false,
+
+            debug_enemy_spawn_pressed: false,
+            debug_weapon_test_pressed: false,
+            map_pressed: false
         }
     };
 
@@ -720,25 +730,46 @@ function sc_input_update()
     var _binding = global.input.binding;
     var _action = global.input.action;
 
-    _action.fullscreen_pressed = keyboard_check_pressed(_binding.fullscreen);
+    _action.fullscreen_pressed =
+        keyboard_check_pressed(_binding.fullscreen);
 
     _action.move_left = keyboard_check(_binding.move_left);
     _action.move_right = keyboard_check(_binding.move_right);
     _action.move_up = keyboard_check(_binding.move_up);
     _action.move_down = keyboard_check(_binding.move_down);
 
-    _action.fire_primary = mouse_check_button(_binding.fire_primary);
-    _action.fire_secondary = mouse_check_button(_binding.fire_secondary);
-    _action.shield_focus = mouse_check_button(_binding.shield_focus);
-    _action.equipment_pressed = keyboard_check_pressed(_binding.equipment);
-	_action.map_pressed = keyboard_check_pressed(_binding.map);
+    _action.fire_primary =
+        mouse_check_button(_binding.fire_primary);
+
+    _action.fire_secondary =
+        mouse_check_button(_binding.fire_secondary);
+
+    _action.shield_focus =
+        mouse_check_button(_binding.shield_focus);
+
+    _action.equipment_pressed =
+        keyboard_check_pressed(_binding.equipment);
+
+    _action.drone_command_held =
+        keyboard_check(_binding.drone_command);
+
+    _action.drone_command_pressed =
+        keyboard_check_pressed(_binding.drone_command);
+
+    _action.drone_command_released =
+        keyboard_check_released(_binding.drone_command);
+
+    _action.map_pressed =
+        keyboard_check_pressed(_binding.map);
 
     _action.primary_cycle = 0;
     _action.secondary_cycle = 0;
 
-    var _wheel = mouse_wheel_down() - mouse_wheel_up();
+    var _wheel = mouse_wheel_down()-mouse_wheel_up();
 
-    if (_wheel != 0 && !keyboard_check(vk_control))
+    if (_wheel != 0
+    && !keyboard_check(vk_control)
+    && !_action.drone_command_held)
     {
         if (keyboard_check(vk_shift))
             _action.secondary_cycle = _wheel;
@@ -750,11 +781,18 @@ function sc_input_update()
     _action.ui_select_pressed = mouse_check_button_pressed(mb_left);
     _action.ui_select_released = mouse_check_button_released(mb_left);
 
-    _action.inventory_pressed = keyboard_check_pressed(_binding.inventory);
-    _action.interact_pressed = keyboard_check_pressed(_binding.interact);
+    _action.inventory_pressed =
+        keyboard_check_pressed(_binding.inventory);
+
+    _action.interact_pressed =
+        keyboard_check_pressed(_binding.interact);
+
     _action.dash_held = keyboard_check(_binding.dash);
     _action.dash_pressed = keyboard_check_pressed(_binding.dash);
 
-    _action.debug_enemy_spawn_pressed = keyboard_check_pressed(_binding.debug_enemy_spawn);
-    _action.debug_weapon_test_pressed = keyboard_check_pressed(_binding.debug_weapon_test);
+    _action.debug_enemy_spawn_pressed =
+        keyboard_check_pressed(_binding.debug_enemy_spawn);
+
+    _action.debug_weapon_test_pressed =
+        keyboard_check_pressed(_binding.debug_weapon_test);
 }

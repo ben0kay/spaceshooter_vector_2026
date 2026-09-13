@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_rocket_salvo",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_rocket_salvo",
+  "parent":{
+    "name":"projectiles",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/projectiles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

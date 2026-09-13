@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_ship_select",
   "parent":{
-    "name":"SCRIPTS---",
-    "path":"folders/SCRIPTS---.yy",
+    "name":"PLAYER",
+    "path":"folders/SCRIPTS---/PLAYER.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

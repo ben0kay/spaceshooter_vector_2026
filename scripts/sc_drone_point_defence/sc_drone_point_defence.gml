@@ -178,13 +178,14 @@ function sc_drone_point_defence_fire(_drone,_target)
     return true;
 }
 
-/// @description Sends an expired point-defence drone back to its owner.
+/// @description Sends an expired point-defence drone back to its reserved slot.
 function sc_drone_point_defence_return_begin(_drone)
 {
     var _data = _drone.drone;
 
     _data.state = DroneState.RETURNING;
     _data.target_id = noone;
+    sc_player_drone_return_begin(_drone);
     return true;
 }
 
@@ -209,7 +210,7 @@ function sc_drone_point_defence_update(_drone)
             _return_speed
         ))
         {
-            // Restore its future drone-rack slot here.
+            sc_player_drone_return_complete(_drone);
             instance_destroy(_drone);
         }
 
@@ -255,6 +256,10 @@ function sc_drone_point_defence_update(_drone)
             _data.movement.speed
         );
     }
+    else
+    {
+        sc_drone_point_defence_patrol_choose(_drone);
+    }
 
     if (!sc_drone_point_defence_target_valid(
         _drone,
@@ -262,18 +267,14 @@ function sc_drone_point_defence_update(_drone)
     ))
         _data.target_id = noone;
 
-    if (!instance_exists(_data.target_id)
-    && GAME_TICK >= _runtime.next_scan_tick)
+    if (GAME_TICK >= _runtime.next_scan_tick)
     {
-        _data.target_id =
-            sc_drone_point_defence_target_find(_drone);
-
         _runtime.next_scan_tick =
             GAME_TICK
-            +max(
-                1,
-                round(_definition.targeting.scan_interval)
-            );
+            +max(1,_definition.targeting.scan_interval);
+
+        _data.target_id =
+            sc_drone_point_defence_target_find(_drone);
     }
 
     if (instance_exists(_data.target_id))
@@ -392,7 +393,7 @@ function sc_drone_point_defence_draw(_drone)
     draw_set_colour(c_white);
 }
 
-/// @description Creates or recalls one deployed point-defence drone.
+/// @description Deploys the next docked physical point-defence drone.
 function sc_drone_point_defence_deploy(
     _delivery,
     _source,
@@ -404,22 +405,18 @@ function sc_drone_point_defence_deploy(
 {
     var _owner = _source.owner_id;
     var _drone_key = _delivery.drone.key;
-    var _amount = instance_number(o_drone);
+    var _slot_index = sc_player_drone_docked_find(
+        _owner,
+        _drone_key
+    );
 
-    // Pressing Q again recalls the currently active drone.
-    for (var _i = 0; _i < _amount; ++_i)
-    {
-        var _existing = instance_find(o_drone,_i);
+    if (_slot_index < 0)
+        return noone;
 
-        if (_existing.drone.key == _drone_key
-        && _existing.drone.owner_id == _owner)
-        {
-            if (_existing.drone.state != DroneState.RETURNING)
-                sc_drone_point_defence_return_begin(_existing);
-
-            return _existing;
-        }
-    }
+    var _payload = sc_player_drone_deploy_begin(
+        _owner,
+        _slot_index
+    );
 
     var _drone = instance_create_layer(
         _x,
@@ -429,19 +426,34 @@ function sc_drone_point_defence_deploy(
         {
             drone_create: {
                 key: _drone_key,
-                owner_id: _owner
+                owner_id: _owner,
+                slot_index: _slot_index,
+                payload: _payload
             }
         }
     );
 
     if (!instance_exists(_drone))
+    {
+        sc_player_drone_deploy_cancel(
+            _owner,
+            _slot_index,
+            _payload
+        );
+
         return noone;
+    }
+
+    sc_player_drone_deploy_complete(
+        _owner,
+        _slot_index,
+        _drone
+    );
 
     var _data = _drone.drone;
     var _definition = _data.definition;
 
     _data.state = DroneState.WORKING;
-
     _data.runtime.life_remaining =
         max(1,round(_definition.lifetime.duration));
 

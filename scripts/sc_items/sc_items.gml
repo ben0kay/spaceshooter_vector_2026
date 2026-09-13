@@ -370,7 +370,7 @@ function sc_item_register_all()
         module: { slot: ModuleSlot.TARGETING, effectiveness: 1, install_duration: 300 },
         visual: { colour: make_colour_rgb(71,115,132), glow: make_colour_rgb(38,231,243), draw_script: sc_item_plate_primitive_draw }
     })
-        && sc_item_register({
+    && sc_item_register({
         identity: { key: "item_scanning_drone", name: "Scanning Drone" },
         layer: ItemLayer.PRODUCT,
         type: ItemType.DRONE,
@@ -396,7 +396,8 @@ function sc_item_register_all()
         cargo: { weight: 12, stack_max: 4 },
 
         drone: {
-            key: "drone_player_point_defence"
+            key: "drone_player_point_defence",
+            equipment_key: "equipment_point_defence_drone"
         },
 
         visual: {

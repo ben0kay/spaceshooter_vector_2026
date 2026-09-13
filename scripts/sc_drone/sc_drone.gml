@@ -5,7 +5,7 @@ The generic drone object resolves a registered definition and delegates
 role-specific behaviour through update and draw callbacks.
 */
 
-/// @description Initializes one deployed registered and damageable drone.
+/// @description Initializes a registered drone with optional persistent condition.
 function sc_drone_init(_drone,_create)
 {
     if (!is_struct(_create)
@@ -19,8 +19,29 @@ function sc_drone_init(_drone,_create)
         _create.key
     );
 
-    var _armour = max(0,_definition.defence.armour);
-    var _hull = max(1,_definition.defence.hull);
+    var _payload = variable_struct_exists(_create,"payload")
+        ? _create.payload
+        : undefined;
+
+    var _slot_index = variable_struct_exists(_create,"slot_index")
+        ? _create.slot_index
+        : -1;
+
+    var _armour_max = is_struct(_payload)
+        ? _payload.condition.armour.maximum
+        : max(0,_definition.defence.armour);
+
+    var _armour_current = is_struct(_payload)
+        ? clamp(_payload.condition.armour.current,0,_armour_max)
+        : _armour_max;
+
+    var _hull_max = is_struct(_payload)
+        ? _payload.condition.hull.maximum
+        : max(1,_definition.defence.hull);
+
+    var _hull_current = is_struct(_payload)
+        ? clamp(_payload.condition.hull.current,1,_hull_max)
+        : _hull_max;
 
     _drone.draw_angle = 0;
     _drone.health_bar = sc_health_bar_create(false);
@@ -41,12 +62,24 @@ function sc_drone_init(_drone,_create)
 
         defence: {
             shield: { current: 0, maximum: 0 },
-            armour: { current: _armour, maximum: _armour },
-            hull: { current: _hull, maximum: _hull }
+            armour: {
+                current: _armour_current,
+                maximum: _armour_max
+            },
+
+            hull: {
+                current: _hull_current,
+                maximum: _hull_max
+            }
         },
 
         movement: {
             speed: _definition.movement.speed
+        },
+
+        deployment: {
+            slot_index: _slot_index,
+            payload: _payload
         },
 
         runtime: {
@@ -99,7 +132,7 @@ function sc_drone_damage(_drone,_packet,_impact = undefined)
     return _result;
 }
 
-/// @description Destroys one drone and runs its optional cleanup callback.
+/// @description Destroys one drone and permanently consumes its physical payload.
 function sc_drone_die(_drone,_packet = undefined)
 {
     var _data = _drone.drone;
@@ -111,6 +144,8 @@ function sc_drone_die(_drone,_packet = undefined)
 
         if (!is_undefined(_behaviour.destroy_script))
             _behaviour.destroy_script(_drone);
+
+        sc_player_drone_destroy_complete(_drone);
     }
 
     sc_world_feedback_create(

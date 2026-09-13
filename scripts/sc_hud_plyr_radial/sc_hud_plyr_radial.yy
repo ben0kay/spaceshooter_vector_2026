@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_ship_systems",
+  "%Name":"sc_hud_plyr_radial",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_ship_systems",
+  "name":"sc_hud_plyr_radial",
   "parent":{
-    "name":"PLAYER",
-    "path":"folders/SCRIPTS---/PLAYER.yy",
+    "name":"HUD",
+    "path":"folders/SCRIPTS---/HUD.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

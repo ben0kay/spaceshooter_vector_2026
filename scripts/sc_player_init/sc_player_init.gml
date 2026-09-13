@@ -118,16 +118,31 @@ function sc_player_init_resources(_player)
     };
 }
 
-/// @description Creates the starting inventory and initial campaign items.
+/// @description Creates starting cargo and fills the temporary test drone bay.
 function sc_player_init_inventory(_player)
 {
     _player.inventory = sc_player_inventory_create();
+
     sc_player_inventory_add(
         _player,
         "item_scanning_drone",
         3,
         ItemGrade.COMMON
     );
+
+    var _slots = _player.inventory.drone_bay.slots;
+
+    for (var _i = 0; _i < array_length(_slots); ++_i)
+    {
+        sc_player_drone_slot_fill(
+            _player,
+            _i,
+            sc_player_drone_item_create(
+                "item_point_defence_drone",
+                ItemGrade.COMMON
+            )
+        );
+    }
 }
 
 /// @description Creates player movement, boost and dash runtime values.
@@ -184,7 +199,7 @@ function sc_player_weapon_runtime_create()
     };
 }
 
-/// @description Creates player weapon-channel, heat and focused-shield runtime values.
+/// @description Creates player weapon channels and combat runtime values.
 function sc_player_init_combat(_player)
 {
     _player.combat = {
@@ -193,6 +208,14 @@ function sc_player_init_combat(_player)
         primary: sc_player_weapon_runtime_create(),
         secondary: sc_player_weapon_runtime_create(),
         equipment: sc_player_weapon_runtime_create(),
+        drone: sc_player_weapon_runtime_create(),
+
+        radial: {
+            open: false,
+            hold_frames: 0,
+            tap_remaining: 0,
+            block_combat: false
+        },
 
         debug_weapon: {
             enabled: false,

@@ -431,25 +431,57 @@ function sc_player_control_suspend(_player)
     _player.combat.weapons_allowed = false;
 }
 
-/// @description Updates active player movement, weapons and abilities.
+/// @description Updates active player movement, radial selection and combat.
 function sc_player_update_active(_player)
 {
     sc_player_input_update(_player);
     sc_player_aim_update(_player);
-    sc_player_weapon_selection_update(_player);
+
+    var _radial_block =
+        sc_player_radial_command_update(_player);
+
+    if (!_radial_block)
+        sc_player_weapon_selection_update(_player);
 
     if (sc_player_dash_input_update(_player))
     {
-        sc_player_continuous_weapons_release(_player);
+        sc_player_combat.radial.open = false;
+        sc_player_combat.radial.hold_frames = 0;
+        sc_player_combat.radial.block_combat = false;
+
+        sc_player_weapon_runtime_release(
+            _player.combat.drone
+        );
+
+        sc_player_combat_permission_update(_player);
         sc_player_update_dashing(_player);
         return;
     }
 
     sc_player_normal_movement_update(_player);
     sc_player_combat_permission_update(_player);
-    sc_player_primary_weapon_update(_player);
-    sc_player_secondary_weapon_update(_player);
-    sc_player_equipment_update(_player);
+
+    if (_radial_block)
+    {
+        sc_player_weapon_runtime_release(
+            _player.combat.primary
+        );
+
+        sc_player_weapon_runtime_release(
+            _player.combat.secondary
+        );
+
+        sc_player_weapon_runtime_release(
+            _player.combat.equipment
+        );
+    }
+    else
+    {
+        sc_player_primary_weapon_update(_player);
+        sc_player_secondary_weapon_update(_player);
+        sc_player_equipment_update(_player);
+    }
+
     sc_player_visual_update(_player);
 }
 
@@ -688,7 +720,6 @@ function sc_player_shield_focus_update(_player)
     _focus.active = true;
     return true;
 }
-
 
 /// @description Processes one player death immediately and disables the gameplay instance.
 function sc_player_die(_player, _packet)
