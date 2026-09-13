@@ -1,0 +1,352 @@
+RESOURCE / CRAFTING EXPANSION IDEAS
+
+Goal:
+Build a richer IndustrialCraft / Galacticraft / ARK-like production chain where asteroid resources have clear identities and feed ship systems, ammunition, modules, drones and machinery.
+
+CORE DESIGN PRINCIPLE
+RAW -> MATERIAL -> PART -> PRODUCT
+
+Each resource should have a recognizable gameplay identity so the player learns what finding that asteroid means.
+
+CURRENT + PROPOSED RESOURCE ROLES
+
+| Resource   | Refined Material              | Manufactured Parts                     | Main Gameplay Uses                         |
+|------------|-------------------------------|----------------------------------------|--------------------------------------------|
+| Iron       | Refined Iron / Steel Alloy    | Plates, housings, shafts               | Hull, machinery, weapons                   |
+| Copper     | Refined Copper                | Wire, coils, contacts                  | Electronics, motors, shields               |
+| Carbon     | Industrial Carbon / Composite | Carbon panels, brushes                 | Lightweight armour, motors, ammo           |
+| Silicon    | Silicon Wafer                 | Circuits, processors                   | Targeting, drones, automation              |
+| Sulfur     | Industrial Sulfur             | Propellant, explosive compound         | Bullets, rockets, mines                    |
+| Quartz     | Optical Quartz                | Lenses, fibre optics                   | Lasers, scanners, targeting                |
+| Titanium   | Titanium Alloy                | Reinforced frames, turbine blades      | Advanced armour, thrusters                 |
+| Crystal    | Resonant Crystal              | Resonator, energy focusing matrix      | Shields, plasma, energy weapons            |
+| Ice        | Volatiles / Coolant           | Coolant cells, fuel feed               | Fuel, reactor cooling, life support        |
+| Uranium    | Enriched Uranium              | Fuel rods, reactor pellets             | High-output reactors                       |
+| Nickel     | Refined Nickel                | Superalloy casing, turbine assembly    | Engines, reactors                          |
+| Lithium    | Lithium Compound              | Battery cell, capacitor bank           | Shields, energy storage, drones            |
+| Cobalt     | Refined Cobalt                | Magnetic core, high-temp alloy         | Motors, reactors, shields                  |
+| Tungsten   | Refined Tungsten              | Penetrator, heat shield                | Kinetic weapons, heavy armour              |
+| Platinum   | Refined Platinum              | Precision contacts, catalyst           | Advanced electronics, reactors             |
+| Iridium    | Iridium Matrix                | Exotic containment components         | Endgame / exotic energy tech               |
+
+RESOURCE IDENTITY SUMMARY
+
+IRON      = structure
+COPPER    = electricity
+CARBON    = composites
+SILICON   = electronics
+SULFUR    = explosives
+ICE       = fuel / cooling
+QUARTZ    = optics
+TITANIUM  = advanced structure
+CRYSTAL   = energy tech
+URANIUM   = reactors
+NICKEL    = engines
+LITHIUM   = batteries
+COBALT    = magnetics
+TUNGSTEN  = heavy weapons
+PLATINUM  = precision tech
+IRIDIUM   = exotic / endgame
+
+QUARTZ / OPTICS CHAIN
+
+Quartz Deposit
+ -> Optical Quartz
+ -> Optical Lens
+ -> Focusing Lens
+ -> Laser Emitter / Radar Array / Scanner / Missile Guidance Sensor / Beam Weapon
+
+Suggested Radar Array recipe later:
+- 1 Circuit Board
+- 1 Optical Lens
+- 2 Copper Wire
+- 1 Iron Plate
+
+URANIUM / REACTOR CHAIN
+
+Uranium Ore
+ -> Enriched Uranium
+ -> Fuel Pellet
+ -> Reactor Fuel Rod
+
+Reactor Module example:
+- Titanium Alloy
+- Copper Coil
+- Circuit Board
+- Reactor Fuel Rod
+- Coolant Cell
+
+Possible reactor products:
+- Compact Reactor
+- Industrial Reactor
+- Overcharged Reactor
+- Shield Reactor
+- Prototype Resonance Reactor
+
+ICE / VOLATILES CHAIN
+
+Ice
+ -> Separated Volatiles
+    -> Hydrogen Fuel
+    -> Coolant
+    -> Oxidizer
+
+Coolant uses:
+- Coolant Cell
+- Reactor Cooling Assembly
+- Weapon Cooling System
+
+Hydrogen Fuel uses:
+- Fuel Cell
+- Thruster Fuel
+
+Oxidizer + sulfur compounds:
+- Rocket Propellant
+
+SULFUR / AMMUNITION CHAIN
+
+Sulfur Deposit
+ -> Industrial Sulfur
+ -> Propellant Compound
+    -> Bullet Propellant
+    -> Rocket Propellant
+    -> Mine Charge
+    -> Explosive Compound
+
+Ammunition product ideas:
+- Bullet Crate = Steel + Propellant
+- Armour-Piercing Ammo = Tungsten Penetrator + Propellant
+- Rocket Warhead = Steel Casing + Explosive Compound
+- Rocket Motor = Fuel + Copper + Steel
+- Missile = Warhead + Rocket Motor + Guidance Unit
+- Mine = Explosive Compound + Circuit Board + Steel Casing
+
+LITHIUM / BATTERY CHAIN
+
+Lithium Ore
+ -> Lithium Compound
+ -> Battery Cell
+ -> Battery Pack
+
+Battery Pack possible recipe:
+- Lithium Cells
+- Copper Wire
+- Circuit Board
+- Carbon Composite
+
+Battery uses:
+- Shield modules
+- Drones
+- EMP devices
+- Backup power
+- Auxiliary reactor modules
+- Mines
+- Scanners
+
+Advanced electrical storage:
+Battery Cells + Copper Coil + Circuit Board + Resonant Crystal
+ -> Capacitor Bank
+
+Capacitor uses:
+- Shield recharge
+- Plasma weapons
+- Beam weapons
+- Dash systems
+- Energy buffer modules
+
+COIL FAMILY
+
+Copper Coil
+ -> Magnetic Coil
+ -> Field Coil / Induction Coil / Resonance Coil
+
+Uses:
+- Copper Coil = motors, basic reactors
+- Magnetic Coil = shields, railguns, generators
+- Field Coil = shield emitters, tractor systems
+- Induction Coil = high-performance thrusters
+- Resonance Coil = plasma / exotic energy systems
+
+MECHANICAL PART EXPANSION
+
+| Part               | Example Inputs                 | Used In                         |
+|--------------------|--------------------------------|---------------------------------|
+| Bearing Assembly   | Steel Alloy                    | Motors, turrets, thrusters      |
+| Servo              | Motor + Circuit Board          | Turrets, drones                 |
+| Actuator           | Motor + Steel                  | Mining systems, weapon mounts   |
+| Pump               | Motor + Iron + Copper          | Fuel / coolant systems          |
+| Turbine            | Titanium Alloy + Bearings      | Thrusters, reactors             |
+| Gyroscope          | Motor + Circuit Board          | Drones, ship handling           |
+| Pressure Vessel    | Steel Alloy                    | Tanks, reactors                 |
+| Heat Sink          | Copper + Carbon                | Weapons, reactors               |
+| Radiator Assembly  | Copper + Titanium              | High-output systems             |
+| Fuel Injector      | Copper + Steel + Precision part| Thrusters                       |
+
+Thruster Module example:
+- 1 Turbine
+- 1 Motor
+- 2 Titanium Alloy
+- 1 Pump
+- 2 Copper Wire
+- 1 Fuel Injector
+
+ELECTRONICS EXPANSION
+
+Copper Wire
+Silicon Wafer
+Circuit Board
+ -> Processor
+ -> Control Unit
+
+Additional parts:
+- Processor Core = AI, drones, targeting
+- Guidance Unit = rockets / missiles
+- Sensor Package = radar / scanners
+- Control Unit = modules / thrusters
+- Power Regulator = reactors / shields
+- Signal Amplifier = radar / communications
+- Resonance Controller = high-end energy systems
+- Precision Contacts = advanced electrical assemblies
+- Optical Lens = targeting / sensors / beam weapons
+
+SHIELD CRAFTING
+
+Basic Shield Generator example:
+- 2 Copper Coil
+- 1 Capacitor Bank
+- 1 Circuit Board
+- 1 Resonant Crystal
+- 1 Steel Alloy
+
+Advanced Shield Array example:
+- 2 Field Coils
+- 2 Capacitor Banks
+- 1 Resonant Crystal
+- 1 Titanium Frame
+- 1 Power Regulator
+
+Shield archetypes:
+- High Capacity: more shield, slower recharge
+- Rapid Cycling: lower capacity, faster recharge
+- Deflector: kinetic-focused protection
+- Thermal Barrier: thermal-focused protection
+- Prototype Resonance Shield: expensive crystal-heavy variant
+
+ARMOUR FAMILIES
+
+Iron Plate
+ -> Armour Plate
+
+Carbon Composite
+ -> Lightweight Armour
+
+Steel Alloy
+ -> Reinforced Armour
+
+Titanium Alloy
+ -> Titanium Armour
+
+Tungsten + Titanium
+ -> Heavy Ablative Armour
+
+Material determines module archetype.
+Crafted grade determines quality:
+COMMON -> IMPROVED -> ADVANCED -> SUPERIOR -> PROTOTYPE
+
+DRONE EXPANSION
+
+| Drone                 | Core Special Components                  |
+|-----------------------|------------------------------------------|
+| Scanning Drone        | Sensor Package + Processor               |
+| Mining Drone          | Drill Head + Motor + Cargo Unit          |
+| Repair Drone          | Actuator + Repair Tool + Battery         |
+| Combat Drone          | Weapon Mount + Targeting Processor       |
+| Shield Drone          | Capacitor + Field Coil                   |
+| Salvage Drone         | Tractor Emitter + Cargo Clamp            |
+| Missile Defence Drone | Radar + Rapid Weapon                     |
+| Decoy Drone           | Signal Amplifier + Battery               |
+| Survey Drone          | Long-range Optics + Navigation Processor |
+
+RECOMMENDED NEW ASTEROID ORES
+
+1. Nickel
+   Early-mid game.
+   Engines, superalloys, reactor construction.
+
+2. Lithium
+   Mid game.
+   Batteries, capacitors, shields, drones.
+
+3. Cobalt
+   Mid game.
+   Magnetics, motors, high-temperature systems.
+
+4. Tungsten
+   Mid-late game.
+   Heavy armour, penetrators, heat-resistant parts.
+
+5. Platinum
+   Late game.
+   Precision electronics, catalysts, advanced reactor components.
+
+6. Iridium
+   Very late / rare.
+   Exotic containment and prototype energy technology.
+
+Do not add too many extra periodic-table ores without a gameplay identity. Avoid ending up with many visually similar ingots the player cannot distinguish by purpose.
+
+EXAMPLE FULL SHIELD PRODUCTION JOURNEY
+
+Mine Lithium
+ -> refine Lithium Compound
+ -> build Battery Cells
+ -> build Capacitor Bank
+
+Mine Copper
+ -> refine Copper
+ -> build Copper Wire
+ -> build Magnetic Coil
+
+Mine Crystal
+ -> stabilize Resonant Crystal
+
+Mine Silicon
+ -> process Silicon Wafer
+ -> build Circuit Board
+ -> build Power Regulator
+
+Mine Titanium
+ -> refine Titanium
+ -> build Titanium Alloy
+
+Then assemble:
+SHIELD GENERATOR
+
+Final craft can roll a quality grade, e.g. SUPERIOR SHIELD GENERATOR.
+
+OVERALL DIRECTION
+
+The goal is not simply more ores. The goal is a large interconnected industrial catalogue where nearly every ship system visibly consumes manufactured components.
+
+Good content targets:
+- Armour
+- Shields
+- Reactors
+- Thrusters
+- Targeting systems
+- Utility systems
+- Auxiliary systems
+- Ammunition
+- Rockets / missiles / mines
+- Drones
+- Mining equipment
+- Scanners
+- Cooling systems
+- Fuel systems
+- Power storage
+- Beam / plasma components
+- Mechanical assemblies
+- Electronics
+- Advanced alloys
+
+This should make asteroid discovery meaningful because the player knows what each resource unlocks.
