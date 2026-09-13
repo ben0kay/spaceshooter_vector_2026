@@ -239,6 +239,7 @@
     {"id":{"name":"sc_player_stats","path":"scripts/sc_player_stats/sc_player_stats.yy",},},
     {"id":{"name":"sc_plyr_dash","path":"scripts/sc_plyr_dash/sc_plyr_dash.yy",},},
     {"id":{"name":"sc_plyr_draw","path":"scripts/sc_plyr_draw/sc_plyr_draw.yy",},},
+    {"id":{"name":"sc_plyr_drone_bay","path":"scripts/sc_plyr_drone_bay/sc_plyr_drone_bay.yy",},},
     {"id":{"name":"sc_plyr_functions","path":"scripts/sc_plyr_functions/sc_plyr_functions.yy",},},
     {"id":{"name":"sc_plyr_heat_signature","path":"scripts/sc_plyr_heat_signature/sc_plyr_heat_signature.yy",},},
     {"id":{"name":"sc_plyr_mining_beam","path":"scripts/sc_plyr_mining_beam/sc_plyr_mining_beam.yy",},},

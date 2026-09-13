@@ -370,11 +370,39 @@ function sc_item_register_all()
         module: { slot: ModuleSlot.TARGETING, effectiveness: 1, install_duration: 300 },
         visual: { colour: make_colour_rgb(71,115,132), glow: make_colour_rgb(38,231,243), draw_script: sc_item_plate_primitive_draw }
     })
-    && sc_item_register({
+        && sc_item_register({
         identity: { key: "item_scanning_drone", name: "Scanning Drone" },
-        layer: ItemLayer.PRODUCT, type: ItemType.DRONE,
+        layer: ItemLayer.PRODUCT,
+        type: ItemType.DRONE,
         description: "A compact autonomous drone equipped with short-range scanning equipment.",
         cargo: { weight: 8, stack_max: 5 },
-        visual: { colour: make_colour_rgb(86,142,156), glow: make_colour_rgb(0,235,245), draw_script: sc_item_plate_primitive_draw }
+
+        drone: {
+            key: "drone_scanner"
+        },
+
+        visual: {
+            colour: make_colour_rgb(86,142,156),
+            glow: make_colour_rgb(0,235,245),
+            draw_script: sc_item_plate_primitive_draw
+        }
+    })
+
+    && sc_item_register({
+        identity: { key: "item_point_defence_drone", name: "Point Defence Drone" },
+        layer: ItemLayer.PRODUCT,
+        type: ItemType.DRONE,
+        description: "An autonomous defensive drone designed to intercept hostile missiles and other durable projectiles.",
+        cargo: { weight: 12, stack_max: 4 },
+
+        drone: {
+            key: "drone_player_point_defence"
+        },
+
+        visual: {
+            colour: make_colour_rgb(58,125,145),
+            glow: make_colour_rgb(0,235,245),
+            draw_script: sc_item_plate_primitive_draw
+        }
     });
 }

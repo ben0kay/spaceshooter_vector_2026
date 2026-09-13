@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_plyr_drone_bay",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_plyr_drone_bay",
+  "parent":{
+    "name":"DRONE",
+    "path":"folders/SCRIPTS---/DRONE.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

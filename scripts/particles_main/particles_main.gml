@@ -268,7 +268,7 @@ function sc_particles_register_weapon_content()
 {
     var _keys = variable_struct_get_names(global.data.weapons);
 
-    for (var _i = 0; _i < array_length(_keys); _i++)
+    for (var _i = 0; _i < array_length(_keys); ++_i)
     {
         var _weapon = variable_struct_get(
             global.data.weapons,
@@ -289,6 +289,10 @@ function sc_particles_register_weapon_content()
             break;
 
             case AttackDelivery.DEPLOYABLE:
+                // Deployment particles are optional for deployable equipment.
+                if (!variable_struct_exists(_delivery,"visual"))
+                    continue;
+
                 _visual = _delivery.visual;
             break;
 

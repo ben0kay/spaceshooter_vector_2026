@@ -16,6 +16,12 @@ function sc_projectile_register_shard_rocket()
 		projectile_motion: ProjectileMotion.ROCKET,
         projectile_class: ProjectileClass.HEAVY,
         collision: { radius: 7 },
+		
+		defence: {
+            armour: 0,
+            hull: 8,
+            detonate_on_destroy: true
+        },
 
         detonation: {
             area: {
@@ -161,7 +167,7 @@ function sc_weapon_register_shard_missile_salvo()
 
         shot: {
             pattern: ShotPattern.RANDOM_CONE,
-            amount: 6,
+            amount: 12,
             angle_total: 38,
 			projectile_interval: 3,
             volley_target_script: sc_weapon_volley_targets_even
@@ -169,7 +175,7 @@ function sc_weapon_register_shard_missile_salvo()
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
-            interval: 60,
+            interval: 90,
             recoil: 4,
             muzzle_flash_duration: 6
         },

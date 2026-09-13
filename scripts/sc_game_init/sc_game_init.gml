@@ -50,17 +50,3 @@ function sc_game_cleanup()
     sc_world_structure_visual_cache_destroy();
     sc_faction_device_visual_cache_destroy();
 }
-
-function sc_game_cleanup(){
-	sc_projectile_visual_cache_destroy();
-	sc_ship_visual_cache_destroy();
-	sc_enemy_visual_cache_destroy();
-	sc_asteroid_visual_cache_destroy();
-	sc_asteroid_modifier_visual_cache_destroy();
-	sc_resource_pickup_visual_cache_destroy();
-	sc_environment_field_visual_cache_destroy();
-	sc_particles_destroy();
-	sc_world_structure_visual_cache_destroy();
-	sc_faction_device_visual_cache_destroy();
-
-}

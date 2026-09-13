@@ -5,6 +5,7 @@ if (instance_number(o_controller_main) > 1)
 }
 
 persistent = true;
+
 display_set_gui_size(1920, 1080);
 
 if (!sc_game_init())
