@@ -81,12 +81,83 @@ function sc_hud_transfer_curve_position(_transfer,_progress)
     };
 }
 
-/// @description Creates a visible enemy-coloured experience transfer.
+/// @description Returns the visual packet count for an experience reward.
+function sc_hud_transfer_experience_packet_count_get(_amount)
+{
+    if (_amount > 500) return 4;
+    if (_amount > 200) return 3;
+    if (_amount > 50) return 2;
+    return 1;
+}
+
+/// @description Creates one scattered visual experience packet.
+function sc_hud_transfer_experience_packet_create(
+    _start,_target,_amount,_palette,_index,_packet_count
+)
+{
+    var _angle = random(360);
+    var _distance = _packet_count > 1
+        ? random_range(10,30)
+        : 0;
+
+    var _packet_start = {
+        x: _start.x + lengthdir_x(_distance,_angle),
+        y: _start.y + lengthdir_y(_distance,_angle)
+    };
+
+    var _packet_target = {
+        x: _target.x + random_range(-12,12),
+        y: _target.y + random_range(-3,3)
+    };
+
+    var _vertical_distance = abs(
+        _packet_target.y - _packet_start.y
+    );
+
+    var _control = {
+        x: lerp(_packet_start.x,_packet_target.x,0.32)
+            + random_range(-150,150),
+
+        y: _packet_start.y
+            - max(110,_vertical_distance * 0.42)
+            + random_range(-35,35)
+    };
+
+    return instance_create_depth(
+        0,0,-15000,
+        o_hud_transfer,
+        {
+            transfer_create: {
+                type: HudTransferType.EXPERIENCE,
+                amount: _amount,
+
+                start: _packet_start,
+                control: _control,
+                target: _packet_target,
+
+                colour: _palette.accent,
+                core_colour: _palette.core,
+
+                glow_colour: merge_colour(
+                    _palette.glow,
+                    _palette.accent,
+                    0.55
+                ),
+
+                life: 60 + _index * 3,
+                launch_delay: 7 + _index * 2,
+
+                fragment_amount: _packet_count > 1 ? 6 : 8,
+                fragment_spread: 26,
+                curve_variation: random(1000)
+            }
+        }
+    );
+}
+
+/// @description Creates one or more visual XP packets based on reward size.
 function sc_hud_transfer_experience_create(
-    _world_x,
-    _world_y,
-    _amount,
-    _palette
+    _world_x,_world_y,_amount,_palette
 )
 {
     if (!instance_exists(global.level.hud))
@@ -104,45 +175,33 @@ function sc_hud_transfer_experience_create(
         HudTransferType.EXPERIENCE
     );
 
-    var _vertical_distance = abs(
-        _target.y - _start.y
+    var _packet_count = sc_hud_transfer_experience_packet_count_get(
+        _amount
     );
 
-    var _control = {
-        x: lerp(_start.x,_target.x,0.32) + random_range(-130,130),
-        y: _start.y - max(120,_vertical_distance * 0.42)
-    };
+    var _amount_base = floor(_amount / _packet_count);
+    var _amount_remainder = _amount mod _packet_count;
+    var _first_packet = noone;
 
-    return instance_create_depth(
-        _world_x,
-        _world_y,
-        -10000,
-        o_hud_transfer,
-        {
-            transfer_create: {
-                type: HudTransferType.EXPERIENCE,
-                amount: _amount,
+    for (var _i = 0; _i < _packet_count; ++_i)
+    {
+        var _packet_amount = _amount_base
+            + (_i < _amount_remainder);
 
-                start: _start,
-                control: _control,
-                target: _target,
+        var _packet = sc_hud_transfer_experience_packet_create(
+            _start,
+            _target,
+            _packet_amount,
+            _palette,
+            _i,
+            _packet_count
+        );
 
-                colour: _palette.accent,
-                core_colour: _palette.core,
-                glow_colour: merge_colour(
-                    _palette.glow,
-                    _palette.accent,
-                    0.55
-                ),
+        if (_i == 0)
+            _first_packet = _packet;
+    }
 
-                life: 64,
-                launch_delay: 8,
-                fragment_amount: 8,
-                fragment_spread: 34,
-                curve_variation: random(1000)
-            }
-        }
-    );
+    return _first_packet;
 }
 
 /// @description Processes the visual arrival of one HUD transfer.

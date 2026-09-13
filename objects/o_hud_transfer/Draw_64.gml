@@ -1,47 +1,40 @@
-/// @description Draws the glowing centre packet and its XP amount.
+/// @description Draws the compact glowing XP packet and its amount.
 var _progress = transfer.progress;
 var _launch_progress = clamp(
-    transfer.age/transfer.launch_delay,
-    0,
-    1
+    transfer.age / transfer.launch_delay,
+    0,1
 );
 
-var _pulse = 0.9+sin(GAME_TICK*0.4)*0.1;
-var _packet_scale = lerp(0.42,0.2,_progress)*_pulse;
+var _pulse = 0.9 + sin(GAME_TICK * 0.4) * 0.1;
+var _packet_scale = lerp(0.28,0.135,_progress) * _pulse;
 var _packet_alpha = lerp(0.35,1,_launch_progress);
-var _rotation = transfer.curve_variation+GAME_TICK*3;
+var _rotation = transfer.curve_variation + GAME_TICK * 3;
 
 gpu_set_blendmode(bm_add);
 
 draw_sprite_ext(
-    s_blur,
-    0,
-    transfer.x,
-    transfer.y,
-    lerp(2.8,1.5,_progress),
-    lerp(2.8,1.5,_progress),
+    s_blur,0,
+    transfer.x,transfer.y,
+    lerp(1.88,1,_progress),
+    lerp(1.88,1,_progress),
     0,
     transfer.glow_colour,
-    0.55*_packet_alpha
+    0.48 * _packet_alpha
 );
 
 draw_sprite_ext(
-    s_particle_shard,
-    0,
-    transfer.x,
-    transfer.y,
-    _packet_scale*1.35,
-    _packet_scale*1.35,
-    -_rotation*0.55,
+    s_particle_shard,0,
+    transfer.x,transfer.y,
+    _packet_scale * 1.35,
+    _packet_scale * 1.35,
+    -_rotation * 0.55,
     transfer.colour,
-    0.48*_packet_alpha
+    0.48 * _packet_alpha
 );
 
 draw_sprite_ext(
-    s_particle_shard,
-    0,
-    transfer.x,
-    transfer.y,
+    s_particle_shard,0,
+    transfer.x,transfer.y,
     _packet_scale,
     _packet_scale,
     _rotation,
@@ -58,12 +51,12 @@ if (transfer.age > transfer.launch_delay
     draw_set_halign(fa_center);
     draw_set_valign(fa_bottom);
     draw_set_colour(transfer.core_colour);
-    draw_set_alpha(min(1,_progress*5)*(1-_progress));
+    draw_set_alpha(min(1,_progress * 5) * (1 - _progress));
 
     draw_text(
         transfer.x,
-        transfer.y-22,
-        "+"+string(transfer.amount)+" XP"
+        transfer.y - 16,
+        "+" + string(transfer.amount) + " XP"
     );
 }
 
