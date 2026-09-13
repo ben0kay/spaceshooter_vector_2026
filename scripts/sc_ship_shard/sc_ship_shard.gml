@@ -27,7 +27,7 @@ function sc_ship_register_shard()
             dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
             weapons_while_boosting: 0, weapons_while_dashing: 0,
 			
-			resource_yield_multiplier: 1,
+			mining_power: 1, resource_yield_multiplier: 1,
         },
 
         collision: {

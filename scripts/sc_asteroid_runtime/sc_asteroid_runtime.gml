@@ -97,6 +97,10 @@ function sc_asteroid_init(_asteroid,_create)
             maximum: _health,
             stage: 0
         },
+			
+		mining: {
+		    power_required: _definition.mining.power_required
+		},
 
         yield: {
             total: _yield,
@@ -144,6 +148,28 @@ function sc_asteroid_init(_asteroid,_create)
     return true;
 }
 
+/// @description Returns the extraction power supplied by the damage packet or player stats.
+function sc_asteroid_extraction_power_get(_packet)
+{
+    if (!is_struct(_packet.extraction))
+        return 0;
+
+    var _power = variable_struct_exists(_packet.extraction,"power")
+        ? max(0,_packet.extraction.power)
+        : 0;
+
+    if (_packet.source.faction == Faction.PLAYER
+    && instance_exists(_packet.source.owner_id))
+    {
+        _power = max(
+            _power,
+            _packet.source.owner_id.ship.stats.final.mining_power
+        );
+    }
+
+    return _power;
+}
+
 /// @description Returns the yield multiplier supplied by the damage source and extraction method.
 function sc_asteroid_source_yield_multiplier_get(_packet)
 {
@@ -157,7 +183,7 @@ function sc_asteroid_source_yield_multiplier_get(_packet)
     }
 
     if (is_struct(_packet.extraction)
-    && variable_struct_exists(_packet.extraction, "yield_multiplier"))
+    && variable_struct_exists(_packet.extraction,"yield_multiplier"))
     {
         _multiplier *= max(
             0,
@@ -169,9 +195,9 @@ function sc_asteroid_source_yield_multiplier_get(_packet)
 }
 
 /// @description Applies stochastic rounding to multiplied resource output.
-function sc_asteroid_yield_output_get(_amount, _multiplier)
+function sc_asteroid_yield_output_get(_amount,_multiplier)
 {
-    var _exact = max(0, _amount * _multiplier);
+    var _exact = max(0,_amount*_multiplier);
     var _output = floor(_exact);
 
     if (random(1) < frac(_exact))
@@ -231,17 +257,15 @@ function sc_asteroid_yield_emit(
     return _output;
 }
 
-/// @description Adds recoverable base extraction progress from one asteroid hit.
+/// @description Adds recoverable extraction progress from one mining hit.
 function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
 {
+    if (sc_asteroid_extraction_power_get(_packet) <= 0)
+        return 0;
+
     var _data = _asteroid.asteroid;
     var _config = GCFG.asteroid;
-    var _efficiency = _config.extraction.weapon_efficiency;
-    var _mining = is_struct(_packet.extraction);
-
-    if (_mining)
-        _efficiency = max(0,_packet.extraction.efficiency);
-
+    var _efficiency = max(0,_packet.extraction.efficiency);
     var _damage_ratio = _damage/max(1,_data.health.maximum);
 
     _data.yield.progress +=
@@ -249,12 +273,9 @@ function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
         *_data.yield.total
         *_efficiency;
 
-    var _launch_multiplier = _mining
-        ? _config.pickup.mining_launch_multiplier
-        : 1;
-
-    _launch_multiplier *=
-        sc_asteroid_modifier_pickup_launch_multiplier_get(_asteroid);
+    var _launch_multiplier =
+        _config.pickup.mining_launch_multiplier
+        *sc_asteroid_modifier_pickup_launch_multiplier_get(_asteroid);
 
     return sc_asteroid_yield_emit(
         _asteroid,
@@ -263,9 +284,12 @@ function sc_asteroid_yield_damage_add(_asteroid,_packet,_damage)
     );
 }
 
-/// @description Releases the asteroid's final recoverable destruction yield.
+/// @description Releases final recoverable yield only when destroyed through extraction.
 function sc_asteroid_yield_destruction_release(_asteroid,_packet)
 {
+    if (sc_asteroid_extraction_power_get(_packet) <= 0)
+        return 0;
+
     var _yield = _asteroid.asteroid.yield;
 
     _yield.progress +=
