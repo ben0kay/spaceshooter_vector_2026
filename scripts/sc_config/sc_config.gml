@@ -636,19 +636,19 @@ function sc_config_init()
 			},
 				
 			radial: {
-                hold_threshold: 10,
-                double_tap_window: 15,
+    hold_threshold: 10,
+    double_tap_window: 15,
 
-                dock_offset_x: 145,
-                dock_offset_y: 0,
+    dock_offset_x: 180,
+    dock_offset_y: 0,
 
-                main_radius: 72,
-                submenu_radius: 142,
-                submenu_spread: 24,
+    main_radius: 96,
+    submenu_radius: 188,
+    submenu_spread: 30,
 
-                node_radius: 27,
-                child_radius: 23
-            },
+    node_radius: 36,
+    child_radius: 30
+},
 		},
 			
 		player_collision: {

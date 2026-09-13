@@ -126,3 +126,87 @@ function sc_rebel_visual_chevrons(_x,_y,_r,_a,_forward,_side,_size,_direction,_p
         sc_visual_line(_x,_y,_r,_a,_f,_side,_f-_size*_direction,_side+_size,3,_p.decal);
     }
 }
+
+/// @description Draws one battered Rebel multi-tube salvo launcher.
+function sc_rebel_visual_salvo_launcher(_x,_y,_r,_a,_columns,_rows,_p,_alpha)
+{
+    draw_set_alpha(_alpha);
+
+    // Recessed mounting pivot.
+    sc_visual_circle(_x,_y,_r,_a,-0.12,0,0.15,_p.void,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.12,0,0.105,_p.steel_mid,false);
+    sc_visual_circle(_x,_y,_r,_a,-0.12,0,0.055,_p.steel_light,true);
+
+    // Heavy launcher casing.
+    sc_rebel_visual_patch_plate(
+        _x,_y,_r,_a,
+        -0.08,-0.24,
+        0.29,-0.2,
+        0.29,0.2,
+        -0.08,0.24,
+        _p.steel_dark,_p
+    );
+
+    sc_visual_quad(
+        _x,_y,_r,_a,
+        -0.015,-0.185,
+        0.255,-0.165,
+        0.255,0.165,
+        -0.015,0.185,
+        _p.hull_mid
+    );
+
+    // Warning strip and casing seam.
+    sc_rebel_visual_hazard_panel(
+        _x,_y,_r,_a,
+        0.045,-0.205,
+        0.18,0.055,_p
+    );
+
+    sc_rebel_visual_panel_seam(
+        _x,_y,_r,_a,
+        0.06,-0.18,
+        0.06,0.18,_p
+    );
+
+    // Configurable launch-tube grid.
+    var _tube_gap_f=0.085;
+    var _tube_gap_s=0.105;
+    var _start_f=0.23-(_columns-1)*_tube_gap_f;
+    var _start_s=-(_rows-1)*_tube_gap_s*0.5;
+
+    for (var _column=0;_column<_columns;++_column)
+    for (var _row=0;_row<_rows;++_row)
+    {
+        var _forward=_start_f+_column*_tube_gap_f;
+        var _side=_start_s+_row*_tube_gap_s;
+
+        sc_visual_circle(
+            _x,_y,_r,_a,
+            _forward,_side,
+            0.047,_p.void,false
+        );
+
+        sc_visual_circle(
+            _x,_y,_r,_a,
+            _forward,_side,
+            0.034,_p.steel_light,true
+        );
+
+        sc_visual_circle(
+            _x,_y,_r,_a,
+            _forward,_side,
+            0.024,_p.hull_dark,false
+        );
+    }
+
+    sc_rebel_visual_rivet_strip(
+        _x,_y,_r,_a,
+        -0.025,-0.17,
+        -0.025,0.17,
+        4,_p
+    );
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}

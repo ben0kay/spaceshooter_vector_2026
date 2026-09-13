@@ -13,7 +13,7 @@ function sc_projectile_register_rebel_salvo_rocket()
         projectile_class: ProjectileClass.REGULAR,
 
         collision: {
-            radius: 8
+            radius: 10
         },
 		
 		defence: {
@@ -67,7 +67,7 @@ function sc_projectile_register_rebel_salvo_rocket()
         },
 
         visual: {
-            radius: 8,
+            radius: 10,
             length: 28,
             palette: _palette,
 
