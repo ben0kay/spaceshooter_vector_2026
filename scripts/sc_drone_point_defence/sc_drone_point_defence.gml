@@ -503,7 +503,7 @@ function sc_weapon_register_player_point_defence_drone()
         firing: {
             mount_mode: WeaponMountMode.CENTRE,
             centre_forward: 0,
-            interval: 30,
+            interval: 60,
             recoil: 0,
             muzzle_flash_duration: 0
         },

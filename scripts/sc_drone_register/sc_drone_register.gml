@@ -114,16 +114,16 @@ function sc_drone_register_player_point_defence()
         },
 
         targeting: {
-            range: 500,
-            scan_interval: 8
+            range: 1080,
+            scan_interval: 7
         },
 
         weapon: {
             projectile_key: "projectile_shard_pulse",
             scale: 0.55,
-            speed: 34,
+            speed: 35,
             life: 45,
-            fire_interval: 10,
+            fire_interval: 8,
             lead_strength: 1,
 
             damage: {
