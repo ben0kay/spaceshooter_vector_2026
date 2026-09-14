@@ -205,7 +205,7 @@ function sc_enemy_sim_siegebreaker_visual_data()
             enabled: _authored_enabled,
 
             body: {
-                sprite: asset_get_index("s_sim_siegebreaker_hull"),
+                sprite: s_sim_siegebreaker_hull,
                 scale: 0.46
             }
         },
