@@ -6,14 +6,15 @@ function sc_player_stats_init(_player,_stats_base)
     _player.ship.stats = {
         base: variable_clone(_stats_base),
 
-        modifiers: {
-            level: [],
-            persistent: variable_clone(global.profile.persistent_modifiers),
-            equipment: [],
-            modules: [],
-            local: [],
-            temporary: []
-        },
+		
+		modifiers: {
+	    level: [],       // future level-based bonuses
+	    persistent: variable_clone(global.profile.persistent_modifiers),  // upgrade tree
+	    equipment: [],   // weapons / fitted non-module gear
+	    modules: [],     // armour, shield, reactor, thruster, etc.
+	    local: [],       // unused / reserved
+	    temporary: []    // gas clouds, buffs, debuffs, temporary effects
+	},
 
         final: {},
         dirty: true
@@ -79,4 +80,27 @@ function sc_player_stats_refresh(_player)
     _player.ship.stats.dirty = true;
     sc_player_stats_recalculate(_player);
     return sc_player_stats_runtime_sync(_player);
+}
+
+/// @description Rebuilds ship-stat modifiers from currently installed modules.
+function sc_player_modules_modifiers_rebuild(_player)
+{
+    var _modifiers = [];
+    var _equipment = _player.inventory.equipment;
+
+    // Armour module.
+    if (!is_undefined(_equipment.armour))
+    {
+        var _item = _equipment.armour;
+        var _definition = variable_struct_get(global.data.items,_item.key);
+        var _module = _definition.module;
+
+        array_push(_modifiers,{
+            stat: "armour_max",
+            multiply: _module.effectiveness * sc_item_grade_multiplier_get(_item.grade)
+        });
+    }
+
+    _player.ship.stats.modifiers.modules = _modifiers;
+    return true;
 }
