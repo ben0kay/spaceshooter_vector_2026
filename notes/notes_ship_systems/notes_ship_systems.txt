@@ -1,17 +1,629 @@
-INTERNAL SHIP SYSTEMS - FUTURE FOUNDATION
+SHIP BUILD OPTIMIZATION / INTERNAL SYSTEMS DESIGN
 
-Each player chassis registers:
-engines, thrusters, shield_generator, reactor, weapons, sensors, cargo_hold, life_support.
+GOAL
+Build deep ship engineering underneath a fast arcade bullet-hell / mining / gathering / survival game.
 
-Registered data stores condition_max. Player runtime receives an independent copy with condition_current initialized to maximum.
+The player should be able to gradually create a near-perfect vessel by stacking many small efficiencies, trade-offs, material choices, module qualities and permanent upgrades.
 
-Currently dormant:
-- No Step processing
-- No system damage
-- No stat penalties
-- No repairs or UI
-- No physical interior rooms
+Important design rule:
+COMPLEX BUILDCRAFT, SIMPLE MOMENT-TO-MOMENT CONTROLS.
 
-Future hull penetration may damage systems. System condition can then affect movement, shields, energy, weapons, sensors, cargo and survival.
+The player should not have to operate a simulator cockpit during combat. The depth should live in preparation, outfitting, crafting and optimization.
 
-Physical ship rooms should reference these existing system keys rather than creating a separate damage model.
+==================================================
+CURRENT INTERNAL-SYSTEM FOUNDATION
+==================================================
+
+Existing player ship systems:
+- engines
+- thrusters
+- shield_generator
+- reactor
+- weapons
+- sensors
+- cargo_hold
+- life_support
+
+Each system already has condition_max and runtime condition_current.
+
+Suggested future additions:
+- cooling
+- ordnance
+- mining
+- drone_control
+- possibly capacitor / power_storage
+
+Do NOT expand into excessive simulator detail such as:
+- per-pipe pressure
+- oxygen micromanagement
+- individual coolant valves
+- crew stations
+- decompression simulation
+- electrical buses
+- subsystem temperature readouts everywhere
+
+Systems should matter because they modify the action game, not because the player has to manually operate them.
+
+==================================================
+DERIVED STAT PIPELINE
+==================================================
+
+Suggested overall calculation order:
+
+CHASSIS BASE STATS
+    -> INSTALLED EQUIPMENT
+    -> MATERIAL / MODULE TYPE
+    -> ITEM QUALITY
+    -> PERMANENT UPGRADES
+    -> SYNERGY BONUSES
+    -> CURRENT MASS / CARGO
+    -> SYSTEM CONDITION
+    -> TEMPORARY EFFECTS
+    -> FINAL SHIP STATS
+
+This allows many small bonuses to combine into a meaningful optimized build.
+
+Example conceptual final-stat formula:
+
+final_speed =
+(base_speed + flat_speed)
+* equipment_speed_multiplier
+* upgrade_speed_multiplier
+* mass_multiplier
+* condition_multiplier
+
+Avoid making every modifier simply additive.
+Different modifier channels allow many small improvements without requiring absurd individual module bonuses.
+
+==================================================
+MASS AS A CORE CONNECTOR
+==================================================
+
+Mass should connect armour, equipment, cargo, ammunition and handling.
+
+Conceptual total mass:
+
+TOTAL MASS =
+chassis mass
++ armour mass
++ module mass
++ weapon mass
++ ammunition mass
++ cargo mass
+
+Mass can influence:
+- acceleration
+- max speed slightly
+- turn rate
+- dash / boost response
+- possibly fuel consumption
+
+Do not use realistic physics if it hurts gameplay. Use a controllable curve.
+
+Example conceptual design-mass curve:
+
+80 mass   -> +6% acceleration
+100 mass  -> baseline
+120 mass  -> -5%
+150 mass  -> -12%
+200 mass  -> -22%
+
+Cargo should therefore naturally affect handling instead of using an unrelated arbitrary cargo penalty.
+
+Example:
+
+Mining trip leaving base:
+Cargo 12 / 200
+Speed 8.7
+Acceleration 0.42
+
+Returning heavily loaded:
+Cargo 196 / 200
+Speed 8.1
+Acceleration 0.35
+
+The penalty should be noticeable, not crippling.
+
+This creates meaningful choices:
+- lightweight cargo systems
+- lighter armour
+- dedicated mining ships
+- combat ships with small cargo holds
+- sacrificing capacity for maneuverability
+
+==================================================
+ARMOUR MATERIAL PERSONALITIES
+==================================================
+
+Armour should not simply be Tier 1 -> Tier 2 -> Tier 3.
+Different materials should create different engineering archetypes.
+
+STANDARD ARMOUR PLATING example:
++250 armour
++18 mass
+
+CARBON COMPOSITE ARMOUR example:
++190 armour
++7 mass
++2% acceleration
+
+TITANIUM ARMOUR example:
++320 armour
++14 mass
++5% explosive resistance
+
+Possible general identities:
+
+Iron / Steel
+- cheap
+- durable
+- heavy
+
+Carbon Composite
+- light
+- lower raw durability
+- strong mobility builds
+
+Titanium
+- excellent strength-to-weight
+- advanced general-purpose armour
+
+Tungsten
+- extremely heavy
+- extremely tough
+- good for heavy kinetic / thermal protection
+
+Fantasy materials can later break ordinary engineering rules.
+
+==================================================
+ITEM QUALITY AS A SECOND LAYER
+==================================================
+
+Material type determines WHAT KIND of module it is.
+Quality determines HOW GOOD that individual crafted module is.
+
+Current grades:
+COMMON -> IMPROVED -> ADVANCED -> SUPERIOR -> PROTOTYPE
+
+Example Carbon Armour progression:
+
+COMMON
++190 armour
+
+IMPROVED
++196 armour
+-1% module mass
+
+ADVANCED
++203 armour
+-2% module mass
+
+SUPERIOR
++211 armour
+-3% module mass
++1% acceleration
+
+PROTOTYPE
++220 armour
+-5% module mass
++2% acceleration
+
+Tiny 1%-3% bonuses are desirable because the player can stack several engineering decisions into a noticeably better vessel.
+
+==================================================
+SMALL BONUS STACKING / PERFECT-VESSEL GOAL
+==================================================
+
+Example optimized mobility build:
+
+Prototype Carbon Armour       -5% armour mass
+Lightweight Thruster Housing  +2% acceleration
+Advanced Engine Controller    +3% max speed
+Superior Power Regulator      +1% engine output
+Mobility Upgrade Rank IV      +4% thrust
+Low current cargo             reduced mass penalty
+
+No individual modifier is huge, but together they create a distinctly better-performing ship.
+
+This supports the goal of the player continually tuning their vessel toward an ideal build.
+
+==================================================
+POSITIVE SYNERGIES
+==================================================
+
+Not every system should only impose penalties.
+Some combinations can provide small synergy bonuses.
+
+Examples:
+
+Resonant Crystal Shield
++
+High-Capacity Capacitor
+=
++3% shield recharge efficiency
+
+Titanium Thruster Housing
++
+High-Output Reactor
+=
++2% boost thrust
+
+Possible faction-tech set bonuses:
+
+SIMULANT COMPONENT SET
+2 pieces -> +2% energy weapon efficiency
+4 pieces -> +4% shield recharge
+
+Keep set bonuses restrained so the system does not become dominated by mandatory Diablo-style equipment sets.
+
+==================================================
+WEAPON / SHIP INTERACTION
+==================================================
+
+Weapons should have engineering footprints beyond raw DPS.
+
+Minigun:
+- weapon mass
+- ammunition consumption
+- low/moderate reactor draw
+
+Plasma cannon:
+- higher reactor draw
+- higher heat
+- little/no conventional ammunition requirement
+
+Missile launcher:
+- high ordnance mass
+- low reactor demand
+
+Beam weapon:
+- very high reactor demand
+- cooling demand
+- low ammunition dependence
+
+Goal:
+The question should become:
+"Which weapon does THIS ship build support best?"
+rather than only:
+"Which weapon has the highest DPS?"
+
+==================================================
+REACTOR OUTPUT / POWER LOAD
+==================================================
+
+Avoid a complicated manual power-grid screen.
+Give ship systems passive power requirements.
+
+Example:
+
+REACTOR OUTPUT: 112
+
+Shield generator     30
+Thrusters            24
+Weapons              38
+Sensors               6
+Utility systems       8
+------------------------
+TOTAL                106
+
+Six output remains available.
+
+Installing a larger beam might increase total requirement to 119.
+
+Rather than turning the ship off, exceeding reactor capacity could create soft penalties.
+
+Example at 106% load:
+-6% energy regeneration
+-3% shield recharge
+
+Player solutions:
+- improve reactor
+- install power regulator
+- remove a high-draw component
+- choose lower-draw shields
+- take energy-efficiency upgrades
+- accept the overcapacity penalty
+
+This creates an engineering puzzle without combat micromanagement.
+
+==================================================
+COOLING / HEAT
+==================================================
+
+Cooling is probably the strongest missing underlying system.
+
+Keep heat mostly derived/passive rather than making it another survival bar to constantly babysit.
+
+Example:
+
+Cooling Capacity: 100
+Heat Load:        112
+
+Possible result:
+- weapon cooldown +4%
+- energy regeneration -2%
+
+Cooling improvements:
+- heat sinks
+- coolant cells
+- radiator assemblies
+- advanced cooling modules
+
+Heat-producing systems:
+- beam weapons
+- plasma weapons
+- high-output reactors
+- boost systems
+
+No detailed thermal simulation is necessary.
+
+==================================================
+INTERNAL SYSTEM DAMAGE
+==================================================
+
+Suggested simple condition thresholds:
+
+100-51%  NORMAL
+50-26%   DAMAGED
+25-1%    CRITICAL
+0%       DISABLED
+
+Each system only needs one or two meaningful penalties.
+
+ENGINES example:
+NORMAL      full performance
+DAMAGED     -15% speed / acceleration
+CRITICAL    -35% performance, weaker boost
+DISABLED    emergency crawl speed only
+
+SENSORS example:
+NORMAL      full radar
+DAMAGED     -20% radar range
+CRITICAL    -45% radar and intermittent contacts
+DISABLED    only close contacts visible
+
+SHIELD GENERATOR:
+- lower max shield
+- slower recharge
+
+REACTOR:
+- reduced energy regeneration / output
+
+WEAPONS:
+- slower fire rate
+- possibly occasional temporary jam only at very low condition
+
+THRUSTERS:
+- reduced turn rate / dash response
+
+CARGO HOLD:
+- reduced usable cargo capacity
+- optional severe-damage cargo ejection
+
+LIFE SUPPORT:
+- keep mostly dormant during normal space combat
+- potentially useful for interiors / derelicts later
+
+System damage should primarily begin after armour is stripped and hull is exposed.
+
+Desired combat progression:
+SHIELD GONE
+-> ARMOUR STRIPPED
+-> HULL BREACHED
+-> INTERNAL SYSTEMS AT RISK
+
+This makes armour loss mechanically meaningful.
+
+==================================================
+REPAIR / CRAFTING INTERACTION
+==================================================
+
+Internal-system damage should create demand for the crafting economy.
+
+Damaged Engine
+-> Mechanical Parts / Motor / Bearings
+
+Damaged Shield Generator
+-> Copper Coil / Capacitor / Resonant Crystal
+
+Damaged Reactor
+-> Power Regulator / Coolant / Reactor Components
+
+Damaged Sensors
+-> Circuit Board / Optical Lens
+
+Damaged Hull / Cargo Hold
+-> Plates / Steel / Titanium
+
+This gives crafting a purpose beyond only creating upgrades.
+It supports field recovery, maintenance and survival.
+
+==================================================
+ADDITIONAL SYSTEMS WORTH CONSIDERING
+==================================================
+
+COOLING
+- influences reactor, weapons and shield recovery
+- creates use for coolant / radiator / heat-sink parts
+
+ORDNANCE
+- governs rockets, missiles, mines and explosives
+- damaged condition can slow reload / rearm
+
+MINING
+- governs mining beam effectiveness / mining strength
+- damaged system reduces harvesting capability
+
+DRONE CONTROL
+- governs active drone capacity / deployment
+- damaged system can reduce drone count or temporarily disable launches
+
+CAPACITOR / POWER STORAGE (optional)
+- represents stored electrical energy separately from reactor generation
+- can influence shield burst recovery, dash and energy weapons
+
+==================================================
+MATERIAL TECHNOLOGY IDENTITIES
+==================================================
+
+Iron / Steel   = cheap structure, durability, mass
+Carbon         = lightweight composites
+Titanium       = advanced strength-to-weight
+Copper         = electrical systems
+Silicon        = electronics / processors
+Quartz         = optics / sensors
+Lithium        = batteries / energy storage
+Cobalt         = magnetic systems
+Tungsten       = heavy armour / penetrators / heat resistance
+Crystal        = energy / shield technology
+Uranium        = reactor technology
+
+Fantasy/endgame examples:
+
+VOIDGLASS ARMOUR
++220 armour
+very low mass
+-8% radar signature
+
+GRAVITITE THRUSTER
++7% acceleration
++5% turn rate
+ignores 20% of cargo mass penalty
+
+PHASE CRYSTAL DRIVE
++4% speed
++10% dash distance
+-8% dash cooldown
+
+Fantasy materials should feel like they bend or break normal engineering rules rather than just having larger numbers.
+
+==================================================
+STAT INSPECTOR / UI
+==================================================
+
+The player should be able to see WHY a final stat has its current value.
+
+Example:
+
+MAX SPEED               8.91
+Base                     8.50
+Engine                   +3.0%
+Mobility upgrades        +4.0%
+Low mass                 +1.9%
+Cargo load               -4.2%
+
+This would fit naturally into the SHIP inventory/statistics UI.
+
+The goal is to make optimization understandable rather than hiding calculations.
+
+==================================================
+ARCHITECTURE PRINCIPLE
+==================================================
+
+Internal systems should NOT necessarily be the equipment themselves.
+
+Internal systems represent the functional ship systems:
+- engine
+- reactor
+- shields
+- sensors
+- etc.
+
+Installed modules / crafted components / upgrades feed modifiers into those systems.
+
+This distinction should keep the architecture clean:
+
+SYSTEM = what exists and has condition
+MODULE = what modifies or improves it
+UPGRADE = permanent progression affecting it
+MATERIAL = engineering archetype / properties
+GRADE = quality of the individual crafted item
+MASS / CARGO = dynamic external influence
+
+==================================================
+OVERALL DIRECTION
+==================================================
+
+The desired experience is:
+
+DEEP SHIP ENGINEERING UNDERNEATH
++
+FAST ARCADE SHMUP ON TOP
+
+The player can spend a long time crafting, comparing, tuning and optimizing a vessel, but once combat starts they still fly and shoot normally.
+
+A "perfect" vessel is not one item with +50% stats.
+It is the result of many small intelligent choices working together:
+- better materials
+- lighter armour
+- superior item grades
+- efficient reactor use
+- adequate cooling
+- synergistic modules
+- permanent upgrades
+- controlled cargo mass
+- healthy internal systems
+- weapon choices appropriate to the build
+
+This should create long-term progression, build diversity and a strong reason to gather/craft rare materials without turning the game into a simulator.
+
+
+==================================================
+EQUIPMENT, MODULES AND ITEM GRADES
+==================================================
+
+Major equipment is installed through the Equipment tab.
+
+Equipment examples:
+- armour plating
+- shield generators
+- reactors
+- thruster assemblies
+- radar arrays
+- weapons
+
+System modules are smaller fixed-quality optimization items installed into
+sockets beside ship systems on the Systems tab.
+
+System-module examples:
+- Coolant Module Mk I
+- Shield Capacitor Mk II
+- Reactor Regulator
+- Targeting Processor
+- Heat Sink
+
+System modules do not have item grades.
+Drones do not have item grades.
+
+An item supports grades only when at least one of its modifiers explicitly uses:
+
+grade_scaled: true
+
+Missing grade_scaled means false.
+
+Example graded armour:
+
+modifiers: [
+    { stat: "armour_max", add: 20, grade_scaled: true },
+    { stat: "mass", add: 18 }
+]
+
+The armour bonus scales with grade.
+The mass modifier remains fixed.
+
+GRADE PIPELINE
+
+CHASSIS BASE STATS
+    -> MAJOR EQUIPMENT MODIFIERS
+    -> ITEM GRADE SCALING ON OPTED-IN MODIFIERS
+    -> SYSTEM MODULE MODIFIERS
+    -> PERMANENT UPGRADES
+    -> LOCAL / TEMPORARY EFFECTS
+    -> FINAL SHIP STATS
+
+Only the individual modifier decides whether grade affects it.
+The grade system must not check specific item keys or equipment types.
+
+Equipment and system modules must remain separate concepts:
+- Equipment replaces or adds a major physical ship assembly.
+- Modules tune an existing ship system.

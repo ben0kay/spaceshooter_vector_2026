@@ -1,4 +1,4 @@
-/// @description Returns cargo indices containing equippable modules.
+/// @description Returns cargo indices containing installable ship equipment.
 function sc_inventory_module_indices_get(_player)
 {
     var _indices = [];
@@ -10,13 +10,13 @@ function sc_inventory_module_indices_get(_player)
         if (is_undefined(_slot)) continue;
 
         var _definition = variable_struct_get(global.data.items,_slot.key);
-        if (_definition.type == ItemType.MODULE) array_push(_indices,_i);
+        if (_definition.type == ItemType.EQUIPMENT) array_push(_indices,_i);
     }
 
     return _indices;
 }
 
-/// @description Begins installing or replacing one module from cargo.
+/// @description Begins installing or replacing one equipment item from cargo.
 function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
 {
     var _installation = _player.inventory.installation;
@@ -25,13 +25,13 @@ function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
     if (_installation.active || is_undefined(_slot)) return false;
 
     var _definition = variable_struct_get(global.data.items,_slot.key);
-    if (_definition.type != ItemType.MODULE) return false;
+    if (_definition.type != ItemType.EQUIPMENT) return false;
 
-    var _module = _definition.module;
+    var _equipment = _definition.equipment;
 
-    switch (_module.slot)
+    switch (_equipment.slot)
     {
-        case ModuleSlot.ARMOUR:
+        case EquipmentSlot.ARMOUR:
             if (!is_undefined(_player.inventory.equipment.armour) && !_replacing) return false;
         break;
 
@@ -49,10 +49,10 @@ function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
 
     _installation.active = true;
     _installation.replacing = _replacing;
-    _installation.slot = _module.slot;
+    _installation.slot = _equipment.slot;
     _installation.item = _item;
-    _installation.duration = _module.install_duration;
-    _installation.remaining = _module.install_duration;
+    _installation.duration = _equipment.install_duration;
+    _installation.remaining = _equipment.install_duration;
     _installation.cancelled_remaining = 0;
     return true;
 }
@@ -120,7 +120,7 @@ function sc_player_equipment_modifiers_rebuild(_player)
         if (is_undefined(_installed)) continue;
 
         var _definition = variable_struct_get(global.data.items,_installed.key);
-        var _item_modifiers = _definition.module.modifiers;
+        var _item_modifiers = _definition.equipment.modifiers;
 
         for (var _j = 0; _j < array_length(_item_modifiers); ++_j)
         {
@@ -149,7 +149,7 @@ function sc_player_module_install_complete(_player)
 
     switch (_installation.slot)
     {
-        case ModuleSlot.ARMOUR:
+        case EquipmentSlot.ARMOUR:
             _player.inventory.equipment.armour = {
                 key: _item.key,
                 name: _item.name,

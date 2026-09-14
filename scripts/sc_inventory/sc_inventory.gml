@@ -666,7 +666,7 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
 
     var _installation = _player.inventory.installation;
     var _installing = _installation.active
-        && _installation.slot == ModuleSlot.ARMOUR;
+        && _installation.slot == EquipmentSlot.ARMOUR;
 
     var _display_item = _installing
         ? _installation.item

@@ -80,10 +80,10 @@ enum ResourceType { NONE, ENERGY, FUEL, BULLETS, EXPLOSIVES }
 //==================================================
 // ITEMS / CRAFTING / MODULES
 //==================================================
-enum ItemLayer { RAW, REFINED, COMPONENT, PRODUCT } // product can be consumable or module
-enum ItemType { RESOURCE, STRUCTURAL, MECHANICAL, ELECTRICAL, AMMUNITION, MODULE, DRONE, WEAPON, DEVICE }
+enum ItemLayer { RAW, REFINED, COMPONENT, PRODUCT }
+enum ItemType { RESOURCE, STRUCTURAL, MECHANICAL, ELECTRICAL, AMMUNITION, EQUIPMENT, MODULE, DRONE, WEAPON, DEVICE }
 enum ItemGrade { COMMON, IMPROVED, ADVANCED, SUPERIOR, PROTOTYPE }
-enum ModuleSlot { ARMOUR, SHIELD, REACTOR, THRUSTER, TARGETING, UTILITY, AUXILIARY }
+enum EquipmentSlot { ARMOUR, SHIELD, REACTOR, THRUSTER, TARGETING, UTILITY, AUXILIARY }
 
 //==================================================
 // FACILITIES / STRUCTURES
