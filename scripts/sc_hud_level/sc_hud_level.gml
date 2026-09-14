@@ -946,6 +946,86 @@ function sc_inventory_body_primitive_draw(_hud_data)
     draw_set_colour(c_white);
 }
 
+/// @description Draws the static bottom HUD body before baking.
+function sc_hud_bottom_body_primitive_draw(_data)
+{
+    var _bottom = _data.bottom;
+    var _palette = _data.palette;
+    var _cells = _bottom.cells;
+    var _cell_names = ["shield","armour","hull","energy","fuel","bullets","explosives","dash","cargo","weapon"];
+    var _bar_names = ["shield","armour","hull","energy","fuel","dash","cargo"];
+
+    sc_hud_panel_primitive_draw(_bottom.width,_bottom.height,18,_palette);
+
+    for (var _i = 0; _i < array_length(_cell_names); ++_i)
+    {
+        var _cell = variable_struct_get(_cells,_cell_names[_i]);
+        var _left = _cell.x;
+        var _right = _left + _cell.width;
+
+        draw_set_colour(_palette.void);
+        draw_set_alpha(0.88);
+        draw_rectangle(_left,8,_right,_bottom.height - 12,false);
+
+        draw_set_colour(_palette.panel_light);
+        draw_set_alpha(0.65);
+        draw_rectangle(_left,8,_right,_bottom.height - 12,true);
+
+        draw_set_colour(_palette.outline);
+        draw_set_alpha(0.75);
+        draw_circle(_left + 10,19,4,true);
+
+        draw_set_colour(_palette.accent);
+        draw_set_alpha(0.6);
+        draw_circle(_left + 10,19,1.5,false);
+
+        if (_i < array_length(_cell_names) - 1)
+        {
+            draw_set_colour(_palette.outline);
+            draw_set_alpha(0.6);
+            draw_line_width(_right + 4,13,_right + 4,_bottom.height - 17,1);
+            draw_line_width(_right + 4,13,_right + 8,9,1);
+            draw_line_width(_right + 4,_bottom.height - 17,_right + 8,_bottom.height - 13,1);
+        }
+    }
+
+    for (var _i = 0; _i < array_length(_bar_names); ++_i)
+    {
+        var _cell = variable_struct_get(_cells,_bar_names[_i]);
+        var _segments = _bottom.bar_segments;
+        var _left = _cell.x + 7;
+        var _available = _cell.width - 14;
+        var _gap = 2;
+        var _segment_width = (_available - (_segments - 1)*_gap)/_segments;
+
+        for (var _segment = 0; _segment < _segments; ++_segment)
+        {
+            var _segment_x = _left + _segment*(_segment_width + _gap);
+
+            draw_set_colour(_palette.background);
+            draw_set_alpha(1);
+            draw_rectangle(_segment_x,37,_segment_x + _segment_width,49,false);
+
+            draw_set_colour(_palette.panel_light);
+            draw_set_alpha(0.8);
+            draw_rectangle(_segment_x,37,_segment_x + _segment_width,49,true);
+        }
+    }
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.8);
+
+    for (var _i = -3; _i <= 3; ++_i)
+    {
+        var _marker_x = _bottom.width*0.5 + _i*7;
+        var _marker_height = 2 + (3 - abs(_i));
+        draw_line(_marker_x,_bottom.height - 9,_marker_x,_bottom.height - 9 - _marker_height);
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
+
 /// @description Draws one restrained animated bottom-HUD effect frame before baking.
 function sc_hud_bottom_effect_primitive_draw(_data, _frame)
 {
