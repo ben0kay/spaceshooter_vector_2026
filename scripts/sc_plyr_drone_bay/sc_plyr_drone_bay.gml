@@ -56,30 +56,6 @@ function sc_player_drone_item_create(_item_key)
     };
 }
 
-/// @description Creates one persistent physical drone item.
-function sc_player_drone_item_create(_item_key,_grade)
-{
-    var _item = variable_struct_get(global.data.items,_item_key);
-    var _drone_key = _item.drone.key;
-    var _definition = variable_struct_get(global.data.drones,_drone_key);
-    var _grade_multiplier = sc_item_grade_multiplier_get(_grade);
-    var _armour = round(_definition.defence.armour*_grade_multiplier);
-    var _hull = round(_definition.defence.hull*_grade_multiplier);
-
-    return {
-        key: _item_key,
-        name: _item.identity.name,
-        drone_key: _drone_key,
-        equipment_key: _item.drone.equipment_key,
-        grade: _grade,
-
-        condition: {
-            armour: { current: _armour, maximum: _armour },
-            hull: { current: _hull, maximum: _hull }
-        }
-    };
-}
-
 /// @description Places one physical drone item into an empty bay slot.
 function sc_player_drone_slot_fill(_player,_slot_index,_item)
 {
