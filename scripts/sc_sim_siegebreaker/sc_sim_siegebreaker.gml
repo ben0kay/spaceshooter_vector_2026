@@ -194,19 +194,36 @@ function sc_enemy_register_sim_siegebreaker()
 /// @description Returns the complete Siegebreaker visual definition.
 function sc_enemy_sim_siegebreaker_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 90,
         motion_strength: 2,
         palette: sc_faction_palette_get(Faction.SIMULANT),
-        core: { forward: -0.12, side: 0 },
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: asset_get_index("s_sim_siegebreaker_hull"),
+                scale: 0.46
+            }
+        },
+
+        core: {
+            forward: -0.12,
+            side: 0
+        },
 
         draw: {
-            body: sc_enemy_sim_siegebreaker_body_draw,
+            body: sc_enemy_sim_siegebreaker_body_dispatch,
             core: sc_enemy_sim_siegebreaker_core_draw
         },
 
         damage_layers: {
-            enabled: true,
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled: !_authored_enabled,
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_siegebreaker_hull_draw,
             armour_draw_script: sc_enemy_sim_siegebreaker_armour_draw
@@ -228,13 +245,50 @@ function sc_enemy_sim_siegebreaker_visual_data()
         },
 
         bake: {
-            body_canvas_size: 256,
+            body_canvas_size: 384,
             core_canvas_size: 160,
             hardpoint_canvas_size: 160,
             thrust_canvas_size: 128,
             fragment_canvas_size: 256
         }
     };
+}
+
+/// @description Selects the authored or primitive Siegebreaker body.
+function sc_enemy_sim_siegebreaker_body_dispatch(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+    {
+        sc_enemy_sim_siegebreaker_body_authored_draw(
+            _x,_y,_radius,_angle,_visual
+        );
+
+        return;
+    }
+
+    sc_enemy_sim_siegebreaker_body_draw(
+        _x,_y,_radius,_angle,_visual
+    );
+}
+
+/// @description Draws the imported Siegebreaker hull.
+function sc_enemy_sim_siegebreaker_body_authored_draw(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    var _authored = _visual.authored.body;
+
+    draw_sprite_ext(
+        _authored.sprite,0,
+        _x,_y,
+        _authored.scale,
+        _authored.scale,
+        _angle,
+        c_white,1
+    );
 }
 
 /// @description Draws the intact Siegebreaker fallback body.
