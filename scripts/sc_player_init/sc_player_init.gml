@@ -118,10 +118,16 @@ function sc_player_init_resources(_player)
     };
 }
 
-/// @description Creates starting cargo and fills the temporary test drone bay.
+/// @description Creates starting cargo, equipment and fills the temporary test drone bay.
 function sc_player_init_inventory(_player)
 {
     _player.inventory = sc_player_inventory_create();
+
+    sc_player_equipment_modifiers_rebuild(_player);
+
+    var _armour_maximum = _player.ship.stats.final.armour_max;
+    _player.defence.armour.maximum = _armour_maximum;
+    _player.defence.armour.current = _armour_maximum;
 
     sc_player_inventory_add(
         _player,

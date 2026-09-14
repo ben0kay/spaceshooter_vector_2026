@@ -347,76 +347,39 @@ function sc_item_register_all()
     })
 
     && sc_item_register({
-    identity: {
-        key: "item_armour_plate",
-        name: "Armour Plate"
-    },
+        identity: { key: "item_armour_plate", name: "Armour Plate" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE,
+        description: "A complete reinforced armour assembly fitted over the ship hull.",
+        cargo: { weight: 18, stack_max: 10 },
 
-    layer: ItemLayer.PRODUCT,
-    type: ItemType.MODULE,
+        module: {
+            slot: ModuleSlot.ARMOUR,
+            install_duration: 300,
 
-    description:
-        "A complete reinforced armour assembly fitted over the ship hull.",
+            modifiers: [
+                { stat: "armour_max", add: 20, grade_scaled: true }
+            ]
+        },
 
-    cargo: {
-        weight: 18,
-        stack_max: 10
-    },
+        visual: { colour: make_colour_rgb(126,158,171), glow: make_colour_rgb(0,224,235), draw_script: sc_item_armour_primitive_draw }
+    })
+    && sc_item_register({
+        identity: { key: "item_lightweight_armour_plate", name: "Lightweight Armour Plate" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE,
+        description: "Light composite armour providing reduced protection with considerably less mass.",
+        cargo: { weight: 11, stack_max: 10 },
 
-    module: {
-        slot: ModuleSlot.ARMOUR,
-        install_duration: 300,
+        module: {
+            slot: ModuleSlot.ARMOUR,
+            install_duration: 240,
 
-        modifiers: [
-            {
-                stat: "armour_max",
-                multiply: 1
-            }
-        ]
-    },
+            modifiers: [
+                { stat: "armour_max", add: 14, grade_scaled: true }
+            ]
+        },
 
-    visual: {
-        colour: make_colour_rgb(126, 158, 171),
-        glow: make_colour_rgb(0, 224, 235),
-        draw_script: sc_item_armour_primitive_draw
-    }
-})
-
-&& sc_item_register({
-    identity: {
-        key: "item_lightweight_armour_plate",
-        name: "Lightweight Armour Plate"
-    },
-
-    layer: ItemLayer.PRODUCT,
-    type: ItemType.MODULE,
-
-    description:
-        "Light composite armour providing reduced protection with considerably less mass.",
-
-    cargo: {
-        weight: 11,
-        stack_max: 10
-    },
-
-    module: {
-        slot: ModuleSlot.ARMOUR,
-        install_duration: 240,
-
-        modifiers: [
-            {
-                stat: "armour_max",
-                multiply: 0.85
-            }
-        ]
-    },
-
-    visual: {
-        colour: make_colour_rgb(66, 102, 112),
-        glow: make_colour_rgb(40, 235, 221),
-        draw_script: sc_item_armour_primitive_draw
-    }
-})
+        visual: { colour: make_colour_rgb(66,102,112), glow: make_colour_rgb(40,235,221), draw_script: sc_item_armour_primitive_draw }
+    })
 
 && sc_item_register({
     identity: {

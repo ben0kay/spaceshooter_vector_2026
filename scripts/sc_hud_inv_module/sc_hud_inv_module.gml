@@ -17,14 +17,14 @@ function sc_inventory_module_indices_get(_player)
 }
 
 /// @description Begins installing or replacing one module from cargo.
-function sc_player_module_install_begin(_player, _slot_index, _replacing = false)
+function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
 {
     var _installation = _player.inventory.installation;
     var _slot = _player.inventory.slots[_slot_index];
 
     if (_installation.active || is_undefined(_slot)) return false;
 
-    var _definition = variable_struct_get(global.data.items, _slot.key);
+    var _definition = variable_struct_get(global.data.items,_slot.key);
     if (_definition.type != ItemType.MODULE) return false;
 
     var _module = _definition.module;
@@ -44,7 +44,7 @@ function sc_player_module_install_begin(_player, _slot_index, _replacing = false
         grade: _slot.grade
     };
 
-    var _removed = sc_player_inventory_slot_remove(_player, _slot_index, 1);
+    var _removed = sc_player_inventory_slot_remove(_player,_slot_index,1);
     if (_removed.amount <= 0) return false;
 
     _installation.active = true;
@@ -77,13 +77,66 @@ function sc_player_module_install_cancel(_player)
     if (!_installation.active) return false;
 
     var _item = _installation.item;
-    var _returned = sc_player_inventory_add(_player, _item.key, 1, _item.grade);
+    var _returned = sc_player_inventory_add(_player,_item.key,1,_item.grade);
 
     if (_returned.accepted <= 0) return false;
 
     sc_player_module_install_clear(_player);
     _installation.cancelled_remaining = 90;
     return true;
+}
+
+/// @description Creates one installed-item modifier with optional grade scaling.
+function sc_player_equipment_modifier_create(_modifier,_grade)
+{
+    var _result = variable_clone(_modifier);
+    var _grade_scaled = variable_struct_exists(_modifier,"grade_scaled")
+        && _modifier.grade_scaled;
+
+    variable_struct_remove(_result,"grade_scaled");
+    if (!_grade_scaled) return _result;
+
+    var _grade_multiplier = sc_item_grade_multiplier_get(_grade);
+
+    if (variable_struct_exists(_result,"add"))
+        _result.add *= _grade_multiplier;
+
+    if (variable_struct_exists(_result,"multiply"))
+        _result.multiply = 1 + (_result.multiply - 1)*_grade_multiplier;
+
+    return _result;
+}
+
+/// @description Rebuilds player equipment modifiers from every installed item.
+function sc_player_equipment_modifiers_rebuild(_player)
+{
+    var _equipment = _player.inventory.equipment;
+    var _equipment_names = variable_struct_get_names(_equipment);
+    var _modifiers = [];
+
+    for (var _i = 0; _i < array_length(_equipment_names); ++_i)
+    {
+        var _installed = variable_struct_get(_equipment,_equipment_names[_i]);
+        if (is_undefined(_installed)) continue;
+
+        var _definition = variable_struct_get(global.data.items,_installed.key);
+        var _item_modifiers = _definition.module.modifiers;
+
+        for (var _j = 0; _j < array_length(_item_modifiers); ++_j)
+        {
+            array_push(
+                _modifiers,
+                sc_player_equipment_modifier_create(
+                    _item_modifiers[_j],
+                    _installed.grade
+                )
+            );
+        }
+    }
+
+    _player.ship.stats.modifiers.equipment = _modifiers;
+    _player.ship.stats.dirty = true;
+    return sc_player_stats_recalculate(_player);
 }
 
 /// @description Completes the currently installing module.
@@ -103,15 +156,14 @@ function sc_player_module_install_complete(_player)
                 grade: _item.grade
             };
 
-            sc_player_modules_modifiers_rebuild(_player);
-            sc_player_stats_refresh(_player);
+            sc_player_equipment_modifiers_rebuild(_player);
 
-            // Newly installed armour begins at full integrity.
-            _player.defence.armour.current = _player.defence.armour.maximum;
+            var _maximum = _player.ship.stats.final.armour_max;
+            _player.defence.armour.maximum = _maximum;
+            _player.defence.armour.current = _maximum;
         break;
 
-        default:
-            return false;
+        default: return false;
     }
 
     sc_player_module_install_clear(_player);

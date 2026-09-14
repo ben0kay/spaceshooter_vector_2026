@@ -829,83 +829,118 @@ function sc_hud_panel_primitive_draw(_width, _height, _cut, _palette)
     draw_set_colour(c_white);
 }
 
-/// @description Draws the static slim segmented bottom-HUD body before baking.
-function sc_hud_bottom_body_primitive_draw(_data)
+/// @description Draws the static Ship Command window before baking.
+function sc_inventory_body_primitive_draw(_hud_data)
 {
-    var _bottom = _data.bottom;
-    var _palette = _data.palette;
-    var _cells = _bottom.cells;
-    var _cell_names = ["shield", "armour", "hull", "energy", "fuel", "bullets", "explosives", "dash", "cargo", "weapon"];
-    var _bar_names = ["shield", "armour", "hull", "energy", "fuel", "dash", "cargo"];
+    var _data = _hud_data.inventory;
+    var _palette = _hud_data.palette;
+    var _grid = _data.grid;
+    var _info = _data.info;
 
-    sc_hud_panel_primitive_draw(_bottom.width, _bottom.height, 18, _palette);
+    var _cargo_right = _info.x - 15;
+    var _cargo_bottom = _data.height - 175;
 
-    for (var _i = 0; _i < array_length(_cell_names); _i++)
+    sc_hud_panel_primitive_draw(_data.width, _data.height, 30, _palette);
+
+    // Header.
+    draw_set_colour(_palette.void);
+    draw_set_alpha(0.96);
+    draw_rectangle(32, 22, _data.width - 32, 142, false);
+
+    draw_set_colour(_palette.panel_light);
+    draw_set_alpha(0.8);
+    draw_rectangle(32, 22, _data.width - 32, 142, true);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.7);
+    draw_line_width(52, 65, 330, 65, 2);
+    draw_line_width(52, 132, _data.width - 52, 132, 2);
+
+    // Decorative header circuitry.
+    draw_set_alpha(0.35);
+    draw_line_width(52, 34, 240, 34, 1);
+    draw_line_width(240, 34, 256, 50, 1);
+    draw_line_width(256, 50, 342, 50, 1);
+
+    // Cargo panel.
+    draw_set_colour(_palette.void);
+    draw_set_alpha(0.92);
+    draw_rectangle(32, 160, _cargo_right, _cargo_bottom, false);
+
+    draw_set_colour(_palette.panel_light);
+    draw_set_alpha(0.7);
+    draw_rectangle(32, 160, _cargo_right, _cargo_bottom, true);
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.7);
+    draw_line_width(48, 176, 140, 176, 2);
+    draw_line_width(48, 176, 48, 188, 2);
+
+    // Cargo slots.
+    for (var _row = 0; _row < _grid.rows; _row++)
     {
-        var _cell = variable_struct_get(_cells, _cell_names[_i]);
-        var _left = _cell.x;
-        var _right = _left + _cell.width;
-
-        draw_set_colour(_palette.void);
-        draw_set_alpha(0.88);
-        draw_rectangle(_left, 8, _right, _bottom.height - 12, false);
-
-        draw_set_colour(_palette.panel_light);
-        draw_set_alpha(0.65);
-        draw_rectangle(_left, 8, _right, _bottom.height - 12, true);
-
-        // Small baked interface node beside each label.
-        draw_set_colour(_palette.outline);
-        draw_set_alpha(0.75);
-        draw_circle(_left + 10, 19, 4, true);
-
-        draw_set_colour(_palette.accent);
-        draw_set_alpha(0.6);
-        draw_circle(_left + 10, 19, 1.5, false);
-
-        if (_i < array_length(_cell_names) - 1)
+        for (var _column = 0; _column < _grid.columns; _column++)
         {
-            draw_set_colour(_palette.outline);
-            draw_set_alpha(0.6);
-            draw_line_width(_right + 4, 13, _right + 4, _bottom.height - 17, 1);
-            draw_line_width(_right + 4, 13, _right + 8, 9, 1);
-            draw_line_width(_right + 4, _bottom.height - 17, _right + 8, _bottom.height - 13, 1);
-        }
-    }
-
-    for (var _i = 0; _i < array_length(_bar_names); _i++)
-    {
-        var _cell = variable_struct_get(_cells, _bar_names[_i]);
-        var _segments = _bottom.bar_segments;
-        var _left = _cell.x + 7;
-        var _available = _cell.width - 14;
-        var _gap = 2;
-        var _segment_width = (_available - (_segments - 1) * _gap) / _segments;
-
-        for (var _segment = 0; _segment < _segments; _segment++)
-        {
-            var _segment_x = _left + _segment * (_segment_width + _gap);
+            var _x = _grid.x + _column * (_grid.slot_size + _grid.gap);
+            var _y = _grid.y + _row * (_grid.slot_size + _grid.gap);
 
             draw_set_colour(_palette.background);
-            draw_set_alpha(1);
-            draw_rectangle(_segment_x, 37, _segment_x + _segment_width, 49, false);
+            draw_set_alpha(0.96);
+            draw_rectangle(_x, _y, _x + _grid.slot_size, _y + _grid.slot_size, false);
+
+            draw_set_colour(_palette.outline);
+            draw_set_alpha(0.58);
+            draw_rectangle(_x, _y, _x + _grid.slot_size, _y + _grid.slot_size, true);
 
             draw_set_colour(_palette.panel_light);
-            draw_set_alpha(0.8);
-            draw_rectangle(_segment_x, 37, _segment_x + _segment_width, 49, true);
+            draw_set_alpha(0.35);
+            draw_line(_x + 5, _y + 5, _x + 17, _y + 5);
+            draw_line(_x + 5, _y + 5, _x + 5, _y + 17);
+
+            draw_set_colour(_palette.outline);
+            draw_set_alpha(0.25);
+            draw_line(
+                _x + _grid.slot_size - 15,
+                _y + _grid.slot_size - 5,
+                _x + _grid.slot_size - 5,
+                _y + _grid.slot_size - 5
+            );
+
+            draw_line(
+                _x + _grid.slot_size - 5,
+                _y + _grid.slot_size - 15,
+                _x + _grid.slot_size - 5,
+                _y + _grid.slot_size - 5
+            );
         }
     }
 
-    // Reference-style central telemetry markings.
-    draw_set_colour(_palette.accent);
-    draw_set_alpha(0.8);
+    // Item inspector.
+    draw_set_colour(_palette.void);
+    draw_set_alpha(0.94);
+    draw_rectangle(
+        _info.x,
+        _info.y,
+        _info.x + _info.width,
+        _info.y + _info.height,
+        false
+    );
 
-    for (var _i = -3; _i <= 3; _i++)
-    {
-        var _marker_x = _bottom.width * 0.5 + _i * 7;
-        var _marker_height = 2 + (3 - abs(_i));
-        draw_line(_marker_x, _bottom.height - 9, _marker_x, _bottom.height - 9 - _marker_height);
-    }
+    draw_set_colour(_palette.panel_light);
+    draw_set_alpha(0.72);
+    draw_rectangle(
+        _info.x,
+        _info.y,
+        _info.x + _info.width,
+        _info.y + _info.height,
+        true
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_set_alpha(0.75);
+    draw_line_width(_info.x + 18, _info.y + 48, _info.x + _info.width - 18, _info.y + 48, 1);
+    draw_line_width(_info.x + 18, _info.y + 292, _info.x + _info.width - 18, _info.y + 292, 1);
+    draw_line_width(_info.x + 18, _info.y + 392, _info.x + _info.width - 18, _info.y + 392, 1);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);

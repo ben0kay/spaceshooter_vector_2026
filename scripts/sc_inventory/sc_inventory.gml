@@ -625,199 +625,492 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
     var _runtime = _hud.inventory;
     var _data = _hud.data.inventory;
     var _equipment = _data.equipment;
+    var _workspace = _equipment.workspace;
     var _palette = _hud.data.palette;
+
     var _armour_slot = _equipment.armour;
     var _installed = _player.inventory.equipment.armour;
 
+    // Complete tab background.
     draw_set_alpha(0.98);
     draw_set_colour(_palette.background);
-    draw_rectangle(_origin_x + 32, _origin_y + 155, _origin_x + _data.width - 32, _origin_y + _data.height - 24, false);
+    draw_rectangle(
+        _origin_x + 32,
+        _origin_y + 155,
+        _origin_x + _data.width - 32,
+        _origin_y + _data.height - 24,
+        false
+    );
 
+    // Main equipment workspace.
     draw_set_colour(_palette.outline);
     draw_set_alpha(0.7);
-    draw_rectangle(_origin_x + 32, _origin_y + 155, _origin_x + 1085, _origin_y + 675, true);
+    draw_rectangle(
+        _origin_x + _workspace.x,
+        _origin_y + _workspace.y,
+        _origin_x + _workspace.x + _workspace.width,
+        _origin_y + _workspace.y + _workspace.height,
+        true
+    );
 
     draw_set_colour(_palette.accent);
     draw_set_alpha(1);
-    draw_text(_origin_x + 52, _origin_y + 178, "SHIP MODULE CONFIGURATION");
+    draw_text(
+        _origin_x + _workspace.x + 20,
+        _origin_y + _workspace.y + 23,
+        "SHIP EQUIPMENT CONFIGURATION"
+    );
 
     var _slot_x = _origin_x + _armour_slot.x;
-	var _slot_y = _origin_y + _armour_slot.y;
-	var _installation = _player.inventory.installation;
-	var _installing = _installation.active && _installation.slot == ModuleSlot.ARMOUR;
-	var _display_item = _installing ? _installation.item : _installed;
-	var _grade = is_undefined(_display_item) ? ItemGrade.COMMON : _display_item.grade;
-	var _grade_colour = sc_item_grade_colour_get(_grade);
+    var _slot_y = _origin_y + _armour_slot.y;
 
-	draw_set_colour(_palette.void);
-	draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, false);
+    var _installation = _player.inventory.installation;
+    var _installing = _installation.active
+        && _installation.slot == ModuleSlot.ARMOUR;
 
-	draw_set_colour(is_undefined(_display_item) ? _palette.outline : _grade_colour);
-	draw_rectangle(_slot_x, _slot_y, _slot_x + _armour_slot.width, _slot_y + _armour_slot.height, true);
+    var _display_item = _installing
+        ? _installation.item
+        : _installed;
 
-	draw_set_colour(_palette.accent);
-	draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
+    var _grade = is_undefined(_display_item)
+        ? ItemGrade.COMMON
+        : _display_item.grade;
 
-	if (_installing)
-	{
-	    var _progress = 1 - _installation.remaining / max(1, _installation.duration);
-	    var _sprite = sc_resource_pickup_visual_cache_get(_display_item.key, 0);
-	    var _bar_x = _slot_x + 90;
-	    var _bar_y = _slot_y + 76;
-	    var _bar_width = _armour_slot.width - 106;
+    var _grade_colour = sc_item_grade_colour_get(_grade);
 
-	    if (sprite_exists(_sprite))
-	        draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 0.65);
+    // Armour equipment slot.
+    draw_set_colour(_palette.void);
+    draw_rectangle(
+        _slot_x,
+        _slot_y,
+        _slot_x + _armour_slot.width,
+        _slot_y + _armour_slot.height,
+        false
+    );
 
-	    draw_set_colour(_grade_colour);
-	    draw_text(_slot_x + 90, _slot_y + 48, _display_item.name);
+    draw_set_colour(
+        is_undefined(_display_item)
+        ? _palette.outline
+        : _grade_colour
+    );
 
-	    draw_set_colour(_palette.accent);
-	    draw_text(_slot_x + 90, _slot_y + 65, "INSTALLING " + string(round(_progress * 100)) + "%");
+    draw_rectangle(
+        _slot_x,
+        _slot_y,
+        _slot_x + _armour_slot.width,
+        _slot_y + _armour_slot.height,
+        true
+    );
 
-	    draw_set_colour(_palette.background);
-	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width, _bar_y + 8, false);
+    draw_set_colour(_palette.accent);
+    draw_text(_slot_x + 14, _slot_y + 18, "ARMOUR PLATING");
 
-	    draw_set_colour(_palette.accent);
-	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width * _progress, _bar_y + 8, false);
+    if (_installing)
+    {
+        var _progress = 1
+            - _installation.remaining
+            / max(1, _installation.duration);
 
-	    draw_set_colour(_palette.outline);
-	    draw_rectangle(_bar_x, _bar_y, _bar_x + _bar_width, _bar_y + 8, true);
-	}
-	else if (is_undefined(_installed))
-	{
-	    draw_set_colour(_palette.muted);
-	    draw_text(_slot_x + 14, _slot_y + 56, "EMPTY");
-	}
-	else
-	{
-	    var _sprite = sc_resource_pickup_visual_cache_get(_installed.key, 0);
-	    var _armour_percent = round(
-	        _player.defence.armour.current
-	        / max(1, _player.defence.armour.maximum)
-	        * 100
-	    );
+        var _sprite = sc_resource_pickup_visual_cache_get(
+            _display_item.key,
+            0
+        );
 
-	    if (sprite_exists(_sprite))
-	        draw_sprite_ext(_sprite, 0, _slot_x + 48, _slot_y + 63, 1.25, 1.25, 0, c_white, 1);
+        var _bar_x = _slot_x + 90;
+        var _bar_y = _slot_y + 82;
+        var _bar_width = _armour_slot.width - 106;
 
-	    draw_set_colour(_grade_colour);
-	    draw_text(_slot_x + 90, _slot_y + 52, _installed.name);
+        if (sprite_exists(_sprite))
+        {
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _slot_x + 48,
+                _slot_y + 67,
+                1.25,
+                1.25,
+                0,
+                c_white,
+                0.65
+            );
+        }
 
-	    draw_set_colour(_palette.muted);
-	    draw_text(_slot_x + 90, _slot_y + 75, sc_item_grade_name_get(_installed.grade));
+        draw_set_colour(_grade_colour);
+        draw_text(
+            _slot_x + 90,
+            _slot_y + 48,
+            _display_item.name
+        );
 
-	    draw_set_halign(fa_right);
-	    draw_set_colour(_grade_colour);
-	    draw_text(_slot_x + _armour_slot.width - 14, _slot_y + 75, string(_armour_percent) + "%");
-	    draw_set_halign(fa_left);
-	}
+        draw_set_colour(_palette.accent);
+        draw_text(
+            _slot_x + 90,
+            _slot_y + 68,
+            "INSTALLING " + string(round(_progress * 100)) + "%"
+        );
 
+        draw_set_colour(_palette.background);
+        draw_rectangle(
+            _bar_x,
+            _bar_y,
+            _bar_x + _bar_width,
+            _bar_y + 8,
+            false
+        );
+
+        draw_set_colour(_palette.accent);
+        draw_rectangle(
+            _bar_x,
+            _bar_y,
+            _bar_x + _bar_width * _progress,
+            _bar_y + 8,
+            false
+        );
+
+        draw_set_colour(_palette.outline);
+        draw_rectangle(
+            _bar_x,
+            _bar_y,
+            _bar_x + _bar_width,
+            _bar_y + 8,
+            true
+        );
+    }
+    else if (is_undefined(_installed))
+    {
+        draw_set_colour(_palette.muted);
+        draw_text(_slot_x + 14, _slot_y + 60, "EMPTY");
+    }
+    else
+    {
+        var _sprite = sc_resource_pickup_visual_cache_get(
+            _installed.key,
+            0
+        );
+
+        var _armour_percent = round(
+            _player.defence.armour.current
+            / max(1, _player.defence.armour.maximum)
+            * 100
+        );
+
+        if (sprite_exists(_sprite))
+        {
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _slot_x + 48,
+                _slot_y + 67,
+                1.25,
+                1.25,
+                0,
+                c_white,
+                1
+            );
+        }
+
+        draw_set_colour(_grade_colour);
+        draw_text(
+            _slot_x + 90,
+            _slot_y + 53,
+            _installed.name
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _slot_x + 90,
+            _slot_y + 78,
+            sc_item_grade_name_get(_installed.grade)
+        );
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_grade_colour);
+        draw_text(
+            _slot_x + _armour_slot.width - 14,
+            _slot_y + 78,
+            string(_armour_percent) + "%"
+        );
+        draw_set_halign(fa_left);
+    }
+
+    // Ship preview.
     var _ship_x = _origin_x + _equipment.ship_x;
     var _ship_y = _origin_y + _equipment.ship_y;
     var _cache = _player.ship.visual.runtime.cache;
-    var _hull_stage = sc_player_damage_visual_stage(_player.defence.hull.current, _player.defence.hull.maximum);
-    var _armour_stage = sc_player_damage_visual_stage(_player.defence.armour.current, max(1, _player.defence.armour.maximum));
+
+    var _hull_stage = sc_player_damage_visual_stage(
+        _player.defence.hull.current,
+        _player.defence.hull.maximum
+    );
+
+    var _armour_stage = sc_player_damage_visual_stage(
+        _player.defence.armour.current,
+        max(1, _player.defence.armour.maximum)
+    );
 
     draw_set_alpha(0.15);
     draw_set_colour(_palette.accent);
-    draw_circle(_ship_x, _ship_y, 190, true);
-    draw_circle(_ship_x, _ship_y, 145, true);
+    draw_circle(_ship_x, _ship_y, 215, true);
+    draw_circle(_ship_x, _ship_y, 165, true);
 
     if (sprite_exists(_cache.hull[_hull_stage]))
-        draw_sprite_ext(_cache.hull[_hull_stage], 0, _ship_x, _ship_y, 1.15, 1.15, 270, c_white, 1);
+    {
+        draw_sprite_ext(
+            _cache.hull[_hull_stage],
+            0,
+            _ship_x,
+            _ship_y,
+            1.3,
+            1.3,
+            270,
+            c_white,
+            1
+        );
+    }
 
-    if (_player.defence.armour.current > 0 && sprite_exists(_cache.armour[_armour_stage]))
-        draw_sprite_ext(_cache.armour[_armour_stage], 0, _ship_x, _ship_y, 1.15, 1.15, 270, c_white, 1);
+    if (_player.defence.armour.current > 0
+    && sprite_exists(_cache.armour[_armour_stage]))
+    {
+        draw_sprite_ext(
+            _cache.armour[_armour_stage],
+            0,
+            _ship_x,
+            _ship_y,
+            1.3,
+            1.3,
+            270,
+            c_white,
+            1
+        );
+    }
 
     draw_set_colour(_grade_colour);
-    draw_line_width(_slot_x + _armour_slot.width, _slot_y + 50, _ship_x - 120, _ship_y - 70, 2);
-    draw_circle(_ship_x - 120, _ship_y - 70, 6, false);
+    draw_line_width(
+        _slot_x + _armour_slot.width,
+        _slot_y + 55,
+        _ship_x - 135,
+        _ship_y - 80,
+        2
+    );
 
+    draw_circle(
+        _ship_x - 135,
+        _ship_y - 80,
+        6,
+        false
+    );
+
+    // Equipment storage.
     var _storage = _equipment.storage;
     var _indices = sc_inventory_module_indices_get(_player);
 
     draw_set_colour(_palette.outline);
-    draw_rectangle(_origin_x + 32, _origin_y + 682, _origin_x + 1085, _origin_y + 832, true);
+    draw_rectangle(
+        _origin_x + 32,
+        _origin_y + 800,
+        _origin_x + _workspace.x + _workspace.width,
+        _origin_y + _data.height - 28,
+        true
+    );
 
     draw_set_colour(_palette.accent);
-    draw_text(_origin_x + 52, _origin_y + 690, "MODULE STORAGE");
+    draw_text(
+        _origin_x + 52,
+        _origin_y + 808,
+        "EQUIPMENT STORAGE"
+    );
 
-    for (var _i = 0; _i < min(array_length(_indices), _storage.columns); ++_i)
+    for (
+        var _i = 0;
+        _i < min(array_length(_indices), _storage.columns);
+        ++_i
+    )
     {
         var _slot_index = _indices[_i];
         var _item = _player.inventory.slots[_slot_index];
-        var _x = _origin_x + _storage.x + _i * (_storage.slot_size + _storage.gap);
+
+        var _x = _origin_x
+            + _storage.x
+            + _i * (_storage.slot_size + _storage.gap);
+
         var _y = _origin_y + _storage.y;
         var _item_grade = _item.grade;
         var _colour = sc_item_grade_colour_get(_item_grade);
-        var _sprite = sc_resource_pickup_visual_cache_get(_item.key, _i mod 4);
+
+        var _sprite = sc_resource_pickup_visual_cache_get(
+            _item.key,
+            _i mod 4
+        );
 
         draw_set_colour(_palette.void);
-        draw_rectangle(_x, _y, _x + _storage.slot_size, _y + _storage.slot_size, false);
+        draw_rectangle(
+            _x,
+            _y,
+            _x + _storage.slot_size,
+            _y + _storage.slot_size,
+            false
+        );
 
         draw_set_colour(_colour);
-        draw_rectangle(_x, _y, _x + _storage.slot_size, _y + _storage.slot_size, true);
+        draw_rectangle(
+            _x,
+            _y,
+            _x + _storage.slot_size,
+            _y + _storage.slot_size,
+            true
+        );
 
         if (sprite_exists(_sprite))
-            draw_sprite_ext(_sprite, 0, _x + _storage.slot_size * 0.5, _y + 39, 1.15, 1.15, 0, c_white, 1);
+        {
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _x + _storage.slot_size * 0.5,
+                _y + 39,
+                1.15,
+                1.15,
+                0,
+                c_white,
+                1
+            );
+        }
 
         draw_set_halign(fa_right);
         draw_set_colour(_colour);
-        draw_text(_x + _storage.slot_size - 6, _y + _storage.slot_size - 10, "x" + string(_item.amount));
+        draw_text(
+            _x + _storage.slot_size - 6,
+            _y + _storage.slot_size - 10,
+            "x" + string(_item.amount)
+        );
         draw_set_halign(fa_left);
     }
 
+    // Equipment inspector.
     var _inspector = _equipment.inspector;
     var _info_x = _origin_x + _inspector.x;
     var _info_y = _origin_y + _inspector.y;
 
     draw_set_colour(_palette.void);
-    draw_rectangle(_info_x, _info_y, _info_x + _inspector.width, _info_y + _inspector.height, false);
+    draw_rectangle(
+        _info_x,
+        _info_y,
+        _info_x + _inspector.width,
+        _info_y + _inspector.height,
+        false
+    );
 
     draw_set_colour(_palette.outline);
-    draw_rectangle(_info_x, _info_y, _info_x + _inspector.width, _info_y + _inspector.height, true);
+    draw_rectangle(
+        _info_x,
+        _info_y,
+        _info_x + _inspector.width,
+        _info_y + _inspector.height,
+        true
+    );
 
     draw_set_colour(_palette.accent);
-    draw_text(_info_x + 18, _info_y + 28, "MODULE INSPECTOR");
-    draw_line(_info_x + 18, _info_y + 52, _info_x + _inspector.width - 18, _info_y + 52);
+    draw_text(
+        _info_x + 18,
+        _info_y + 28,
+        "EQUIPMENT INSPECTOR"
+    );
+
+    draw_line(
+        _info_x + 18,
+        _info_y + 52,
+        _info_x + _inspector.width - 18,
+        _info_y + 52
+    );
 
     if (!is_undefined(_installed))
     {
-        var _definition = variable_struct_get(global.data.items, _installed.key);
+        var _definition = variable_struct_get(
+            global.data.items,
+            _installed.key
+        );
+
         var _maximum = _player.defence.armour.maximum;
 
         draw_set_colour(_grade_colour);
-        draw_text(_info_x + 18, _info_y + 88, _installed.name);
+        draw_text(
+            _info_x + 18,
+            _info_y + 88,
+            _installed.name
+        );
 
         draw_set_colour(_palette.muted);
-        draw_text(_info_x + 18, _info_y + 116, sc_item_grade_name_get(_installed.grade));
+        draw_text(
+            _info_x + 18,
+            _info_y + 116,
+            sc_item_grade_name_get(_installed.grade)
+        );
 
         draw_set_colour(_palette.accent);
-        draw_text(_info_x + 18, _info_y + 165, "STAT EFFECTS");
+        draw_text(
+            _info_x + 18,
+            _info_y + 165,
+            "STAT EFFECTS"
+        );
 
         draw_set_colour(_palette.text);
         draw_text(_info_x + 18, _info_y + 200, "ARMOUR CAPACITY");
         draw_text(_info_x + 18, _info_y + 228, "CURRENT INTEGRITY");
-        draw_text(_info_x + 18, _info_y + 256, "MASS");
+        draw_text(_info_x + 18, _info_y + 256, "CARGO MASS");
 
         draw_set_halign(fa_right);
-        draw_text(_info_x + _inspector.width - 18, _info_y + 200, "+" + string(_maximum));
-        draw_text(_info_x + _inspector.width - 18, _info_y + 228, string(_player.defence.armour.current) + " / " + string(_maximum));
-        draw_text(_info_x + _inspector.width - 18, _info_y + 256, string(_definition.cargo.weight));
+
+        draw_text(
+            _info_x + _inspector.width - 18,
+            _info_y + 200,
+            string(_maximum)
+        );
+
+        draw_text(
+            _info_x + _inspector.width - 18,
+            _info_y + 228,
+            string(_player.defence.armour.current)
+            + " / "
+            + string(_maximum)
+        );
+
+        draw_text(
+            _info_x + _inspector.width - 18,
+            _info_y + 256,
+            string(_definition.cargo.weight)
+        );
+
         draw_set_halign(fa_left);
     }
+    else
+    {
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _info_x + 18,
+            _info_y + 88,
+            "NO EQUIPMENT SELECTED"
+        );
+    }
 
+    // Dragged equipment visual.
     if (_runtime.drag.active)
     {
-        var _drag_item = _player.inventory.slots[_runtime.drag.source_slot];
+        var _drag_item = _player.inventory.slots[
+            _runtime.drag.source_slot
+        ];
 
         if (!is_undefined(_drag_item))
         {
             var _mouse_x = device_mouse_x_to_gui(0);
             var _mouse_y = device_mouse_y_to_gui(0);
-            var _sprite = sc_resource_pickup_visual_cache_get(_drag_item.key, 0);
-            var _colour = sc_item_grade_colour_get(_drag_item.grade);
+
+            var _sprite = sc_resource_pickup_visual_cache_get(
+                _drag_item.key,
+                0
+            );
+
+            var _colour = sc_item_grade_colour_get(
+                _drag_item.grade
+            );
 
             draw_set_alpha(0.9);
             draw_set_colour(_palette.void);
@@ -827,11 +1120,27 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
             draw_circle(_mouse_x, _mouse_y, 35, true);
 
             if (sprite_exists(_sprite))
-                draw_sprite_ext(_sprite, 0, _mouse_x, _mouse_y, 1.3, 1.3, 0, c_white, 1);
+            {
+                draw_sprite_ext(
+                    _sprite,
+                    0,
+                    _mouse_x,
+                    _mouse_y,
+                    1.3,
+                    1.3,
+                    0,
+                    c_white,
+                    1
+                );
+            }
         }
     }
-	
-	sc_inventory_module_replace_draw(_hud, _origin_x, _origin_y);
+
+    sc_inventory_module_replace_draw(
+        _hud,
+        _origin_x,
+        _origin_y
+    );
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
