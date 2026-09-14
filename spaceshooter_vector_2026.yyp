@@ -350,6 +350,7 @@
     {"id":{"name":"s_particle_trail_white_arrow","path":"sprites/s_particle_trail_white_arrow/s_particle_trail_white_arrow.yy",},},
     {"id":{"name":"s_particle_trail_white_beam","path":"sprites/s_particle_trail_white_beam/s_particle_trail_white_beam.yy",},},
     {"id":{"name":"s_particle_wisp_001","path":"sprites/s_particle_wisp_001/s_particle_wisp_001.yy",},},
+    {"id":{"name":"s_plyr_ship_shard_hull","path":"sprites/s_plyr_ship_shard_hull/s_plyr_ship_shard_hull.yy",},},
     {"id":{"name":"s_ring","path":"sprites/s_ring/s_ring.yy",},},
     {"id":{"name":"s_sharp","path":"sprites/s_sharp/s_sharp.yy",},},
     {"id":{"name":"s_sim_dreadwing_cannon","path":"sprites/s_sim_dreadwing_cannon/s_sim_dreadwing_cannon.yy",},},

@@ -393,60 +393,52 @@ function sc_hud_level_data()
 },
 			
 		inventory: {
-    width: 1560,
-    height: 860,
+    width: 1760,
+    height: 940,
 
     tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG", "STATISTICS"],
-    tab_x: 385,
+    tab_x: 510,
     tab_y: 82,
-    tab_width: 128,
+    tab_width: 160,
     tab_height: 42,
-    tab_gap: 10,
+    tab_gap: 8,
 
     grid: {
-        x: 50,
-        y: 195,
-        columns: 8,
-        rows: 4,
-        slot_size: 92,
-        gap: 8,
-        width: 792,
-        height: 392
+        x: 50, y: 195,
+        columns: 8, rows: 5,
+        slot_size: 92, gap: 8,
+        width: 792, height: 492
     },
 
     info: {
-        x: 875,
-        y: 165,
-        width: 350,
-        height: 470
+        x: 890, y: 165,
+        width: 820, height: 550
     },
 
     capacity: {
-        x: 50,
-        y: 646,
-        width: 600,
-        height: 12
+        x: 50, y: 750,
+        width: 792, height: 12
     },
 
     equipment: {
-        ship_x: 700,
-        ship_y: 430,
+        ship_x: 850,
+        ship_y: 475,
 
-        armour: { x: 55, y: 210, width: 300, height: 100 },
+        armour: {
+            x: 55, y: 210,
+            width: 340, height: 110
+        },
 
         storage: {
-            x: 55,
-            y: 700,
-            columns: 8,
+            x: 55, y: 820,
+            columns: 10,
             slot_size: 74,
             gap: 10
         },
 
         inspector: {
-            x: 1125,
-            y: 175,
-            width: 380,
-            height: 500
+            x: 1320, y: 175,
+            width: 390, height: 650
         }
     }
 }
