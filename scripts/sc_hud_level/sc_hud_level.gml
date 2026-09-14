@@ -375,7 +375,7 @@ function sc_hud_level_data()
 
     categories: [
         { layer: ItemLayer.REFINED, name: "MATERIALS", description: "REFINED RESOURCES, COMPOSITES AND ALLOYS" },
-        { layer: ItemLayer.PART, name: "PARTS", description: "MECHANICAL, ELECTRICAL AND STRUCTURAL PARTS" },
+        { layer: ItemLayer.COMPONENT, name: "PARTS", description: "MECHANICAL, ELECTRICAL AND STRUCTURAL PARTS" },
         { layer: ItemLayer.PRODUCT, name: "PRODUCTS", description: "MODULES, WEAPONS, DRONES AND DEVICES" }
     ]
 },

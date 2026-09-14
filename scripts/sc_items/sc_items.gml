@@ -96,7 +96,7 @@ function sc_item_layer_name_get(_layer)
     {
         case ItemLayer.RAW: return "RAW RESOURCE";
         case ItemLayer.REFINED: return "PROCESSED MATERIAL";
-        case ItemLayer.PART: return "INDUSTRIAL PART";
+        case ItemLayer.COMPONENT: return "INDUSTRIAL PART";
         case ItemLayer.PRODUCT: return "FINISHED PRODUCT";
     }
 
@@ -312,35 +312,35 @@ function sc_item_register_all()
 
     && sc_item_register({
         identity: { key: "item_iron_plate", name: "Iron Plate" },
-        layer: ItemLayer.PART, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.COMPONENT, type: ItemType.STRUCTURAL,
         description: "A standardized structural plate used in ship construction.",
         cargo: { weight: 6, stack_max: 30 },
         visual: { colour: make_colour_rgb(156,174,185), glow: make_colour_rgb(54,154,174), draw_script: sc_item_plate_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_copper_wire", name: "Copper Wire" },
-        layer: ItemLayer.PART, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.COMPONENT, type: ItemType.ELECTRICAL,
         description: "Flexible conductive wiring used throughout electrical systems.",
         cargo: { weight: 2, stack_max: 50 },
         visual: { colour: make_colour_rgb(205,104,53), glow: make_colour_rgb(255,168,76), draw_script: sc_item_plate_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_copper_coil", name: "Copper Coil" },
-        layer: ItemLayer.PART, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.COMPONENT, type: ItemType.ELECTRICAL,
         description: "A wound conductive coil used in motors and power systems.",
         cargo: { weight: 4, stack_max: 30 },
         visual: { colour: make_colour_rgb(190,91,48), glow: make_colour_rgb(255,156,55), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_circuit_board", name: "Circuit Board" },
-        layer: ItemLayer.PART, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.COMPONENT, type: ItemType.ELECTRICAL,
         description: "A programmable electronic board used to control ship systems.",
         cargo: { weight: 2, stack_max: 30 },
         visual: { colour: make_colour_rgb(50,134,112), glow: make_colour_rgb(44,239,205), draw_script: sc_item_plate_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_motor", name: "Motor" },
-        layer: ItemLayer.PART, type: ItemType.MECHANICAL,
+        layer: ItemLayer.COMPONENT, type: ItemType.MECHANICAL,
         description: "A compact electromechanical motor used in moving assemblies.",
         cargo: { weight: 7, stack_max: 20 },
         visual: { colour: make_colour_rgb(116,136,148), glow: make_colour_rgb(223,131,58), draw_script: sc_item_ingot_primitive_draw }
