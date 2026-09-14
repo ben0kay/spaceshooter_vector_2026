@@ -93,25 +93,21 @@ function sc_player_module_install_complete(_player)
     if (!_installation.active) return false;
 
     var _item = _installation.item;
-    var _definition = variable_struct_get(global.data.items, _item.key);
 
     switch (_installation.slot)
     {
         case ModuleSlot.ARMOUR:
-            var _maximum = round(
-                _player.ship.stats.base.armour_max
-                * _definition.module.effectiveness
-                * sc_item_grade_multiplier_get(_item.grade)
-            );
-
             _player.inventory.equipment.armour = {
                 key: _item.key,
                 name: _item.name,
                 grade: _item.grade
             };
 
-            _player.defence.armour.maximum = _maximum;
-            _player.defence.armour.current = _maximum;
+            sc_player_modules_modifiers_rebuild(_player);
+            sc_player_stats_refresh(_player);
+
+            // Newly installed armour begins at full integrity.
+            _player.defence.armour.current = _player.defence.armour.maximum;
         break;
 
         default:
