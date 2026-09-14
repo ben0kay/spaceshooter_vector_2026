@@ -287,10 +287,11 @@ function sc_enemy_sim_dreadwing_visual_data()
         authored:{
             enabled:_authored_enabled,
 
-            body:{
-                sprite: s_sim_dreadwing_hull,
-                scale:0.533
-            },
+            body: {
+    sprite: s_sim_dreadwing_hull,
+    scale: 0.533,
+    fallback_script: sc_enemy_sim_dreadwing_body_draw
+},
 
             cannon:{
                 sprite:s_sim_dreadwing_cannon,
@@ -305,7 +306,7 @@ function sc_enemy_sim_dreadwing_visual_data()
 
         draw:{
             // Dispatcher chooses imported artwork or original primitives.
-            body:sc_enemy_sim_dreadwing_body_dispatch,
+            body: sc_enemy_body_dispatch,
             core:sc_enemy_sim_dreadwing_core_draw
         },
 
@@ -341,43 +342,6 @@ function sc_enemy_sim_dreadwing_visual_data()
             fragment_canvas_size:256
         }
     };
-}
-
-/// @description Selects the authored or primitive Dreadwing body drawing pipeline.
-function sc_enemy_sim_dreadwing_body_dispatch(
-    _x,_y,_radius,_angle,_visual
-)
-{
-    if (_visual.authored.enabled
-    && sprite_exists(_visual.authored.body.sprite))
-    {
-        sc_enemy_sim_dreadwing_body_authored_draw(
-            _x,_y,_radius,_angle,_visual
-        );
-
-        return;
-    }
-
-    sc_enemy_sim_dreadwing_body_draw(
-        _x,_y,_radius,_angle,_visual
-    );
-}
-
-/// @description Draws the imported Dreadwing hull into its normal baked body surface.
-function sc_enemy_sim_dreadwing_body_authored_draw(
-    _x,_y,_radius,_angle,_visual
-)
-{
-    var _authored=_visual.authored.body;
-
-    draw_sprite_ext(
-        _authored.sprite,0,
-        _x,_y,
-        _authored.scale,
-        _authored.scale,
-        _angle,
-        c_white,1
-    );
 }
 
 /// @description Selects the authored or primitive Dreadwing cannon drawing pipeline.

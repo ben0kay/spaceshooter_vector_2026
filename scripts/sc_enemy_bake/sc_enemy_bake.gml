@@ -202,3 +202,26 @@ function sc_enemy_visual_cache_destroy()
     global.enemy_visual_cache = {};
     show_debug_message("ENEMY VISUAL CACHE DESTROYED");
 }
+
+/// @description Draws an authored enemy hull or its primitive fallback.
+function sc_enemy_body_dispatch(_x,_y,_radius,_angle,_visual)
+{
+    var _body = _visual.authored.body;
+
+    if (_visual.authored.enabled && sprite_exists(_body.sprite))
+    {
+        draw_sprite_ext(
+            _body.sprite,0,
+            _x,_y,
+            _body.scale,_body.scale,
+            _angle,
+            c_white,1
+        );
+
+        return;
+    }
+
+    _body.fallback_script(
+        _x,_y,_radius,_angle,_visual
+    );
+}

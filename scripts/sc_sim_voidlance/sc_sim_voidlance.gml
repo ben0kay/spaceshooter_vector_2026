@@ -272,7 +272,8 @@ function sc_enemy_sim_voidlance_visual_data()
 
             body: {
                 sprite: s_sim_voidlance_hull,
-                scale: 0.375
+                scale: 0.65,
+				fallback_script: sc_enemy_sim_voidlance_body_draw
             }
         },
 
@@ -282,7 +283,7 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         draw: {
-            body: sc_enemy_sim_voidlance_body_dispatch,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_sim_voidlance_core_draw
         },
 
@@ -312,50 +313,13 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         bake: {
-            body_canvas_size: 640,
+            body_canvas_size: 768,
             core_canvas_size: 256,
             hardpoint_canvas_size: 256,
             thrust_canvas_size: 192,
             fragment_canvas_size: 384
         }
     };
-}
-
-/// @description Selects the authored or primitive Voidlance body.
-function sc_enemy_sim_voidlance_body_dispatch(
-    _x,_y,_radius,_angle,_visual
-)
-{
-    if (_visual.authored.enabled
-    && sprite_exists(_visual.authored.body.sprite))
-    {
-        sc_enemy_sim_voidlance_body_authored_draw(
-            _x,_y,_radius,_angle,_visual
-        );
-
-        return;
-    }
-
-    sc_enemy_sim_voidlance_body_draw(
-        _x,_y,_radius,_angle,_visual
-    );
-}
-
-/// @description Draws the imported Voidlance hull.
-function sc_enemy_sim_voidlance_body_authored_draw(
-    _x,_y,_radius,_angle,_visual
-)
-{
-    var _authored = _visual.authored.body;
-
-    draw_sprite_ext(
-        _authored.sprite,0,
-        _x,_y,
-        _authored.scale,
-        _authored.scale,
-        _angle,
-        c_white,1
-    );
 }
 
 /// @description Draws the complete intact Voidlance fallback body.
