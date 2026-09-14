@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_debug_enemy_gallery",
+  "%Name":"sc_debug_F3_enemy_gallery",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_debug_enemy_gallery",
+  "name":"sc_debug_F3_enemy_gallery",
   "parent":{
     "name":"debug",
     "path":"folders/SCRIPTS---/debug.yy",

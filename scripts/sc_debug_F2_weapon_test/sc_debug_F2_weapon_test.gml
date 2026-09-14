@@ -20,16 +20,19 @@ function sc_debug_weapon_delivery_name(_type)
     return "UNKNOWN";
 }
 
-/// @description Creates the F2 weapon-testing interface.
+/// @description Creates the wider scrollable F2 weapon-testing interface.
 function sc_debug_weapon_test_init(_hud)
 {
     var _keys = variable_struct_get_names(global.data.weapons);
     var _weapon_buttons = [];
+    var _viewport = { x: 34, y: 108, width: 1032, height: 510 };
     var _columns = 2;
-    var _button_width = 340;
-    var _button_height = 42;
     var _gap_x = 14;
     var _gap_y = 10;
+    var _button_width = floor((_viewport.width - _gap_x) / _columns);
+    var _button_height = 42;
+    var _row_step = _button_height + _gap_y;
+    var _rows = ceil(array_length(_keys) / _columns);
 
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
@@ -43,8 +46,8 @@ function sc_debug_weapon_test_init(_hud)
 
         array_push(_weapon_buttons,sc_gui_button_create(
             _key,
-            34 + _column * (_button_width + _gap_x),
-            108 + _row * (_button_height + _gap_y),
+            _column * (_button_width + _gap_x),
+            _row * _row_step,
             _button_width,
             _button_height,
             _label,
@@ -54,19 +57,26 @@ function sc_debug_weapon_test_init(_hud)
 
     _hud.debug_weapon_test = {
         open: false,
-        width: 754,
-        height: 680,
+        width: 1100,
+        height: 740,
+
+        viewport: _viewport,
         weapon_buttons: _weapon_buttons,
+        content_height: max(0,_rows * _row_step - _gap_y),
+
+        scroll: 0,
+        scroll_target: 0,
+        scroll_speed: _row_step,
 
         buttons: {
             restore: sc_gui_button_create(
-                "restore",34,605,220,42,
+                "restore",34,665,240,42,
                 "RESTORE LOADOUT",
                 GUIButtonStyle.PRIMARY
             ),
 
             close: sc_gui_button_create(
-                "close",686,26,38,38,
+                "close",1032,26,38,38,
                 "X",
                 GUIButtonStyle.DANGER
             )
@@ -173,11 +183,22 @@ function sc_debug_weapon_test_toggle(_hud)
         return false;
 
     _debug.open = true;
+    _debug.scroll = 0;
+    _debug.scroll_target = 0;
     global.LevelState = LevelState.DEBUG;
     return true;
 }
 
-/// @description Updates the open F2 weapon-testing interface.
+/// @description Returns whether a weapon button is fully inside the scroll viewport.
+function sc_debug_weapon_test_button_visible(_debug,_button)
+{
+    var _draw_y = _button.y - _debug.scroll;
+
+    return _draw_y >= 0
+        && _draw_y + _button.height <= _debug.viewport.height;
+}
+
+/// @description Updates scrolling and weapon selection in the open F2 interface.
 function sc_debug_weapon_test_update(_hud)
 {
     var _debug = _hud.debug_weapon_test;
@@ -189,6 +210,7 @@ function sc_debug_weapon_test_update(_hud)
     var _mouse_y = device_mouse_y_to_gui(0) - _panel_y;
     var _pressed = global.input.action.ui_select_pressed;
     var _player = global.player_id;
+    var _viewport = _debug.viewport;
 
     if (sc_gui_button_update(_debug.buttons.close,_mouse_x,_mouse_y,_pressed))
     {
@@ -203,6 +225,28 @@ function sc_debug_weapon_test_update(_hud)
         return;
     }
 
+    var _mouse_inside = point_in_rectangle(
+        _mouse_x,_mouse_y,
+        _viewport.x,_viewport.y,
+        _viewport.x + _viewport.width,
+        _viewport.y + _viewport.height
+    );
+
+    if (_mouse_inside)
+    {
+        var _wheel = mouse_wheel_down() - mouse_wheel_up();
+
+        if (_wheel != 0)
+            _debug.scroll_target += _wheel * _debug.scroll_speed;
+    }
+
+    var _scroll_max = max(0,_debug.content_height - _viewport.height);
+    _debug.scroll_target = clamp(_debug.scroll_target,0,_scroll_max);
+    _debug.scroll = _debug.scroll_target;
+
+    var _list_mouse_x = _mouse_x - _viewport.x;
+    var _list_mouse_y = _mouse_y - _viewport.y + _debug.scroll;
+
     for (var _i = 0; _i < array_length(_debug.weapon_buttons); ++_i)
     {
         var _button = _debug.weapon_buttons[_i];
@@ -210,7 +254,19 @@ function sc_debug_weapon_test_update(_hud)
         _button.selected = _player.combat.debug_weapon.enabled
             && _player.combat.debug_weapon.weapon_key == _button.id;
 
-        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
+        _button.hovered = false;
+        _button.pressed = false;
+
+        if (!_mouse_inside
+        || !sc_debug_weapon_test_button_visible(_debug,_button))
+            continue;
+
+        if (sc_gui_button_update(
+            _button,
+            _list_mouse_x,
+            _list_mouse_y,
+            _pressed
+        ))
         {
             sc_player_debug_weapon_select(_player,_button.id);
             sc_debug_weapon_test_toggle(_hud);
@@ -219,7 +275,7 @@ function sc_debug_weapon_test_update(_hud)
     }
 }
 
-/// @description Draws the F2 weapon-testing interface and active override status.
+/// @description Draws the wider scrollable F2 interface and active override status.
 function sc_debug_weapon_test_draw(_hud)
 {
     var _debug = _hud.debug_weapon_test;
@@ -238,6 +294,7 @@ function sc_debug_weapon_test_draw(_hud)
         draw_set_halign(fa_center);
         draw_set_valign(fa_top);
         draw_set_colour(_palette.accent);
+
         draw_text(
             display_get_gui_width() * 0.5,
             18,
@@ -250,6 +307,7 @@ function sc_debug_weapon_test_draw(_hud)
         return;
     }
 
+    var _viewport = _debug.viewport;
     var _width = _debug.width;
     var _height = _debug.height;
     var _x = floor((display_get_gui_width() - _width) * 0.5);
@@ -274,7 +332,7 @@ function sc_debug_weapon_test_draw(_hud)
 
     draw_set_colour(_palette.accent);
     draw_line_width(_x + 24,_y + 78,_x + _width - 24,_y + 78,2);
-    draw_line_width(_x + 24,_y + 580,_x + _width - 24,_y + 580,2);
+    draw_line_width(_x + 24,_y + 642,_x + _width - 24,_y + 642,2);
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
@@ -288,8 +346,69 @@ function sc_debug_weapon_test_draw(_hud)
         "Temporarily fire any registered weapon with unlimited resources"
     );
 
+    var _list_origin_x = _x + _viewport.x;
+    var _list_origin_y = _y + _viewport.y - _debug.scroll;
+
     for (var _i = 0; _i < array_length(_debug.weapon_buttons); ++_i)
-        sc_gui_button_draw(_debug.weapon_buttons[_i],_x,_y,_palette);
+    {
+        var _button = _debug.weapon_buttons[_i];
+
+        if (sc_debug_weapon_test_button_visible(_debug,_button))
+        {
+            sc_gui_button_draw(
+                _button,
+                _list_origin_x,
+                _list_origin_y,
+                _palette
+            );
+        }
+    }
+
+    var _scroll_max = max(0,_debug.content_height - _viewport.height);
+
+    if (_scroll_max > 0)
+    {
+        var _track_x = _x + _width - 22;
+        var _track_y1 = _y + _viewport.y;
+        var _track_y2 = _track_y1 + _viewport.height;
+        var _handle_height = max(
+            44,
+            _viewport.height * (_viewport.height / _debug.content_height)
+        );
+
+        var _handle_y = _track_y1
+            + (_debug.scroll / _scroll_max)
+            * (_viewport.height - _handle_height);
+
+        draw_set_alpha(0.35);
+        draw_set_colour(_palette.outline);
+        draw_rectangle(
+            _track_x,
+            _track_y1,
+            _track_x + 6,
+            _track_y2,
+            false
+        );
+
+        draw_set_alpha(1);
+        draw_set_colour(_palette.accent);
+        draw_rectangle(
+            _track_x,
+            _handle_y,
+            _track_x + 6,
+            _handle_y + _handle_height,
+            false
+        );
+    }
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_palette.text);
+    draw_text(
+        _x + 294,
+        _y + 686,
+        "REMOVE THE ACTIVE DEBUG WEAPON AND RESTORE THE SHIP LOADOUT"
+    );
 
     sc_gui_button_draw(_debug.buttons.restore,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.close,_x,_y,_palette);

@@ -5,7 +5,7 @@ F1 opens a paused registry-driven enemy spawning panel.
 Enemies are grouped into one column per currently registered faction.
 */
 
-/// @description Creates the scrollable three-column F1 enemy-spawning interface.
+/// @description Creates the taller scrollable three-column F1 enemy-spawning interface.
 function sc_debug_enemy_spawn_init(_hud)
 {
     var _keys = variable_struct_get_names(global.data.enemies);
@@ -16,7 +16,7 @@ function sc_debug_enemy_spawn_init(_hud)
         { faction: Faction.REBEL, name: "REBEL" }
     ];
 
-    var _viewport = { x: 34, y: 136, width: 1258, height: 340 };
+    var _viewport = { x: 34, y: 136, width: 1258, height: 510 };
     var _column_gap = 14;
     var _column_width = floor((_viewport.width - _column_gap * 2) / 3);
     var _button_height = 42;
@@ -58,7 +58,7 @@ function sc_debug_enemy_spawn_init(_hud)
     _hud.debug_enemy_spawn = {
         open: false,
         width: 1350,
-        height: 630,
+        height: 800,
 
         factions: _factions,
         faction_rows: _faction_rows,
@@ -78,15 +78,47 @@ function sc_debug_enemy_spawn_init(_hud)
         spawn_distance: 1000,
 
         buttons: {
-            amount_1: sc_gui_button_create(1,220,550,82,42,"x1",GUIButtonStyle.STANDARD),
-            amount_5: sc_gui_button_create(5,312,550,82,42,"x5",GUIButtonStyle.STANDARD),
-            amount_10: sc_gui_button_create(10,404,550,82,42,"x10",GUIButtonStyle.STANDARD),
+            amount_1: sc_gui_button_create(
+                1,220,720,82,42,
+                "x1",
+                GUIButtonStyle.STANDARD
+            ),
 
-            distance_500: sc_gui_button_create(500,850,550,120,42,"500 PX",GUIButtonStyle.STANDARD),
-            distance_1000: sc_gui_button_create(1000,980,550,120,42,"1000 PX",GUIButtonStyle.STANDARD),
-            distance_2000: sc_gui_button_create(2000,1110,550,120,42,"2000 PX",GUIButtonStyle.STANDARD),
+            amount_5: sc_gui_button_create(
+                5,312,720,82,42,
+                "x5",
+                GUIButtonStyle.STANDARD
+            ),
 
-            close: sc_gui_button_create("close",1282,26,38,38,"X",GUIButtonStyle.DANGER)
+            amount_10: sc_gui_button_create(
+                10,404,720,82,42,
+                "x10",
+                GUIButtonStyle.STANDARD
+            ),
+
+            distance_500: sc_gui_button_create(
+                500,850,720,120,42,
+                "500 PX",
+                GUIButtonStyle.STANDARD
+            ),
+
+            distance_1000: sc_gui_button_create(
+                1000,980,720,120,42,
+                "1000 PX",
+                GUIButtonStyle.STANDARD
+            ),
+
+            distance_2000: sc_gui_button_create(
+                2000,1110,720,120,42,
+                "2000 PX",
+                GUIButtonStyle.STANDARD
+            ),
+
+            close: sc_gui_button_create(
+                "close",1282,26,38,38,
+                "X",
+                GUIButtonStyle.DANGER
+            )
         }
     };
 
@@ -273,7 +305,7 @@ function sc_debug_enemy_spawn_update(_hud)
     }
 }
 
-/// @description Draws the scrollable three-column F1 enemy-spawning interface.
+/// @description Draws the taller scrollable three-column F1 enemy-spawning interface.
 function sc_debug_enemy_spawn_draw(_hud)
 {
     var _debug = _hud.debug_enemy_spawn;
@@ -305,7 +337,7 @@ function sc_debug_enemy_spawn_draw(_hud)
 
     draw_set_colour(_palette.accent);
     draw_line_width(_x + 24,_y + 78,_x + _width - 24,_y + 78,2);
-    draw_line_width(_x + 24,_y + 510,_x + _width - 24,_y + 510,2);
+    draw_line_width(_x + 24,_y + 680,_x + _width - 24,_y + 680,2);
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
@@ -355,12 +387,14 @@ function sc_debug_enemy_spawn_draw(_hud)
         var _button = _debug.enemy_buttons[_i];
 
         if (sc_debug_enemy_spawn_button_visible(_debug,_button))
+        {
             sc_gui_button_draw(
                 _button,
                 _list_origin_x,
                 _list_origin_y,
                 _palette
             );
+        }
     }
 
     var _scroll_max = max(0,_debug.content_height - _viewport.height);
@@ -403,8 +437,8 @@ function sc_debug_enemy_spawn_draw(_hud)
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.text);
-    draw_text(_x + 34,_y + 571,"FORMATION AMOUNT");
-    draw_text(_x + 670,_y + 571,"SPAWN DISTANCE");
+    draw_text(_x + 34,_y + 741,"FORMATION AMOUNT");
+    draw_text(_x + 670,_y + 741,"SPAWN DISTANCE");
 
     sc_gui_button_draw(_debug.buttons.amount_1,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.amount_5,_x,_y,_palette);

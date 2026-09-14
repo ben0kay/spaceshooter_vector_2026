@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_debug_weapon_test",
+  "%Name":"sc_debug_F1_enemy_spawn",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_debug_weapon_test",
+  "name":"sc_debug_F1_enemy_spawn",
   "parent":{
     "name":"debug",
     "path":"folders/SCRIPTS---/debug.yy",

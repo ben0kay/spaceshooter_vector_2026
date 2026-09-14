@@ -269,7 +269,7 @@ function sc_enemy_sim_voidlance_visual_data()
             enabled: true,
 
             body: {
-			    sprite: s_sim_siegebreaker_hull,
+			    sprite: s_sim_voidlance_hull,
 			    scale: 0.35,
 			    fallback_script: sc_enemy_sim_siegebreaker_body_draw
 			},
