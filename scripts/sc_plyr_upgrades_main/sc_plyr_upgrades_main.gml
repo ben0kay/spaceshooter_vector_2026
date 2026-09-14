@@ -120,40 +120,12 @@ function sc_player_upgrades_live_refresh()
     if (!instance_exists(global.player_id)) return false;
 
     var _player = global.player_id;
-    var _stats = _player.ship.stats;
 
-    _stats.modifiers.persistent = variable_clone(
+    _player.ship.stats.modifiers.persistent = variable_clone(
         global.profile.persistent_modifiers
     );
 
-    _stats.dirty = true;
-    sc_player_stats_recalculate(_player);
-
-    var _final = _stats.final;
-
-    _player.defence.shield.maximum = _final.shield_max;
-    _player.defence.shield.current = min(_player.defence.shield.current,_final.shield_max);
-
-    _player.defence.armour.maximum = _final.armour_max;
-    _player.defence.armour.current = min(_player.defence.armour.current,_final.armour_max);
-
-    _player.defence.hull.maximum = _final.hull_max;
-    _player.defence.hull.current = min(_player.defence.hull.current,_final.hull_max);
-
-    _player.resources.energy.maximum = _final.energy_max;
-    _player.resources.energy.current = min(_player.resources.energy.current,_final.energy_max);
-
-    _player.resources.fuel.maximum = _final.fuel_max;
-    _player.resources.fuel.current = min(_player.resources.fuel.current,_final.fuel_max);
-
-    _player.resources.bullets.maximum = _final.bullets_max;
-    _player.resources.bullets.current = min(_player.resources.bullets.current,_final.bullets_max);
-
-    _player.resources.explosives.maximum = _final.explosives_max;
-    _player.resources.explosives.current = min(_player.resources.explosives.current,_final.explosives_max);
-
-    _player.resources.cargo.capacity = _final.cargo_capacity;
-    return true;
+    return sc_player_stats_refresh(_player);
 }
 
 /// @description Purchases one upgrade rank and refreshes the active player.

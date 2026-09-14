@@ -30,14 +30,53 @@ function sc_player_stats_recalculate(_player)
 
     _stats.final = variable_clone(_stats.base);
 
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.level);
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.persistent);
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.equipment);
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.modules);
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.local);
-    sc_stats_modifiers_apply(_stats.final, _stats.modifiers.temporary);
-	_stats.final.mass = max(0.1, _stats.final.mass);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.level);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.persistent);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.equipment);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.modules);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.local);
+    sc_stats_modifiers_apply(_stats.final,_stats.modifiers.temporary);
+
+    _stats.final.mass = max(0.1,_stats.final.mass);
 
     _stats.dirty = false;
     return true;
+}
+
+/// @description Synchronizes calculated final stats into live player capacities without restoring damage or spent resources.
+function sc_player_stats_runtime_sync(_player)
+{
+    var _final = _player.ship.stats.final;
+
+    _player.defence.shield.maximum = _final.shield_max;
+    _player.defence.shield.current = min(_player.defence.shield.current,_final.shield_max);
+
+    _player.defence.armour.maximum = _final.armour_max;
+    _player.defence.armour.current = min(_player.defence.armour.current,_final.armour_max);
+
+    _player.defence.hull.maximum = _final.hull_max;
+    _player.defence.hull.current = min(_player.defence.hull.current,_final.hull_max);
+
+    _player.resources.energy.maximum = _final.energy_max;
+    _player.resources.energy.current = min(_player.resources.energy.current,_final.energy_max);
+
+    _player.resources.fuel.maximum = _final.fuel_max;
+    _player.resources.fuel.current = min(_player.resources.fuel.current,_final.fuel_max);
+
+    _player.resources.bullets.maximum = _final.bullets_max;
+    _player.resources.bullets.current = min(_player.resources.bullets.current,_final.bullets_max);
+
+    _player.resources.explosives.maximum = _final.explosives_max;
+    _player.resources.explosives.current = min(_player.resources.explosives.current,_final.explosives_max);
+
+    _player.resources.cargo.capacity = _final.cargo_capacity;
+    return true;
+}
+
+/// @description Recalculates changed ship stats and synchronizes their live runtime values.
+function sc_player_stats_refresh(_player)
+{
+    _player.ship.stats.dirty = true;
+    sc_player_stats_recalculate(_player);
+    return sc_player_stats_runtime_sync(_player);
 }
