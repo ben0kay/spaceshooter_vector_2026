@@ -26,26 +26,32 @@ function sc_debug_enemy_spawn_init(_hud)
 
     for (var _f = 0; _f < array_length(_factions); ++_f)
     {
-        for (var _i = 0; _i < array_length(_keys); ++_i)
+        // EnemyClass enum order: TINY -> LIGHT -> STANDARD -> HEAVY -> SUPERHEAVY -> CAPITAL -> TITAN.
+        for (var _class = EnemyClass.TINY; _class <= EnemyClass.TITAN; ++_class)
         {
-            var _key = _keys[_i];
-            var _enemy = variable_struct_get(global.data.enemies,_key);
+            for (var _i = 0; _i < array_length(_keys); ++_i)
+            {
+                var _key = _keys[_i];
+                var _enemy = variable_struct_get(global.data.enemies,_key);
 
-            if (_enemy.identity.faction != _factions[_f].faction) continue;
+                if (_enemy.identity.faction != _factions[_f].faction
+                || _enemy.identity.ship_class != _class)
+                    continue;
 
-            var _button = sc_gui_button_create(
-                _key,
-                _f * (_column_width + _column_gap),
-                _faction_rows[_f] * _row_step,
-                _column_width,
-                _button_height,
-                _enemy.identity.name,
-                GUIButtonStyle.STANDARD
-            );
+                var _button = sc_gui_button_create(
+                    _key,
+                    _f * (_column_width + _column_gap),
+                    _faction_rows[_f] * _row_step,
+                    _column_width,
+                    _button_height,
+                    _enemy.identity.name,
+                    GUIButtonStyle.STANDARD
+                );
 
-            _button.faction_column = _f;
-            array_push(_enemy_buttons,_button);
-            ++_faction_rows[_f];
+                _button.faction_column = _f;
+                array_push(_enemy_buttons,_button);
+                ++_faction_rows[_f];
+            }
         }
     }
 
