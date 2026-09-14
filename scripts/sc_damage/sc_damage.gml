@@ -1,86 +1,50 @@
-
-
 /// @description Returns centralized tuning for one damage type.
 function sc_damage_type_config_get(_type)
 {
     return GCFG.damage.types[_type];
 }
 
-/// @description Returns centralized tuning for one damage effect.
-function sc_damage_effect_config_get(_effect)
-{
-    return GCFG.damage.effects[_effect];
-}
-
 /// @description Creates one immutable damage packet when an attack is spawned.
-function sc_damage_packet_create(_definition, _source, _projectile = false)
+function sc_damage_packet_create(
+    _definition,
+    _source,
+    _projectile = false
+)
 {
-    var _type_config = sc_damage_type_config_get(_definition.type);
-    var _effect = variable_struct_exists(_definition, "effect")
-        ? _definition.effect
-        : _type_config.default_effect;
+    var _type_config = sc_damage_type_config_get(
+        _definition.type
+    );
 
-    var _effect_config = sc_damage_effect_config_get(_effect);
-    var _critical_config = GCFG.player.critical_hit.projectile.kinetic;
+    var _effect = sc_damage_effect_create(
+        _definition,
+        _type_config.default_effect
+    );
+
+    var _critical_config =
+        GCFG.player.critical_hit.projectile.kinetic;
 
     var _critical_eligible = _projectile
         && _source.faction == Faction.PLAYER
         && _definition.type == DamageType.KINETIC;
-
-    var _effect_systems = variable_struct_exists(
-        _definition,
-        "effect_systems"
-    )
-        ? variable_clone(_definition.effect_systems)
-        : (
-            variable_struct_exists(_effect_config, "systems")
-                ? variable_clone(_effect_config.systems)
-                : []
-        );
-
-    var _effect_system_count = variable_struct_exists(
-        _definition,
-        "effect_system_count"
-    )
-        ? _definition.effect_system_count
-        : (
-            variable_struct_exists(_effect_config, "system_count")
-                ? _effect_config.system_count
-                : 0
-        );
 
     return {
         amount: max(0, _definition.amount),
         type: _definition.type,
         projectile_impact: _projectile,
 
-        knockback_force: variable_struct_exists(_definition, "knockback_force")
+        knockback_force: variable_struct_exists(
+            _definition,
+            "knockback_force"
+        )
             ? max(0, _definition.knockback_force)
             : 0,
 
-        effect: {
-            type: _effect,
-            chance: variable_struct_exists(_definition, "effect_chance")
-                ? _definition.effect_chance
-                : _effect_config.chance,
+        effect: _effect,
 
-            duration: variable_struct_exists(_definition, "effect_duration")
-                ? _definition.effect_duration
-                : _effect_config.duration,
-
-            strength: variable_struct_exists(_definition, "effect_strength")
-                ? _definition.effect_strength
-                : _effect_config.strength,
-
-            tick_interval: variable_struct_exists(_definition, "effect_tick_interval")
-                ? _definition.effect_tick_interval
-                : _effect_config.tick_interval,
-
-            systems: _effect_systems,
-            system_count: max(0, round(_effect_system_count))
-        },
-
-        extraction: variable_struct_exists(_definition, "extraction")
+        extraction: variable_struct_exists(
+            _definition,
+            "extraction"
+        )
             ? variable_clone(_definition.extraction)
             : undefined,
 
@@ -93,7 +57,8 @@ function sc_damage_packet_create(_definition, _source, _projectile = false)
                 _critical_config.multiplier
             ),
 
-            armour_enabled: _critical_config.armour_enabled
+            armour_enabled:
+                _critical_config.armour_enabled
         },
 
         source: {
@@ -222,13 +187,6 @@ function sc_damage_resolve(
         effect: _packet.effect,
         source: _packet.source
     };
-}
-
-/// @description Rolls whether one registered damage effect activates.
-function sc_damage_effect_triggered(_effect)
-{
-    if (_effect.type == DamageEffect.NONE) return false;
-    return random(1) < _effect.chance;
 }
 
 /// @description Applies a damage packet to an interceptable projectile.
@@ -536,22 +494,7 @@ function sc_player_damage(_player, _packet, _impact = undefined)
         return _result;
     }
 
-    if (_result.effect.type == DamageEffect.DISRUPTION
-    && sc_damage_effect_triggered(_result.effect))
-    {
-        sc_ship_system_disruption_effect_apply(
-            _player,
-            _result.effect
-        );
-    }
-    else if (_result.effect.type == DamageEffect.STAGGER
-    && sc_damage_effect_triggered(_result.effect))
-    {
-        sc_player_stagger_begin(
-            _player,
-            _result.effect
-        );
-    }
+    sc_damage_effect_player_apply(_player, _result.effect);
 
     return _result;
 }

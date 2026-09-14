@@ -20,18 +20,7 @@ function sc_ship_systems_validate(_systems)
 {
     if (!is_struct(_systems)) return false;
 
-    var _required = [
-        "engines",
-        "thrusters",
-        "shield_generator",
-        "reactor",
-        "cooling",
-        "weapons",
-        "sensors",
-        "drone_bay",
-        "cargo_hold",
-        "life_support"
-    ];
+var _required = sc_damage_effect_system_keys_get();
 
     for (var _i=0;_i<array_length(_required);_i++)
     {

@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_damage",
+  "%Name":"sc_damage_effects",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_damage",
+  "name":"sc_damage_effects",
   "parent":{
     "name":"DAMAGE",
     "path":"folders/SCRIPTS---/DAMAGE.yy",

@@ -341,27 +341,6 @@ function sc_config_init()
                 { name: "Corrosive", shield_multiplier: 0.5, armour_multiplier: 1.5, hull_multiplier: 1.2, default_effect: DamageEffect.CORROSION }
             ],
 
-            effects: [
-                { name: "None", chance: 0, duration: 0, strength: 0, tick_interval: 0 },
-                {
-				    name: "Disruption",
-				    chance: 0.25,
-				    duration: 180,
-				    strength: 0.25,
-				    tick_interval: 0,
-
-				    systems: [
-				        "weapons",
-				        "thrusters"
-				    ],
-
-				    system_count: 1
-				},
-                { name: "Burn", chance: 0.2, duration: 180, strength: 0.15, tick_interval: 30 },
-                { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 },
-                { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
-            ],
-			
 			disruption: {
 			    propulsion: {
 			        heavy_strength: 0.7,
