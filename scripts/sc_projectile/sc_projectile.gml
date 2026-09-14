@@ -590,16 +590,29 @@ function sc_projectile_projectile_collision(_projectile, _target)
 
     var _impact_x = _projectile.x;
     var _impact_y = _projectile.y;
+    var _impact_direction = _data.direction;
+    var _impact_scale = _data.scale;
+
     var _result = sc_projectile_damage(_target, _data.damage);
 
     if (!is_struct(_result)) return false;
 
+    // Damage may have destroyed the target projectile.
+    var _impact_target = instance_exists(_target)
+        ? _target
+        : noone;
+
+    // Destroying the target may also have detonated it and
+    // destroyed this projectile as a side-effect.
+    if (!instance_exists(_projectile))
+        return true;
+
     _data.visual.impact_script(
         _impact_x,
         _impact_y,
-        _data.direction,
-        _target,
-        _data.scale
+        _impact_direction,
+        _impact_target,
+        _impact_scale
     );
 
     sc_projectile_detonate(_projectile);

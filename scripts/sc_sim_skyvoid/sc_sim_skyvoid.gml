@@ -196,11 +196,11 @@ function sc_enemy_register_sim_skyvoid()
         ],
 
         thrusters: [
-            { key: "thruster_outer_upper", forward: -0.77, side: 0.40, angle: 180, scale: 0.7 },
-            { key: "thruster_inner_upper", forward: -0.87, side: 0.26, angle: 180, scale: 1.05 },
-            { key: "thruster_centre", forward: -0.87, side: 0, angle: 180, scale: 1.12 },
-            { key: "thruster_inner_lower", forward: -0.87, side: -0.26, angle: 180, scale: 1.05 },
-            { key: "thruster_outer_lower", forward: -0.77, side: -0.40, angle: 180, scale: 0.7 }
+            { key: "thruster_outer_upper", forward: -0.8, side: 0.40, angle: 180, scale: 0.7 },
+            { key: "thruster_inner_upper", forward: -0.9, side: 0.26, angle: 180, scale: 1.05 },
+            { key: "thruster_centre", forward: -0.9, side: 0, angle: 180, scale: 1.12 },
+            { key: "thruster_inner_lower", forward: -0.9, side: -0.26, angle: 180, scale: 1.05 },
+            { key: "thruster_outer_lower", forward: -0.8, side: -0.40, angle: 180, scale: 0.7 }
         ],
 
         attack_controller: {
@@ -241,7 +241,7 @@ function sc_enemy_register_sim_skyvoid()
                     firing: {
                         order: HardpointFireOrder.RANDOM,
                         interval: 4,
-                        volley_max: 18,
+                        volley_max: 12,
                         cooldown: 95
                     }
                 },
