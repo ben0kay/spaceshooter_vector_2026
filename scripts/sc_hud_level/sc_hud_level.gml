@@ -119,7 +119,7 @@ function sc_hud_level_drawgui_event(){
 	sc_hud_level_draw(hud);
 	sc_particles_hud_draw();
 	sc_hud_top_banner_draw(hud);
-	sc_player_module_install_hud_draw(hud);
+	sc_player_equipment_install_hud_draw(hud);
 	sc_facility_prompt_draw(hud);
 	sc_inventory_draw(hud);
 	sc_facility_interface_draw(hud);

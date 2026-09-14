@@ -59,7 +59,7 @@ function sc_inventory_toggle(_hud)
     {
         _runtime.drag.active = false;
         _runtime.drag.source_slot = -1;
-		sc_inventory_module_replace_close(_hud);
+		sc_inventory_equipment_replace_close(_hud);
         _runtime.open = false;
 
         global.PlayerState = PlayerState.ACTIVE;
@@ -264,7 +264,7 @@ function sc_inventory_selected_drop(_hud)
 function sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _mouse_y)
 {
     var _storage = _data.equipment.storage;
-    var _indices = sc_inventory_module_indices_get(_player);
+    var _indices = sc_inventory_equipment_indices_get(_player);
     var _stride = _storage.slot_size + _storage.gap;
     var _column = floor((_mouse_x - _storage.x) / _stride);
 
@@ -288,7 +288,7 @@ function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _rele
     var _data = _hud.data.inventory;
     var _armour = _data.equipment.armour;
 
-    if (sc_inventory_module_replace_update(_hud, _mouse_x, _mouse_y, _pressed))
+    if (sc_inventory_equipment_replace_update(_hud, _mouse_x, _mouse_y, _pressed))
         return;
 
     if (_pressed)
@@ -315,9 +315,9 @@ function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _rele
     ))
     {
         if (is_undefined(_player.inventory.equipment.armour))
-            sc_player_module_install_begin(_player, _runtime.drag.source_slot);
+            sc_player_equipment_install_begin(_player, _runtime.drag.source_slot);
         else
-            sc_inventory_module_replace_open(_hud, _runtime.drag.source_slot);
+            sc_inventory_equipment_replace_open(_hud, _runtime.drag.source_slot);
     }
 
     _runtime.drag.active = false;
@@ -813,7 +813,7 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
 
     // Equipment storage.
     var _storage = _equipment.storage;
-    var _indices = sc_inventory_module_indices_get(_player);
+    var _indices = sc_inventory_equipment_indices_get(_player);
 
     draw_set_colour(_palette.outline);
     draw_rectangle(
@@ -1047,7 +1047,7 @@ function sc_inventory_equipment_draw(_hud, _origin_x, _origin_y)
         }
     }
 
-    sc_inventory_module_replace_draw(
+    sc_inventory_equipment_replace_draw(
         _hud,
         _origin_x,
         _origin_y

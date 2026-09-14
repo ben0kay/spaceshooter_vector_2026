@@ -476,7 +476,7 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     );
 
     if (_player.inventory.installation.active)
-        sc_player_module_install_cancel(_player);
+        sc_player_equipment_install_cancel(_player);
 
     _defence.shield.recharge_delay_remaining =
         _stats.shield_recharge_delay;

@@ -1,5 +1,5 @@
 /// @description Returns cargo indices containing installable ship equipment.
-function sc_inventory_module_indices_get(_player)
+function sc_inventory_equipment_indices_get(_player)
 {
     var _indices = [];
     var _slots = _player.inventory.slots;
@@ -17,7 +17,7 @@ function sc_inventory_module_indices_get(_player)
 }
 
 /// @description Begins installing or replacing one equipment item from cargo.
-function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
+function sc_player_equipment_install_begin(_player,_slot_index,_replacing = false)
 {
     var _installation = _player.inventory.installation;
     var _slot = _player.inventory.slots[_slot_index];
@@ -58,7 +58,7 @@ function sc_player_module_install_begin(_player,_slot_index,_replacing = false)
 }
 
 /// @description Clears completed installation runtime.
-function sc_player_module_install_clear(_player)
+function sc_player_equipment_install_clear(_player)
 {
     var _installation = _player.inventory.installation;
 
@@ -71,7 +71,7 @@ function sc_player_module_install_clear(_player)
 }
 
 /// @description Cancels installation and returns its reserved module to cargo.
-function sc_player_module_install_cancel(_player)
+function sc_player_equipment_install_cancel(_player)
 {
     var _installation = _player.inventory.installation;
     if (!_installation.active) return false;
@@ -81,7 +81,7 @@ function sc_player_module_install_cancel(_player)
 
     if (_returned.accepted <= 0) return false;
 
-    sc_player_module_install_clear(_player);
+    sc_player_equipment_install_clear(_player);
     _installation.cancelled_remaining = 90;
     return true;
 }
@@ -140,7 +140,7 @@ function sc_player_equipment_modifiers_rebuild(_player)
 }
 
 /// @description Completes the currently installing module.
-function sc_player_module_install_complete(_player)
+function sc_player_equipment_install_complete(_player)
 {
     var _installation = _player.inventory.installation;
     if (!_installation.active) return false;
@@ -166,12 +166,12 @@ function sc_player_module_install_complete(_player)
         default: return false;
     }
 
-    sc_player_module_install_clear(_player);
+    sc_player_equipment_install_clear(_player);
     return true;
 }
 
 /// @description Updates timed player-module installation.
-function sc_player_module_install_update(_player)
+function sc_player_equipment_install_update(_player)
 {
     var _installation = _player.inventory.installation;
 
@@ -182,18 +182,18 @@ function sc_player_module_install_update(_player)
 
     if (_player.movement.speed > 0.05)
     {
-        sc_player_module_install_cancel(_player);
+        sc_player_equipment_install_cancel(_player);
         return;
     }
 
     _installation.remaining--;
 
     if (_installation.remaining <= 0)
-        sc_player_module_install_complete(_player);
+        sc_player_equipment_install_complete(_player);
 }
 
 /// @description Opens armour-module replacement confirmation.
-function sc_inventory_module_replace_open(_hud, _slot_index)
+function sc_inventory_equipment_replace_open(_hud, _slot_index)
 {
     var _replace = _hud.inventory.replace;
 
@@ -202,7 +202,7 @@ function sc_inventory_module_replace_open(_hud, _slot_index)
 }
 
 /// @description Closes armour-module replacement confirmation.
-function sc_inventory_module_replace_close(_hud)
+function sc_inventory_equipment_replace_close(_hud)
 {
     var _replace = _hud.inventory.replace;
 
@@ -211,7 +211,7 @@ function sc_inventory_module_replace_close(_hud)
 }
 
 /// @description Updates armour-module replacement confirmation.
-function sc_inventory_module_replace_update(_hud, _mouse_x, _mouse_y, _pressed)
+function sc_inventory_equipment_replace_update(_hud, _mouse_x, _mouse_y, _pressed)
 {
     var _replace = _hud.inventory.replace;
     if (!_replace.active) return false;
@@ -220,19 +220,19 @@ function sc_inventory_module_replace_update(_hud, _mouse_x, _mouse_y, _pressed)
 
     if (point_in_rectangle(_mouse_x, _mouse_y, 565, 480, 755, 524))
     {
-        sc_player_module_install_begin(
+        sc_player_equipment_install_begin(
             global.player_id,
             _replace.source_slot,
             true
         );
 
-        sc_inventory_module_replace_close(_hud);
+        sc_inventory_equipment_replace_close(_hud);
         return true;
     }
 
     if (point_in_rectangle(_mouse_x, _mouse_y, 805, 480, 995, 524))
     {
-        sc_inventory_module_replace_close(_hud);
+        sc_inventory_equipment_replace_close(_hud);
         return true;
     }
 
@@ -240,7 +240,7 @@ function sc_inventory_module_replace_update(_hud, _mouse_x, _mouse_y, _pressed)
 }
 
 /// @description Draws armour-module replacement confirmation.
-function sc_inventory_module_replace_draw(_hud, _origin_x, _origin_y)
+function sc_inventory_equipment_replace_draw(_hud, _origin_x, _origin_y)
 {
     var _replace = _hud.inventory.replace;
     if (!_replace.active) return;
@@ -251,7 +251,7 @@ function sc_inventory_module_replace_draw(_hud, _origin_x, _origin_y)
 
     if (is_undefined(_item))
     {
-        sc_inventory_module_replace_close(_hud);
+        sc_inventory_equipment_replace_close(_hud);
         return;
     }
 
@@ -327,7 +327,7 @@ function sc_inventory_module_replace_draw(_hud, _origin_x, _origin_y)
 }
 
 /// @description Draws installation progress beside the player ship.
-function sc_player_module_install_world_draw(_player)
+function sc_player_equipment_install_world_draw(_player)
 {
     var _installation = _player.inventory.installation;
     if (!_installation.active && _installation.cancelled_remaining <= 0) return;
@@ -376,7 +376,7 @@ function sc_player_module_install_world_draw(_player)
 }
 
 /// @description Draws active module installation on the permanent HUD.
-function sc_player_module_install_hud_draw(_hud)
+function sc_player_equipment_install_hud_draw(_hud)
 {
     if (!instance_exists(global.player_id)) return;
 

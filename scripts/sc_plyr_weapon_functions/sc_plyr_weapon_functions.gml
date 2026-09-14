@@ -20,6 +20,38 @@ function sc_player_weapon_runtime_release(_runtime)
     return _released;
 }
 
+/// @description Returns the physical player hardpoints assigned to one weapon group.
+function sc_player_hardpoint_group_get(_player,_firing)
+{
+    var _group = variable_struct_exists(
+        _firing,
+        "hardpoint_group"
+    )
+        ? _firing.hardpoint_group
+        : "primary";
+
+    var _all = _player.ship.hardpoints.primary;
+    var _matches = [];
+
+    for (var _i=0; _i<array_length(_all); ++_i)
+    {
+        var _hardpoint = _all[_i];
+
+        var _hardpoint_group =
+            variable_struct_exists(
+                _hardpoint,
+                "group"
+            )
+                ? _hardpoint.group
+                : "primary";
+
+        if (_hardpoint_group == _group)
+            array_push(_matches,_hardpoint);
+    }
+
+    return _matches;
+}
+
 /// @description Starts one delayed multi-projectile player burst.
 function sc_player_weapon_burst_begin(
     _player,
@@ -331,7 +363,10 @@ function sc_player_weapon_channel_update(
     {
         case WeaponMountMode.HARDPOINT:
         {
-            var _hardpoints = _player.ship.hardpoints.primary;
+            var _hardpoints = sc_player_hardpoint_group_get(
+			    _player,
+			    _firing
+			);
             var _hardpoint_count = array_length(_hardpoints);
             if (_hardpoint_count <= 0) return false;
 
@@ -572,10 +607,13 @@ function sc_player_weapon_channel_update(
         );
 
         _runtime.hardpoint_cursor = (
-            _runtime.hardpoint_cursor + 1
-        ) mod array_length(
-            _player.ship.hardpoints.primary
-        );
+		    _runtime.hardpoint_cursor + 1
+		) mod array_length(
+		    sc_player_hardpoint_group_get(
+		        _player,
+		        _firing
+		    )
+		);
     }
 
     _runtime.next_fire_tick = GAME_TICK + max(

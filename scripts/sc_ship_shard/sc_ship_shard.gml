@@ -72,28 +72,62 @@ function sc_ship_register_shard()
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
-            primary: [
-                {
-                    key: "primary_left",
-                    x: 16,
-                    y: -8.5,
-                    angle: 0,
-                    muzzle_forward: 18,
-                    scale: 0.7
-                },
-
-                {
-                    key: "primary_right",
-                    x: 16,
-                    y: 8.5,
-                    angle: 0,
-                    muzzle_forward: 18,
-                    scale: 0.7
-                }
-            ],
-
-            utility: []
+    // All physical weapon mounts remain in this array so the existing
+    // drawing, recoil, muzzle-flash and destruction systems still work.
+    primary: [
+        {
+            key: "primary_left",
+            group: "primary",
+            x: 16,
+            y: -8.5,
+            angle: 0,
+            muzzle_forward: 18,
+            scale: 0.7
         },
+
+        {
+            key: "primary_right",
+            group: "primary",
+            x: 16,
+            y: 8.5,
+            angle: 0,
+            muzzle_forward: 18,
+            scale: 0.7
+        },
+
+        {
+            key: "secondary_beam",
+            group: "secondary_beam",
+            x: 44,
+            y: 0,
+            angle: 0,
+            muzzle_forward: 14,
+            scale: 0.62
+        },
+
+        {
+            key: "secondary_rocket_left",
+            group: "secondary_rockets",
+            x: 0.5,
+            y: -23.5,
+            angle: 0,
+            muzzle_forward: 24,
+            scale: 1.05
+        },
+
+        {
+            key: "secondary_rocket_right",
+            group: "secondary_rockets",
+            x: 0.5,
+            y: 23.5,
+            angle: 0,
+            muzzle_forward: 24,
+            scale: 1.05
+        }
+    ],
+
+    utility: []
+},
 
         starting_loadout: {
             primary: "weapon_shard_pulse",
