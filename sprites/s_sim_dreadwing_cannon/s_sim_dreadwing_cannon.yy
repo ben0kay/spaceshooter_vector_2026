@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":9,
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/enemies.yy",
+    "name":"Dreadwing",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY/Dreadwing.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

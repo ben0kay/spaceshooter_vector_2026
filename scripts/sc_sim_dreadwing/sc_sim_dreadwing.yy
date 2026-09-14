@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_sim_dreadwing",
   "parent":{
-    "name":"HEAVY",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY.yy",
+    "name":"Dreadwing",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY/Dreadwing.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -96,13 +96,13 @@ function sc_enemy_register_sim_dreadwing()
 		        key: "cannon_outer_left", group: "cannons",
 		        forward: 0.34, side: -1.08, angle: 0, muzzle_forward: 0.44,
 		        rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
-		        draw_script: sc_enemy_sim_dreadwing_cannon_draw
+		        draw_script: sc_enemy_sim_dreadwing_cannon_dispatch
 		    },
 		    {
 		        key: "cannon_inner_left", group: "cannons",
 		        forward: 0.57, side: -0.37, angle: 0, muzzle_forward: 0.44,
 		        rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
-		        draw_script: sc_enemy_sim_dreadwing_cannon_draw
+		        draw_script: sc_enemy_sim_dreadwing_cannon_dispatch
 		    },
 		    {
 		        key: "beam_centre", group: "beam",
@@ -114,13 +114,13 @@ function sc_enemy_register_sim_dreadwing()
 		        key: "cannon_inner_right", group: "cannons",
 		        forward: 0.57, side: 0.37, angle: 0, muzzle_forward: 0.44,
 		        rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
-		        draw_script: sc_enemy_sim_dreadwing_cannon_draw
+		        draw_script: sc_enemy_sim_dreadwing_cannon_dispatch
 		    },
 		    {
 		        key: "cannon_outer_right", group: "cannons",
 		        forward: 0.34, side: 1.08, angle: 0, muzzle_forward: 0.44,
 		        rotation: { mode: HardpointRotation.TARGET, turn_speed: 2.4, arc: 65, return_to_rest: true },
-		        draw_script: sc_enemy_sim_dreadwing_cannon_draw
+		        draw_script: sc_enemy_sim_dreadwing_cannon_dispatch
 		    },
 		    {
 		        key: "seeker_core", group: "core_weapon",
@@ -287,7 +287,7 @@ function sc_enemy_sim_dreadwing_visual_data()
             enabled:_authored_enabled,
 
             body:{
-                sprite:s_sim_dreadwing_hull,
+                sprite: s_sim_dreadwing_hull,
                 scale:0.533
             },
 

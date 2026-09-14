@@ -44,6 +44,7 @@
     {"$GMFolder":"","%Name":"enemies","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy","name":"enemies","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"CAPITAL","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/CAPITAL.yy","name":"CAPITAL","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"HEAVY","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY.yy","name":"HEAVY","resourceType":"GMFolder","resourceVersion":"2.0",},
+    {"$GMFolder":"","%Name":"Dreadwing","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY/Dreadwing.yy","name":"Dreadwing","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"LIGHT","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/LIGHT.yy","name":"LIGHT","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"STANDARD","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/STANDARD.yy","name":"STANDARD","resourceType":"GMFolder","resourceVersion":"2.0",},
     {"$GMFolder":"","%Name":"SUPERHEAVY","folderPath":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/SUPERHEAVY.yy","name":"SUPERHEAVY","resourceType":"GMFolder","resourceVersion":"2.0",},
