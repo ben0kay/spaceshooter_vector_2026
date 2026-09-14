@@ -353,6 +353,7 @@
     {"id":{"name":"s_sim_dreadwing_hull","path":"sprites/s_sim_dreadwing_hull/s_sim_dreadwing_hull.yy",},},
     {"id":{"name":"s_sim_pulse","path":"sprites/s_sim_pulse/s_sim_pulse.yy",},},
     {"id":{"name":"s_sim_siegebreaker_hull","path":"sprites/s_sim_siegebreaker_hull/s_sim_siegebreaker_hull.yy",},},
+    {"id":{"name":"s_sim_skyvoid_hull","path":"sprites/s_sim_skyvoid_hull/s_sim_skyvoid_hull.yy",},},
     {"id":{"name":"s_sim_voidlance_hull","path":"sprites/s_sim_voidlance_hull/s_sim_voidlance_hull.yy",},},
     {"id":{"name":"s_smoke_puff","path":"sprites/s_smoke_puff/s_smoke_puff.yy",},},
   ],

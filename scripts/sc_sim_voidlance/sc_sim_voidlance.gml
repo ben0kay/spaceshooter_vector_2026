@@ -263,17 +263,7 @@ function sc_enemy_sim_voidlance_visual_data()
         radius: 176,
         motion_strength: 1.25,
         rocket_launcher_scale: 0.85,
-        palette: sc_faction_palette_get(Faction.SIMULANT),
-		
-		        authored: {
-            enabled: true,
-
-            body: {
-			    sprite: s_sim_voidlance_hull,
-			    scale: 0.35,
-			    fallback_script: sc_enemy_sim_siegebreaker_body_draw
-			},
-        },
+        palette: sc_faction_palette_get(Faction.SIMULANT),	
 
         core: {
             forward: -0.34,
@@ -281,12 +271,12 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         draw: {
-            body: sc_enemy_body_dispatch,
+            body: sc_enemy_sim_voidlance_body_draw,
             core: sc_enemy_sim_voidlance_core_draw
         },
 
         damage_layers: {
-            enabled: false, // temp for imported sprite. true if primitive
+            enabled: true,
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_voidlance_hull_draw,
             armour_draw_script: sc_enemy_sim_voidlance_armour_draw
