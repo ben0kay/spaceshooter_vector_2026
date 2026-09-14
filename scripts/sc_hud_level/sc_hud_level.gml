@@ -445,10 +445,74 @@ function sc_hud_level_data()
     };
 }
 
+/// @description Returns the shared Ship Command inventory layout.
+function sc_hud_inventory_data()
+{
+    return {
+        width: 1760,
+        height: 940,
+
+        tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG", "STATISTICS"],
+        tab_x: 510,
+        tab_y: 82,
+        tab_width: 160,
+        tab_height: 42,
+        tab_gap: 8,
+
+        grid: {
+            x: 50, y: 195,
+            columns: 8, rows: 5,
+            slot_size: 92, gap: 8,
+            width: 792, height: 492
+        },
+
+        info: {
+            x: 890, y: 165,
+            width: 820, height: 550
+        },
+
+        capacity: {
+            x: 50, y: 750,
+            width: 792, height: 12
+        },
+
+        equipment: {
+            workspace: {
+                x: 32, y: 155,
+                width: 1268, height: 635
+            },
+
+            ship_x: 850,
+            ship_y: 475,
+
+            armour: {
+                x: 55, y: 210,
+                width: 340, height: 110
+            },
+
+            storage: {
+                x: 55, y: 820,
+                columns: 12,
+                slot_size: 74,
+                gap: 10
+            },
+
+            inspector: {
+                x: 1320, y: 175,
+                width: 390, height: 650
+            }
+        }
+    };
+}
+
 /// @description Initializes and bakes the complete level HUD.
 function sc_hud_level_init(_hud_object)
 {
     var _data = sc_hud_level_data();
+
+    // The dedicated inventory layout is now the active source.
+    _data.inventory = sc_hud_inventory_data();
+
     var _inventory_data = _data.inventory;
     var _tabs = [];
 
@@ -469,16 +533,16 @@ function sc_hud_level_init(_hud_object)
         data: _data,
 
         runtime: {
-		    credits_display: global.profile.credits,
-		    credit_gain: 0,
-		    credit_pulse: 0,
+            credits_display: global.profile.credits,
+            credit_gain: 0,
+            credit_pulse: 0,
 
-		    experience_gain: 0,
-		    experience_pulse: 0,
-		    data_shard_pulse: 0
-		},
+            experience_gain: 0,
+            experience_pulse: 0,
+            data_shard_pulse: 0
+        },
 
-		minimap: {
+        minimap: {
             x: max(12, display_get_gui_width() - _data.minimap.width - 24),
             y: 88,
             minimized: false,
@@ -503,56 +567,54 @@ function sc_hud_level_init(_hud_object)
 
             enemy_contacts: [],
             asteroid_contacts: [],
-			
-			concealment: variable_clone(
-		    _data.minimap.concealment
-			),
-			
-			interference: {
-    strength: 0,
-    target_strength: 0,
 
-    next_sample_tick: GAME_TICK,
-    next_jitter_tick: GAME_TICK,
+            concealment: variable_clone(_data.minimap.concealment),
 
-    sweep_hold_remaining: 0,
-    sweep_catchup_remaining: 0,
-    sweep_visual_offset: 0
-},
+            interference: {
+                strength: 0,
+                target_strength: 0,
+
+                next_sample_tick: GAME_TICK,
+                next_jitter_tick: GAME_TICK,
+
+                sweep_hold_remaining: 0,
+                sweep_catchup_remaining: 0,
+                sweep_visual_offset: 0
+            }
         },
-			
-		sector_map: {
-		    open: false,
 
-		    asteroid_contacts: [],
-		    structure_contacts: [],
+        sector_map: {
+            open: false,
 
-		    cached_asteroid_count: -1,
-		    cached_structure_count: -1,
-		    next_cache_check_tick: GAME_TICK
-		},	
-			
-		facility: {
-    open: false,
-    nearby_id: noone,
-    active_id: noone,
-    next_scan_tick: GAME_TICK,
-    scan_interval: 10,
+            asteroid_contacts: [],
+            structure_contacts: [],
 
-    selected_layer: ItemLayer.REFINED,
-    recipe_keys: [],
-    selected_recipe: 0,
-    recipe_scroll_row: 0,
-    amount: 1,
+            cached_asteroid_count: -1,
+            cached_structure_count: -1,
+            next_cache_check_tick: GAME_TICK
+        },
 
-    buttons: {
-        close: sc_gui_button_create("close", 1545, 25, 34, 34, "X", GUIButtonStyle.DANGER),
-        amount_down: sc_gui_button_create("amount_down", 1010, 590, 42, 36, "-", GUIButtonStyle.STANDARD),
-        amount_up: sc_gui_button_create("amount_up", 1190, 590, 42, 36, "+", GUIButtonStyle.STANDARD),
-        process: sc_gui_button_create("process", 1375, 590, 165, 36, "PROCESS", GUIButtonStyle.PRIMARY),
-        collect: sc_gui_button_create("collect", 1375, 825, 165, 36, "COLLECT ALL", GUIButtonStyle.PRIMARY)
-    }
-},
+        facility: {
+            open: false,
+            nearby_id: noone,
+            active_id: noone,
+            next_scan_tick: GAME_TICK,
+            scan_interval: 10,
+
+            selected_layer: ItemLayer.REFINED,
+            recipe_keys: [],
+            selected_recipe: 0,
+            recipe_scroll_row: 0,
+            amount: 1,
+
+            buttons: {
+                close: sc_gui_button_create("close", 1545, 25, 34, 34, "X", GUIButtonStyle.DANGER),
+                amount_down: sc_gui_button_create("amount_down", 1010, 590, 42, 36, "-", GUIButtonStyle.STANDARD),
+                amount_up: sc_gui_button_create("amount_up", 1190, 590, 42, 36, "+", GUIButtonStyle.STANDARD),
+                process: sc_gui_button_create("process", 1375, 590, 165, 36, "PROCESS", GUIButtonStyle.PRIMARY),
+                collect: sc_gui_button_create("collect", 1375, 825, 165, 36, "COLLECT ALL", GUIButtonStyle.PRIMARY)
+            }
+        },
 
         inventory: {
             open: false,
@@ -563,57 +625,97 @@ function sc_hud_level_init(_hud_object)
                 active: false,
                 source_slot: -1
             },
-			
-			replace: {
-			    active: false,
-			    source_slot: -1
-			},
-				
-			upgrades: {
-    selected_key: "weapon_calibration",
 
-    view: {
-        x: 45, y: 205,
-        width: 1030, height: 590,
-        design_centre_x: 475,
-        design_centre_y: 425,
+            replace: {
+                active: false,
+                source_slot: -1
+            },
 
-        pan_x: 0,
-        pan_y: 0,
-        zoom: 0.7,
-        zoom_min: 0.6,
-        zoom_max: 1.6,
-        zoom_step: 0.1,
+            upgrades: {
+                selected_key: "weapon_calibration",
 
-        dragging: false,
-        drag_mouse_x: 0,
-        drag_mouse_y: 0
-    },
+                view: {
+                    x: 45, y: 205,
+                    width: 1230, height: 650,
 
-    surface: -1,
+                    design_centre_x: 585,
+                    design_centre_y: 455,
 
-    purchase_button: sc_gui_button_create(
-        "purchase_upgrade",
-        1170,745,300,48,
-        "INSTALL UPGRADE",
-        GUIButtonStyle.PRIMARY
-    )
-},
+                    pan_x: 0,
+                    pan_y: 0,
+                    zoom: 0.7,
+                    zoom_min: 0.6,
+                    zoom_max: 1.6,
+                    zoom_step: 0.1,
+
+                    dragging: false,
+                    drag_mouse_x: 0,
+                    drag_mouse_y: 0
+                },
+
+                surface: -1,
+
+                purchase_button: sc_gui_button_create(
+                    "purchase_upgrade",
+                    1370, 815,
+                    300, 48,
+                    "INSTALL UPGRADE",
+                    GUIButtonStyle.PRIMARY
+                )
+            },
 
             buttons: {
                 tabs: _tabs,
-                close: sc_gui_button_create("close", 1505, 28, 34, 34, "X", GUIButtonStyle.DANGER),
-                sort: sc_gui_button_create("sort", 707, 632, 135, 38, "SORT", GUIButtonStyle.STANDARD),
-                transfer: sc_gui_button_create("transfer", 895, 575, 140, 42, "TRANSFER", GUIButtonStyle.STANDARD),
-                drop: sc_gui_button_create("drop", 1065, 575, 140, 42, "DROP STACK", GUIButtonStyle.DANGER)
+
+                close: sc_gui_button_create(
+                    "close",
+                    _inventory_data.width - 55,
+                    28,
+                    34,
+                    34,
+                    "X",
+                    GUIButtonStyle.DANGER
+                ),
+
+                sort: sc_gui_button_create(
+                    "sort",
+                    707,
+                    785,
+                    135,
+                    38,
+                    "SORT",
+                    GUIButtonStyle.STANDARD
+                ),
+
+                transfer: sc_gui_button_create(
+                    "transfer",
+                    1410,
+                    740,
+                    140,
+                    42,
+                    "TRANSFER",
+                    GUIButtonStyle.STANDARD
+                ),
+
+                drop: sc_gui_button_create(
+                    "drop",
+                    1570,
+                    740,
+                    140,
+                    42,
+                    "DROP STACK",
+                    GUIButtonStyle.DANGER
+                )
             }
         },
 
         cache: {
             bottom_body: -1,
             bottom_effects: array_create(_data.bottom.effect_frames, -1),
+
             top_body: -1,
             top_effects: array_create(_data.top.effect_frames, -1),
+
             minimap_dock: -1,
             inventory_body: -1
         }
