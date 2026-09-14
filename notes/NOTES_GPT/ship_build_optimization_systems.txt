@@ -566,3 +566,64 @@ It is the result of many small intelligent choices working together:
 - weapon choices appropriate to the build
 
 This should create long-term progression, build diversity and a strong reason to gather/craft rare materials without turning the game into a simulator.
+
+
+==================================================
+EQUIPMENT, MODULES AND ITEM GRADES
+==================================================
+
+Major equipment is installed through the Equipment tab.
+
+Equipment examples:
+- armour plating
+- shield generators
+- reactors
+- thruster assemblies
+- radar arrays
+- weapons
+
+System modules are smaller fixed-quality optimization items installed into
+sockets beside ship systems on the Systems tab.
+
+System-module examples:
+- Coolant Module Mk I
+- Shield Capacitor Mk II
+- Reactor Regulator
+- Targeting Processor
+- Heat Sink
+
+System modules do not have item grades.
+Drones do not have item grades.
+
+An item supports grades only when at least one of its modifiers explicitly uses:
+
+grade_scaled: true
+
+Missing grade_scaled means false.
+
+Example graded armour:
+
+modifiers: [
+    { stat: "armour_max", add: 20, grade_scaled: true },
+    { stat: "mass", add: 18 }
+]
+
+The armour bonus scales with grade.
+The mass modifier remains fixed.
+
+GRADE PIPELINE
+
+CHASSIS BASE STATS
+    -> MAJOR EQUIPMENT MODIFIERS
+    -> ITEM GRADE SCALING ON OPTED-IN MODIFIERS
+    -> SYSTEM MODULE MODIFIERS
+    -> PERMANENT UPGRADES
+    -> LOCAL / TEMPORARY EFFECTS
+    -> FINAL SHIP STATS
+
+Only the individual modifier decides whether grade affects it.
+The grade system must not check specific item keys or equipment types.
+
+Equipment and system modules must remain separate concepts:
+- Equipment replaces or adds a major physical ship assembly.
+- Modules tune an existing ship system.
