@@ -2,51 +2,91 @@
 DEBUG ENEMY SPAWNER
 
 F1 opens a paused registry-driven enemy spawning panel.
-Enemy definitions are read directly from global.data.enemies.
+Enemies are grouped into one column per currently registered faction.
 */
 
-/// @description Creates the F1 enemy-spawning interface.
+/// @description Creates the scrollable three-column F1 enemy-spawning interface.
 function sc_debug_enemy_spawn_init(_hud)
 {
     var _keys = variable_struct_get_names(global.data.enemies);
     var _enemy_buttons = [];
-    var _columns = 2;
-    var _button_width = 340;
+    var _factions = [
+        { faction: Faction.SIMULANT, name: "SIMULANT" },
+        { faction: Faction.CORPORATION, name: "CORPORATION" },
+        { faction: Faction.REBEL, name: "REBEL" }
+    ];
+
+    var _viewport = { x: 34, y: 136, width: 1258, height: 340 };
+    var _column_gap = 14;
+    var _column_width = floor((_viewport.width - _column_gap * 2) / 3);
     var _button_height = 42;
-    var _gap_x = 14;
-    var _gap_y = 10;
+    var _row_gap = 10;
+    var _row_step = _button_height + _row_gap;
+    var _faction_rows = [0,0,0];
 
-    for (var _i = 0; _i < array_length(_keys); ++_i)
+    for (var _f = 0; _f < array_length(_factions); ++_f)
     {
-        var _key = _keys[_i];
-        var _enemy = variable_struct_get(global.data.enemies,_key);
-        var _column = _i mod _columns;
-        var _row = floor(_i / _columns);
+        for (var _i = 0; _i < array_length(_keys); ++_i)
+        {
+            var _key = _keys[_i];
+            var _enemy = variable_struct_get(global.data.enemies,_key);
 
-        array_push(_enemy_buttons,sc_gui_button_create(
-            _key,
-            34 + _column * (_button_width + _gap_x),
-            108 + _row * (_button_height + _gap_y),
-            _button_width,
-            _button_height,
-            _enemy.identity.name,
-            GUIButtonStyle.STANDARD
-        ));
+            if (_enemy.identity.faction != _factions[_f].faction)
+                continue;
+
+            var _button = sc_gui_button_create(
+                _key,
+                _f * (_column_width + _column_gap),
+                _faction_rows[_f] * _row_step,
+                _column_width,
+                _button_height,
+                _enemy.identity.name,
+                GUIButtonStyle.STANDARD
+            );
+
+            _button.faction_column = _f;
+            array_push(_enemy_buttons,_button);
+            ++_faction_rows[_f];
+        }
     }
+
+    var _largest_row_count = max(
+        _faction_rows[0],
+        max(_faction_rows[1],_faction_rows[2])
+    );
 
     _hud.debug_enemy_spawn = {
         open: false,
-        width: 754,
-        height: 680,
-        spawn_distance: 1000,
-        amount: 1,
+        width: 1350,
+        height: 630,
+
+        factions: _factions,
+        faction_rows: _faction_rows,
         enemy_buttons: _enemy_buttons,
 
+        viewport: _viewport,
+        column_gap: _column_gap,
+        column_width: _column_width,
+        row_step: _row_step,
+        content_height: max(0,_largest_row_count * _row_step - _row_gap),
+
+        scroll: 0,
+        scroll_target: 0,
+        scroll_speed: _row_step,
+
+        amount: 1,
+        spawn_distance: 1000,
+
         buttons: {
-            amount_1: sc_gui_button_create(1,34,605,110,42,"x1",GUIButtonStyle.STANDARD),
-            amount_5: sc_gui_button_create(5,154,605,110,42,"x5",GUIButtonStyle.STANDARD),
-            amount_10: sc_gui_button_create(10,274,605,110,42,"x10",GUIButtonStyle.STANDARD),
-            close: sc_gui_button_create("close",686,26,38,38,"X",GUIButtonStyle.DANGER)
+            amount_1: sc_gui_button_create(1,220,550,82,42,"x1",GUIButtonStyle.STANDARD),
+            amount_5: sc_gui_button_create(5,312,550,82,42,"x5",GUIButtonStyle.STANDARD),
+            amount_10: sc_gui_button_create(10,404,550,82,42,"x10",GUIButtonStyle.STANDARD),
+
+            distance_500: sc_gui_button_create(500,850,550,120,42,"500 PX",GUIButtonStyle.STANDARD),
+            distance_1000: sc_gui_button_create(1000,980,550,120,42,"1000 PX",GUIButtonStyle.STANDARD),
+            distance_2000: sc_gui_button_create(2000,1110,550,120,42,"2000 PX",GUIButtonStyle.STANDARD),
+
+            close: sc_gui_button_create("close",1282,26,38,38,"X",GUIButtonStyle.DANGER)
         }
     };
 
@@ -71,6 +111,8 @@ function sc_debug_enemy_spawn_toggle(_hud)
         return false;
 
     _debug.open = true;
+    _debug.scroll = 0;
+    _debug.scroll_target = 0;
     global.LevelState = LevelState.DEBUG;
     return true;
 }
@@ -115,12 +157,24 @@ function sc_debug_enemy_spawn_execute(_enemy_key,_amount,_distance)
         + _enemy_key
         + " x"
         + string(_amount)
+        + " AT "
+        + string(_distance)
+        + " PX"
     );
 
     return true;
 }
 
-/// @description Updates the open F1 enemy-spawning interface.
+/// @description Returns whether an enemy button is fully visible inside the list viewport.
+function sc_debug_enemy_spawn_button_visible(_debug,_button)
+{
+    var _draw_y = _button.y - _debug.scroll;
+
+    return _draw_y >= 0
+        && _draw_y + _button.height <= _debug.viewport.height;
+}
+
+/// @description Updates scrolling, formation amount, distance and enemy selection.
 function sc_debug_enemy_spawn_update(_hud)
 {
     var _debug = _hud.debug_enemy_spawn;
@@ -132,6 +186,7 @@ function sc_debug_enemy_spawn_update(_hud)
     var _mouse_y = device_mouse_y_to_gui(0) - _panel_y;
     var _pressed = global.input.action.ui_select_pressed;
     var _buttons = _debug.buttons;
+    var _viewport = _debug.viewport;
 
     if (sc_gui_button_update(_buttons.close,_mouse_x,_mouse_y,_pressed))
     {
@@ -157,11 +212,55 @@ function sc_debug_enemy_spawn_update(_hud)
         }
     }
 
+    var _distance_buttons = [
+        _buttons.distance_500,
+        _buttons.distance_1000,
+        _buttons.distance_2000
+    ];
+
+    for (var _i = 0; _i < array_length(_distance_buttons); ++_i)
+    {
+        var _button = _distance_buttons[_i];
+        _button.selected = _debug.spawn_distance == _button.id;
+
+        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
+        {
+            _debug.spawn_distance = _button.id;
+            return;
+        }
+    }
+
+    var _mouse_inside = point_in_rectangle(
+        _mouse_x,_mouse_y,
+        _viewport.x,_viewport.y,
+        _viewport.x + _viewport.width,
+        _viewport.y + _viewport.height
+    );
+
+    if (!_mouse_inside) return;
+
+    var _wheel = mouse_wheel_down() - mouse_wheel_up();
+
+    if (_wheel != 0)
+        _debug.scroll_target += _wheel * _debug.scroll_speed;
+
+    var _scroll_max = max(0,_debug.content_height - _viewport.height);
+    _debug.scroll_target = clamp(_debug.scroll_target,0,_scroll_max);
+    _debug.scroll = _debug.scroll_target;
+
+    var _list_mouse_x = _mouse_x - _viewport.x;
+    var _list_mouse_y = _mouse_y - _viewport.y + _debug.scroll;
+
     for (var _i = 0; _i < array_length(_debug.enemy_buttons); ++_i)
     {
         var _button = _debug.enemy_buttons[_i];
+        _button.hovered = false;
+        _button.pressed = false;
 
-        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
+        if (!sc_debug_enemy_spawn_button_visible(_debug,_button))
+            continue;
+
+        if (sc_gui_button_update(_button,_list_mouse_x,_list_mouse_y,_pressed))
         {
             sc_debug_enemy_spawn_execute(
                 _button.id,
@@ -174,13 +273,14 @@ function sc_debug_enemy_spawn_update(_hud)
     }
 }
 
-/// @description Draws the F1 enemy-spawning interface.
+/// @description Draws the scrollable three-column F1 enemy-spawning interface.
 function sc_debug_enemy_spawn_draw(_hud)
 {
     var _debug = _hud.debug_enemy_spawn;
     if (!_debug.open) return;
 
     var _palette = _hud.data.palette;
+    var _viewport = _debug.viewport;
     var _width = _debug.width;
     var _height = _debug.height;
     var _x = floor((display_get_gui_width() - _width) * 0.5);
@@ -189,8 +289,7 @@ function sc_debug_enemy_spawn_draw(_hud)
     draw_set_alpha(0.72);
     draw_set_colour(c_black);
     draw_rectangle(
-        0,
-        0,
+        0,0,
         display_get_gui_width(),
         display_get_gui_height(),
         false
@@ -206,7 +305,7 @@ function sc_debug_enemy_spawn_draw(_hud)
 
     draw_set_colour(_palette.accent);
     draw_line_width(_x + 24,_y + 78,_x + _width - 24,_y + 78,2);
-    draw_line_width(_x + 24,_y + 580,_x + _width - 24,_y + 580,2);
+    draw_line_width(_x + 24,_y + 510,_x + _width - 24,_y + 510,2);
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
@@ -217,18 +316,104 @@ function sc_debug_enemy_spawn_draw(_hud)
     draw_text(
         _x + 34,
         _y + 52,
-        "Spawn registered enemies 1000 pixels ahead of the active ship"
+        "Select a faction unit, formation amount and deployment distance"
     );
 
-    draw_set_colour(_palette.text);
-    draw_text(_x + 400,_y + 617,"FORMATION AMOUNT");
+    for (var _f = 0; _f < array_length(_debug.factions); ++_f)
+    {
+        var _column_x = _x + _viewport.x
+            + _f * (_debug.column_width + _debug.column_gap);
+
+        draw_set_colour(_palette.core);
+        draw_text(
+            _column_x,
+            _y + 101,
+            _debug.factions[_f].name
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _column_x + _debug.column_width - 72,
+            _y + 101,
+            string(_debug.faction_rows[_f]) + " UNITS"
+        );
+
+        draw_set_colour(_palette.outline);
+        draw_line(
+            _column_x,
+            _y + 125,
+            _column_x + _debug.column_width,
+            _y + 125
+        );
+    }
+
+    var _list_origin_x = _x + _viewport.x;
+    var _list_origin_y = _y + _viewport.y - _debug.scroll;
 
     for (var _i = 0; _i < array_length(_debug.enemy_buttons); ++_i)
-        sc_gui_button_draw(_debug.enemy_buttons[_i],_x,_y,_palette);
+    {
+        var _button = _debug.enemy_buttons[_i];
+
+        if (sc_debug_enemy_spawn_button_visible(_debug,_button))
+            sc_gui_button_draw(
+                _button,
+                _list_origin_x,
+                _list_origin_y,
+                _palette
+            );
+    }
+
+    var _scroll_max = max(0,_debug.content_height - _viewport.height);
+
+    if (_scroll_max > 0)
+    {
+        var _track_x = _x + 1310;
+        var _track_y1 = _y + _viewport.y;
+        var _track_y2 = _track_y1 + _viewport.height;
+        var _handle_height = max(
+            44,
+            _viewport.height * (_viewport.height / _debug.content_height)
+        );
+
+        var _handle_y = _track_y1
+            + (_debug.scroll / _scroll_max)
+            * (_viewport.height - _handle_height);
+
+        draw_set_alpha(0.35);
+        draw_set_colour(_palette.outline);
+        draw_rectangle(
+            _track_x,
+            _track_y1,
+            _track_x + 6,
+            _track_y2,
+            false
+        );
+
+        draw_set_alpha(1);
+        draw_set_colour(_palette.accent);
+        draw_rectangle(
+            _track_x,
+            _handle_y,
+            _track_x + 6,
+            _handle_y + _handle_height,
+            false
+        );
+    }
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_palette.text);
+    draw_text(_x + 34,_y + 571,"FORMATION AMOUNT");
+    draw_text(_x + 670,_y + 571,"SPAWN DISTANCE");
 
     sc_gui_button_draw(_debug.buttons.amount_1,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.amount_5,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.amount_10,_x,_y,_palette);
+
+    sc_gui_button_draw(_debug.buttons.distance_500,_x,_y,_palette);
+    sc_gui_button_draw(_debug.buttons.distance_1000,_x,_y,_palette);
+    sc_gui_button_draw(_debug.buttons.distance_2000,_x,_y,_palette);
+
     sc_gui_button_draw(_debug.buttons.close,_x,_y,_palette);
 
     draw_set_alpha(1);

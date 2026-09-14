@@ -256,25 +256,23 @@ function sc_enemy_register_sim_voidlance()
     });
 }
 
-/// @description Returns the Voidlance's complete visual definition.
+/// @description Returns the Voidlance's complete primitive visual definition.
 function sc_enemy_sim_voidlance_visual_data()
 {
-    var _authored_enabled = true;
-
     return {
         radius: 176,
         motion_strength: 1.25,
         rocket_launcher_scale: 0.85,
         palette: sc_faction_palette_get(Faction.SIMULANT),
-
-        authored: {
-            enabled: _authored_enabled,
+		
+		        authored: {
+            enabled: true,
 
             body: {
-                sprite: s_sim_voidlance_hull,
-                scale: 0.65,
-				fallback_script: sc_enemy_sim_voidlance_body_draw
-            }
+			    sprite: s_sim_siegebreaker_hull,
+			    scale: 0.35,
+			    fallback_script: sc_enemy_sim_siegebreaker_body_draw
+			},
         },
 
         core: {
@@ -288,9 +286,7 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         damage_layers: {
-            // Authored damage layers do not exist yet.
-            // Disabling authored mode restores primitive damage stages.
-            enabled: !_authored_enabled,
+            enabled: false, // temp for imported sprite. true if primitive
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_voidlance_hull_draw,
             armour_draw_script: sc_enemy_sim_voidlance_armour_draw
@@ -313,7 +309,7 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         bake: {
-            body_canvas_size: 768,
+            body_canvas_size: 640,
             core_canvas_size: 256,
             hardpoint_canvas_size: 256,
             thrust_canvas_size: 192,
