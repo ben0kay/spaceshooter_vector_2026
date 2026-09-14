@@ -791,7 +791,7 @@ if (_focus.active && GAME_TICK mod _visual.shield_focus.particle_interval == 0)
     _runtime.shield_hit_alpha = max(0, _runtime.shield_hit_alpha - 0.06);
 }
 
-/// @description Activates RMB frontal shield focus while energy is available.
+/// @description Activates RMB frontal shield focus while its generator and energy are available.
 function sc_player_shield_focus_update(_player)
 {
     var _focus = _player.combat.shield_focus;
@@ -799,7 +799,11 @@ function sc_player_shield_focus_update(_player)
 
     if (global.PlayerState != PlayerState.ACTIVE
     || !global.input.action.shield_focus
-    || _player.defence.shield.current <= 0)
+    || _player.defence.shield.current <= 0
+    || !sc_ship_system_operational(
+        _player.ship,
+        "shield_generator"
+    ))
         return false;
 
     var _cost = _player.ship.stats.final.shield_focus_energy_cost;
@@ -854,11 +858,17 @@ function sc_player_die(_player, _packet)
     return true;
 }
 
-/// @description Recharges player shields by consuming available energy.
+/// @description Recharges player shields when the shield generator is operational.
 function sc_player_defence_update(_player)
 {
     var _shield = _player.defence.shield;
     if (_shield.current >= _shield.maximum) return;
+
+    if (!sc_ship_system_operational(
+        _player.ship,
+        "shield_generator"
+    ))
+        return;
 
     if (_shield.recharge_delay_remaining > 0)
     {
@@ -867,23 +877,47 @@ function sc_player_defence_update(_player)
     }
 
     var _stats = _player.ship.stats.final;
-    var _restore = min(_stats.shield_recharge_rate, _shield.maximum - _shield.current);
-    var _energy_cost = _restore * _stats.shield_energy_cost;
+    var _restore = min(
+        _stats.shield_recharge_rate,
+        _shield.maximum - _shield.current
+    );
 
-    if (!sc_player_resource_spend(_player, ResourceType.ENERGY, _energy_cost))
+    var _energy_cost = _restore
+        * _stats.shield_energy_cost;
+
+    if (!sc_player_resource_spend(
+        _player,
+        ResourceType.ENERGY,
+        _energy_cost
+    ))
     {
         var _energy = _player.resources.energy;
 
-        if (_stats.shield_energy_cost <= 0 || _energy.current <= 0)
+        if (_stats.shield_energy_cost <= 0
+        || _energy.current <= 0)
             return;
 
-        _restore = min(_restore, _energy.current / _stats.shield_energy_cost);
-        _energy_cost = _restore * _stats.shield_energy_cost;
+        _restore = min(
+            _restore,
+            _energy.current
+                / _stats.shield_energy_cost
+        );
 
-        if (_restore <= 0 || !sc_player_resource_spend(_player, ResourceType.ENERGY, _energy_cost))
+        _energy_cost = _restore
+            * _stats.shield_energy_cost;
+
+        if (_restore <= 0
+        || !sc_player_resource_spend(
+            _player,
+            ResourceType.ENERGY,
+            _energy_cost
+        ))
             return;
     }
 
-    _shield.current = min(_shield.maximum, _shield.current + _restore);
+    _shield.current = min(
+        _shield.maximum,
+        _shield.current + _restore
+    );
 }
 

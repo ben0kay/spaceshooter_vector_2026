@@ -111,43 +111,53 @@ function sc_player_modules_modifiers_rebuild(_player)
 /// @description Adds default system stats missing from an older ship definition.
 function sc_player_stats_system_defaults_apply(_stats)
 {
-    var _defaults={
-        system_disruption_resistance:0,
+    var _defaults = {
+        system_disruption_resistance: 0,
+        system_disruption_strength_resistance: 0,
+        system_recovery_multiplier: 1,
 
-        engines_disruption_resistance:0,
-        thrusters_disruption_resistance:0,
-        shield_generator_disruption_resistance:0,
-        reactor_disruption_resistance:0,
-        cooling_disruption_resistance:0,
-        weapons_disruption_resistance:0,
-        sensors_disruption_resistance:0,
-        drone_bay_disruption_resistance:0,
+        engines_disruption_resistance: 0,
+        thrusters_disruption_resistance: 0,
+        shield_generator_disruption_resistance: 0,
+        reactor_disruption_resistance: 0,
+        cooling_disruption_resistance: 0,
+        weapons_disruption_resistance: 0,
+        sensors_disruption_resistance: 0,
+        drone_bay_disruption_resistance: 0,
 
-        weapon_heat_maximum:100,
-        weapon_heat_generation_multiplier:1,
-        weapon_cooling_rate:1,
-        weapon_cooling_delay_multiplier:1,
+        engines_disruption_strength_resistance: 0,
+        thrusters_disruption_strength_resistance: 0,
+        shield_generator_disruption_strength_resistance: 0,
+        reactor_disruption_strength_resistance: 0,
+        cooling_disruption_strength_resistance: 0,
+        weapons_disruption_strength_resistance: 0,
+        sensors_disruption_strength_resistance: 0,
+        drone_bay_disruption_strength_resistance: 0,
 
-        cooling_capacity:100,
-        cooling_efficiency:1,
+        weapon_heat_maximum: 100,
+        weapon_heat_generation_multiplier: 1,
+        weapon_cooling_rate: 1,
+        weapon_cooling_delay_multiplier: 1,
 
-        weapon_spread_multiplier:1,
-        weapon_recoil_multiplier:1,
-        system_recovery_multiplier:1
+        cooling_capacity: 100,
+        cooling_efficiency: 1,
+
+        weapon_spread_multiplier: 1,
+        weapon_recoil_multiplier: 1
     };
 
-    var _names=variable_struct_get_names(_defaults);
+    var _names = variable_struct_get_names(_defaults);
 
-    for (var _i=0;_i<array_length(_names);_i++)
+    for (var _i = 0; _i < array_length(_names); _i++)
     {
-        var _key=_names[_i];
+        var _key = _names[_i];
 
-        if (!variable_struct_exists(_stats,_key))
+        if (!variable_struct_exists(_stats, _key))
         {
             variable_struct_set(
                 _stats,
                 _key,
-                variable_struct_get(_defaults,_key)
+                variable_struct_get(_defaults, _key)
             );
         }
     }

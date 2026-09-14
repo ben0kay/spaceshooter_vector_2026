@@ -223,9 +223,26 @@ function sc_player_drone_docked_count(_player,_drone_key)
     return _amount;
 }
 
-/// @description Deploys the selected drone type through its weapon delivery.
+/// @description Deploys the selected drone when its bay remains operational.
 function sc_player_drone_selected_deploy(_player)
 {
+    if (!sc_ship_system_operational(
+        _player.ship,
+        "drone_bay"
+    ))
+    {
+        sc_world_feedback_create(
+            _player.x,
+            _player.y - 54,
+            _player.layer,
+            "DRONE BAY DISRUPTED",
+            make_colour_rgb(255, 80, 90),
+            0.8
+        );
+
+        return false;
+    }
+
     var _selected = _player.inventory.drone_bay.selected;
 
     if (_selected.drone_key == ""
@@ -239,10 +256,10 @@ function sc_player_drone_selected_deploy(_player)
     {
         sc_world_feedback_create(
             _player.x,
-            _player.y-54,
+            _player.y - 54,
             _player.layer,
             "NO SELECTED DRONE DOCKED",
-            make_colour_rgb(255,80,90),
+            make_colour_rgb(255, 80, 90),
             0.8
         );
 

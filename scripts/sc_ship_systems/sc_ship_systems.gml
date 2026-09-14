@@ -106,46 +106,104 @@ function sc_ship_system_condition_ratio_get(_ship,_system_key)
     );
 }
 
-/// @description Applies temporary disruption after general and system resistance.
+/// @description Applies temporary disruption after duration and strength resistance.
 function sc_ship_system_disruption_apply(
     _owner,
     _system_key,
     _duration,
-    _strength=1
+    _strength = 1
 )
 {
     if (!instance_exists(_owner)) return false;
 
-    var _system=sc_ship_system_get(_owner.ship,_system_key);
+    var _system = sc_ship_system_get(
+        _owner.ship,
+        _system_key
+    );
+
     if (!is_struct(_system)) return false;
 
-    var _stats=_owner.ship.stats.final;
-    var _general=variable_struct_exists(
+    var _stats = _owner.ship.stats.final;
+
+    var _duration_general = variable_struct_exists(
         _stats,
         "system_disruption_resistance"
     )
         ? _stats.system_disruption_resistance
         : 0;
 
-    var _stat_key=_system_key+"_disruption_resistance";
-    var _specific=variable_struct_exists(_stats,_stat_key)
-        ? variable_struct_get(_stats,_stat_key)
+    var _duration_key = _system_key
+        + "_disruption_resistance";
+
+    var _duration_specific = variable_struct_exists(
+        _stats,
+        _duration_key
+    )
+        ? variable_struct_get(_stats, _duration_key)
         : 0;
 
-    var _resistance=clamp(_general+_specific,0,0.9);
-    var _resolved_duration=max(
-        1,
-        round(_duration*(1-_resistance))
+    var _strength_general = variable_struct_exists(
+        _stats,
+        "system_disruption_strength_resistance"
+    )
+        ? _stats.system_disruption_strength_resistance
+        : 0;
+
+    var _strength_key = _system_key
+        + "_disruption_strength_resistance";
+
+    var _strength_specific = variable_struct_exists(
+        _stats,
+        _strength_key
+    )
+        ? variable_struct_get(_stats, _strength_key)
+        : 0;
+
+    var _recovery = variable_struct_exists(
+        _stats,
+        "system_recovery_multiplier"
+    )
+        ? max(0.1, _stats.system_recovery_multiplier)
+        : 1;
+
+    var _duration_resistance = clamp(
+        _duration_general + _duration_specific,
+        0,
+        0.9
     );
 
-    _system.disruption.remaining=max(
+    var _strength_resistance = clamp(
+        _strength_general + _strength_specific,
+        0,
+        0.9
+    );
+
+    var _resolved_duration = max(
+        1,
+        round(
+            _duration
+            * (1 - _duration_resistance)
+            / _recovery
+        )
+    );
+
+    var _resolved_strength = clamp(
+        _strength * (1 - _strength_resistance),
+        0,
+        1
+    );
+
+    if (_resolved_strength <= 0)
+        return false;
+
+    _system.disruption.remaining = max(
         _system.disruption.remaining,
         _resolved_duration
     );
 
-    _system.disruption.strength=max(
+    _system.disruption.strength = max(
         _system.disruption.strength,
-        clamp(_strength,0,1)
+        _resolved_strength
     );
 
     return true;
