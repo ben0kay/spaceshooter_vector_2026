@@ -41,13 +41,27 @@ function sc_player_dash_input_update(_player)
     var _dash = _movement.dash;
     var _stats = _player.ship.stats.final;
 
-    if (!global.input.action.dash_pressed || !_movement.moving) return false;
-    if (_dash.cooldown_remaining > 0) return false;
+    if (sc_ship_propulsion_disruption_strength_get(
+        _player.ship
+    ) > 0)
+    {
+        _dash.double_tap_remaining = 0;
+        return false;
+    }
+
+    if (!global.input.action.dash_pressed
+    || !_movement.moving
+    || _dash.cooldown_remaining > 0)
+        return false;
 
     if (_dash.double_tap_remaining > 0)
         return sc_player_dash_begin(_player);
 
-    _dash.double_tap_remaining = max(1, round(_stats.dash_double_tap_window));
+    _dash.double_tap_remaining = max(
+        1,
+        round(_stats.dash_double_tap_window)
+    );
+
     return false;
 }
 
@@ -56,7 +70,10 @@ function sc_player_dash_ghost_record(_player)
 {
     var _dash = _player.movement.dash;
     var _limit = _dash.ghost_limit;
-    var _last = min(_dash.ghost_count, _limit - 1);
+    var _last = min(
+        _dash.ghost_count,
+        _limit - 1
+    );
 
     for (var _i = _last; _i > 0; _i--)
         _dash.ghosts[_i] = _dash.ghosts[_i - 1];
@@ -68,7 +85,10 @@ function sc_player_dash_ghost_record(_player)
         life: _dash.ghost_life
     };
 
-    _dash.ghost_count = min(_dash.ghost_count + 1, _limit);
+    _dash.ghost_count = min(
+        _dash.ghost_count + 1,
+        _limit
+    );
 }
 
 /// @description Updates the short direction-locked player dash.
@@ -77,6 +97,31 @@ function sc_player_update_dashing(_player)
     var _movement = _player.movement;
     var _dash = _movement.dash;
     var _stats = _player.ship.stats.final;
+	var _disruption = sc_ship_propulsion_disruption_strength_get(
+	    _player.ship
+	);
+
+	if (_disruption > 0)
+	{
+	    _dash.remaining = 0;
+	    _dash.invulnerable = false;
+	    _movement.boost.active = false;
+	    global.PlayerState = PlayerState.ACTIVE;
+
+	    _movement.velocity_x *= 0.72;
+	    _movement.velocity_y *= 0.72;
+	    _movement.speed = point_distance(
+	        0,
+	        0,
+	        _movement.velocity_x,
+	        _movement.velocity_y
+	    );
+
+	    sc_player_solid_move(_player);
+	    sc_player_combat_permission_update(_player);
+	    sc_player_visual_update(_player);
+	    return;
+	}
 
     sc_player_aim_update(_player);
 

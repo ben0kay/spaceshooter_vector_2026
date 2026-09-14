@@ -343,11 +343,34 @@ function sc_config_init()
 
             effects: [
                 { name: "None", chance: 0, duration: 0, strength: 0, tick_interval: 0 },
-                { name: "Disruption", chance: 0.25, duration: 180, strength: 0.25, tick_interval: 0 },
+                {
+				    name: "Disruption",
+				    chance: 0.25,
+				    duration: 180,
+				    strength: 0.25,
+				    tick_interval: 0,
+
+				    systems: [
+				        "weapons",
+				        "thrusters"
+				    ],
+
+				    system_count: 1
+				},
                 { name: "Burn", chance: 0.2, duration: 180, strength: 0.15, tick_interval: 30 },
                 { name: "Corrosion", chance: 0.25, duration: 240, strength: 0.2, tick_interval: 30 },
                 { name: "Stagger", chance: 1, duration: 12, strength: 0.45, tick_interval: 0 }
             ],
+			
+			disruption: {
+			    propulsion: {
+			        heavy_strength: 0.7,
+			        speed_penalty: 0.35,
+			        response_penalty: 0.65,
+			        heavy_damping_min: 0.62,
+			        heavy_damping_max: 0.82
+			    }
+			},
 			
 			area_occlusion: {
                 asteroids: true,

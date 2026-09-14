@@ -180,3 +180,86 @@ function sc_ship_systems_update(_owner)
 
     return true;
 }
+
+/// @description Returns active disruption strength for one ship system.
+function sc_ship_system_disruption_strength_get(
+    _ship,
+    _system_key
+)
+{
+    var _system = sc_ship_system_get(
+        _ship,
+        _system_key
+    );
+
+    if (!is_struct(_system)
+    || _system.disruption.remaining <= 0)
+        return 0;
+
+    return clamp(
+        _system.disruption.strength,
+        0,
+        1
+    );
+}
+
+/// @description Applies one disruption effect to unique eligible ship systems.
+function sc_ship_system_disruption_effect_apply(
+    _owner,
+    _effect
+)
+{
+    if (!instance_exists(_owner)
+    || !is_array(_effect.systems)
+    || array_length(_effect.systems) <= 0)
+        return false;
+
+    var _available = variable_clone(_effect.systems);
+    var _amount = min(
+        max(1, _effect.system_count),
+        array_length(_available)
+    );
+
+    var _applied = false;
+
+    repeat (_amount)
+    {
+        var _index = irandom(
+            array_length(_available) - 1
+        );
+
+        var _system_key = _available[_index];
+
+        if (sc_ship_system_disruption_apply(
+            _owner,
+            _system_key,
+            _effect.duration,
+            _effect.strength
+        ))
+            _applied = true;
+
+        array_delete(
+            _available,
+            _index,
+            1
+        );
+    }
+
+    return _applied;
+}
+
+/// @description Returns the strongest current propulsion disruption.
+function sc_ship_propulsion_disruption_strength_get(_ship)
+{
+    return max(
+        sc_ship_system_disruption_strength_get(
+            _ship,
+            "engines"
+        ),
+
+        sc_ship_system_disruption_strength_get(
+            _ship,
+            "thrusters"
+        )
+    );
+}

@@ -272,64 +272,6 @@ function sc_attack_area_simulant_seeker_core_draw(_area, _data)
     draw_set_colour(c_white);
 }
 
-/// @description Registers the Dreadwing's heavy seeker-core weapon.
-function sc_weapon_register_simulant_seeker_core()
-{
-    return sc_weapon_register({
-        identity: {
-            key: "weapon_simulant_seeker_core",
-            name: "Simulant Seeker Core"
-        },
-
-        delivery: {
-            type: AttackDelivery.PROJECTILE,
-            projectile_key: "projectile_simulant_seeker_core",
-
-            projectile: {
-                scale: 1.2,
-                speed: 12,
-                life: 250
-            },
-
-            damage: {
-                amount: 10,
-                type: DamageType.ENERGY,
-                effect: DamageEffect.NONE
-            },
-
-            guidance: {
-			    acquire_range: 1500,
-			    turn_speed: 1.65,
-			    reacquire_interval: 8,
-			    lead_strength: 0,
-			    guidance_delay: 0,
-			    lock_angle: 360,
-			    avoidance: 0
-			},
-
-            detonation: {
-                scale: 1.15,
-
-                damage: {
-                    amount: 28,
-                    type: DamageType.ENERGY,
-                    effect: DamageEffect.STAGGER,
-                    effect_chance: 1,
-                    effect_duration: 18,
-                    effect_strength: 0.55,
-                    knockback_force: 4
-                }
-            }
-        },
-
-        audio: {
-            sound: noone,
-            volume: 0.8,
-            pitch_range: 0.04
-        }
-    });
-}
-
 /// @description Emits the Seeker Core's large lingering Simulant particle trail.
 function sc_projectile_simulant_seeker_core_trail(_projectile, _data)
 {

@@ -349,17 +349,67 @@ function sc_player_resources_update(_player)
         _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
 }
 
-/// @description Updates movement with light cargo-mass handling and fuel penalties.
+/// @description Updates movement with cargo, fuel and propulsion-system penalties.
 function sc_player_normal_movement_update(_player)
 {
     var _movement = _player.movement;
     var _stats = _player.ship.stats.final;
+    var _config = GCFG.damage.disruption.propulsion;
+    var _disruption = sc_ship_propulsion_disruption_strength_get(
+        _player.ship
+    );
+
     var _load = sc_player_cargo_load_ratio_get(_player);
     var _speed_multiplier = lerp(1, 0.92, _load);
     var _response_multiplier = lerp(1, 0.85, _load);
     var _fuel_multiplier = lerp(1, 1.1, _load);
 
-    _movement.boost.active = global.input.action.dash_held && _movement.moving;
+    if (_disruption >= _config.heavy_strength)
+    {
+        var _damping_ratio = (
+            _disruption - _config.heavy_strength
+        ) / max(
+            0.01,
+            1 - _config.heavy_strength
+        );
+
+        var _damping = lerp(
+            _config.heavy_damping_max,
+            _config.heavy_damping_min,
+            _damping_ratio
+        );
+
+        _movement.boost.active = false;
+        _movement.velocity_x *= _damping;
+        _movement.velocity_y *= _damping;
+        _movement.speed = point_distance(
+            0,
+            0,
+            _movement.velocity_x,
+            _movement.velocity_y
+        );
+
+        if (_movement.speed < 0.01)
+        {
+            _movement.velocity_x = 0;
+            _movement.velocity_y = 0;
+            _movement.speed = 0;
+        }
+
+        sc_player_solid_move(_player);
+        return;
+    }
+
+    _speed_multiplier *= 1
+        - _config.speed_penalty * _disruption;
+
+    _response_multiplier *= 1
+        - _config.response_penalty * _disruption;
+
+    _movement.boost.active =
+        _disruption <= 0
+        && global.input.action.dash_held
+        && _movement.moving;
 
     if (_movement.moving)
     {
@@ -369,7 +419,11 @@ function sc_player_normal_movement_update(_player)
 
         _fuel_cost *= _fuel_multiplier;
 
-        if (!sc_player_resource_spend(_player, ResourceType.FUEL, _fuel_cost))
+        if (!sc_player_resource_spend(
+            _player,
+            ResourceType.FUEL,
+            _fuel_cost
+        ))
         {
             _movement.moving = false;
             _movement.boost.active = false;
@@ -381,29 +435,69 @@ function sc_player_normal_movement_update(_player)
     if (_movement.moving)
     {
         var _travel_direction = _movement.speed > 0.05
-            ? point_direction(0, 0, _movement.velocity_x, _movement.velocity_y)
-            : point_direction(0, 0, _movement.input_x, _movement.input_y);
+            ? point_direction(
+                0,
+                0,
+                _movement.velocity_x,
+                _movement.velocity_y
+            )
+            : point_direction(
+                0,
+                0,
+                _movement.input_x,
+                _movement.input_y
+            );
 
-        _alignment = (dcos(angle_difference(_travel_direction, _player.draw_angle)) + 1) * 0.5;
+        _alignment = (
+            dcos(angle_difference(
+                _travel_direction,
+                _player.draw_angle
+            )) + 1
+        ) * 0.5;
     }
 
     var _speed_max = _stats.speed_max
         * _speed_multiplier
-        * lerp(_stats.directional_speed_min, 1, _alignment);
+        * lerp(
+            _stats.directional_speed_min,
+            1,
+            _alignment
+        );
 
     if (_movement.boost.active)
         _speed_max *= _stats.boost_speed_multiplier;
 
-    var _target_vx = _movement.moving ? _movement.input_x * _speed_max : 0;
-    var _target_vy = _movement.moving ? _movement.input_y * _speed_max : 0;
-    var _change = (_movement.moving ? _stats.acceleration : _stats.deceleration)
-        * _response_multiplier;
+    var _target_vx = _movement.moving
+        ? _movement.input_x * _speed_max
+        : 0;
 
-    _movement.velocity_x += clamp(_target_vx - _movement.velocity_x, -_change, _change);
-    _movement.velocity_y += clamp(_target_vy - _movement.velocity_y, -_change, _change);
+    var _target_vy = _movement.moving
+        ? _movement.input_y * _speed_max
+        : 0;
 
-    if (abs(_movement.velocity_x) < 0.001) _movement.velocity_x = 0;
-    if (abs(_movement.velocity_y) < 0.001) _movement.velocity_y = 0;
+    var _change = (
+        _movement.moving
+            ? _stats.acceleration
+            : _stats.deceleration
+    ) * _response_multiplier;
+
+    _movement.velocity_x += clamp(
+        _target_vx - _movement.velocity_x,
+        -_change,
+        _change
+    );
+
+    _movement.velocity_y += clamp(
+        _target_vy - _movement.velocity_y,
+        -_change,
+        _change
+    );
+
+    if (abs(_movement.velocity_x) < 0.001)
+        _movement.velocity_x = 0;
+
+    if (abs(_movement.velocity_y) < 0.001)
+        _movement.velocity_y = 0;
 
     sc_player_solid_move(_player);
 }
