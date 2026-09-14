@@ -239,7 +239,7 @@ function sc_hud_level_data()
             }
         },
 
-		        top_banner: {
+		top_banner: {
             width: 640,
             height: 72,
             y: 82,
@@ -374,10 +374,22 @@ function sc_hud_level_data()
     status_y: 645,
 
     categories: [
-        { layer: ItemLayer.REFINED, name: "MATERIALS", description: "REFINED RESOURCES, COMPOSITES AND ALLOYS" },
-        { layer: ItemLayer.COMPONENT, name: "PARTS", description: "MECHANICAL, ELECTRICAL AND STRUCTURAL PARTS" },
-        { layer: ItemLayer.PRODUCT, name: "PRODUCTS", description: "MODULES, WEAPONS, DRONES AND DEVICES" }
-    ]
+    {
+        layer: ItemLayer.REFINED,
+        name: "REFINED",
+        description: "REFINED RESOURCES, COMPOSITES AND ALLOYS"
+    },
+    {
+        layer: ItemLayer.COMPONENT,
+        name: "COMPONENTS",
+        description: "MECHANICAL, ELECTRICAL AND STRUCTURAL COMPONENTS"
+    },
+    {
+        layer: ItemLayer.PRODUCT,
+        name: "PRODUCTS",
+        description: "MODULES, WEAPONS, DRONES, AMMUNITION AND DEVICES"
+    }
+]
 },
 			
 		inventory: {

@@ -85,26 +85,87 @@ function sc_player_stats_refresh(_player)
     return sc_player_stats_runtime_sync(_player);
 }
 
-/// @description Rebuilds ship-stat modifiers from currently installed modules.
+/// @description Rebuilds stat modifiers from every currently installed module.
 function sc_player_modules_modifiers_rebuild(_player)
 {
     var _modifiers = [];
-    var _equipment = _player.inventory.equipment;
+    var _installed = _player.inventory.equipment;
+    var _slots = variable_struct_get_names(_installed);
 
-    // Armour module.
-    if (!is_undefined(_equipment.armour))
+    for (var _i = 0; _i < array_length(_slots); _i++)
     {
-        var _item = _equipment.armour;
-        var _definition = variable_struct_get(global.data.items,_item.key);
-        var _module = _definition.module;
+        var _item = variable_struct_get(
+            _installed,
+            _slots[_i]
+        );
 
-        array_push(_modifiers,{
-            stat: "armour_max",
-            multiply: _module.effectiveness * sc_item_grade_multiplier_get(_item.grade)
-        });
+        if (is_undefined(_item)
+        || !variable_struct_exists(
+            global.data.items,
+            _item.key
+        ))
+            continue;
+
+        var _definition = variable_struct_get(
+            global.data.items,
+            _item.key
+        );
+
+        if (_definition.type != ItemType.MODULE
+        || !variable_struct_exists(
+            _definition,
+            "module"
+        )
+        || !is_array(_definition.module.modifiers))
+            continue;
+
+        var _grade_multiplier =
+            sc_item_grade_multiplier_get(
+                _item.grade
+            );
+
+        var _module_modifiers =
+            _definition.module.modifiers;
+
+        for (
+            var _modifier_index = 0;
+            _modifier_index < array_length(_module_modifiers);
+            _modifier_index++
+        )
+        {
+            var _modifier = variable_clone(
+                _module_modifiers[_modifier_index]
+            );
+
+            if (variable_struct_exists(
+                _modifier,
+                "add"
+            ))
+            {
+                _modifier.add *=
+                    _grade_multiplier;
+            }
+
+            if (variable_struct_exists(
+                _modifier,
+                "multiply"
+            ))
+            {
+                _modifier.multiply = 1
+                    + (_modifier.multiply - 1)
+                    * _grade_multiplier;
+            }
+
+            array_push(
+                _modifiers,
+                _modifier
+            );
+        }
     }
 
-    _player.ship.stats.modifiers.modules = _modifiers;
+    _player.ship.stats.modifiers.modules =
+        _modifiers;
+
     return true;
 }
 

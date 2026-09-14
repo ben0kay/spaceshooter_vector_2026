@@ -95,8 +95,8 @@ function sc_item_layer_name_get(_layer)
     switch (_layer)
     {
         case ItemLayer.RAW: return "RAW RESOURCE";
-        case ItemLayer.REFINED: return "PROCESSED MATERIAL";
-        case ItemLayer.COMPONENT: return "INDUSTRIAL PART";
+        case ItemLayer.REFINED: return "REFINED MATERIAL";
+        case ItemLayer.COMPONENT: return "INDUSTRIAL COMPONENT";
         case ItemLayer.PRODUCT: return "FINISHED PRODUCT";
     }
 
@@ -347,29 +347,106 @@ function sc_item_register_all()
     })
 
     && sc_item_register({
-        identity: { key: "item_armour_plate", name: "Armour Plate" },
-        layer: ItemLayer.PRODUCT, type: ItemType.MODULE,
-        description: "A complete reinforced armour assembly fitted over the ship hull.",
-        cargo: { weight: 18, stack_max: 10 },
-        module: { slot: ModuleSlot.ARMOUR, effectiveness: 1, install_duration: 300 },
-        visual: { colour: make_colour_rgb(126,158,171), glow: make_colour_rgb(0,224,235), draw_script: sc_item_armour_primitive_draw }
-    })
-    && sc_item_register({
-        identity: { key: "item_lightweight_armour_plate", name: "Lightweight Armour Plate" },
-        layer: ItemLayer.PRODUCT, type: ItemType.MODULE,
-        description: "Light composite armour providing reduced protection with considerably less mass.",
-        cargo: { weight: 11, stack_max: 10 },
-        module: { slot: ModuleSlot.ARMOUR, effectiveness: 0.85, install_duration: 240 },
-        visual: { colour: make_colour_rgb(66,102,112), glow: make_colour_rgb(40,235,221), draw_script: sc_item_armour_primitive_draw }
-    })
-    && sc_item_register({
-        identity: { key: "item_radar_array", name: "Radar Array" },
-        layer: ItemLayer.PRODUCT, type: ItemType.MODULE,
-        description: "A complete sensor and signal-processing module for ship targeting systems.",
-        cargo: { weight: 12, stack_max: 10 },
-        module: { slot: ModuleSlot.TARGETING, effectiveness: 1, install_duration: 300 },
-        visual: { colour: make_colour_rgb(71,115,132), glow: make_colour_rgb(38,231,243), draw_script: sc_item_plate_primitive_draw }
-    })
+    identity: {
+        key: "item_armour_plate",
+        name: "Armour Plate"
+    },
+
+    layer: ItemLayer.PRODUCT,
+    type: ItemType.MODULE,
+
+    description:
+        "A complete reinforced armour assembly fitted over the ship hull.",
+
+    cargo: {
+        weight: 18,
+        stack_max: 10
+    },
+
+    module: {
+        slot: ModuleSlot.ARMOUR,
+        install_duration: 300,
+
+        modifiers: [
+            {
+                stat: "armour_max",
+                multiply: 1
+            }
+        ]
+    },
+
+    visual: {
+        colour: make_colour_rgb(126, 158, 171),
+        glow: make_colour_rgb(0, 224, 235),
+        draw_script: sc_item_armour_primitive_draw
+    }
+})
+
+&& sc_item_register({
+    identity: {
+        key: "item_lightweight_armour_plate",
+        name: "Lightweight Armour Plate"
+    },
+
+    layer: ItemLayer.PRODUCT,
+    type: ItemType.MODULE,
+
+    description:
+        "Light composite armour providing reduced protection with considerably less mass.",
+
+    cargo: {
+        weight: 11,
+        stack_max: 10
+    },
+
+    module: {
+        slot: ModuleSlot.ARMOUR,
+        install_duration: 240,
+
+        modifiers: [
+            {
+                stat: "armour_max",
+                multiply: 0.85
+            }
+        ]
+    },
+
+    visual: {
+        colour: make_colour_rgb(66, 102, 112),
+        glow: make_colour_rgb(40, 235, 221),
+        draw_script: sc_item_armour_primitive_draw
+    }
+})
+
+&& sc_item_register({
+    identity: {
+        key: "item_radar_array",
+        name: "Radar Array"
+    },
+
+    layer: ItemLayer.PRODUCT,
+    type: ItemType.MODULE,
+
+    description:
+        "A complete sensor and signal-processing module for ship targeting systems.",
+
+    cargo: {
+        weight: 12,
+        stack_max: 10
+    },
+
+    module: {
+        slot: ModuleSlot.TARGETING,
+        install_duration: 300,
+        modifiers: []
+    },
+
+    visual: {
+        colour: make_colour_rgb(71, 115, 132),
+        glow: make_colour_rgb(38, 231, 243),
+        draw_script: sc_item_plate_primitive_draw
+    }
+})
     && sc_item_register({
         identity: { key: "item_scanning_drone", name: "Scanning Drone" },
         layer: ItemLayer.PRODUCT,
