@@ -170,44 +170,51 @@ function sc_hud_level_data()
         },
 
         bottom: {
-            width: 1320,
-            height: 82,
-            margin_bottom: 10,
-            bar_segments: 10,
-			
-			defence_warning: {
-			    warning_ratio: 0.5,
-			    danger_ratio: 0.25,
-			    critical_ratio: 0.1,
+    width: 1440,
+    height: 94,
+    margin_bottom: 10,
+    bar_segments: 10,
 
-			    background_alpha: 0.1,
-			    outline_alpha: 0.6,
+    defence_warning: {
+        warning_ratio: 0.5,
+        danger_ratio: 0.25,
+        critical_ratio: 0.1,
 
-			    pulse_base: 0.65,
-			    pulse_amount: 0.35,
-			    pulse_speed: 0.1,
+        background_alpha: 0.1,
+        outline_alpha: 0.6,
 
-			    shield_strength: 0.65,
-			    armour_strength: 0.8,
-			    hull_strength: 1
-			},
-			
-            effect_frames: 12,
-            effect_speed: 4,
-			
-            cells: {
-                shield: { x: 28, width: 112 },
-                armour: { x: 148, width: 112 },
-                hull: { x: 268, width: 112 },
-                energy: { x: 388, width: 125 },
-                fuel: { x: 521, width: 125 },
-                bullets: { x: 654, width: 92 },
-                explosives: { x: 754, width: 100 },
-                dash: { x: 862, width: 96 },
-                cargo: { x: 966, width: 100 },
-                weapon: { x: 1074, width: 218 }
-            }
-        },
+        pulse_base: 0.65,
+        pulse_amount: 0.35,
+        pulse_speed: 0.1,
+
+        shield_strength: 0.65,
+        armour_strength: 0.8,
+        hull_strength: 1
+    },
+
+    heat: {
+        warning_ratio: 0.6,
+        danger_ratio: 0.85,
+        background_alpha: 0.3,
+        pulse_speed: 0.14
+    },
+
+    effect_frames: 12,
+    effect_speed: 4,
+
+    cells: {
+        shield: { x: 28, width: 112 },
+        armour: { x: 148, width: 112 },
+        hull: { x: 268, width: 112 },
+        energy: { x: 388, width: 125 },
+        fuel: { x: 521, width: 125 },
+        bullets: { x: 654, width: 92 },
+        explosives: { x: 754, width: 118 },
+        dash: { x: 880, width: 96 },
+        cargo: { x: 984, width: 100 },
+        weapon: { x: 1092, width: 320 }
+    }
+},
 
         top: {
             width: 1320,
@@ -1143,23 +1150,80 @@ function sc_hud_level_value_draw(_origin_x, _origin_y, _cell, _label, _value, _p
     draw_set_alpha(1);
 }
 
-/// @description Draws compact primary, secondary and equipped-item names inside one HUD cell.
+/// @description Draws compact loadout names and weapon-channel heat inside one HUD cell.
 function sc_hud_level_loadout_draw(
+    _hud,
     _origin_x,
     _origin_y,
     _cell,
-    _primary_name,
-    _secondary_name,
-    _equipment_name,
-    _palette
+    _player
 )
 {
+    var _palette = _hud.data.palette;
+    var _config = _hud.data.bottom.heat;
+    var _loadout = _player.ship.loadout;
+    var _maximum = max(1, _player.ship.stats.final.weapon_heat_maximum);
+
+    var _primary = variable_struct_get(
+        global.data.weapons,
+        _loadout.primary
+    );
+
+    var _primary_name = _primary.identity.name;
+    var _secondary_name = "NONE";
+    var _equipment_name = "NONE";
+    var _primary_heated = variable_struct_exists(_primary, "heat");
+    var _secondary_heated = false;
+
+    if (!is_undefined(_loadout.secondary))
+    {
+        var _secondary = variable_struct_get(
+            global.data.weapons,
+            _loadout.secondary
+        );
+
+        _secondary_name = _secondary.identity.name;
+        _secondary_heated = variable_struct_exists(
+            _secondary,
+            "heat"
+        );
+    }
+
+    if (!is_undefined(_loadout.equipment))
+    {
+        var _equipment = variable_struct_get(
+            global.data.weapons,
+            _loadout.equipment
+        );
+
+        _equipment_name = _equipment.identity.name;
+    }
+
     var _left = _origin_x + _cell.x;
     var _name_x = _left + 62;
+
     var _rows = [
-        { label: "PRI", name: _primary_name, colour: _palette.core },
-        { label: "SEC", name: _secondary_name, colour: _palette.text },
-        { label: "EQP", name: _equipment_name, colour: _palette.text }
+        {
+            label: "PRI",
+            name: _primary_name,
+            colour: _palette.core,
+            heated: _primary_heated,
+            heat: _player.combat.primary.heat
+        },
+        {
+            label: "SEC",
+            name: _secondary_name,
+            colour: _palette.text,
+            heated: _secondary_heated,
+            heat: _player.combat.secondary.heat
+        },
+        {
+            label: "EQP",
+            name: _equipment_name,
+            colour: _palette.text,
+            heated: false,
+            heat: undefined
+        }
     ];
 
     draw_set_halign(fa_left);
@@ -1169,13 +1233,13 @@ function sc_hud_level_loadout_draw(
     for (var _i = 0; _i < array_length(_rows); ++_i)
     {
         var _row = _rows[_i];
-        var _row_y = _origin_y + 9 + _i*18;
+        var _row_y = _origin_y + 9 + _i * 25;
 
         draw_set_colour(_palette.muted);
-        draw_text(_left + 19,_row_y,_row.label);
+        draw_text(_left + 19, _row_y, _row.label);
 
         draw_set_colour(_palette.accent);
-        draw_text(_left + 43,_row_y,"//");
+        draw_text(_left + 43, _row_y, "//");
 
         draw_set_colour(_row.colour);
         draw_text_transformed(
@@ -1186,19 +1250,119 @@ function sc_hud_level_loadout_draw(
             0.68,
             0
         );
+
+        if (_row.heated)
+        {
+            var _ratio = clamp(
+                _row.heat.current / _maximum,
+                0,
+                1
+            );
+
+            var _bar_left = _name_x;
+            var _bar_top = _row_y + 16;
+            var _bar_right = _left + _cell.width - 14;
+            var _bar_bottom = _bar_top + 4;
+            var _colour = _palette.accent;
+
+            if (_ratio >= _config.danger_ratio)
+            {
+                _colour = _palette.danger;
+            }
+            else if (_ratio >= _config.warning_ratio)
+            {
+                var _blend = (
+                    _ratio - _config.warning_ratio
+                ) / max(
+                    0.01,
+                    _config.danger_ratio - _config.warning_ratio
+                );
+
+                _colour = merge_colour(
+                    _palette.warning,
+                    _palette.danger,
+                    _blend
+                );
+            }
+            else
+            {
+                _colour = merge_colour(
+                    _palette.accent,
+                    _palette.warning,
+                    _ratio / max(0.01, _config.warning_ratio)
+                );
+            }
+
+            draw_set_colour(_palette.panel_light);
+            draw_set_alpha(_config.background_alpha);
+            draw_rectangle(
+                _bar_left,
+                _bar_top,
+                _bar_right,
+                _bar_bottom,
+                false
+            );
+
+            if (_ratio > 0)
+            {
+                var _pulse = _row.heat.locked
+                    ? 0.65 + (sin(GAME_TICK * _config.pulse_speed) * 0.5 + 0.5) * 0.35
+                    : 1;
+
+                draw_set_colour(_colour);
+                draw_set_alpha(0.25 * _pulse);
+                draw_rectangle(
+                    _bar_left - 1,
+                    _bar_top - 1,
+                    lerp(_bar_left, _bar_right, _ratio) + 1,
+                    _bar_bottom + 1,
+                    false
+                );
+
+                draw_set_alpha(0.95 * _pulse);
+                draw_rectangle(
+                    _bar_left,
+                    _bar_top,
+                    lerp(_bar_left, _bar_right, _ratio),
+                    _bar_bottom,
+                    false
+                );
+            }
+
+            draw_set_colour(
+                _row.heat.locked
+                    ? _palette.danger
+                    : _palette.outline
+            );
+
+            draw_set_alpha(
+                _row.heat.locked
+                    ? 1
+                    : 0.65
+            );
+
+            draw_rectangle(
+                _bar_left,
+                _bar_top,
+                _bar_right,
+                _bar_bottom,
+                true
+            );
+        }
     }
 
     draw_set_colour(_palette.accent);
     draw_set_alpha(0.8);
     draw_line_width(
-        _left + _cell.width*0.5 - 12,
-        _origin_y + 64,
-        _left + _cell.width*0.5 + 12,
-        _origin_y + 64,
+        _left + _cell.width * 0.5 - 12,
+        _origin_y + _hud.data.bottom.height - 12,
+        _left + _cell.width * 0.5 + 12,
+        _origin_y + _hud.data.bottom.height - 12,
         2
     );
 
     draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws changing player data over the baked bottom HUD.
@@ -1349,44 +1513,13 @@ function sc_hud_level_bottom_content_draw(_hud, _player, _x, _y)
         _palette.cargo
     );
 
-		var _loadout = _player.ship.loadout;
-		var _primary = variable_struct_get(
-		    global.data.weapons,
-		    _loadout.primary
-		);
-
-		var _secondary_name = "NONE";
-		var _equipment_name = "NONE";
-
-		if (!is_undefined(_loadout.secondary))
-		{
-		    var _secondary = variable_struct_get(
-		        global.data.weapons,
-		        _loadout.secondary
-		    );
-
-		    _secondary_name = _secondary.identity.name;
-		}
-
-		if (!is_undefined(_loadout.equipment))
-		{
-		    var _equipment = variable_struct_get(
-		        global.data.weapons,
-		        _loadout.equipment
-		    );
-
-		    _equipment_name = _equipment.identity.name;
-		}
-
 		sc_hud_level_loadout_draw(
-		    _x,
-		    _y,
-		    _cells.weapon,
-		    _primary.identity.name,
-		    _secondary_name,
-		    _equipment_name,
-		    _palette
-		);
+	    _hud,
+	    _x,
+	    _y,
+	    _cells.weapon,
+	    _player
+	);
 }
 
 /// @description Draws experience progress and its transfer-arrival pulse.
