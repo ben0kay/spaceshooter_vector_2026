@@ -2,51 +2,100 @@
 function sc_ship_register_shard()
 {
     return sc_ship_register({
-        identity: { key: "ship_shard", name: "Shard", description: "A fast silver-aqua interceptor with adaptive swept wings." },
+        identity: {
+            key: "ship_shard",
+            name: "Shard",
+            description: "A fast silver-aqua interceptor with adaptive swept wings."
+        },
 
         stats_base: {
-			mass: 1,
-            hull_max: 100, armour_max: 100, shield_max: 0,
-            shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
-			
-			shield_recharge_delay: 150, shield_recharge_rate: 0.35, shield_energy_cost: 1,
-			shield_focus_arc: 130, shield_focus_damage_multiplier: 0.25, shield_focus_energy_cost: 0.4,
+            mass: 1,
 
-            energy_max: 500, energy_regeneration: 0.2, energy_recharge_delay: 45,
-            fuel_max: 1000, fuel_regeneration: 0,
-            fuel_movement_cost: 0.015, fuel_boost_cost: 0.06, fuel_dash_cost: 8,
+            hull_max: 100,
+            armour_max: 100,
+            shield_max: 0,
 
-            bullets_max: 1500, explosives_max: 200,
+            shield_recharge_delay: 150,
+            shield_recharge_rate: 0.35,
+            shield_energy_cost: 1,
+
+            shield_focus_arc: 130,
+            shield_focus_damage_multiplier: 0.25,
+            shield_focus_energy_cost: 0.4,
+
+            energy_max: 500,
+            energy_regeneration: 0.2,
+            energy_recharge_delay: 45,
+
+            fuel_max: 1000,
+            fuel_regeneration: 0,
+            fuel_movement_cost: 0.015,
+            fuel_boost_cost: 0.06,
+            fuel_dash_cost: 8,
+
+            bullets_max: 1500,
+            explosives_max: 200,
             cargo_capacity: 100,
 
-            speed_max: 10, acceleration: 0.5, deceleration: 0.3, turn_speed: 10,
-            directional_speed_min: 0.72, directional_thrust_min: 0.28,
-            damage_multiplier: 1.2, fire_rate_multiplier: 1,
+            speed_max: 10,
+            acceleration: 0.5,
+            deceleration: 0.3,
+            turn_speed: 10,
 
-            boost_speed_multiplier: 1.35, dash_speed: 22, dash_duration: 16, dash_cooldown: 90,
-            dash_double_tap_window: 15, dash_exit_speed_multiplier: 0.45, dash_invulnerable: 1,
-            weapons_while_boosting: 0, weapons_while_dashing: 0,
-			
-			mining_strength: 1, resource_yield_multiplier: 1,
+            directional_speed_min: 0.72,
+            directional_thrust_min: 0.28,
+
+            damage_multiplier: 1.2,
+            fire_rate_multiplier: 1,
+
+            boost_speed_multiplier: 1.35,
+            dash_speed: 22,
+            dash_duration: 16,
+            dash_cooldown: 90,
+            dash_double_tap_window: 15,
+            dash_exit_speed_multiplier: 0.45,
+            dash_invulnerable: 1,
+
+            weapons_while_boosting: 0,
+            weapons_while_dashing: 0,
+
+            mining_strength: 1,
+            resource_yield_multiplier: 1
         },
 
         collision: {
             radius_forward: 76,
             radius_side: 36
         },
-		systems: sc_ship_systems_standard(),
+
+        systems: sc_ship_systems_standard(),
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
             primary: [
-                { key: "primary_left", x: 5, y: -32, angle: 0, muzzle_forward: 25, scale: 0.9 },
-                { key: "primary_right", x: 5, y: 32, angle: 0, muzzle_forward: 25, scale: 0.9 }
+                {
+                    key: "primary_left",
+                    x: 16,
+                    y: -8.5,
+                    angle: 0,
+                    muzzle_forward: 18,
+                    scale: 0.7
+                },
+
+                {
+                    key: "primary_right",
+                    x: 16,
+                    y: 8.5,
+                    angle: 0,
+                    muzzle_forward: 18,
+                    scale: 0.7
+                }
             ],
 
             utility: []
         },
 
-                starting_loadout: {
+        starting_loadout: {
             primary: "weapon_shard_pulse",
             primary_slot: 0,
             primary_slots: [
@@ -98,12 +147,21 @@ function sc_ship_shard_visual_data()
         radius: 46,
         motion_strength: 3,
 
-        // Compatibility fields used by ship-selection previews.
         scale: 1,
-        colour_primary: make_colour_rgb(25, 225, 255),
-        colour_secondary: make_colour_rgb(175, 220, 228),
+        colour_primary: make_colour_rgb(25,225,255),
+        colour_secondary: make_colour_rgb(175,220,228),
 
         palette: sc_faction_palette_get(Faction.PLAYER),
+
+        authored: {
+            enabled: true,
+
+            body: {
+                sprite: s_plyr_ship_shard_hull,
+                scale: 0.1,
+                fallback_script: sc_ship_shard_hull_primitive_draw
+            }
+        },
 
         wing: {
             hinge_forward: -0.03,
@@ -118,7 +176,7 @@ function sc_ship_shard_visual_data()
         },
 
         core: {
-            forward: -0.18,
+            forward: -0.22,
             side: 0,
 
             idle_speed: 0.45,
@@ -131,10 +189,21 @@ function sc_ship_shard_visual_data()
         },
 
         thrust: {
-		    mounts: [
-		        { forward: -1.24, side: -0.19, scale: 0.72, phase: 0 },
-		        { forward: -1.24, side: 0.19, scale: 0.72, phase: 0 }
-		    ],
+            mounts: [
+                {
+                    forward: -1.05,
+                    side: -0.22,
+                    scale: 0.72,
+                    phase: 0
+                },
+
+                {
+                    forward: -1.05,
+                    side: 0.22,
+                    scale: 0.72,
+                    phase: 0
+                }
+            ],
 
             ignition_script: sc_particles_shard_ignition,
             particle_script: sc_particles_shard_thrust
@@ -173,10 +242,10 @@ function sc_ship_shard_visual_data()
         },
 
         draw: {
-            hull: sc_ship_shard_hull_draw,
-            armour: sc_ship_shard_armour_draw,
-            wing_hull: sc_ship_shard_wing_hull_draw,
-            wing_armour: sc_ship_shard_wing_armour_draw,
+            hull: sc_ship_shard_hull_dispatch,
+            armour: sc_ship_shard_armour_dispatch,
+            wing_hull: sc_ship_shard_wing_hull_dispatch,
+            wing_armour: sc_ship_shard_wing_armour_dispatch,
             core: sc_ship_shard_core_draw,
             hardpoint: sc_ship_shard_cannon_draw,
             muzzle_flash: sc_ship_shard_muzzle_flash_draw,
@@ -211,8 +280,120 @@ sc_ship_shard_death() assembles cached components into the generic death-fragmen
 */
 
 
+/// @description Selects the authored or primitive Shard hull.
+function sc_ship_shard_hull_dispatch(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _visual,
+    _stage
+)
+{
+    var _body = _visual.authored.body;
+
+    if (_visual.authored.enabled
+    && sprite_exists(_body.sprite))
+    {
+        draw_sprite_ext(
+            _body.sprite,
+            0,
+            _x,
+            _y,
+            _body.scale,
+            _body.scale,
+            _angle,
+            c_white,
+            1
+        );
+
+        return;
+    }
+
+    _body.fallback_script(
+        _x,
+        _y,
+        _radius,
+        _angle,
+        _visual,
+        _stage
+    );
+}
+
+/// @description Hides primitive armour when the complete authored hull is active.
+function sc_ship_shard_armour_dispatch(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _visual,
+    _stage
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+        return;
+
+    sc_ship_shard_armour_draw(
+        _x,
+        _y,
+        _radius,
+        _angle,
+        _visual,
+        _stage
+    );
+}
+
+/// @description Hides the separate primitive wings when the authored hull is active.
+function sc_ship_shard_wing_hull_dispatch(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _visual,
+    _stage
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+        return;
+
+    sc_ship_shard_wing_hull_draw(
+        _x,
+        _y,
+        _radius,
+        _angle,
+        _visual,
+        _stage
+    );
+}
+
+/// @description Hides primitive wing armour when the authored hull is active.
+function sc_ship_shard_wing_armour_dispatch(
+    _x,
+    _y,
+    _radius,
+    _angle,
+    _visual,
+    _stage
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+        return;
+
+    sc_ship_shard_wing_armour_draw(
+        _x,
+        _y,
+        _radius,
+        _angle,
+        _visual,
+        _stage
+    );
+}
+
 /// @description Draws the Shard's compact twin-engine interceptor hull.
-function sc_ship_shard_hull_draw(_x, _y, _radius, _angle, _visual, _stage)
+function sc_ship_shard_hull_primitive_draw(_x, _y, _radius, _angle, _visual, _stage)
 {
     var _p = _visual.palette;
 

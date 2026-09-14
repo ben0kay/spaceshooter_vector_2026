@@ -2,7 +2,8 @@
 PLAYER DRONE BAY
 
 Drone items physically move between reserved ship slots and world instances.
-Their grade, armour and hull persist when they return.
+Their armour and hull condition persist when they return.
+Drones do not use item grades.
 */
 
 /// @description Creates an empty player drone bay and persistent selected type.
@@ -28,6 +29,30 @@ function sc_player_drone_bay_create(_slot_amount)
         },
 
         slots: _slots
+    };
+}
+
+/// @description Creates one persistent ungraded physical drone item.
+function sc_player_drone_item_create(_item_key)
+{
+    var _item = variable_struct_get(global.data.items,_item_key);
+    var _drone_key = _item.drone.key;
+    var _definition = variable_struct_get(global.data.drones,_drone_key);
+    var _armour = _definition.defence.armour;
+    var _hull = _definition.defence.hull;
+
+    return {
+        key: _item_key,
+        name: _item.identity.name,
+        drone_key: _drone_key,
+        equipment_key: variable_struct_exists(_item.drone,"equipment_key")
+            ? _item.drone.equipment_key
+            : undefined,
+
+        condition: {
+            armour: { current: _armour, maximum: _armour },
+            hull: { current: _hull, maximum: _hull }
+        }
     };
 }
 

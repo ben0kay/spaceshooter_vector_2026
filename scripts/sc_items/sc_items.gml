@@ -41,15 +41,21 @@ function sc_item_grade_multiplier_get(_grade)
     return GCFG.crafting.grades[_grade].multiplier;
 }
 
-/// @description Returns whether one item type supports quality grades.
+/// @description Returns whether an item has at least one explicitly grade-scaled modifier.
 function sc_item_grade_supported(_item)
 {
-    switch (_item.type)
+    if (!variable_struct_exists(_item,"module")
+    || !variable_struct_exists(_item.module,"modifiers"))
+        return false;
+
+    var _modifiers = _item.module.modifiers;
+
+    for (var _i = 0; _i < array_length(_modifiers); ++_i)
     {
-        case ItemType.MODULE:
-        case ItemType.DRONE:
-        case ItemType.WEAPON:
-        case ItemType.DEVICE:
+        var _modifier = _modifiers[_i];
+
+        if (variable_struct_exists(_modifier,"grade_scaled")
+        && _modifier.grade_scaled)
             return true;
     }
 

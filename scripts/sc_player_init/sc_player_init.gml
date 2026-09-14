@@ -132,8 +132,7 @@ function sc_player_init_inventory(_player)
     sc_player_inventory_add(
         _player,
         "item_scanning_drone",
-        3,
-        ItemGrade.COMMON
+        3
     );
 
     var _slots = _player.inventory.drone_bay.slots;
@@ -144,8 +143,7 @@ function sc_player_init_inventory(_player)
             _player,
             _i,
             sc_player_drone_item_create(
-                "item_point_defence_drone",
-                ItemGrade.COMMON
+                "item_point_defence_drone"
             )
         );
     }
