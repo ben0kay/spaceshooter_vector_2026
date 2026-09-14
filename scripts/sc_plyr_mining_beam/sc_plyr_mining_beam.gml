@@ -9,15 +9,22 @@ It deals weak combat damage but extracts asteroid resources efficiently.
 function sc_weapon_register_shard_mining_beam()
 {
     var _palette = {
-        glow: make_colour_rgb(120, 65, 0),
-        accent: make_colour_rgb(225, 125, 10),
-        energy: make_colour_rgb(255, 195, 35),
-        core: make_colour_rgb(255, 248, 185)
+        glow: make_colour_rgb(120,65,0),
+        accent: make_colour_rgb(225,125,10),
+        energy: make_colour_rgb(255,195,35),
+        core: make_colour_rgb(255,248,185)
     };
 
     return sc_weapon_register({
-        identity: { key: "weapon_shard_mining_beam", name: "Shard Mining Beam" },
-        resource: { type: ResourceType.ENERGY, cost: 0.35 },
+        identity: {
+            key: "weapon_shard_mining_beam",
+            name: "Shard Mining Beam"
+        },
+
+        resource: {
+            type: ResourceType.ENERGY,
+            cost: 0.35
+        },
 
         delivery: {
             type: AttackDelivery.BEAM,
@@ -29,16 +36,20 @@ function sc_weapon_register_shard_mining_beam()
                 effect: DamageEffect.NONE,
 
                 extraction: {
-    strength: 1,
-    asteroid_damage_multiplier: 8,
-    efficiency: 1.25,
-    yield_multiplier: 1.5
-}
+                    strength: 1,
+                    asteroid_damage_multiplier: 8,
+                    efficiency: 1.25,
+                    yield_multiplier: 1.5
+                }
             },
 
             beam: {
                 shape: AttackAreaShape.CAPSULE,
-                geometry: { length: 650, radius: 3.5 },
+
+                geometry: {
+                    length: 650,
+                    radius: 3.5
+                },
 
                 behaviour: {
                     growth_speed: 100,
@@ -56,10 +67,12 @@ function sc_weapon_register_shard_mining_beam()
                         segment_length: 75,
                         width_start: 0.82,
                         width_end: 1.12,
+
                         pulse_amount: 0.08,
                         pulse_speed: 0.38,
                         pulse_secondary_amount: 0,
                         pulse_secondary_speed: 0,
+
                         wobble_amount: 0.12,
                         wobble_speed: 0.29,
                         wobble_step: 0.83,
@@ -103,17 +116,25 @@ function sc_weapon_register_shard_mining_beam()
             }
         },
 
-        shot: { pattern: ShotPattern.SINGLE, amount: 1, angle_total: 0 },
+        shot: {
+            pattern: ShotPattern.SINGLE,
+            amount: 1,
+            angle_total: 0
+        },
 
         firing: {
-            mount_mode: WeaponMountMode.CENTRE,
-            centre_forward: 1.62,
+            mount_mode: WeaponMountMode.HARDPOINT,
+            hardpoint_group: "secondary_beam",
             interval: 12,
             recoil: 0,
             muzzle_flash_duration: 0
         },
 
-        audio: { sound: noone, volume: 0.4, pitch_range: 0.04 }
+        audio: {
+            sound: noone,
+            volume: 0.4,
+            pitch_range: 0.04
+        }
     });
 }
 

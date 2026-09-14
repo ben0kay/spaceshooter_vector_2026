@@ -112,7 +112,7 @@ function sc_weapon_register_shard_missile_salvo()
             name: "Shard Micro-Missile Salvo"
         },
 
-        // This cost is paid once for the complete volley.
+        // Cost is paid once for the complete volley.
         resource: {
             type: ResourceType.EXPLOSIVES,
             cost: 2
@@ -141,8 +141,6 @@ function sc_weapon_register_shard_missile_salvo()
                 lead_strength: 0.15,
                 guidance_delay: 8,
                 lock_angle: 220,
-
-                // Preserve the evenly assigned target while it remains alive.
                 retain_assigned_target: true,
 
                 avoidance: {
@@ -169,12 +167,13 @@ function sc_weapon_register_shard_missile_salvo()
             pattern: ShotPattern.RANDOM_CONE,
             amount: 12,
             angle_total: 38,
-			projectile_interval: 3,
+            projectile_interval: 3,
             volley_target_script: sc_weapon_volley_targets_even
         },
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
+            hardpoint_group: "secondary_rockets",
             interval: 90,
             recoil: 4,
             muzzle_flash_duration: 6
@@ -192,9 +191,15 @@ function sc_weapon_register_shard_missile_salvo()
 function sc_weapon_register_shard_rocket()
 {
     return sc_weapon_register({
-        identity: { key: "weapon_shard_rocket", name: "Shard Rockets" },
-		
-		resource: { type: ResourceType.EXPLOSIVES, cost: 1 },
+        identity: {
+            key: "weapon_shard_rocket",
+            name: "Shard Rockets"
+        },
+
+        resource: {
+            type: ResourceType.EXPLOSIVES,
+            cost: 1
+        },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
@@ -213,44 +218,52 @@ function sc_weapon_register_shard_rocket()
             },
 
             guidance: {
-			    acquire_range: 720,
-			    turn_speed: 4,
-			    reacquire_interval: 12,
+                acquire_range: 720,
+                turn_speed: 4,
+                reacquire_interval: 12,
+                lead_strength: 0.45,
+                guidance_delay: 6,
+                lock_angle: 160,
 
-			    lead_strength: 0.45,
-			    guidance_delay: 6,
-			    lock_angle: 160,
-
-			    avoidance: {
-			        strength: 0.75,
-			        asteroids: 1,
-			        structures: 1,
-			        clearance_scale: 1.15
-			    }
-			},
+                avoidance: {
+                    strength: 0.75,
+                    asteroids: 1,
+                    structures: 1,
+                    clearance_scale: 1.15
+                }
+            },
 
             detonation: {
                 scale: 1.15,
 
                 damage: {
-				    amount: 18,
-				    type: DamageType.EXPLOSIVE,
-				    effect: DamageEffect.STAGGER,
-				    knockback_force: 4
-				}
+                    amount: 18,
+                    type: DamageType.EXPLOSIVE,
+                    effect: DamageEffect.STAGGER,
+                    knockback_force: 4
+                }
             }
         },
 
-        shot: { pattern: ShotPattern.SINGLE, amount: 1, angle_total: 0 },
+        shot: {
+            pattern: ShotPattern.SINGLE,
+            amount: 1,
+            angle_total: 0
+        },
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
+            hardpoint_group: "secondary_rockets",
             interval: 32,
             recoil: 8,
             muzzle_flash_duration: 8
         },
 
-        audio: { sound: noone, volume: 0.55, pitch_range: 0.05 }
+        audio: {
+            sound: noone,
+            volume: 0.55,
+            pitch_range: 0.05
+        }
     });
 }
 
@@ -643,11 +656,11 @@ function sc_weapon_register_shard_demolition_rocket()
                 life: 300
             },
 
-            // Direct impact can destroy the asteroid the rocket strikes.
+            // Direct impact can destroy the struck asteroid.
             damage: {
                 amount: 75,
                 type: DamageType.EXPLOSIVE,
-                effect: DamageEffect.STAGGER,
+                effect: DamageEffect.STAGGER
             },
 
             // Completely unguided.
@@ -680,6 +693,7 @@ function sc_weapon_register_shard_demolition_rocket()
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
+            hardpoint_group: "secondary_rockets",
             interval: 90,
             recoil: 16,
             muzzle_flash_duration: 12

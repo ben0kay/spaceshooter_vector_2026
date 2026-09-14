@@ -9,11 +9,20 @@ applies damage on registered tick intervals and releases into a short fade.
 /// @description Registers the Shard's sustained aqua laser.
 function sc_weapon_register_shard_laser()
 {
-    var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
+    var _palette = variable_struct_get(
+        global.data.ships,"ship_shard"
+    ).visual.palette;
 
     return sc_weapon_register({
-        identity: { key: "weapon_shard_laser", name: "Shard Laser" },
-        resource: { type: ResourceType.ENERGY, cost: 0.25 },
+        identity: {
+            key: "weapon_shard_laser",
+            name: "Shard Laser"
+        },
+
+        resource: {
+            type: ResourceType.ENERGY,
+            cost: 0.25
+        },
 
         delivery: {
             type: AttackDelivery.BEAM,
@@ -27,7 +36,11 @@ function sc_weapon_register_shard_laser()
 
             beam: {
                 shape: AttackAreaShape.CAPSULE,
-                geometry: { length: 1100, radius: 8 },
+
+                geometry: {
+                    length: 1100,
+                    radius: 8
+                },
 
                 behaviour: {
                     growth_speed: 145,
@@ -45,10 +58,12 @@ function sc_weapon_register_shard_laser()
                         segment_length: 85,
                         width_start: 1,
                         width_end: 1,
+
                         pulse_amount: 0.13,
                         pulse_speed: 0.42,
                         pulse_secondary_amount: 0.07,
                         pulse_secondary_speed: 0.17,
+
                         wobble_amount: 0.22,
                         wobble_speed: 0.34,
                         wobble_step: 0.91,
@@ -92,22 +107,30 @@ function sc_weapon_register_shard_laser()
             }
         },
 
-        shot: { pattern: ShotPattern.SINGLE, amount: 1, angle_total: 0 },
+        shot: {
+            pattern: ShotPattern.SINGLE,
+            amount: 1,
+            angle_total: 0
+        },
 
         firing: {
-            mount_mode: WeaponMountMode.CENTRE,
-            centre_forward: 1.62,
+            mount_mode: WeaponMountMode.HARDPOINT,
+            hardpoint_group: "secondary_beam",
             interval: 12,
             recoil: 0,
             muzzle_flash_duration: 0
         },
 
-		heat: {
-    amount: 0.7,
-    cooling_delay: 50
-},
+        heat: {
+            amount: 0.7,
+            cooling_delay: 50
+        },
 
-        audio: { sound: noone, volume: 0.5, pitch_range: 0.03 }
+        audio: {
+            sound: noone,
+            volume: 0.5,
+            pitch_range: 0.03
+        }
     });
 }
 

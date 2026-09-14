@@ -452,12 +452,9 @@ function sc_hud_inventory_data()
         width: 1760,
         height: 940,
 
-        tabs: ["CARGO", "EQUIPMENT", "SYSTEMS", "UPGRADES", "NAVIGATION", "LOG", "STATISTICS"],
-        tab_x: 510,
-        tab_y: 82,
-        tab_width: 160,
-        tab_height: 42,
-        tab_gap: 8,
+        tabs: ["CARGO","EQUIPMENT","SYSTEMS","UPGRADES","NAVIGATION","LOG","STATISTICS"],
+        tab_x: 510, tab_y: 82,
+        tab_width: 160, tab_height: 42, tab_gap: 8,
 
         grid: {
             x: 50, y: 195,
@@ -477,24 +474,27 @@ function sc_hud_inventory_data()
         },
 
         equipment: {
-            workspace: {
-                x: 32, y: 155,
-                width: 1268, height: 635
-            },
+            workspace: { x: 32, y: 155, width: 1268, height: 635 },
 
-            ship_x: 850,
+            ship_x: 680,
             ship_y: 475,
+            ship_radius: 215,
 
-            armour: {
-                x: 55, y: 210,
-                width: 340, height: 110
+            armour: { x: 55, y: 210, width: 310, height: 110 },
+
+            slots: {
+                shield: { x: 55, y: 350, width: 310, height: 90 },
+                reactor: { x: 55, y: 470, width: 310, height: 90 },
+                thruster: { x: 990, y: 210, width: 285, height: 90 },
+                targeting: { x: 990, y: 330, width: 285, height: 90 },
+                utility: { x: 990, y: 450, width: 285, height: 90 },
+                auxiliary: { x: 990, y: 570, width: 285, height: 90 }
             },
 
             storage: {
                 x: 55, y: 820,
                 columns: 12,
-                slot_size: 74,
-                gap: 10
+                slot_size: 74, gap: 10
             },
 
             inspector: {

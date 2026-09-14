@@ -88,21 +88,13 @@ function sc_player_weapon_burst_begin(
 
 /// @description Releases the next projectile belonging to an active player burst.
 function sc_player_weapon_burst_update(
-    _player,
-    _runtime,
-    _weapon,
-    _shot,
-    _firing,
-    _x,
-    _y,
-    _direction,
-    _hardpoint_runtime
+    _player,_runtime,_weapon,_shot,_firing,
+    _x,_y,_direction,_hardpoint_runtime
 )
 {
     var _burst = _runtime.burst;
 
-    if (!_burst.active
-    || GAME_TICK < _burst.next_shot_tick)
+    if (!_burst.active || GAME_TICK < _burst.next_shot_tick)
         return false;
 
     var _index = _burst.shot_index;
@@ -113,26 +105,18 @@ function sc_player_weapon_burst_update(
     };
 
     var _shot_direction = sc_weapon_shot_direction_get(
-        _shot,
-        _direction,
-        _index
+        _shot,_direction,_index
     );
 
     var _delivery = sc_weapon_delivery_fire(
-        _player,
-        _weapon,
-        _source,
-        _x,
-        _y,
-        _shot_direction
+        _player,_weapon,_source,
+        _x,_y,_shot_direction
     );
 
     if (!_delivery) return false;
 
     sc_player_weapon_heat_add(
-        _player,
-        _runtime,
-        _weapon
+        _player,_runtime,_weapon
     );
 
     if (_index < array_length(_burst.targets))
@@ -148,13 +132,16 @@ function sc_player_weapon_burst_update(
         _hardpoint_runtime.recoil = _firing.recoil;
         _hardpoint_runtime.muzzle_flash = _firing.muzzle_flash_duration;
         _hardpoint_runtime.muzzle_flash_max = max(
-            1,
-            _firing.muzzle_flash_duration
+            1,_firing.muzzle_flash_duration
+        );
+
+        var _hardpoints = sc_player_hardpoint_group_get(
+            _player,_firing
         );
 
         _runtime.hardpoint_cursor = (
             _runtime.hardpoint_cursor + 1
-        ) mod array_length(_player.ship.hardpoints.primary);
+        ) mod array_length(_hardpoints);
     }
 
     _burst.shot_index++;

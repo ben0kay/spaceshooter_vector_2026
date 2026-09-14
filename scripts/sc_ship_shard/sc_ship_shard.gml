@@ -225,14 +225,14 @@ function sc_ship_shard_visual_data()
         thrust: {
             mounts: [
                 {
-                    forward: -1.05,
+                    forward: -1.7,
                     side: -0.22,
                     scale: 0.72,
                     phase: 0
                 },
 
                 {
-                    forward: -1.05,
+                    forward: -1.7,
                     side: 0.22,
                     scale: 0.72,
                     phase: 0
