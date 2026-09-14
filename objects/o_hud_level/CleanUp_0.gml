@@ -1,5 +1,3 @@
-/// @description Releases generated HUD sprites.
-sc_hud_level_cleanup(hud);
+/// @description Releases generated HUD sprites and debug surfaces.
 
-if (is_struct(global.level) && global.level.hud == id)
-    global.level.hud = noone;
+sc_hud_level_cleanup_event();
