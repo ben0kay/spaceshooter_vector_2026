@@ -332,7 +332,7 @@ function sc_player_resource_spend(_player, _type, _amount)
     return true;
 }
 
-/// @description Regenerates player energy and optional passive fuel.
+/// @description Regenerates player energy through the reactor and optional passive fuel.
 function sc_player_resources_update(_player)
 {
     var _resources = _player.resources;
@@ -340,13 +340,36 @@ function sc_player_resources_update(_player)
     var _energy = _resources.energy;
     var _fuel = _resources.fuel;
 
-    if (_energy.recharge_delay_remaining > 0)
-        _energy.recharge_delay_remaining--;
-    else if (_energy.current < _energy.maximum)
-        _energy.current = min(_energy.maximum, _energy.current + _stats.energy_regeneration);
+    var _reactor_effectiveness =
+        sc_ship_system_effectiveness_get(
+            _player.ship,
+            "reactor"
+        );
 
-    if (_stats.fuel_regeneration > 0 && _fuel.current < _fuel.maximum)
-        _fuel.current = min(_fuel.maximum, _fuel.current + _stats.fuel_regeneration);
+    if (_energy.recharge_delay_remaining > 0)
+    {
+        _energy.recharge_delay_remaining--;
+    }
+    else if (_energy.current < _energy.maximum
+    && _reactor_effectiveness > 0)
+    {
+        _energy.current = min(
+            _energy.maximum,
+            _energy.current
+                + _stats.energy_regeneration
+                * _reactor_effectiveness
+        );
+    }
+
+    if (_stats.fuel_regeneration > 0
+    && _fuel.current < _fuel.maximum)
+    {
+        _fuel.current = min(
+            _fuel.maximum,
+            _fuel.current
+                + _stats.fuel_regeneration
+        );
+    }
 }
 
 /// @description Updates movement with cargo, fuel and propulsion-system penalties.

@@ -112,39 +112,39 @@ function sc_player_modules_modifiers_rebuild(_player)
 function sc_player_stats_system_defaults_apply(_stats)
 {
     var _defaults = {
-        system_disruption_resistance: 0,
-        system_disruption_strength_resistance: 0,
-        system_recovery_multiplier: 1,
+    system_disruption_resistance: 0,                    // Reduces disruption duration for every system
+    system_disruption_strength_resistance: 0,           // Reduces disruption strength for every system
+    system_recovery_multiplier: 1,                      // Higher values shorten disruption duration
 
-        engines_disruption_resistance: 0,
-        thrusters_disruption_resistance: 0,
-        shield_generator_disruption_resistance: 0,
-        reactor_disruption_resistance: 0,
-        cooling_disruption_resistance: 0,
-        weapons_disruption_resistance: 0,
-        sensors_disruption_resistance: 0,
-        drone_bay_disruption_resistance: 0,
+    engines_disruption_resistance: 0,                   // Reduces engine disruption duration
+    thrusters_disruption_resistance: 0,                 // Reduces thruster disruption duration
+    shield_generator_disruption_resistance: 0,          // Reduces shield-generator disruption duration
+    reactor_disruption_resistance: 0,                   // Reduces reactor disruption duration
+    cooling_disruption_resistance: 0,                   // Reduces cooling-system disruption duration
+    weapons_disruption_resistance: 0,                   // Reduces weapon-system disruption duration
+    sensors_disruption_resistance: 0,                   // Reduces sensor disruption duration
+    drone_bay_disruption_resistance: 0,                 // Reduces drone-bay disruption duration
 
-        engines_disruption_strength_resistance: 0,
-        thrusters_disruption_strength_resistance: 0,
-        shield_generator_disruption_strength_resistance: 0,
-        reactor_disruption_strength_resistance: 0,
-        cooling_disruption_strength_resistance: 0,
-        weapons_disruption_strength_resistance: 0,
-        sensors_disruption_strength_resistance: 0,
-        drone_bay_disruption_strength_resistance: 0,
+    engines_disruption_strength_resistance: 0,          // Reduces engine disruption severity
+    thrusters_disruption_strength_resistance: 0,        // Reduces thruster disruption severity
+    shield_generator_disruption_strength_resistance: 0, // Reduces shield-generator disruption severity
+    reactor_disruption_strength_resistance: 0,          // Reduces reactor disruption severity
+    cooling_disruption_strength_resistance: 0,          // Reduces cooling-system disruption severity
+    weapons_disruption_strength_resistance: 0,          // Reduces weapon-system disruption severity
+    sensors_disruption_strength_resistance: 0,          // Reduces sensor disruption severity
+    drone_bay_disruption_strength_resistance: 0,        // Reduces drone-bay disruption severity
 
-        weapon_heat_maximum: 100,
-        weapon_heat_generation_multiplier: 1,
-        weapon_cooling_rate: 1,
-        weapon_cooling_delay_multiplier: 1,
+    weapon_heat_maximum: 500,                           // Maximum heat stored by each weapon channel
+    weapon_heat_generation_multiplier: 1,              // Multiplies heat generated when weapons fire
+    weapon_cooling_rate: 1,                             // Base heat removed from each channel per step
+    weapon_cooling_delay_multiplier: 1,                 // Multiplies the delay before cooling begins
 
-        cooling_capacity: 100,
-        cooling_efficiency: 1,
+    cooling_capacity: 100,                              // Reserved cooling-system capacity stat; not consumed yet
+    cooling_efficiency: 1,                              // Multiplies the weapon cooling rate
 
-        weapon_spread_multiplier: 1,
-        weapon_recoil_multiplier: 1
-    };
+    weapon_spread_multiplier: 1,                        // Multiplies weapon firing spread
+    weapon_recoil_multiplier: 1                         // Multiplies weapon hardpoint recoil
+};
 
     var _names = variable_struct_get_names(_defaults);
 

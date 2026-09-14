@@ -686,7 +686,7 @@ function sc_player_weapon_heat_add(
     return true;
 }
 
-/// @description Passively cools one player hardpoint group.
+/// @description Passively cools one player hardpoint group through the cooling system.
 function sc_player_weapon_heat_channel_update(
     _player,
     _runtime
@@ -701,6 +701,12 @@ function sc_player_weapon_heat_channel_update(
         _stats.weapon_heat_maximum
     );
 
+    var _cooling_effectiveness =
+        sc_ship_system_effectiveness_get(
+            _player.ship,
+            "cooling"
+        );
+
     _heat.current = clamp(
         _heat.current,
         0,
@@ -713,13 +719,15 @@ function sc_player_weapon_heat_channel_update(
         return false;
     }
 
-    if (_heat.current > 0)
+    if (_heat.current > 0
+    && _cooling_effectiveness > 0)
     {
         _heat.current = max(
             0,
             _heat.current
-            - _stats.weapon_cooling_rate
-            * _stats.cooling_efficiency
+                - _stats.weapon_cooling_rate
+                * _stats.cooling_efficiency
+                * _cooling_effectiveness
         );
     }
 

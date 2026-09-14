@@ -20,7 +20,7 @@ function sc_ship_systems_validate(_systems)
 {
     if (!is_struct(_systems)) return false;
 
-var _required = sc_damage_effect_system_keys_get();
+	var _required = sc_damage_effect_system_keys_get();
 
     for (var _i=0;_i<array_length(_required);_i++)
     {
@@ -308,5 +308,38 @@ function sc_ship_propulsion_disruption_strength_get(_ship)
             _ship,
             "thrusters"
         )
+    );
+}
+
+/// @description Returns usable system output after condition and disruption.
+function sc_ship_system_effectiveness_get(
+    _ship,
+    _system_key
+)
+{
+    var _system = sc_ship_system_get(
+        _ship,
+        _system_key
+    );
+
+    if (!is_struct(_system)
+    || !_system.enabled
+    || _system.condition_current <= 0)
+        return 0;
+
+    var _condition = sc_ship_system_condition_ratio_get(
+        _ship,
+        _system_key
+    );
+
+    var _disruption = sc_ship_system_disruption_strength_get(
+        _ship,
+        _system_key
+    );
+
+    return clamp(
+        _condition * (1 - _disruption),
+        0,
+        1
     );
 }
