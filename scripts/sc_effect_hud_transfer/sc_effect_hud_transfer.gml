@@ -27,6 +27,7 @@ function sc_hud_transfer_target_get(_type)
 {
     var _hud = global.level.hud.hud;
     var _data = _hud.data;
+    var _layout = _data.top.progression;
     var _top_x = floor(
         (display_get_gui_width() - _data.top.width) * 0.5
     );
@@ -45,13 +46,13 @@ function sc_hud_transfer_target_get(_type)
 
         case HudTransferType.CREDITS:
             return {
-                x: _top_x + 635,
+                x: _top_x + _layout.credits_x + 35,
                 y: _data.top.margin_top + 20
             };
 
         case HudTransferType.DATA_SHARD:
             return {
-                x: _top_x + 475,
+                x: _top_x + _layout.data_shards_x + 65,
                 y: _data.top.margin_top + 20
             };
     }

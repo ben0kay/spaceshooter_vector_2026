@@ -210,20 +210,27 @@ function sc_hud_level_data()
         },
 
         top: {
-		    width: 1320,
-		    height: 62,
-		    margin_top: 16,
-		    effect_frames: 10,
-		    effect_speed: 5,
+            width: 1320,
+            height: 62,
+            margin_top: 16,
+            effect_frames: 10,
+            effect_speed: 5,
 
-		    experience: {
-		        x: 132,
-		        y: 42,
-		        width: 240,
-		        height: 6,
-		        background_alpha: 0.22
-		    }
-		},
+            progression: {
+                level_x: 42,
+                xp_x: 112,
+                data_shards_x: 260,
+                credits_x: 585
+            },
+
+            experience: {
+                x: 42,
+                y: 42,
+                width: 240,
+                height: 6,
+                background_alpha: 0.22
+            }
+        },
 
 		top_banner: {
     width: 640,
@@ -825,22 +832,22 @@ function sc_hud_top_body_primitive_draw(_data)
     var _top = _data.top;
     var _palette = _data.palette;
 
-    sc_hud_panel_primitive_draw(_top.width, _top.height, 28, _palette);
+    sc_hud_panel_primitive_draw(_top.width,_top.height,28,_palette);
 
+    // Progression / central telemetry / navigation compartments.
     draw_set_colour(_palette.void);
-    draw_rectangle(45, 10, 330, _top.height - 10, false);
-    draw_rectangle(348, 10, _top.width - 348, _top.height - 10, false);
-    draw_rectangle(_top.width - 330, 10, _top.width - 45, _top.height - 10, false);
+    draw_rectangle(45,10,520,_top.height - 10,false);
+    draw_rectangle(538,10,_top.width - 348,_top.height - 10,false);
+    draw_rectangle(_top.width - 330,10,_top.width - 45,_top.height - 10,false);
 
     draw_set_colour(_palette.panel_light);
-    draw_rectangle(45, 10, 330, _top.height - 10, true);
-    draw_rectangle(348, 10, _top.width - 348, _top.height - 10, true);
-    draw_rectangle(_top.width - 330, 10, _top.width - 45, _top.height - 10, true);
-    draw_line(150, 10, 150, _top.height - 10);
+    draw_rectangle(45,10,520,_top.height - 10,true);
+    draw_rectangle(538,10,_top.width - 348,_top.height - 10,true);
+    draw_rectangle(_top.width - 330,10,_top.width - 45,_top.height - 10,true);
 
     draw_set_colour(_palette.accent);
-    draw_line_width(_top.width * 0.5 - 42, 5, _top.width * 0.5 + 42, 5, 2);
-    draw_line_width(_top.width * 0.5 - 25, _top.height - 5, _top.width * 0.5 + 25, _top.height - 5, 2);
+    draw_line_width(_top.width * 0.5 - 42,5,_top.width * 0.5 + 42,5,2);
+    draw_line_width(_top.width * 0.5 - 25,_top.height - 5,_top.width * 0.5 + 25,_top.height - 5,2);
 
     draw_set_colour(c_white);
 }
@@ -1446,6 +1453,7 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
     var _data = _hud.data;
     var _runtime = _hud.runtime;
     var _palette = _data.palette;
+    var _layout = _data.top.progression;
     var _progression = global.profile.progression;
     var _experience = sc_player_level_progress_get();
     var _pulse = _runtime.credit_pulse;
@@ -1456,18 +1464,18 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
     draw_set_valign(fa_middle);
     draw_set_alpha(1);
 
-    // Persistent player progression.
+    // Compact player progression group.
     draw_set_halign(fa_left);
     draw_set_colour(_palette.core);
     draw_text(
-        _x + 42,
+        _x + _layout.level_x,
         _top_y,
         "LVL " + string(_progression.level)
     );
 
     draw_set_colour(_palette.data_shard);
     draw_text(
-        _x + 132,
+        _x + _layout.xp_x,
         _top_y,
         "XP "
         + string(_experience.current)
@@ -1475,9 +1483,8 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
         + string(_experience.required)
     );
 
-    draw_set_colour(_palette.data_shard);
     draw_text(
-        _x + 400,
+        _x + _layout.data_shards_x,
         _top_y,
         "DATA SHARDS // "
         + string(_progression.data_shards)
@@ -1491,9 +1498,9 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
         draw_set_colour(_palette.accent);
         draw_set_alpha(_pulse * 0.22);
         draw_rectangle(
-            _x + 570,
+            _x + _layout.credits_x - 15,
             _y + 10,
-            _x + 720,
+            _x + _layout.credits_x + 135,
             _y + 32,
             false
         );
@@ -1508,7 +1515,7 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
 
     draw_set_alpha(1);
     draw_set_colour(_pulse > 0 ? _palette.core : _palette.accent);
-    draw_text(_x + 585,_top_y,_credit_text);
+    draw_text(_x + _layout.credits_x,_top_y,_credit_text);
 
     // Central HUD identity and current area.
     draw_set_halign(fa_center);
