@@ -300,6 +300,7 @@
     {"id":{"name":"sc_sim_shared_projectiles","path":"scripts/sc_sim_shared_projectiles/sc_sim_shared_projectiles.yy",},},
     {"id":{"name":"sc_sim_siegebreaker","path":"scripts/sc_sim_siegebreaker/sc_sim_siegebreaker.yy",},},
     {"id":{"name":"sc_sim_skirmisher","path":"scripts/sc_sim_skirmisher/sc_sim_skirmisher.yy",},},
+    {"id":{"name":"sc_sim_skyvoid","path":"scripts/sc_sim_skyvoid/sc_sim_skyvoid.yy",},},
     {"id":{"name":"sc_sim_twin_fighter","path":"scripts/sc_sim_twin_fighter/sc_sim_twin_fighter.yy",},},
     {"id":{"name":"sc_sim_visual_helper","path":"scripts/sc_sim_visual_helper/sc_sim_visual_helper.yy",},},
     {"id":{"name":"sc_sim_voidlance","path":"scripts/sc_sim_voidlance/sc_sim_voidlance.yy",},},

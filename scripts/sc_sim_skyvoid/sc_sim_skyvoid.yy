@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_sim_skyvoid",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_sim_skyvoid",
+  "parent":{
+    "name":"HEAVY",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

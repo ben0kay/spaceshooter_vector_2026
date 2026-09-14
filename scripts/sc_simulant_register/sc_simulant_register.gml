@@ -36,6 +36,7 @@ function sc_enemy_faction_simulant_weapons_register()
     if (!sc_weapon_register_simulant_dividing_orb()) return false;
     if (!sc_weapon_register_sim_nexus_shockwave()) return false;
 	if (!sc_weapon_register_simulant_shard()) return false;
+	if (!sc_weapon_register_simulant_rapid_orb()) return false;
     return true;
 }
 
@@ -51,6 +52,8 @@ function sc_enemy_faction_simulant_ships_register()
 	if (!sc_enemy_register_sim_harrower()) return false;
 	if (!sc_enemy_register_sim_nexus()) return false;
 	if (!sc_enemy_register_sim_dreadnaught()) return false;
+	if (!sc_enemy_register_sim_skyvoid()) return false;
+
 
     return true;
 }

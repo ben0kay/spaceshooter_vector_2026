@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies.yy",
+    "name":"HEAVY",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/enemies/HEAVY.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",
