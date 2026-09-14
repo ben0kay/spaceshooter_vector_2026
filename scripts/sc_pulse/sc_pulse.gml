@@ -37,6 +37,11 @@ function sc_weapon_register_shard_pulse()
             recoil: 6,
             muzzle_flash_duration: 8
         },
+		
+		heat: {
+    amount: 7,
+    cooling_delay: 40
+},
 
         audio: {
             sound: noone,

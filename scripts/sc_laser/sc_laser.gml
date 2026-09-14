@@ -102,6 +102,11 @@ function sc_weapon_register_shard_laser()
             muzzle_flash_duration: 0
         },
 
+		heat: {
+    amount: 0.7,
+    cooling_delay: 50
+},
+
         audio: { sound: noone, volume: 0.5, pitch_range: 0.03 }
     });
 }

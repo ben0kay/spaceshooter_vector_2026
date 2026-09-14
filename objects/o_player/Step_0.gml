@@ -7,6 +7,7 @@ movement.previous_angle = draw_angle;
 
 sc_player_movement_runtime_update(id);
 sc_ship_systems_update(id);
+sc_player_weapon_heat_update(id);
 
 if (global.PlayerState != PlayerState.DESTROYED)
 {

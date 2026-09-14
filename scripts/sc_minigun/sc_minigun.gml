@@ -45,6 +45,11 @@ function sc_weapon_register_minigun()
             recoil: 2.5,
             muzzle_flash_duration: 3
         },
+		
+		heat: {
+    amount: 1.4,
+    cooling_delay: 35
+},
 
         audio: {
             sound: noone,

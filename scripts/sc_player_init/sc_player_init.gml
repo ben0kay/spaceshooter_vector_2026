@@ -181,12 +181,19 @@ function sc_player_init_movement(_player)
 }
 
 /// @description Creates one reusable player weapon-channel runtime.
-function sc_player_weapon_runtime_create()
+function sc_player_weapon_runtime_create(_heat_enabled = false)
 {
     return {
         hardpoint_cursor: 0,
         next_fire_tick: 0,
         active_delivery_id: noone,
+
+        heat: {
+            enabled: _heat_enabled,
+            current: 0,
+            cooling_delay_remaining: 0,
+            locked: false
+        },
 
         burst: {
             active: false,
@@ -205,8 +212,8 @@ function sc_player_init_combat(_player)
     _player.combat = {
         weapons_allowed: true,
 
-        primary: sc_player_weapon_runtime_create(),
-        secondary: sc_player_weapon_runtime_create(),
+        primary: sc_player_weapon_runtime_create(true),
+        secondary: sc_player_weapon_runtime_create(true),
         equipment: sc_player_weapon_runtime_create(),
         drone: sc_player_weapon_runtime_create(),
 

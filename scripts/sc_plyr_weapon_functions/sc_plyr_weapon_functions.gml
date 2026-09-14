@@ -95,11 +95,21 @@ function sc_player_weapon_burst_update(
         _shot_direction
     );
 
+    if (!_delivery) return false;
+
+    sc_player_weapon_heat_add(
+        _player,
+        _runtime,
+        _weapon
+    );
+
     if (_index < array_length(_burst.targets))
+    {
         sc_weapon_projectile_target_apply(
             _delivery,
             _burst.targets[_index]
         );
+    }
 
     if (_firing.mount_mode == WeaponMountMode.HARDPOINT)
     {
@@ -275,6 +285,15 @@ function sc_player_weapon_channel_update(
     _firing_override = undefined
 )
 {
+    if (!sc_player_weapon_channel_operational(
+        _player,
+        _runtime
+    ))
+    {
+        sc_player_weapon_runtime_release(_runtime);
+        return false;
+    }
+
     if (!_player.combat.weapons_allowed
     || is_undefined(_weapon_key))
     {
@@ -290,9 +309,18 @@ function sc_player_weapon_channel_update(
         return false;
     }
 
-    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
-    var _shot = is_undefined(_shot_override) ? _weapon.shot : _shot_override;
-    var _firing = is_undefined(_firing_override) ? _weapon.firing : _firing_override;
+    var _weapon = variable_struct_get(
+        global.data.weapons,
+        _weapon_key
+    );
+
+    var _shot = is_undefined(_shot_override)
+        ? _weapon.shot
+        : _shot_override;
+
+    var _firing = is_undefined(_firing_override)
+        ? _weapon.firing
+        : _firing_override;
 
     var _angle = _player.draw_angle;
     var _muzzle_x = _player.x;
@@ -307,37 +335,74 @@ function sc_player_weapon_channel_update(
             var _hardpoint_count = array_length(_hardpoints);
             if (_hardpoint_count <= 0) return false;
 
-            _runtime.hardpoint_cursor = _runtime.hardpoint_cursor mod _hardpoint_count;
+            _runtime.hardpoint_cursor = _runtime.hardpoint_cursor
+                mod _hardpoint_count;
 
-            var _hardpoint = _hardpoints[_runtime.hardpoint_cursor];
+            var _hardpoint = _hardpoints[
+                _runtime.hardpoint_cursor
+            ];
+
             _hardpoint_runtime = _hardpoint.runtime;
             _angle += _hardpoint.angle;
 
             var _mount_x = _player.x
-                + lengthdir_x(_hardpoint.x, _player.draw_angle)
-                + lengthdir_x(_hardpoint.y, _player.draw_angle + 90)
-                - lengthdir_x(_hardpoint_runtime.recoil, _angle);
+                + lengthdir_x(
+                    _hardpoint.x,
+                    _player.draw_angle
+                )
+                + lengthdir_x(
+                    _hardpoint.y,
+                    _player.draw_angle + 90
+                )
+                - lengthdir_x(
+                    _hardpoint_runtime.recoil,
+                    _angle
+                );
 
             var _mount_y = _player.y
-                + lengthdir_y(_hardpoint.x, _player.draw_angle)
-                + lengthdir_y(_hardpoint.y, _player.draw_angle + 90)
-                - lengthdir_y(_hardpoint_runtime.recoil, _angle);
+                + lengthdir_y(
+                    _hardpoint.x,
+                    _player.draw_angle
+                )
+                + lengthdir_y(
+                    _hardpoint.y,
+                    _player.draw_angle + 90
+                )
+                - lengthdir_y(
+                    _hardpoint_runtime.recoil,
+                    _angle
+                );
 
-            _muzzle_x = _mount_x + lengthdir_x(_hardpoint.muzzle_forward, _angle);
-            _muzzle_y = _mount_y + lengthdir_y(_hardpoint.muzzle_forward, _angle);
+            _muzzle_x = _mount_x + lengthdir_x(
+                _hardpoint.muzzle_forward,
+                _angle
+            );
+
+            _muzzle_y = _mount_y + lengthdir_y(
+                _hardpoint.muzzle_forward,
+                _angle
+            );
         }
         break;
 
         case WeaponMountMode.CENTRE:
         {
-            var _forward = _firing.centre_forward * _player.ship.visual.radius;
-            _muzzle_x += lengthdir_x(_forward, _angle);
-            _muzzle_y += lengthdir_y(_forward, _angle);
+            var _forward = _firing.centre_forward
+                * _player.ship.visual.radius;
+
+            _muzzle_x += lengthdir_x(
+                _forward,
+                _angle
+            );
+
+            _muzzle_y += lengthdir_y(
+                _forward,
+                _angle
+            );
         }
         break;
     }
 
-    // Continue a burst without charging its resource cost again.
     if (_runtime.burst.active)
     {
         return sc_player_weapon_burst_update(
@@ -357,22 +422,44 @@ function sc_player_weapon_channel_update(
     {
         if (instance_exists(_runtime.active_delivery_id))
         {
-            if (!sc_player_weapon_cost_pay(_player, _weapon, _debug))
+            if (!sc_player_weapon_cost_pay(
+                _player,
+                _weapon,
+                _debug
+            ))
             {
                 sc_player_weapon_runtime_release(_runtime);
                 return false;
             }
 
-            return sc_beam_sustain(
+            var _sustained = sc_beam_sustain(
                 _runtime.active_delivery_id,
                 _muzzle_x,
                 _muzzle_y,
                 _angle
             );
+
+            if (_sustained)
+            {
+                sc_player_weapon_heat_add(
+                    _player,
+                    _runtime,
+                    _weapon
+                );
+            }
+
+            return _sustained;
         }
 
-        if (GAME_TICK < _runtime.next_fire_tick) return false;
-        if (!sc_player_weapon_cost_pay(_player, _weapon, _debug)) return false;
+        if (GAME_TICK < _runtime.next_fire_tick)
+            return false;
+
+        if (!sc_player_weapon_cost_pay(
+            _player,
+            _weapon,
+            _debug
+        ))
+            return false;
 
         var _beam = sc_weapon_fire(
             _player,
@@ -387,18 +474,42 @@ function sc_player_weapon_channel_update(
         if (!instance_exists(_beam)) return false;
 
         _runtime.active_delivery_id = _beam;
-        _runtime.next_fire_tick = GAME_TICK + max(1, round(_firing.interval));
+        _runtime.next_fire_tick = GAME_TICK + max(
+            1,
+            round(_firing.interval)
+        );
+
+        sc_player_weapon_heat_add(
+            _player,
+            _runtime,
+            _weapon
+        );
+
         return true;
     }
 
-    if (!_fire || GAME_TICK < _runtime.next_fire_tick) return false;
-    if (!sc_player_weapon_cost_pay(_player, _weapon, _debug)) return false;
+    if (!_fire
+    || GAME_TICK < _runtime.next_fire_tick)
+        return false;
+
+    if (!sc_player_weapon_cost_pay(
+        _player,
+        _weapon,
+        _debug
+    ))
+        return false;
 
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
-    var _delayed_burst = variable_struct_exists(_shot, "projectile_interval")
+
+    var _delayed_burst =
+        variable_struct_exists(
+            _shot,
+            "projectile_interval"
+        )
         && _shot.projectile_interval > 0
         && _shot.amount > 1
-        && _weapon.delivery.type == AttackDelivery.PROJECTILE;
+        && _weapon.delivery.type
+            == AttackDelivery.PROJECTILE;
 
     if (_delayed_burst)
     {
@@ -443,10 +554,18 @@ function sc_player_weapon_channel_update(
 
     if (!_delivery) return false;
 
+    sc_player_weapon_heat_add(
+        _player,
+        _runtime,
+        _weapon
+    );
+
     if (_firing.mount_mode == WeaponMountMode.HARDPOINT)
     {
         _hardpoint_runtime.recoil = _firing.recoil;
-        _hardpoint_runtime.muzzle_flash = _firing.muzzle_flash_duration;
+        _hardpoint_runtime.muzzle_flash =
+            _firing.muzzle_flash_duration;
+
         _hardpoint_runtime.muzzle_flash_max = max(
             1,
             _firing.muzzle_flash_duration
@@ -454,7 +573,9 @@ function sc_player_weapon_channel_update(
 
         _runtime.hardpoint_cursor = (
             _runtime.hardpoint_cursor + 1
-        ) mod array_length(_player.ship.hardpoints.primary);
+        ) mod array_length(
+            _player.ship.hardpoints.primary
+        );
     }
 
     _runtime.next_fire_tick = GAME_TICK + max(
@@ -506,4 +627,127 @@ function sc_player_equipment_update(_player)
         _player.ship.loadout.equipment,
         global.input.action.equipment_pressed
     );
+}
+
+/// @description Returns whether one weapon channel can currently fire.
+function sc_player_weapon_channel_operational(_player, _runtime)
+{
+    if (!_runtime.heat.enabled) return true;
+
+    return !_runtime.heat.locked
+        && sc_ship_system_operational(
+            _player.ship,
+            "weapons"
+        );
+}
+
+/// @description Adds one successful weapon use to its hardpoint-group heat.
+function sc_player_weapon_heat_add(
+    _player,
+    _runtime,
+    _weapon
+)
+{
+    var _heat = _runtime.heat;
+
+    if (!_heat.enabled
+    || !variable_struct_exists(_weapon, "heat"))
+        return false;
+
+    var _definition = _weapon.heat;
+    var _stats = _player.ship.stats.final;
+
+    _heat.current += _definition.amount
+        * _stats.weapon_heat_generation_multiplier;
+
+    _heat.cooling_delay_remaining = max(
+        _heat.cooling_delay_remaining,
+        round(
+            _definition.cooling_delay
+            * _stats.weapon_cooling_delay_multiplier
+        )
+    );
+
+    var _maximum = max(
+        1,
+        _stats.weapon_heat_maximum
+    );
+
+    if (_heat.current >= _maximum)
+    {
+        _heat.current = _maximum;
+        _heat.locked = true;
+
+        show_debug_message(
+            "PLAYER WEAPON GROUP OVERHEATED"
+        );
+    }
+
+    return true;
+}
+
+/// @description Passively cools one player hardpoint group.
+function sc_player_weapon_heat_channel_update(
+    _player,
+    _runtime
+)
+{
+    var _heat = _runtime.heat;
+    if (!_heat.enabled) return false;
+
+    var _stats = _player.ship.stats.final;
+    var _maximum = max(
+        1,
+        _stats.weapon_heat_maximum
+    );
+
+    _heat.current = clamp(
+        _heat.current,
+        0,
+        _maximum
+    );
+
+    if (_heat.cooling_delay_remaining > 0)
+    {
+        _heat.cooling_delay_remaining--;
+        return false;
+    }
+
+    if (_heat.current > 0)
+    {
+        _heat.current = max(
+            0,
+            _heat.current
+            - _stats.weapon_cooling_rate
+            * _stats.cooling_efficiency
+        );
+    }
+
+    if (_heat.locked
+    && _heat.current <= _maximum * 0.2)
+    {
+        _heat.locked = false;
+
+        show_debug_message(
+            "PLAYER WEAPON GROUP COOLED"
+        );
+    }
+
+    return true;
+}
+
+/// @description Updates Primary and Secondary hardpoint-group cooling.
+function sc_player_weapon_heat_update(_player)
+{
+    sc_player_weapon_heat_channel_update(
+        _player,
+        _player.combat.primary
+    );
+
+    sc_player_weapon_heat_channel_update(
+        _player,
+        _player.combat.secondary
+    );
+
+    return true;
 }
