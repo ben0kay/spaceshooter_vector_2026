@@ -166,54 +166,42 @@ function sc_hud_top_banner_update(_hud)
     }
 }
 
-/// @description Draws the angular shared top-banner frame.
-function sc_hud_top_banner_frame_draw(
-    _x,
-    _y,
-    _width,
-    _height,
-    _alpha,
-    _config,
-    _palette
-)
+/// @description Draws the translucent angular shared top-banner frame.
+function sc_hud_top_banner_frame_draw(_x,_y,_width,_height,_alpha,_config,_palette)
 {
     var _cut = _config.cut;
+    var _fill_alpha = _alpha * _config.background_alpha;
 
     draw_primitive_begin(pr_trianglefan);
-    draw_vertex_colour(
-        _x + _width * 0.5,
-        _y + _height * 0.5,
-        _palette.background,
-        _alpha * _config.background_alpha
-    );
+    draw_vertex_colour(_x + _width * 0.5,_y + _height * 0.5,_palette.background,_fill_alpha);
 
-    draw_vertex_colour(_x + _cut, _y, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _width - _cut, _y, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _width, _y + _cut, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _width, _y + _height - _cut, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _width - _cut, _y + _height, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _cut, _y + _height, _palette.panel, _alpha);
-    draw_vertex_colour(_x, _y + _height - _cut, _palette.panel, _alpha);
-    draw_vertex_colour(_x, _y + _cut, _palette.panel, _alpha);
-    draw_vertex_colour(_x + _cut, _y, _palette.panel, _alpha);
+    draw_vertex_colour(_x + _cut,_y,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _width - _cut,_y,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _width,_y + _cut,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _width,_y + _height - _cut,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _width - _cut,_y + _height,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _cut,_y + _height,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x,_y + _height - _cut,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x,_y + _cut,_palette.panel,_fill_alpha);
+    draw_vertex_colour(_x + _cut,_y,_palette.panel,_fill_alpha);
     draw_primitive_end();
 
     draw_set_colour(_palette.outline);
     draw_set_alpha(_alpha * _config.outline_alpha);
 
-    draw_line_width(_x + _cut, _y, _x + _width - _cut, _y, 2);
-    draw_line_width(_x + _width - _cut, _y, _x + _width, _y + _cut, 2);
-    draw_line_width(_x + _width, _y + _cut, _x + _width, _y + _height - _cut, 2);
-    draw_line_width(_x + _width, _y + _height - _cut, _x + _width - _cut, _y + _height, 2);
-    draw_line_width(_x + _width - _cut, _y + _height, _x + _cut, _y + _height, 2);
-    draw_line_width(_x + _cut, _y + _height, _x, _y + _height - _cut, 2);
-    draw_line_width(_x, _y + _height - _cut, _x, _y + _cut, 2);
-    draw_line_width(_x, _y + _cut, _x + _cut, _y, 2);
+    draw_line_width(_x + _cut,_y,_x + _width - _cut,_y,2);
+    draw_line_width(_x + _width - _cut,_y,_x + _width,_y + _cut,2);
+    draw_line_width(_x + _width,_y + _cut,_x + _width,_y + _height - _cut,2);
+    draw_line_width(_x + _width,_y + _height - _cut,_x + _width - _cut,_y + _height,2);
+    draw_line_width(_x + _width - _cut,_y + _height,_x + _cut,_y + _height,2);
+    draw_line_width(_x + _cut,_y + _height,_x,_y + _height - _cut,2);
+    draw_line_width(_x,_y + _height - _cut,_x,_y + _cut,2);
+    draw_line_width(_x,_y + _cut,_x + _cut,_y,2);
 
     draw_set_colour(_palette.accent);
-    draw_set_alpha(_alpha * 0.95);
-    draw_line_width(_x + 24, _y + 4, _x + 126, _y + 4, 2);
-    draw_line_width(_x + _width - 126, _y + 4, _x + _width - 24, _y + 4, 2);
+    draw_set_alpha(_alpha * 0.8);
+    draw_line_width(_x + 24,_y + 4,_x + 126,_y + 4,2);
+    draw_line_width(_x + _width - 126,_y + 4,_x + _width - 24,_y + 4,2);
 }
 
 /// @description Returns a curved panel width based on the enemy's strongest defence layer.
@@ -239,13 +227,13 @@ function sc_hud_top_banner_enemy_width_get(_enemy, _config)
     ));
 }
 
-/// @description Draws one continuous enemy defence bar.
+/// @description Draws one continuous translucent enemy defence bar.
 function sc_hud_top_banner_bar_draw(
-    _x, _y, _width, _height, _label,
-    _current, _maximum, _colour, _alpha, _config, _palette
+    _x,_y,_width,_height,_label,
+    _current,_maximum,_colour,_alpha,_config,_palette
 )
 {
-    var _ratio = _maximum > 0 ? clamp(_current / _maximum, 0, 1) : 0;
+    var _ratio = _maximum > 0 ? clamp(_current / _maximum,0,1) : 0;
     var _label_width = 72;
     var _value_width = 54;
     var _bar_x = _x + _label_width;
@@ -258,39 +246,21 @@ function sc_hud_top_banner_bar_draw(
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.text);
     draw_set_alpha(_alpha * 0.9);
-    draw_text(_x, _y + _height * 0.5, _label);
+    draw_text(_x,_y + _height * 0.5,_label);
 
     draw_set_colour(_palette.panel_light);
     draw_set_alpha(_alpha * _config.empty_alpha);
-    draw_rectangle(
-        _bar_x,
-        _bar_top,
-        _bar_x + _bar_width,
-        _bar_bottom,
-        false
-    );
+    draw_rectangle(_bar_x,_bar_top,_bar_x + _bar_width,_bar_bottom,false);
 
     if (_fill_width > 0)
     {
         draw_set_colour(_colour);
-        draw_set_alpha(_alpha * 0.9);
-        draw_rectangle(
-            _bar_x,
-            _bar_top,
-            _bar_x + _fill_width,
-            _bar_bottom,
-            false
-        );
+        draw_set_alpha(_alpha * _config.bar_alpha);
+        draw_rectangle(_bar_x,_bar_top,_bar_x + _fill_width,_bar_bottom,false);
 
         draw_set_colour(_palette.core);
-        draw_set_alpha(_alpha * 0.22);
-        draw_rectangle(
-            _bar_x,
-            _bar_top,
-            _bar_x + _fill_width,
-            _bar_top + 2,
-            false
-        );
+        draw_set_alpha(_alpha * _config.bar_glow_alpha);
+        draw_rectangle(_bar_x,_bar_top,_bar_x + _fill_width,_bar_top + 2,false);
     }
 
     draw_set_halign(fa_right);
@@ -303,8 +273,8 @@ function sc_hud_top_banner_bar_draw(
     );
 }
 
-/// @description Draws live faction-coloured enemy information inside the shared banner.
-function sc_hud_top_banner_enemy_draw(_hud, _enemy, _x, _y, _width, _alpha)
+/// @description Draws the compact enemy defence display without a duplicated name row.
+function sc_hud_top_banner_enemy_draw(_hud,_enemy,_x,_y,_width,_alpha)
 {
     var _data = _enemy.enemy;
     var _defence = _data.defence;
@@ -314,50 +284,29 @@ function sc_hud_top_banner_enemy_draw(_hud, _enemy, _x, _y, _width, _alpha)
 
     var _shield_colour = _faction_palette.energy;
     var _armour_colour = _faction_palette.accent;
-    var _hull_colour = merge_colour(_faction_palette.glow, _faction_palette.accent, 0.4);
+    var _hull_colour = merge_colour(_faction_palette.glow,_faction_palette.accent,0.4);
 
-    var _current_total = _defence.shield.current
-        + _defence.armour.current
-        + _defence.hull.current;
-
-    var _maximum_total = _defence.shield.maximum
-        + _defence.armour.maximum
-        + _defence.hull.maximum;
-
-    var _total_ratio = _maximum_total > 0 ? _current_total / _maximum_total : 0;
     var _bar_x = _x + 22;
     var _bar_width = _width - 44;
 
-    draw_set_valign(fa_middle);
-    draw_set_halign(fa_left);
-    draw_set_colour(_data.grade.colour);
-    draw_set_alpha(_alpha);
-    draw_text(_x + 22, _y + 19, string_upper(_data.grade.name));
-
-    draw_set_halign(fa_right);
-    draw_set_colour(_palette.text);
-    draw_set_alpha(_alpha * 0.9);
-    draw_text(_x + _width - 22, _y + 19, string(round(_total_ratio * 100)) + "%");
-
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 34, _bar_width, 17, "SHIELD",
-        _defence.shield.current, _defence.shield.maximum,
-        _shield_colour, _alpha, _config, _palette
+        _bar_x,_y + 7,_bar_width,17,"SHIELD",
+        _defence.shield.current,_defence.shield.maximum,
+        _shield_colour,_alpha,_config,_palette
     );
 
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 55, _bar_width, 17, "ARMOUR",
-        _defence.armour.current, _defence.armour.maximum,
-        _armour_colour, _alpha, _config, _palette
+        _bar_x,_y + 27,_bar_width,17,"ARMOUR",
+        _defence.armour.current,_defence.armour.maximum,
+        _armour_colour,_alpha,_config,_palette
     );
 
     sc_hud_top_banner_bar_draw(
-        _bar_x, _y + 76, _bar_width, 17, "HULL",
-        _defence.hull.current, _defence.hull.maximum,
-        _hull_colour, _alpha, _config, _palette
+        _bar_x,_y + 47,_bar_width,17,"HULL",
+        _defence.hull.current,_defence.hull.maximum,
+        _hull_colour,_alpha,_config,_palette
     );
 }
-
 /// @description Draws the currently presented top-centre HUD banner.
 function sc_hud_top_banner_draw(_hud)
 {

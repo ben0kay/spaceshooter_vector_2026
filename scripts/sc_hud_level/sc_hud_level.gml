@@ -232,28 +232,30 @@ function sc_hud_level_data()
             }
         },
 
-		top_banner: {
-    width: 640,
-    height: 106,
-    y: 82,
-    cut: 12,
-    hover_padding: 24,
+		        top_banner: {
+            width: 640,
+            height: 72,
+            y: 82,
+            cut: 10,
+            hover_padding: 24,
 
-    scan_interval: 6,
-    fade_in_speed: 0.16,
-    fade_out_speed: 0.07,
+            scan_interval: 6,
+            fade_in_speed: 0.16,
+            fade_out_speed: 0.07,
 
-    capacity: {
-    hp_min: 35,
-    hp_max: 6000,
-    panel_min_width: 256,
-    panel_max_width: 1600
-},
+            capacity: {
+                hp_min: 35,
+                hp_max: 6000,
+                panel_min_width: 256,
+                panel_max_width: 1600
+            },
 
-    background_alpha: 0.94,
-    outline_alpha: 0.85,
-    empty_alpha: 0.18
-},
+            background_alpha: 0.58,
+            outline_alpha: 0.72,
+            empty_alpha: 0.12,
+            bar_alpha: 0.76,
+            bar_glow_alpha: 0.16
+        },
 
         minimap: {
             width: 244,
@@ -1447,7 +1449,7 @@ function sc_hud_level_experience_draw(_hud,_x,_y)
     }
 }
 
-/// @description Draws progression, currency, location and navigation telemetry.
+/// @description Draws progression, currency, enemy identity and navigation telemetry.
 function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
 {
     var _data = _hud.data;
@@ -1456,6 +1458,7 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
     var _layout = _data.top.progression;
     var _progression = global.profile.progression;
     var _experience = sc_player_level_progress_get();
+    var _banner = _hud.top_banner;
     var _pulse = _runtime.credit_pulse;
 
     var _top_y = _y + 20;
@@ -1467,44 +1470,32 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
     // Compact player progression group.
     draw_set_halign(fa_left);
     draw_set_colour(_palette.core);
-    draw_text(
-        _x + _layout.level_x,
-        _top_y,
-        "LVL " + string(_progression.level)
-    );
+    draw_text(_x + _layout.level_x,_top_y,"LVL " + string(_progression.level));
 
     draw_set_colour(_palette.data_shard);
     draw_text(
         _x + _layout.xp_x,
         _top_y,
-        "XP "
-        + string(_experience.current)
-        + " / "
-        + string(_experience.required)
+        "XP " + string(_experience.current) + " / " + string(_experience.required)
     );
 
     draw_text(
         _x + _layout.data_shards_x,
         _top_y,
-        "DATA SHARDS // "
-        + string(_progression.data_shards)
+        "DATA SHARDS // " + string(_progression.data_shards)
     );
 
     // Credit gain pulse.
     if (_pulse > 0)
     {
         gpu_set_blendmode(bm_add);
-
         draw_set_colour(_palette.accent);
         draw_set_alpha(_pulse * 0.22);
         draw_rectangle(
-            _x + _layout.credits_x - 15,
-            _y + 10,
-            _x + _layout.credits_x + 135,
-            _y + 32,
+            _x + _layout.credits_x - 15,_y + 10,
+            _x + _layout.credits_x + 135,_y + 32,
             false
         );
-
         gpu_set_blendmode(bm_normal);
     }
 
@@ -1517,14 +1508,22 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
     draw_set_colour(_pulse > 0 ? _palette.core : _palette.accent);
     draw_text(_x + _layout.credits_x,_top_y,_credit_text);
 
-    // Central HUD identity and current area.
-    draw_set_halign(fa_center);
-    draw_set_colour(_palette.core);
-    draw_text(
-        _x + _data.top.width * 0.5,
-        _bottom_y,
-        "AREA // " + string_upper(room_get_name(room))
-    );
+    // Active enemy name replaces the old AREA // room display.
+    if (_banner.mode == HudTopBannerMode.ENEMY
+    && _banner.alpha > 0
+    && instance_exists(_banner.target_id))
+    {
+        var _enemy_data = _banner.target_id.enemy;
+
+        draw_set_halign(fa_center);
+        draw_set_colour(_enemy_data.grade.colour);
+        draw_set_alpha(_banner.alpha);
+        draw_text(
+            _x + _data.top.width * 0.5,
+            _bottom_y,
+            string_upper(_enemy_data.grade.name)
+        );
+    }
 
     // Live navigation telemetry.
     var _navigation_text =
@@ -1533,6 +1532,7 @@ function sc_hud_level_top_content_draw(_hud,_player,_x,_y)
         + "  HDG " + string(round(_player.draw_angle))
         + "  SPD " + string_format(_player.movement.speed,1,1);
 
+    draw_set_alpha(1);
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
     draw_text(
