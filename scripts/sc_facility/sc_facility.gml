@@ -307,7 +307,7 @@ function sc_facility_interface_open(_hud, _structure)
 
     _runtime.open = true;
     _runtime.active_id = _structure;
-    _runtime.selected_layer = ItemLayer.MATERIAL;
+    _runtime.selected_layer = ItemLayer.REFINED;
     _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure, _runtime.selected_layer);
     _runtime.selected_recipe = 0;
     _runtime.recipe_scroll_row = 0;

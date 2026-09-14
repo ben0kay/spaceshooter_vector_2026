@@ -374,7 +374,7 @@ function sc_hud_level_data()
     status_y: 645,
 
     categories: [
-        { layer: ItemLayer.MATERIAL, name: "MATERIALS", description: "REFINED RESOURCES, COMPOSITES AND ALLOYS" },
+        { layer: ItemLayer.REFINED, name: "MATERIALS", description: "REFINED RESOURCES, COMPOSITES AND ALLOYS" },
         { layer: ItemLayer.PART, name: "PARTS", description: "MECHANICAL, ELECTRICAL AND STRUCTURAL PARTS" },
         { layer: ItemLayer.PRODUCT, name: "PRODUCTS", description: "MODULES, WEAPONS, DRONES AND DEVICES" }
     ]
@@ -535,7 +535,7 @@ function sc_hud_level_init(_hud_object)
     next_scan_tick: GAME_TICK,
     scan_interval: 10,
 
-    selected_layer: ItemLayer.MATERIAL,
+    selected_layer: ItemLayer.REFINED,
     recipe_keys: [],
     selected_recipe: 0,
     recipe_scroll_row: 0,

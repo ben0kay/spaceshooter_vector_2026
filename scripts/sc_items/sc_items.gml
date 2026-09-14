@@ -95,7 +95,7 @@ function sc_item_layer_name_get(_layer)
     switch (_layer)
     {
         case ItemLayer.RAW: return "RAW RESOURCE";
-        case ItemLayer.MATERIAL: return "PROCESSED MATERIAL";
+        case ItemLayer.REFINED: return "PROCESSED MATERIAL";
         case ItemLayer.PART: return "INDUSTRIAL PART";
         case ItemLayer.PRODUCT: return "FINISHED PRODUCT";
     }
@@ -241,70 +241,70 @@ function sc_item_register_all()
 
     && sc_item_register({
         identity: { key: "item_refined_iron", name: "Refined Iron" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "Purified iron produced by refining raw iron ore.",
         cargo: { weight: 3, stack_max: 50 },
         visual: { colour: make_colour_rgb(174,188,198), glow: make_colour_rgb(62,137,162), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_refined_copper", name: "Refined Copper" },
-        layer: ItemLayer.MATERIAL, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.REFINED, type: ItemType.ELECTRICAL,
         description: "Purified conductive copper prepared for electrical manufacturing.",
         cargo: { weight: 3, stack_max: 50 },
         visual: { colour: make_colour_rgb(214,119,65), glow: make_colour_rgb(255,171,78), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_silicon_wafer", name: "Silicon Wafer" },
-        layer: ItemLayer.MATERIAL, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.REFINED, type: ItemType.ELECTRICAL,
         description: "Processed semiconductor material used in electronic components.",
         cargo: { weight: 1, stack_max: 50 },
         visual: { colour: make_colour_rgb(95,184,173), glow: make_colour_rgb(69,242,218), draw_script: sc_item_plate_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_industrial_carbon", name: "Industrial Carbon" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "Purified carbon used in composites, propellants and advanced alloys.",
         cargo: { weight: 2, stack_max: 50 },
         visual: { colour: make_colour_rgb(55,68,74), glow: make_colour_rgb(79,159,173), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_industrial_sulfur", name: "Industrial Sulfur" },
-        layer: ItemLayer.MATERIAL, type: ItemType.AMMUNITION,
+        layer: ItemLayer.REFINED, type: ItemType.AMMUNITION,
         description: "Processed reactive sulfur used in explosives and weapon propellants.",
         cargo: { weight: 2, stack_max: 50 },
         visual: { colour: make_colour_rgb(201,164,46), glow: make_colour_rgb(255,102,27), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_refined_titanium", name: "Refined Titanium" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "Purified lightweight titanium prepared for advanced alloying.",
         cargo: { weight: 3, stack_max: 50 },
         visual: { colour: make_colour_rgb(169,203,221), glow: make_colour_rgb(63,151,211), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_resonant_crystal", name: "Resonant Crystal" },
-        layer: ItemLayer.MATERIAL, type: ItemType.ELECTRICAL,
+        layer: ItemLayer.REFINED, type: ItemType.ELECTRICAL,
         description: "Stabilized crystalline material capable of conducting concentrated energy.",
         cargo: { weight: 2, stack_max: 30 },
         visual: { colour: make_colour_rgb(115,227,255), glow: make_colour_rgb(165,67,255), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_carbon_composite", name: "Carbon Composite" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "A lightweight structural material fabricated from processed carbon.",
         cargo: { weight: 2, stack_max: 50 },
         visual: { colour: make_colour_rgb(66,82,90), glow: make_colour_rgb(56,190,203), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_steel_alloy", name: "Steel Alloy" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "A durable iron-carbon alloy used in reinforced structures and weapon components.",
         cargo: { weight: 4, stack_max: 40 },
         visual: { colour: make_colour_rgb(126,142,151), glow: make_colour_rgb(45,139,161), draw_script: sc_item_ingot_primitive_draw }
     })
     && sc_item_register({
         identity: { key: "item_titanium_alloy", name: "Titanium Alloy" },
-        layer: ItemLayer.MATERIAL, type: ItemType.STRUCTURAL,
+        layer: ItemLayer.REFINED, type: ItemType.STRUCTURAL,
         description: "A strong lightweight alloy intended for advanced armour and engine assemblies.",
         cargo: { weight: 3, stack_max: 30 },
         visual: { colour: make_colour_rgb(145,184,207), glow: make_colour_rgb(66,175,237), draw_script: sc_item_ingot_primitive_draw }
