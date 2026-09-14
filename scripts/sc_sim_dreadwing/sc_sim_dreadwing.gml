@@ -273,50 +273,150 @@ function sc_enemy_register_sim_dreadwing()
     });
 }
 
-/// @description Returns the complete visual definition for the Simulant Dreadwing.
+/// @description Returns the Dreadwing visual definition and selects its visual source.
 function sc_enemy_sim_dreadwing_visual_data()
 {
+    var _authored_enabled=true;
+
     return {
-        radius: 88,
-		motion_strength: 2,
-        palette: sc_faction_palette_get(Faction.SIMULANT),
-		core: { forward: -0.19, side: 0 },
+        radius:88,
+        motion_strength:2,
+        palette:sc_faction_palette_get(Faction.SIMULANT),
 
-        draw: {
-		    body: sc_enemy_sim_dreadwing_body_draw,
-		    core: sc_enemy_sim_dreadwing_core_draw
-		},
+        authored:{
+            enabled:_authored_enabled,
 
-		damage_layers: {
-		    enabled: true,
-		    damage_stages: 4,
-		    hull_draw_script: sc_enemy_sim_dreadwing_hull_draw,
-		    armour_draw_script: sc_enemy_sim_dreadwing_armour_draw
-		},
+            body:{
+                sprite:s_sim_dreadwing_hull,
+                scale:0.533
+            },
 
-        death: {
-            script: sc_enemy_sim_dreadwing_death,
-            draw_scripts: [
+            cannon:{
+                sprite:s_sim_dreadwing_cannon,
+                scale:0.46
+            }
+        },
+
+        core:{
+            forward:-0.19,
+            side:0
+        },
+
+        draw:{
+            // Dispatcher chooses imported artwork or original primitives.
+            body:sc_enemy_sim_dreadwing_body_dispatch,
+            core:sc_enemy_sim_dreadwing_core_draw
+        },
+
+        damage_layers:{
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled:!_authored_enabled,
+            damage_stages:4,
+            hull_draw_script:sc_enemy_sim_dreadwing_hull_draw,
+            armour_draw_script:sc_enemy_sim_dreadwing_armour_draw
+        },
+
+        death:{
+            script:sc_enemy_sim_dreadwing_death,
+            draw_scripts:[
                 sc_enemy_sim_dreadwing_fragment_centre_draw,
                 sc_enemy_sim_dreadwing_fragment_left_draw,
                 sc_enemy_sim_dreadwing_fragment_right_draw
             ]
         },
 
-        thrust: {
-	    draw_script: sc_enemy_simulant_thrust_draw,
-	    ignition_script: sc_particles_enemy_thrust_ignition,
-	    particle_script: sc_particles_enemy_thrust_emit
-	},
+        thrust:{
+            draw_script:sc_enemy_simulant_thrust_draw,
+            ignition_script:sc_particles_enemy_thrust_ignition,
+            particle_script:sc_particles_enemy_thrust_emit
+        },
 
-        bake: {
-            body_canvas_size: 384,
-            core_canvas_size: 160,
-            hardpoint_canvas_size: 160,
-            thrust_canvas_size: 128,
-            fragment_canvas_size: 256
+        bake:{
+            body_canvas_size:384,
+            core_canvas_size:160,
+            hardpoint_canvas_size:160,
+            thrust_canvas_size:128,
+            fragment_canvas_size:256
         }
     };
+}
+
+/// @description Selects the authored or primitive Dreadwing body drawing pipeline.
+function sc_enemy_sim_dreadwing_body_dispatch(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+    {
+        sc_enemy_sim_dreadwing_body_authored_draw(
+            _x,_y,_radius,_angle,_visual
+        );
+
+        return;
+    }
+
+    sc_enemy_sim_dreadwing_body_draw(
+        _x,_y,_radius,_angle,_visual
+    );
+}
+
+/// @description Draws the imported Dreadwing hull into its normal baked body surface.
+function sc_enemy_sim_dreadwing_body_authored_draw(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    var _authored=_visual.authored.body;
+
+    draw_sprite_ext(
+        _authored.sprite,0,
+        _x,_y,
+        _authored.scale,
+        _authored.scale,
+        _angle,
+        c_white,1
+    );
+}
+
+/// @description Selects the authored or primitive Dreadwing cannon drawing pipeline.
+function sc_enemy_sim_dreadwing_cannon_dispatch(
+    _x,_y,_radius,_angle,_visual,_alpha
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.cannon.sprite))
+    {
+        sc_enemy_sim_dreadwing_cannon_authored_draw(
+            _x,_y,_radius,_angle,_visual,_alpha
+        );
+
+        return;
+    }
+
+    sc_enemy_sim_dreadwing_cannon_draw(
+        _x,_y,_radius,_angle,_visual,_alpha
+    );
+}
+
+/// @description Draws the imported Dreadwing cannon into its baked hardpoint surface.
+function sc_enemy_sim_dreadwing_cannon_authored_draw(
+    _x,_y,_radius,_angle,_visual,_alpha
+)
+{
+    var _authored=_visual.authored.cannon;
+
+    draw_sprite_ext(
+        _authored.sprite,0,
+        _x,_y,
+        _authored.scale,
+        _authored.scale,
+        _angle,
+        c_white,_alpha
+    );
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws the complete intact Dreadwing for non-layered fallback.
