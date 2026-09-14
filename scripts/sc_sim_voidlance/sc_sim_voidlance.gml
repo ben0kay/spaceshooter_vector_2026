@@ -259,11 +259,22 @@ function sc_enemy_register_sim_voidlance()
 /// @description Returns the Voidlance's complete visual definition.
 function sc_enemy_sim_voidlance_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 176,
         motion_strength: 1.25,
         rocket_launcher_scale: 0.85,
         palette: sc_faction_palette_get(Faction.SIMULANT),
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_sim_voidlance_hull,
+                scale: 0.375
+            }
+        },
 
         core: {
             forward: -0.34,
@@ -271,12 +282,14 @@ function sc_enemy_sim_voidlance_visual_data()
         },
 
         draw: {
-            body: sc_enemy_sim_voidlance_body_draw,
+            body: sc_enemy_sim_voidlance_body_dispatch,
             core: sc_enemy_sim_voidlance_core_draw
         },
 
         damage_layers: {
-            enabled: true,
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled: !_authored_enabled,
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_voidlance_hull_draw,
             armour_draw_script: sc_enemy_sim_voidlance_armour_draw
@@ -306,6 +319,43 @@ function sc_enemy_sim_voidlance_visual_data()
             fragment_canvas_size: 384
         }
     };
+}
+
+/// @description Selects the authored or primitive Voidlance body.
+function sc_enemy_sim_voidlance_body_dispatch(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    if (_visual.authored.enabled
+    && sprite_exists(_visual.authored.body.sprite))
+    {
+        sc_enemy_sim_voidlance_body_authored_draw(
+            _x,_y,_radius,_angle,_visual
+        );
+
+        return;
+    }
+
+    sc_enemy_sim_voidlance_body_draw(
+        _x,_y,_radius,_angle,_visual
+    );
+}
+
+/// @description Draws the imported Voidlance hull.
+function sc_enemy_sim_voidlance_body_authored_draw(
+    _x,_y,_radius,_angle,_visual
+)
+{
+    var _authored = _visual.authored.body;
+
+    draw_sprite_ext(
+        _authored.sprite,0,
+        _x,_y,
+        _authored.scale,
+        _authored.scale,
+        _angle,
+        c_white,1
+    );
 }
 
 /// @description Draws the complete intact Voidlance fallback body.

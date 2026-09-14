@@ -8,7 +8,12 @@ Ships are assembled from their real baked component sprites at 1:1 GUI scale.
 /// @description Returns the required gallery-card height for one enemy.
 function sc_debug_enemy_visual_card_height(_data)
 {
-    return max(220,ceil(_data.visual.radius * 2) + 110);
+    var _visual_height = max(
+        _data.visual.radius * 2,
+        _data.visual.bake.body_canvas_size
+    );
+
+    return max(220,ceil(_visual_height) + 100);
 }
 
 /// @description Creates the scrollable F3 baked-enemy gallery.
@@ -18,36 +23,67 @@ function sc_debug_enemy_visual_init(_hud)
     var _entries = [];
     var _viewport = { x: 40, y: 100, width: 1700, height: 820 };
     var _gap = 18;
-    var _columns = 2;
-    var _card_width = floor((_viewport.width - _gap) / _columns);
+    var _card_width = floor((_viewport.width - _gap) * 0.5);
     var _content_y = 0;
+    var _i = 0;
 
-    for (var _i = 0; _i < array_length(_keys); _i += _columns)
+    while (_i < array_length(_keys))
     {
         var _left_key = _keys[_i];
         var _left_data = variable_struct_get(global.data.enemies,_left_key);
+        var _left_canvas = _left_data.visual.bake.body_canvas_size;
         var _left_height = sc_debug_enemy_visual_card_height(_left_data);
-        var _right_height = 0;
+        var _left_wide = _left_canvas > _card_width - 40;
 
-        if (_i + 1 < array_length(_keys))
+        // Large ships receive an entire row at true 1:1 size.
+        if (_left_wide)
         {
-            var _right_key = _keys[_i + 1];
-            var _right_data = variable_struct_get(global.data.enemies,_right_key);
-            _right_height = sc_debug_enemy_visual_card_height(_right_data);
+            array_push(_entries,{
+                key: _left_key,
+                x: 0,
+                y: _content_y,
+                width: _viewport.width,
+                height: _left_height
+            });
+
+            _content_y += _left_height + _gap;
+            ++_i;
+            continue;
         }
 
-        var _row_height = max(_left_height,_right_height);
+        var _right_available = _i + 1 < array_length(_keys);
+        var _right_key = "";
+        var _right_height = 0;
+        var _right_wide = false;
 
-        array_push(_entries,{
-            key: _left_key,
-            x: 0,
-            y: _content_y,
-            width: _card_width,
-            height: _row_height
-        });
-
-        if (_i + 1 < array_length(_keys))
+        if (_right_available)
         {
+            _right_key = _keys[_i + 1];
+
+            var _right_data = variable_struct_get(
+                global.data.enemies,
+                _right_key
+            );
+
+            _right_height = sc_debug_enemy_visual_card_height(_right_data);
+            _right_wide =
+                _right_data.visual.bake.body_canvas_size
+                > _card_width - 40;
+        }
+
+        // Pair two normal-sized ships on the same row.
+        if (_right_available && !_right_wide)
+        {
+            var _row_height = max(_left_height,_right_height);
+
+            array_push(_entries,{
+                key: _left_key,
+                x: 0,
+                y: _content_y,
+                width: _card_width,
+                height: _row_height
+            });
+
             array_push(_entries,{
                 key: _right_key,
                 x: _card_width + _gap,
@@ -55,9 +91,23 @@ function sc_debug_enemy_visual_init(_hud)
                 width: _card_width,
                 height: _row_height
             });
+
+            _content_y += _row_height + _gap;
+            _i += 2;
+            continue;
         }
 
-        _content_y += _row_height + _gap;
+        // Keep this normal ship alone when the next ship needs a wide row.
+        array_push(_entries,{
+            key: _left_key,
+            x: 0,
+            y: _content_y,
+            width: _card_width,
+            height: _left_height
+        });
+
+        _content_y += _left_height + _gap;
+        ++_i;
     }
 
     _hud.debug_enemy_visual = {
