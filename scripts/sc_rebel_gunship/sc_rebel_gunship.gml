@@ -227,14 +227,30 @@ function sc_enemy_register_rebel_gunship()
 /// @description Returns the complete Rebel Flyby Gunship visual definition.
 function sc_enemy_rebel_gunship_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 70,
         motion_strength: 2.2,
         palette: sc_faction_palette_get(Faction.REBEL),
-        core: { forward: -0.48, side: 0 },
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_rebel_gunship_hull,
+                scale: 0.146,
+                fallback_script: sc_enemy_rebel_gunship_body_draw
+            }
+        },
+
+        core: {
+            forward: -0.48,
+            side: 0
+        },
 
         draw: {
-            body: sc_enemy_rebel_gunship_body_draw,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_rebel_gunship_core_draw
         },
 

@@ -1,0 +1,101 @@
+VECTOR 2026 - VISUAL ART STYLE GUIDE
+
+CORE RENDERING STYLE
+
+All generated game assets should visually belong beside the existing Player Shard,
+Simulant Dreadwing and Rebel Gunship artwork.
+
+The project style is highly detailed top-down hard-surface sci-fi game artwork with
+crisp vector-like silhouettes, layered metallic construction and controlled coloured
+lighting. It is not flat minimalist vector art.
+
+UNIVERSAL ASSET RULES
+
+- Strict top-down or near-top-down game-asset perspective.
+- Ships and directional equipment should face toward the right.
+- Strong readable silhouette at reduced in-game size.
+- Crisp dark outer outline.
+- Layered armour plates with clearly separated panel shapes.
+- Dark recessed machinery visible between armour sections.
+- Use vents, seams, bolts, pipes, coils, sockets and mechanical insets where suitable.
+- Metallic shading with detailed painted/concept-art surface rendering.
+- Use controlled highlights rather than broad bright glowing edges.
+- Functional lights may glow, but should not overwhelm the material details.
+- Avoid flat cartoon rendering.
+- Avoid minimalist icon rendering.
+- Avoid photorealistic backgrounds and cinematic scene lighting.
+- Avoid excessive bloom, fog or lens effects.
+- No text, labels, UI, grid or environment.
+- Isolated asset with transparent background.
+- Centre the complete asset and leave safe empty margins.
+- Do not crop any part of the asset.
+- Preserve clarity when scaled down for use in GameMaker.
+
+FACTION MATERIAL LANGUAGE
+
+PLAYER
+
+- Clean, advanced and sleek construction.
+- Dark gunmetal structure.
+- Layered silver-grey armour.
+- Cyan energy channels and functional lights.
+- Sharp aerodynamic panel shapes.
+- High-tech but physically constructed, not holographic.
+
+SIMULANT
+
+- Black, graphite and dark metallic armour.
+- Angular, predatory or unusual silhouettes.
+- Restrained purple energy channels.
+- Dense layered plates and recessed alien-machine mechanisms.
+- Purple glow should remain thin and controlled.
+- Avoid bright purple outlines around the entire asset.
+
+REBEL
+
+- Scrappy but believable industrial construction.
+- Worn beige or faded tan armour panels.
+- Dark charcoal machinery and exposed framework.
+- Orange heat, engine and weapon accents.
+- Occasional yellow-black hazard markings.
+- Visible rust, scratches, chipped paint, bolts, pipes and repaired sections.
+- Should appear assembled from practical salvaged parts.
+- Still retain a deliberate readable silhouette and professional asset quality.
+
+ITEM AND COMPONENT ART
+
+Crafting resources, components, equipment and system modules use the same rendering
+language as the ships:
+
+- Isolated top-down or slight top-down mechanical game asset.
+- Strong dark outline and readable silhouette.
+- Layered metallic casing and recessed mechanical details.
+- Real material identity must remain obvious.
+- Use faction colours only when the item belongs to a specific faction.
+- Generic crafting components use neutral dark metal plus material-specific colouring.
+- Keep glow limited to powered components.
+- Do not turn components into flat UI icons.
+- No inventory-slot background should be included in the image.
+
+Examples:
+
+COPPER COIL
+A tightly wound copper electromagnetic coil inside a dark industrial mounting frame,
+with visible terminals, layered metal brackets and subtle warm copper reflections.
+
+BATTERY
+A compact armoured energy cell with dark metallic casing, inset terminals, panel seams
+and restrained cyan charge indicators.
+
+COOLANT MODULE
+A compact square ship-system module with an armoured dark-metal frame, inset cooling
+coils, small vents, pale cyan coolant tubes and a restrained cold glow.
+
+REFERENCE PRIORITY
+
+When generating an asset, attach one or more existing project assets as visual
+references. The reference images determine rendering quality, line treatment, material
+detail and lighting. The written prompt determines the new object, faction and shape.
+
+Do not copy the exact silhouette or internal arrangement of a reference asset.
+Create a new object using the same visual rendering language.

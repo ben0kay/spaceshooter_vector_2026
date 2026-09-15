@@ -1,0 +1,11 @@
+{
+  "$GMNotes":"v1",
+  "%Name":"visual_art_style_guide",
+  "name":"visual_art_style_guide",
+  "parent":{
+    "name":"NOTES",
+    "path":"folders/NOTES.yy",
+  },
+  "resourceType":"GMNotes",
+  "resourceVersion":"2.0",
+}
