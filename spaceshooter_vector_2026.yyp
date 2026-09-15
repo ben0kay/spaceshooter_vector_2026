@@ -222,6 +222,7 @@
     {"id":{"name":"sc_hud_inv_upgrades","path":"scripts/sc_hud_inv_upgrades/sc_hud_inv_upgrades.yy",},},
     {"id":{"name":"sc_hud_level","path":"scripts/sc_hud_level/sc_hud_level.yy",},},
     {"id":{"name":"sc_hud_minimap","path":"scripts/sc_hud_minimap/sc_hud_minimap.yy",},},
+    {"id":{"name":"sc_hud_pause","path":"scripts/sc_hud_pause/sc_hud_pause.yy",},},
     {"id":{"name":"sc_hud_plyr_radial","path":"scripts/sc_hud_plyr_radial/sc_hud_plyr_radial.yy",},},
     {"id":{"name":"sc_hud_sector_map","path":"scripts/sc_hud_sector_map/sc_hud_sector_map.yy",},},
     {"id":{"name":"sc_hud_top_banner","path":"scripts/sc_hud_top_banner/sc_hud_top_banner.yy",},},

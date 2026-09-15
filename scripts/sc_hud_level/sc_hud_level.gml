@@ -8,136 +8,154 @@ The minimap dock is baked separately so it can move without rebaking the HUD.
 Inventory and other windows should draw between or above these permanent components.
 */
 
-function sc_hud_level_create_event(){
-	if (!sc_hud_level_init(id))
+function sc_hud_level_create_event()
 {
-    show_debug_message("LEVEL HUD INITIALIZATION ERROR");
-    instance_destroy();
-    exit;
-}
+    if (!sc_hud_level_init(id))
+    {
+        show_debug_message("LEVEL HUD INITIALIZATION ERROR");
+        instance_destroy();
+        exit;
+    }
 
-sc_hud_top_banner_init(hud);
-sc_debug_enemy_spawn_init(hud);
-sc_debug_weapon_test_init(hud);
-sc_debug_enemy_visual_init(hud);
-sc_derelict_hud_init(hud);
+    sc_hud_top_banner_init(hud);
+    sc_debug_enemy_spawn_init(hud);
+    sc_debug_weapon_test_init(hud);
+    sc_debug_enemy_visual_init(hud);
+    sc_derelict_hud_init(hud);
 
-global.level.hud = id;
+    hud.pause_menu = sc_pause_menu_create();
+    global.level.hud = id;
 }
 	
-function sc_hud_level_step_event(){
-	
-
-if (global.LevelState != LevelState.PLAYING
-&& global.LevelState != LevelState.DEBUG)
-    exit;
-
-if (sc_debug_room_restart_update())
-    exit;
-
-if (global.input.action.debug_enemy_spawn_pressed)
+function sc_hud_level_step_event()
 {
-    if (hud.debug_weapon_test.open)
-        hud.debug_weapon_test.open = false;
+    if (keyboard_check_pressed(vk_escape))
+    {
+        if (global.LevelState == LevelState.PAUSED)
+            sc_pause_menu_resume();
+        else if (global.LevelState == LevelState.PLAYING)
+            sc_pause_menu_open();
 
-    if (hud.debug_enemy_visual.open)
-        hud.debug_enemy_visual.open = false;
+        return;
+    }
 
-    global.LevelState = LevelState.PLAYING;
-    sc_debug_enemy_spawn_toggle(hud);
-    exit;
-}
+    if (global.LevelState == LevelState.PAUSED)
+    {
+        sc_pause_menu_update(hud);
+        return;
+    }
 
-if (global.input.action.debug_weapon_test_pressed)
-{
-    if (hud.debug_enemy_spawn.open)
-        hud.debug_enemy_spawn.open = false;
+    if (global.LevelState != LevelState.PLAYING
+    && global.LevelState != LevelState.DEBUG)
+        return;
 
-    if (hud.debug_enemy_visual.open)
-        hud.debug_enemy_visual.open = false;
+    if (sc_debug_room_restart_update())
+        return;
 
-    global.LevelState = LevelState.PLAYING;
-    sc_debug_weapon_test_toggle(hud);
-    exit;
-}
+    if (global.input.action.debug_enemy_spawn_pressed)
+    {
+        if (hud.debug_weapon_test.open)
+            hud.debug_weapon_test.open = false;
 
-if (global.input.action.debug_enemy_visual_pressed)
-{
-    if (hud.debug_enemy_spawn.open)
-        hud.debug_enemy_spawn.open = false;
+        if (hud.debug_enemy_visual.open)
+            hud.debug_enemy_visual.open = false;
 
-    if (hud.debug_weapon_test.open)
-        hud.debug_weapon_test.open = false;
+        global.LevelState = LevelState.PLAYING;
+        sc_debug_enemy_spawn_toggle(hud);
+        return;
+    }
 
-    global.LevelState = LevelState.PLAYING;
-    sc_debug_enemy_visual_toggle(hud);
-    exit;
-}
+    if (global.input.action.debug_weapon_test_pressed)
+    {
+        if (hud.debug_enemy_spawn.open)
+            hud.debug_enemy_spawn.open = false;
 
-if (global.LevelState == LevelState.DEBUG)
-{
-    if (hud.debug_enemy_spawn.open)
-        sc_debug_enemy_spawn_update(hud);
-    else if (hud.debug_weapon_test.open)
-        sc_debug_weapon_test_update(hud);
-    else if (hud.debug_enemy_visual.open)
-        sc_debug_enemy_visual_update(hud);
+        if (hud.debug_enemy_visual.open)
+            hud.debug_enemy_visual.open = false;
 
-    exit;
-}
+        global.LevelState = LevelState.PLAYING;
+        sc_debug_weapon_test_toggle(hud);
+        return;
+    }
 
-sc_hud_level_update(hud);
-sc_hud_top_banner_update(hud);
-sc_hud_sector_map_update(hud);
-sc_hud_minimap_update(hud);
-sc_derelict_interaction_update(hud);
-sc_facility_interaction_update(hud);
+    if (global.input.action.debug_enemy_visual_pressed)
+    {
+        if (hud.debug_enemy_spawn.open)
+            hud.debug_enemy_spawn.open = false;
 
-switch (global.PlayerState)
-{
-    case PlayerState.ACTIVE:
-        if (global.input.action.inventory_pressed)
-            sc_inventory_toggle(hud);
-    break;
+        if (hud.debug_weapon_test.open)
+            hud.debug_weapon_test.open = false;
 
-    case PlayerState.INVENTORY:
-        sc_inventory_update(hud);
-    break;
+        global.LevelState = LevelState.PLAYING;
+        sc_debug_enemy_visual_toggle(hud);
+        return;
+    }
 
-    case PlayerState.DERELICT:
-        // Derelict input is handled by sc_derelict_interaction_update().
-    break;
+    if (global.LevelState == LevelState.DEBUG)
+    {
+        if (hud.debug_enemy_spawn.open)
+            sc_debug_enemy_spawn_update(hud);
+        else if (hud.debug_weapon_test.open)
+            sc_debug_weapon_test_update(hud);
+        else if (hud.debug_enemy_visual.open)
+            sc_debug_enemy_visual_update(hud);
 
-    case PlayerState.FACILITY:
-        // Facility input is handled by sc_facility_interaction_update().
-    break;
-}
-}
-	
-function sc_hud_level_drawgui_event(){
-	
-	sc_hud_level_draw(hud);
-	sc_particles_hud_draw();
-	sc_hud_top_banner_draw(hud);
-	sc_player_equipment_install_hud_draw(hud);
-	sc_facility_prompt_draw(hud);
-	sc_inventory_draw(hud);
-	sc_facility_interface_draw(hud);
-	sc_derelict_prompt_draw(hud);
-	sc_derelict_interface_draw(hud);
-	sc_debug_enemy_spawn_draw(hud);
-	sc_debug_weapon_test_draw(hud);
-	sc_debug_enemy_visual_draw(hud);
-	sc_hud_sector_map_draw(hud);
-	sc_debug_fps_draw();
+        return;
+    }
+
+    sc_hud_level_update(hud);
+    sc_hud_top_banner_update(hud);
+    sc_hud_sector_map_update(hud);
+    sc_hud_minimap_update(hud);
+    sc_derelict_interaction_update(hud);
+    sc_facility_interaction_update(hud);
+
+    switch (global.PlayerState)
+    {
+        case PlayerState.ACTIVE:
+            if (global.input.action.inventory_pressed)
+                sc_inventory_toggle(hud);
+        break;
+
+        case PlayerState.INVENTORY:
+            sc_inventory_update(hud);
+        break;
+
+        case PlayerState.DERELICT:
+        break;
+
+        case PlayerState.FACILITY:
+        break;
+    }
 }
 	
-function sc_hud_level_cleanup_event(){
-	sc_debug_enemy_visual_cleanup(hud);
-	sc_hud_level_cleanup(hud);
+function sc_hud_level_drawgui_event()
+{
+    sc_hud_level_draw(hud);
+    sc_particles_hud_draw();
+    sc_hud_top_banner_draw(hud);
+    sc_player_equipment_install_hud_draw(hud);
+    sc_facility_prompt_draw(hud);
+    sc_inventory_draw(hud);
+    sc_facility_interface_draw(hud);
+    sc_derelict_prompt_draw(hud);
+    sc_derelict_interface_draw(hud);
+    sc_debug_enemy_spawn_draw(hud);
+    sc_debug_weapon_test_draw(hud);
+    sc_debug_enemy_visual_draw(hud);
+    sc_hud_sector_map_draw(hud);
+    sc_debug_fps_draw();
+    sc_pause_menu_draw(hud);
+}
+	
+function sc_hud_level_cleanup_event()
+{
+    sc_pause_particles_set(true);
+    sc_debug_enemy_visual_cleanup(hud);
+    sc_hud_level_cleanup(hud);
 
-if (is_struct(global.level) && global.level.hud == id)
-    global.level.hud = noone;
+    if (is_struct(global.level) && global.level.hud == id)
+        global.level.hud = noone;
 }
 
 /// @description Returns the complete shared level-HUD visual and layout definition.
@@ -1961,4 +1979,5 @@ function sc_hud_level_draw(_hud)
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
 }
+
 
