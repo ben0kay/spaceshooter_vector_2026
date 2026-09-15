@@ -337,18 +337,64 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
 
     switch (_card.system)
     {
+        //==================================================
+        // ENGINES
+        //==================================================
         case ShipSystemType.ENGINES:
             array_push(_rows,{ label: "MAXIMUM SPEED", value: string_format(_stats.speed_max,1,2) });
             array_push(_rows,{ label: "ACCELERATION", value: string_format(_stats.acceleration,1,2) });
             array_push(_rows,{ label: "DECELERATION", value: string_format(_stats.deceleration,1,2) });
+
+            array_push(_rows,{
+                label: "BOOST SPEED",
+                value: string_format(_stats.speed_max*_stats.boost_speed_multiplier,1,2)
+            });
+
+            array_push(_rows,{
+                label: "MOVEMENT FUEL COST",
+                value: string_format(_stats.fuel_movement_cost,1,3) + " / STEP"
+            });
+
+            array_push(_rows,{
+                label: "BOOST FUEL COST",
+                value: string_format(_stats.fuel_boost_cost,1,3) + " / STEP"
+            });
         break;
 
+
+        //==================================================
+        // THRUSTERS
+        //==================================================
         case ShipSystemType.THRUSTERS:
             array_push(_rows,{ label: "TURN SPEED", value: string_format(_stats.turn_speed,1,2) });
             array_push(_rows,{ label: "REVERSE SPEED", value: string(round(_stats.directional_speed_min*100)) + "%" });
             array_push(_rows,{ label: "REVERSE THRUST", value: string(round(_stats.directional_thrust_min*100)) + "%" });
+
+            array_push(_rows,{
+                label: "DASH SPEED",
+                value: string_format(_stats.dash_speed,1,2)
+            });
+
+            array_push(_rows,{
+                label: "DASH DURATION",
+                value: string_format(_stats.dash_duration/60,1,2) + "s"
+            });
+
+            array_push(_rows,{
+                label: "DASH COOLDOWN",
+                value: string_format(_stats.dash_cooldown/60,1,2) + "s"
+            });
+
+            array_push(_rows,{
+                label: "DASH FUEL COST",
+                value: string_format(_stats.fuel_dash_cost,1,2)
+            });
         break;
 
+
+        //==================================================
+        // SHIELD GENERATOR
+        //==================================================
         case ShipSystemType.SHIELD_GENERATOR:
             array_push(_rows,{
                 label: "SHIELD CAPACITY",
@@ -363,11 +409,35 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
             });
 
             array_push(_rows,{
-                label: "RECHARGE DELAY",
+                label: "RECHARGE DELAY REMAINING",
                 value: string_format(_player.defence.shield.recharge_delay_remaining/60,1,1) + "s"
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE DELAY",
+                value: string_format(_stats.shield_recharge_delay/60,1,1) + "s"
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE ENERGY COST",
+                value: string_format(_stats.shield_energy_cost,1,2) + " / STEP"
+            });
+
+            array_push(_rows,{
+                label: "FOCUS ARC",
+                value: string(round(_stats.shield_focus_arc)) + " DEG"
+            });
+
+            array_push(_rows,{
+                label: "FOCUS ENERGY COST",
+                value: string_format(_stats.shield_focus_energy_cost,1,2) + " / STEP"
             });
         break;
 
+
+        //==================================================
+        // REACTOR
+        //==================================================
         case ShipSystemType.REACTOR:
             array_push(_rows,{
                 label: "ENERGY",
@@ -382,11 +452,20 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
             });
 
             array_push(_rows,{
-                label: "RECHARGE DELAY",
+                label: "RECHARGE DELAY REMAINING",
                 value: string_format(_player.resources.energy.recharge_delay_remaining/60,1,1) + "s"
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE DELAY",
+                value: string_format(_stats.energy_recharge_delay/60,1,1) + "s"
             });
         break;
 
+
+        //==================================================
+        // COOLING
+        //==================================================
         case ShipSystemType.COOLING:
             array_push(_rows,{
                 label: "PRIMARY HEAT",
@@ -408,30 +487,59 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
             });
 
             array_push(_rows,{
-                label: "PRIMARY COOLING DELAY",
-                value: string_format(_player.combat.primary.heat.cooling_delay_remaining/60,1,1) + "s"
+                label: "COOLING EFFICIENCY",
+                value: string(round(_stats.cooling_efficiency*100)) + "%"
             });
 
             array_push(_rows,{
-                label: "SECONDARY COOLING DELAY",
-                value: string_format(_player.combat.secondary.heat.cooling_delay_remaining/60,1,1) + "s"
+                label: "HEAT GENERATION",
+                value: string(round(_stats.weapon_heat_generation_multiplier*100)) + "%"
+            });
+
+            array_push(_rows,{
+                label: "COOLING DELAY MULTIPLIER",
+                value: string(round(_stats.weapon_cooling_delay_multiplier*100)) + "%"
+            });
+
+            array_push(_rows,{
+                label: "CHANNEL COOLING DELAYS",
+                value: "P "
+                    + string_format(_player.combat.primary.heat.cooling_delay_remaining/60,1,1)
+                    + "s / S "
+                    + string_format(_player.combat.secondary.heat.cooling_delay_remaining/60,1,1)
+                    + "s"
             });
         break;
 
+
+        //==================================================
+        // WEAPONS
+        //==================================================
         case ShipSystemType.WEAPONS:
             array_push(_rows,{
                 label: "PRIMARY FIRE COOLDOWN",
-                value: string_format(max(0,_player.combat.primary.next_fire_tick - GAME_TICK)/60,1,2) + "s"
+                value: string_format(
+                    max(0,_player.combat.primary.next_fire_tick - GAME_TICK)/60,
+                    1,2
+                ) + "s"
             });
 
             array_push(_rows,{
                 label: "SECONDARY FIRE COOLDOWN",
-                value: string_format(max(0,_player.combat.secondary.next_fire_tick - GAME_TICK)/60,1,2) + "s"
+                value: string_format(
+                    max(0,_player.combat.secondary.next_fire_tick - GAME_TICK)/60,
+                    1,2
+                ) + "s"
+            });
+
+            array_push(_rows,{
+                label: "DAMAGE MULTIPLIER",
+                value: string(round(_stats.damage_multiplier*100)) + "%"
             });
 
             array_push(_rows,{
                 label: "FIRE RATE MULTIPLIER",
-                value: string_format(_stats.fire_rate_multiplier,1,2)
+                value: string(round(_stats.fire_rate_multiplier*100)) + "%"
             });
 
             array_push(_rows,{
@@ -443,8 +551,19 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
                 label: "WEAPON RECOIL",
                 value: string(round(_stats.weapon_recoil_multiplier*100)) + "%"
             });
+
+            array_push(_rows,{
+                label: "FIRE WHILE BOOST / DASH",
+                value: (_stats.weapons_while_boosting ? "YES" : "NO")
+                    + " / "
+                    + (_stats.weapons_while_dashing ? "YES" : "NO")
+            });
         break;
 
+
+        //==================================================
+        // SENSORS
+        //==================================================
         case ShipSystemType.SENSORS:
             var _radar = _player.inventory.equipment.targeting;
 
@@ -455,24 +574,29 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
 
             array_push(_rows,{
                 label: "CURRENT RADAR RANGE",
-                value: is_undefined(_radar) ? "OFFLINE" : string(round(_hud.minimap.range))
-            });
-
-            array_push(_rows,{
-                label: "DISRUPTION RESISTANCE",
-                value: string(round(_stats.sensors_disruption_resistance*100)) + "%"
+                value: is_undefined(_radar)
+                    ? "OFFLINE"
+                    : string(round(_hud.minimap.range))
             });
         break;
 
+
+        //==================================================
+        // DRONE BAY
+        //==================================================
         case ShipSystemType.DRONE_BAY:
             var _slots = _player.inventory.drone_bay.slots;
             var _occupied = 0;
             var _deployed = 0;
+            var _docked = 0;
+            var _returning = 0;
 
             for (var _i = 0; _i < array_length(_slots); ++_i)
             {
                 if (!is_undefined(_slots[_i].item)) _occupied++;
                 if (_slots[_i].active_id != noone) _deployed++;
+                if (_slots[_i].state == DroneSlotState.DOCKED) _docked++;
+                if (_slots[_i].state == DroneSlotState.RETURNING) _returning++;
             }
 
             array_push(_rows,{
@@ -486,11 +610,52 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
             });
 
             array_push(_rows,{
-                label: "DISRUPTION RESISTANCE",
-                value: string(round(_stats.drone_bay_disruption_resistance*100)) + "%"
+                label: "DOCKED DRONES",
+                value: string(_docked)
+            });
+
+            array_push(_rows,{
+                label: "RETURNING DRONES",
+                value: string(_returning)
             });
         break;
     }
+
+
+    //==================================================
+    // COMMON SYSTEM INFORMATION
+    //==================================================
+
+    var _duration_resistance = clamp(
+        _stats.system_disruption_resistance
+        + variable_struct_get(
+            _stats,
+            _card.key + "_disruption_resistance"
+        ),
+        0,
+        0.9
+    );
+
+    var _strength_resistance = clamp(
+        _stats.system_disruption_strength_resistance
+        + variable_struct_get(
+            _stats,
+            _card.key + "_disruption_strength_resistance"
+        ),
+        0,
+        0.9
+    );
+
+    array_push(_rows,{
+        label: "DISRUPTION DEFENCE",
+        value: "TIME "
+            + string(round(_duration_resistance*100))
+            + "% / STR "
+            + string(round(_strength_resistance*100))
+            + "% / REC "
+            + string(round(_stats.system_recovery_multiplier*100))
+            + "%"
+    });
 
     return _rows;
 }
