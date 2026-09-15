@@ -3,6 +3,11 @@ ASTEROID MATERIAL DATA
 
 Materials define appearance, durability and potential resource yield.
 Sector definitions will eventually control material spawning frequency.
+
+NOTE:
+The new asteroid materials below require matching item registrations before this
+replacement is moved into the live sc_asteroids.gml script:
+item_lithium, item_nickel, item_cobalt, item_tungsten, item_platinum, item_iridium.
 */
 
 /// @description Registers one asteroid material definition.
@@ -20,28 +25,48 @@ function sc_asteroid_register(_data)
     return true;
 }
 
-/// @description Registers all asteroid materials.
+/// @description Registers all asteroid materials ordered by mining strength.
 function sc_asteroid_register_all()
 {
+    // Strength 1.
     return sc_asteroid_register_rock()
         && sc_asteroid_register_carbon()
         && sc_asteroid_register_iron()
         && sc_asteroid_register_copper()
         && sc_asteroid_register_silicon()
-        && sc_asteroid_register_quartz()
-        && sc_asteroid_register_titanium()
-        && sc_asteroid_register_crystal()
         && sc_asteroid_register_ice()
         && sc_asteroid_register_sulfur()
-        && sc_asteroid_register_uranium();
+
+        // Strength 2.
+        && sc_asteroid_register_quartz()
+        && sc_asteroid_register_lithium()
+        && sc_asteroid_register_nickel()
+
+        // Strength 3.
+        && sc_asteroid_register_titanium()
+        && sc_asteroid_register_crystal()
+        && sc_asteroid_register_cobalt()
+
+        // Strength 4.
+        && sc_asteroid_register_uranium()
+        && sc_asteroid_register_tungsten()
+        && sc_asteroid_register_platinum()
+
+        // Strength 5.
+        && sc_asteroid_register_iridium();
 }
 
+// ============================================================================
+// MINING STRENGTH 1
+// ============================================================================
+
+/// @description Registers basic rock asteroids.
 function sc_asteroid_register_rock()
 {
     return sc_asteroid_register({
         identity: { key: "asteroid_rock", name: "Rock Asteroid" },
         item_key: "item_rock",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 0.7, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(8, 8, 8), dark: make_colour_rgb(28, 27, 25),
@@ -51,14 +76,13 @@ function sc_asteroid_register_rock()
     });
 }
 
-
 /// @description Registers carbon-bearing asteroids.
 function sc_asteroid_register_carbon()
 {
     return sc_asteroid_register({
         identity: { key: "asteroid_carbon", name: "Carbon Asteroid" },
         item_key: "item_carbon",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 0.85, yield_multiplier: 1.2 },
         palette: {
             void: make_colour_rgb(6, 8, 10), dark: make_colour_rgb(18, 22, 25),
@@ -74,7 +98,7 @@ function sc_asteroid_register_iron()
     return sc_asteroid_register({
         identity: { key: "asteroid_iron", name: "Iron Asteroid" },
         item_key: "item_iron",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 1.2, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(10, 11, 13), dark: make_colour_rgb(31, 34, 38),
@@ -90,7 +114,7 @@ function sc_asteroid_register_copper()
     return sc_asteroid_register({
         identity: { key: "asteroid_copper", name: "Copper Asteroid" },
         item_key: "item_copper",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 1, yield_multiplier: 1 },
         palette: {
             void: make_colour_rgb(14, 8, 6), dark: make_colour_rgb(43, 25, 19),
@@ -110,7 +134,7 @@ function sc_asteroid_register_silicon()
         },
 
         item_key: "item_silicon",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: {
             health_multiplier: 1.05,
             yield_multiplier: 0.9
@@ -127,45 +151,13 @@ function sc_asteroid_register_silicon()
     });
 }
 
-/// @description Registers titanium-bearing asteroids.
-function sc_asteroid_register_titanium()
-{
-    return sc_asteroid_register({
-        identity: { key: "asteroid_titanium", name: "Titanium Asteroid" },
-        item_key: "item_titanium",
-		mining: { strength_required: 3 },
-        stats: { health_multiplier: 1.55, yield_multiplier: 0.7 },
-        palette: {
-            void: make_colour_rgb(7, 10, 14), dark: make_colour_rgb(22, 31, 42),
-            mid: make_colour_rgb(48, 66, 84), light: make_colour_rgb(103, 130, 151),
-            resource: make_colour_rgb(188, 225, 243), glow: make_colour_rgb(61, 139, 193)
-        }
-    });
-}
-
-/// @description Registers crystal-bearing asteroids.
-function sc_asteroid_register_crystal()
-{
-    return sc_asteroid_register({
-        identity: { key: "asteroid_crystal", name: "Crystal Asteroid" },
-        item_key: "item_crystal",
-		mining: { strength_required: 3 },
-        stats: { health_multiplier: 1.1, yield_multiplier: 0.55 },
-        palette: {
-            void: make_colour_rgb(9, 7, 15), dark: make_colour_rgb(27, 22, 44),
-            mid: make_colour_rgb(56, 46, 82), light: make_colour_rgb(105, 87, 142),
-            resource: make_colour_rgb(105, 239, 255), glow: make_colour_rgb(148, 61, 231)
-        }
-    });
-}
-
 /// @description Registers ice asteroids.
 function sc_asteroid_register_ice()
 {
     return sc_asteroid_register({
         identity: { key: "asteroid_ice", name: "Ice Asteroid" },
         item_key: "item_ice",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 0.65, yield_multiplier: 1.3 },
         palette: {
             void: make_colour_rgb(6, 12, 18), dark: make_colour_rgb(21, 43, 57),
@@ -181,7 +173,7 @@ function sc_asteroid_register_sulfur()
     return sc_asteroid_register({
         identity: { key: "asteroid_sulfur", name: "Sulfur Asteroid" },
         item_key: "item_sulfur",
-		mining: { strength_required: 1 },
+        mining: { strength_required: 1 },
         stats: { health_multiplier: 0.9, yield_multiplier: 0.9 },
         palette: {
             void: make_colour_rgb(13,10,4), dark: make_colour_rgb(43,34,13),
@@ -190,6 +182,10 @@ function sc_asteroid_register_sulfur()
         }
     });
 }
+
+// ============================================================================
+// MINING STRENGTH 2
+// ============================================================================
 
 /// @description Registers quartz-bearing asteroids.
 function sc_asteroid_register_quartz()
@@ -201,7 +197,7 @@ function sc_asteroid_register_quartz()
         },
 
         item_key: "item_quartz",
-		mining: { strength_required: 2 },
+        mining: { strength_required: 2 },
         stats: {
             health_multiplier: 1,
             yield_multiplier: 0.85
@@ -218,6 +214,94 @@ function sc_asteroid_register_quartz()
     });
 }
 
+/// @description Registers lithium-bearing asteroids.
+function sc_asteroid_register_lithium()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_lithium", name: "Lithium Asteroid" },
+        item_key: "item_lithium",
+        mining: { strength_required: 2 },
+        stats: { health_multiplier: 0.8, yield_multiplier: 0.85 },
+        palette: {
+            void: make_colour_rgb(7,11,14), dark: make_colour_rgb(22,35,42),
+            mid: make_colour_rgb(48,72,81), light: make_colour_rgb(112,154,164),
+            resource: make_colour_rgb(211,239,244), glow: make_colour_rgb(86,195,214)
+        }
+    });
+}
+
+/// @description Registers nickel-bearing asteroids.
+function sc_asteroid_register_nickel()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_nickel", name: "Nickel Asteroid" },
+        item_key: "item_nickel",
+        mining: { strength_required: 2 },
+        stats: { health_multiplier: 1.3, yield_multiplier: 0.8 },
+        palette: {
+            void: make_colour_rgb(8,10,9), dark: make_colour_rgb(28,34,30),
+            mid: make_colour_rgb(61,72,64), light: make_colour_rgb(119,136,123),
+            resource: make_colour_rgb(194,211,190), glow: make_colour_rgb(111,157,124)
+        }
+    });
+}
+
+// ============================================================================
+// MINING STRENGTH 3
+// ============================================================================
+
+/// @description Registers titanium-bearing asteroids.
+function sc_asteroid_register_titanium()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_titanium", name: "Titanium Asteroid" },
+        item_key: "item_titanium",
+        mining: { strength_required: 3 },
+        stats: { health_multiplier: 1.55, yield_multiplier: 0.7 },
+        palette: {
+            void: make_colour_rgb(7, 10, 14), dark: make_colour_rgb(22, 31, 42),
+            mid: make_colour_rgb(48, 66, 84), light: make_colour_rgb(103, 130, 151),
+            resource: make_colour_rgb(188, 225, 243), glow: make_colour_rgb(61, 139, 193)
+        }
+    });
+}
+
+/// @description Registers crystal-bearing asteroids.
+function sc_asteroid_register_crystal()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_crystal", name: "Crystal Asteroid" },
+        item_key: "item_crystal",
+        mining: { strength_required: 3 },
+        stats: { health_multiplier: 1.1, yield_multiplier: 0.55 },
+        palette: {
+            void: make_colour_rgb(9, 7, 15), dark: make_colour_rgb(27, 22, 44),
+            mid: make_colour_rgb(56, 46, 82), light: make_colour_rgb(105, 87, 142),
+            resource: make_colour_rgb(105, 239, 255), glow: make_colour_rgb(148, 61, 231)
+        }
+    });
+}
+
+/// @description Registers cobalt-bearing asteroids.
+function sc_asteroid_register_cobalt()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_cobalt", name: "Cobalt Asteroid" },
+        item_key: "item_cobalt",
+        mining: { strength_required: 3 },
+        stats: { health_multiplier: 1.4, yield_multiplier: 0.7 },
+        palette: {
+            void: make_colour_rgb(5,8,15), dark: make_colour_rgb(18,27,48),
+            mid: make_colour_rgb(37,58,99), light: make_colour_rgb(75,108,166),
+            resource: make_colour_rgb(96,163,239), glow: make_colour_rgb(49,91,224)
+        }
+    });
+}
+
+// ============================================================================
+// MINING STRENGTH 4
+// ============================================================================
+
 /// @description Registers uranium-bearing asteroids.
 function sc_asteroid_register_uranium()
 {
@@ -228,7 +312,7 @@ function sc_asteroid_register_uranium()
         },
 
         item_key: "item_uranium",
-		mining: { strength_required: 4 },
+        mining: { strength_required: 4 },
         stats: {
             health_multiplier: 1.3,
             yield_multiplier: 0.55
@@ -241,6 +325,58 @@ function sc_asteroid_register_uranium()
             light: make_colour_rgb(112,137,83),
             resource: make_colour_rgb(194,241,76),
             glow: make_colour_rgb(101,255,48)
+        }
+    });
+}
+
+/// @description Registers tungsten-bearing asteroids.
+function sc_asteroid_register_tungsten()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_tungsten", name: "Tungsten Asteroid" },
+        item_key: "item_tungsten",
+        mining: { strength_required: 4 },
+        stats: { health_multiplier: 1.75, yield_multiplier: 0.5 },
+        palette: {
+            void: make_colour_rgb(7,8,10), dark: make_colour_rgb(24,27,32),
+            mid: make_colour_rgb(50,55,63), light: make_colour_rgb(98,105,116),
+            resource: make_colour_rgb(179,187,198), glow: make_colour_rgb(103,119,139)
+        }
+    });
+}
+
+/// @description Registers platinum-bearing asteroids.
+function sc_asteroid_register_platinum()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_platinum", name: "Platinum Asteroid" },
+        item_key: "item_platinum",
+        mining: { strength_required: 4 },
+        stats: { health_multiplier: 1.45, yield_multiplier: 0.45 },
+        palette: {
+            void: make_colour_rgb(11,9,14), dark: make_colour_rgb(34,30,41),
+            mid: make_colour_rgb(71,64,82), light: make_colour_rgb(142,132,158),
+            resource: make_colour_rgb(237,230,247), glow: make_colour_rgb(172,140,222)
+        }
+    });
+}
+
+// ============================================================================
+// MINING STRENGTH 5
+// ============================================================================
+
+/// @description Registers iridium-bearing asteroids.
+function sc_asteroid_register_iridium()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_iridium", name: "Iridium Asteroid" },
+        item_key: "item_iridium",
+        mining: { strength_required: 5 },
+        stats: { health_multiplier: 1.9, yield_multiplier: 0.35 },
+        palette: {
+            void: make_colour_rgb(7,6,13), dark: make_colour_rgb(25,22,42),
+            mid: make_colour_rgb(50,45,82), light: make_colour_rgb(96,91,149),
+            resource: make_colour_rgb(190,207,255), glow: make_colour_rgb(115,74,255)
         }
     });
 }

@@ -223,6 +223,54 @@ function sc_item_register_all()
         description: "Dense radioactive ore used in reactor fuel and high-output power systems.",
         visual: { colour: make_colour_rgb(194,241,76), glow: make_colour_rgb(101,255,48), draw_script: sc_item_raw_primitive_draw }
     })
+		
+	// ITEM: item_lithium - Lithium Ore
+	&& sc_item_register({
+	    identity: { key: "item_lithium", name: "Lithium Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 1, stack_max: 99 },
+	    description: "Light reactive ore used in batteries, capacitors and high-density energy storage.",
+	    visual: { colour: make_colour_rgb(211,239,244), glow: make_colour_rgb(86,195,214), draw_script: sc_item_raw_primitive_draw }
+	})
+
+	// ITEM: item_nickel - Nickel Ore
+	&& sc_item_register({
+	    identity: { key: "item_nickel", name: "Nickel Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 1, stack_max: 99 },
+	    description: "Durable metallic ore used in engines, turbines and high-temperature machinery.",
+	    visual: { colour: make_colour_rgb(194,211,190), glow: make_colour_rgb(111,157,124), draw_script: sc_item_raw_primitive_draw }
+	})
+
+	// ITEM: item_cobalt - Cobalt Ore
+	&& sc_item_register({
+	    identity: { key: "item_cobalt", name: "Cobalt Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 1, stack_max: 99 },
+	    description: "Magnetically useful ore used in field coils, advanced motors and electromagnetic systems.",
+	    visual: { colour: make_colour_rgb(96,163,239), glow: make_colour_rgb(49,91,224), draw_script: sc_item_raw_primitive_draw }
+	})
+
+	// ITEM: item_tungsten - Tungsten Ore
+	&& sc_item_register({
+	    identity: { key: "item_tungsten", name: "Tungsten Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 2, stack_max: 50 },
+	    description: "Extremely dense heat-resistant ore used in heavy armour, penetrators and weapon components.",
+	    visual: { colour: make_colour_rgb(179,187,198), glow: make_colour_rgb(103,119,139), draw_script: sc_item_raw_primitive_draw }
+	})
+
+	// ITEM: item_platinum - Platinum Ore
+	&& sc_item_register({
+	    identity: { key: "item_platinum", name: "Platinum Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 1, stack_max: 50 },
+	    description: "Rare conductive ore used in precision electronics, catalysts and advanced sensor systems.",
+	    visual: { colour: make_colour_rgb(237,230,247), glow: make_colour_rgb(172,140,222), draw_script: sc_item_raw_primitive_draw }
+	})
+
+	// ITEM: item_iridium - Iridium Ore
+	&& sc_item_register({
+	    identity: { key: "item_iridium", name: "Iridium Ore" },
+	    layer: ItemLayer.RAW, type: ItemType.RESOURCE, cargo: { weight: 2, stack_max: 50 },
+	    description: "Exceptionally rare dense ore used in prototype containment, exotic alloys and late-stage technology.",
+	    visual: { colour: make_colour_rgb(190,207,255), glow: make_colour_rgb(115,74,255), draw_script: sc_item_raw_primitive_draw }
+	})
 
 
     //==================================================

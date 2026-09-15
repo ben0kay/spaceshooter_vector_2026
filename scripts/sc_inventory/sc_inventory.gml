@@ -371,8 +371,8 @@ function sc_inventory_update(_hud)
         return;
     }
 
-    var _panel_x = floor((display_get_gui_width() - _data.width) * 0.5);
-    var _panel_y = floor((display_get_gui_height() - _data.height) * 0.5);
+    var _panel_x = floor((display_get_gui_width() - _data.width)*0.5);
+    var _panel_y = floor((display_get_gui_height() - _data.height)*0.5);
     var _mouse_x = device_mouse_x_to_gui(0) - _panel_x;
     var _mouse_y = device_mouse_y_to_gui(0) - _panel_y;
     var _pressed = global.input.action.ui_select_pressed;
@@ -402,6 +402,12 @@ function sc_inventory_update(_hud)
     {
         case InventoryTab.EQUIPMENT:
             sc_inventory_equipment_update(
+                _hud,_mouse_x,_mouse_y,_pressed,_released
+            );
+            return;
+
+        case InventoryTab.SYSTEMS:
+            sc_inventory_systems_update(
                 _hud,_mouse_x,_mouse_y,_pressed,_released
             );
             return;
@@ -599,6 +605,10 @@ function sc_inventory_draw(_hud)
         case InventoryTab.EQUIPMENT:
             sc_inventory_equipment_draw(_hud,_x,_y);
             sc_inventory_equipment_targeting_draw(_hud,_x,_y);
+        break;
+
+        case InventoryTab.SYSTEMS:
+            sc_inventory_systems_draw(_hud,_x,_y);
         break;
 
         case InventoryTab.UPGRADES:
