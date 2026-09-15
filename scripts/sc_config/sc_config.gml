@@ -466,7 +466,7 @@ function sc_config_init()
             },
 				
 			asteroid: {
-			    check_interval: 4,
+			    check_interval: 5,
 				destroy_visibility_interval: 30,
 				bombard_field_check_interval: 60,
 				bombard_field_clearance: 180,

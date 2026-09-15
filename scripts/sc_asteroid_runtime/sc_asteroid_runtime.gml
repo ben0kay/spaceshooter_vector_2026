@@ -440,23 +440,31 @@ function sc_asteroid_draw(_asteroid)
     {
         var _overlay = sc_asteroid_modifier_visual_cache_get(
             _modifier.key,
-            _data.key,
-            _visual.variant,
-            _data.health.stage
+            _visual.variant
         );
 
-        if (sprite_exists(_overlay))
-            draw_sprite_ext(
-                _overlay,
-                0,
-                _asteroid.x,
-                _asteroid.y,
-                _scale*_visual.scale_x,
-                _scale*_visual.scale_y,
-                _angle,
-                c_white,
-                1
-            );
+        var _pulse = 0.68+sin(
+            GAME_TICK*0.055
+            +_data.persistent_id*1.37
+        )*0.22;
+
+        gpu_set_blendmode(bm_add);
+
+        draw_sprite_ext(
+            _overlay,
+            0,
+            _asteroid.x,
+            _asteroid.y,
+            _scale*_visual.scale_x,
+            _scale*_visual.scale_y,
+            _angle,
+            c_white,
+            _pulse
+        );
+
+        gpu_set_blendmode(bm_normal);
+        draw_set_alpha(1);
+        draw_set_colour(c_white);
     }
 }
 

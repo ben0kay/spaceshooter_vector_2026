@@ -36,7 +36,7 @@ function sc_weapon_register_rebel_salvo_rocket()
 
             guidance: {
                 acquire_range: 760,
-                turn_speed: 1.7,
+                turn_speed: 1,
                 reacquire_interval: 12,
                 lead_strength: 0.15,
                 guidance_delay: 10,

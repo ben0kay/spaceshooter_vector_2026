@@ -119,7 +119,7 @@ function sc_enemy_init_runtime_create(_enemy,_enemy_key,_data)
                 target_id: noone,
                 direction: 0,
                 side: 0,
-                next_check_tick: GAME_TICK
+                next_check_tick: GAME_TICK + real(_enemy.id) mod GCFG.enemy.asteroid.check_interval
             },
 
             // Only specialized movement styles provide additional runtime data.
