@@ -391,7 +391,7 @@ function sc_item_register_all()
         identity: { key: "item_radar_array", name: "Radar Array" },
         layer: ItemLayer.PRODUCT,
         type: ItemType.EQUIPMENT,
-        description: "A complete sensor array providing tactical radar coverage within a 3000-unit radius.",
+        description: "A tactical sensor array with selectable detection ranges.",
         cargo: { weight: 12, stack_max: 10 },
 
         equipment: {
@@ -400,7 +400,7 @@ function sc_item_register_all()
 
             radar: {
                 range_levels: [1500,3000,4500,6000],
-                default_range_index: 3
+                default_range_index: 1
             },
 
             modifiers: []

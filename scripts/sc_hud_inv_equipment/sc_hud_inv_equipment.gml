@@ -267,8 +267,8 @@ function sc_inventory_equipment_replace_update(_hud, _mouse_x, _mouse_y, _presse
     return true;
 }
 
-/// @description Draws armour-module replacement confirmation.
-function sc_inventory_equipment_replace_draw(_hud, _origin_x, _origin_y)
+/// @description Draws equipment replacement confirmation.
+function sc_inventory_equipment_replace_draw(_hud,_origin_x,_origin_y)
 {
     var _replace = _hud.inventory.replace;
     if (!_replace.active) return;
@@ -283,13 +283,29 @@ function sc_inventory_equipment_replace_draw(_hud, _origin_x, _origin_y)
         return;
     }
 
-    var _integrity = round(
-        _player.defence.armour.current
-        / max(1, _player.defence.armour.maximum)
-        * 100
-    );
+    var _definition = variable_struct_get(global.data.items,_item.key);
+    var _equipment_slot = _definition.equipment.slot;
+    var _current = undefined;
+    var _slot_name = "";
 
-    var _grade_colour = sc_item_grade_colour_get(_item.grade);
+    switch (_equipment_slot)
+    {
+        case EquipmentSlot.ARMOUR:
+            _current = _player.inventory.equipment.armour;
+            _slot_name = "ARMOUR";
+        break;
+
+        case EquipmentSlot.TARGETING:
+            _current = _player.inventory.equipment.targeting;
+            _slot_name = "TARGETING / RADAR";
+        break;
+    }
+
+    var _graded = !is_undefined(_item.grade);
+    var _item_colour = _graded
+        ? sc_item_grade_colour_get(_item.grade)
+        : _palette.accent;
+
     var _x = _origin_x + 505;
     var _y = _origin_y + 305;
     var _width = 550;
@@ -307,46 +323,78 @@ function sc_inventory_equipment_replace_draw(_hud, _origin_x, _origin_y)
 
     draw_set_alpha(0.98);
     draw_set_colour(_palette.background);
-    draw_rectangle(_x, _y, _x + _width, _y + _height, false);
+    draw_rectangle(_x,_y,_x + _width,_y + _height,false);
 
     draw_set_colour(_palette.accent);
-    draw_rectangle(_x, _y, _x + _width, _y + _height, true);
-    draw_line(_x + 20, _y + 58, _x + _width - 20, _y + 58);
+    draw_rectangle(_x,_y,_x + _width,_y + _height,true);
+    draw_line(_x + 20,_y + 58,_x + _width - 20,_y + 58);
 
-    draw_set_colour(_palette.accent);
-    draw_text(_x + 22, _y + 24, "CONFIRM MODULE REPLACEMENT");
+    draw_text(_x + 22,_y + 24,"CONFIRM EQUIPMENT REPLACEMENT");
 
     draw_set_colour(_palette.text);
-    draw_text(_x + 22, _y + 82, "CURRENT ARMOUR INTEGRITY");
-    draw_text(_x + 22, _y + 116, "REPLACEMENT MODULE");
+    draw_text(_x + 22,_y + 82,"EQUIPMENT SLOT");
+    draw_text(_x + 22,_y + 112,"CURRENT EQUIPMENT");
+    draw_text(_x + 22,_y + 142,"REPLACEMENT EQUIPMENT");
 
     draw_set_halign(fa_right);
-    draw_set_colour(_palette.warning);
-    draw_text(_x + _width - 22, _y + 82, string(_integrity) + "%");
 
-    draw_set_colour(_grade_colour);
-    draw_text(_x + _width - 22, _y + 116, _item.name);
-    draw_text(_x + _width - 22, _y + 140, sc_item_grade_name_get(_item.grade));
+    draw_set_colour(_palette.muted);
+    draw_text(_x + _width - 22,_y + 82,_slot_name);
+    draw_text(
+        _x + _width - 22,
+        _y + 112,
+        is_undefined(_current) ? "EMPTY" : _current.name
+    );
+
+    draw_set_colour(_item_colour);
+    draw_text(_x + _width - 22,_y + 142,_item.name);
+
+    if (_graded)
+        draw_text(
+            _x + _width - 22,
+            _y + 166,
+            sc_item_grade_name_get(_item.grade)
+        );
+
     draw_set_halign(fa_left);
 
+    draw_set_colour(_palette.warning);
+    draw_text(_x + 22,_y + 194,"CURRENT EQUIPMENT WILL BE DESTROYED");
+
     draw_set_colour(_palette.void);
-    draw_rectangle(_origin_x + 565, _origin_y + 480, _origin_x + 755, _origin_y + 524, false);
-    draw_rectangle(_origin_x + 805, _origin_y + 480, _origin_x + 995, _origin_y + 524, false);
+    draw_rectangle(
+        _origin_x + 565,_origin_y + 480,
+        _origin_x + 755,_origin_y + 524,
+        false
+    );
+    draw_rectangle(
+        _origin_x + 805,_origin_y + 480,
+        _origin_x + 995,_origin_y + 524,
+        false
+    );
 
     draw_set_colour(_palette.accent);
-    draw_rectangle(_origin_x + 565, _origin_y + 480, _origin_x + 755, _origin_y + 524, true);
+    draw_rectangle(
+        _origin_x + 565,_origin_y + 480,
+        _origin_x + 755,_origin_y + 524,
+        true
+    );
 
     draw_set_colour(_palette.outline);
-    draw_rectangle(_origin_x + 805, _origin_y + 480, _origin_x + 995, _origin_y + 524, true);
+    draw_rectangle(
+        _origin_x + 805,_origin_y + 480,
+        _origin_x + 995,_origin_y + 524,
+        true
+    );
 
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
 
     draw_set_colour(_palette.accent);
-    draw_text(_origin_x + 660, _origin_y + 502, "REPLACE");
+    draw_text(_origin_x + 660,_origin_y + 502,"REPLACE");
 
     draw_set_colour(_palette.text);
-    draw_text(_origin_x + 900, _origin_y + 502, "CANCEL");
+    draw_text(_origin_x + 900,_origin_y + 502,"CANCEL");
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
