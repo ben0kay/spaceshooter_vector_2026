@@ -138,7 +138,16 @@ function sc_player_init_inventory(_player)
     _player.defence.armour.current = _armour_maximum;
 
     sc_player_inventory_add(_player,"item_radar_array",1);
+
+    sc_player_inventory_add(_player,"item_engine_governor_mk1",1);
+    sc_player_inventory_add(_player,"item_thruster_vectoring_mk1",1);
+    sc_player_inventory_add(_player,"item_shield_capacitor_mk1",1);
+    sc_player_inventory_add(_player,"item_reactor_regulator_mk1",1);
     sc_player_inventory_add(_player,"item_coolant_module_mk1",1);
+    sc_player_inventory_add(_player,"item_weapon_stabilizer_mk1",1);
+    sc_player_inventory_add(_player,"item_sensor_hardening_mk1",1);
+    sc_player_inventory_add(_player,"item_drone_command_processor_mk1",1);
+
     sc_player_inventory_add(_player,"item_scanning_drone",3);
 
     var _slots = _player.inventory.drone_bay.slots;

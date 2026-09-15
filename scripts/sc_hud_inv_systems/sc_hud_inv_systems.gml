@@ -149,9 +149,11 @@ function sc_inventory_systems_data()
         card_height: 135,
 
         socket: {
-            offset_x: 510,
-            offset_y: 48,
-            size: 70
+            offset_x: 438,
+            offset_y: 49,
+            size: 42,
+            gap: 8,
+            count: 3
         },
 
         storage: {
@@ -191,29 +193,36 @@ function sc_inventory_systems_storage_at_position(_player,_mouse_x,_mouse_y)
     return _indices[_list_index];
 }
 
-/// @description Returns the system card whose socket contains panel-local coordinates.
+/// @description Returns the system card and socket beneath panel-local coordinates.
 function sc_inventory_systems_socket_at_position(_mouse_x,_mouse_y)
 {
     var _data = sc_inventory_systems_data();
     var _cards = _data.cards;
     var _socket = _data.socket;
 
-    for (var _i = 0; _i < array_length(_cards); ++_i)
+    for (var _card_index = 0; _card_index < array_length(_cards); ++_card_index)
     {
-        var _card = _cards[_i];
-        var _x = _card.x + _socket.offset_x;
-        var _y = _card.y + _socket.offset_y;
+        var _card = _cards[_card_index];
 
-        if (point_in_rectangle(
-            _mouse_x,_mouse_y,
-            _x,_y,
-            _x + _socket.size,
-            _y + _socket.size
-        ))
-            return _i;
+        for (var _socket_index = 0; _socket_index < _socket.count; ++_socket_index)
+        {
+            var _x = _card.x + _socket.offset_x + _socket_index*(_socket.size + _socket.gap);
+            var _y = _card.y + _socket.offset_y;
+
+            if (point_in_rectangle(
+                _mouse_x,_mouse_y,
+                _x,_y,
+                _x + _socket.size,
+                _y + _socket.size
+            ))
+                return {
+                    card_index: _card_index,
+                    socket_index: _socket_index
+                };
+        }
     }
 
-    return -1;
+    return undefined;
 }
 
 /// @description Updates Systems-tab module installation and removal.
@@ -237,37 +246,43 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
             return;
         }
 
-        var _card_index = sc_inventory_systems_socket_at_position(
+        var _target = sc_inventory_systems_socket_at_position(
             _mouse_x,_mouse_y
         );
 
-        if (_card_index >= 0)
+        if (!is_undefined(_target))
         {
-            var _card = _data.cards[_card_index];
+            var _card = _data.cards[_target.card_index];
             var _installed = sc_player_module_get(
-                _player,_card.system,0
+                _player,
+                _card.system,
+                _target.socket_index
             );
 
             if (!is_undefined(_installed))
-                sc_player_module_remove(_player,_card.system,0);
+                sc_player_module_remove(
+                    _player,
+                    _card.system,
+                    _target.socket_index
+                );
         }
     }
 
     if (!_runtime.drag.active || !_released) return;
 
-    var _card_index = sc_inventory_systems_socket_at_position(
+    var _target = sc_inventory_systems_socket_at_position(
         _mouse_x,_mouse_y
     );
 
-    if (_card_index >= 0)
+    if (!is_undefined(_target))
     {
-        var _card = _data.cards[_card_index];
+        var _card = _data.cards[_target.card_index];
 
         sc_player_module_install(
             _player,
             _runtime.drag.source_slot,
             _card.system,
-            0
+            _target.socket_index
         );
     }
 
@@ -275,17 +290,14 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
     _runtime.drag.source_slot = -1;
 }
 
-/// @description Draws one Systems-tab ship-system card and its module socket.
+/// @description Draws one Systems-tab ship-system card and its three module sockets.
 function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_origin_y)
 {
     var _palette = _hud.data.palette;
     var _socket = _data.socket;
     var _system = variable_struct_get(_player.ship.systems,_card.key);
-    var _installed = sc_player_module_get(_player,_card.system,0);
     var _x = _origin_x + _card.x;
     var _y = _origin_y + _card.y;
-    var _socket_x = _x + _socket.offset_x;
-    var _socket_y = _y + _socket.offset_y;
     var _condition = round(_system.condition_current/max(1,_system.condition_max)*100);
     var _status = "ONLINE";
     var _status_colour = _palette.accent;
@@ -321,7 +333,7 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
 
     draw_set_colour(_palette.muted);
     draw_text(_x + 16,_y + 58,"CONDITION");
-    draw_text(_x + 16,_y + 84,"MODULE");
+    draw_text(_x + 16,_y + 84,"MODULES");
 
     draw_set_colour(_palette.text);
     draw_text(_x + 115,_y + 58,string(_condition) + "%");
@@ -345,73 +357,68 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
         draw_text(_x + 16,_y + 110,"WEAPON COOLING");
 
         draw_set_colour(_palette.text);
-        draw_text(
-            _x + 150,
-            _y + 110,
-            string_format(_base,1,2) + "  >  "
-        );
+        draw_text(_x + 150,_y + 110,string_format(_base,1,2) + "  >  ");
 
         draw_set_colour(_final > _base ? _palette.accent : _palette.text);
         draw_text(_x + 224,_y + 110,string_format(_final,1,2));
     }
-    else
+
+    for (var _socket_index = 0; _socket_index < _socket.count; ++_socket_index)
     {
-        draw_set_colour(_palette.muted);
-        draw_text(_x + 16,_y + 110,"LIVE VALUES PENDING");
-    }
-
-    draw_set_colour(_palette.void);
-    draw_rectangle(
-        _socket_x,_socket_y,
-        _socket_x + _socket.size,
-        _socket_y + _socket.size,
-        false
-    );
-
-    draw_set_colour(is_undefined(_installed) ? _palette.outline : _palette.accent);
-    draw_rectangle(
-        _socket_x,_socket_y,
-        _socket_x + _socket.size,
-        _socket_y + _socket.size,
-        true
-    );
-
-    if (is_undefined(_installed))
-    {
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        draw_set_colour(_palette.muted);
-        draw_text(
-            _socket_x + _socket.size*0.5,
-            _socket_y + _socket.size*0.5,
-            "+"
+        var _installed = sc_player_module_get(
+            _player,
+            _card.system,
+            _socket_index
         );
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_top);
-    }
-    else
-    {
-        var _sprite = sc_resource_pickup_visual_cache_get(_installed.key,0);
 
-        if (sprite_exists(_sprite))
-            draw_sprite_ext(
-                _sprite,0,
+        var _socket_x = _x + _socket.offset_x + _socket_index*(_socket.size + _socket.gap);
+        var _socket_y = _y + _socket.offset_y;
+
+        draw_set_colour(_palette.void);
+        draw_rectangle(
+            _socket_x,_socket_y,
+            _socket_x + _socket.size,
+            _socket_y + _socket.size,
+            false
+        );
+
+        draw_set_colour(is_undefined(_installed) ? _palette.outline : _palette.accent);
+        draw_rectangle(
+            _socket_x,_socket_y,
+            _socket_x + _socket.size,
+            _socket_y + _socket.size,
+            true
+        );
+
+        if (is_undefined(_installed))
+        {
+            draw_set_halign(fa_center);
+            draw_set_valign(fa_middle);
+            draw_set_colour(_palette.muted);
+            draw_text(
                 _socket_x + _socket.size*0.5,
                 _socket_y + _socket.size*0.5,
-                1.05,1.05,0,c_white,1
+                "+"
             );
+        }
+        else
+        {
+            var _sprite = sc_resource_pickup_visual_cache_get(_installed.key,0);
 
-        draw_set_halign(fa_center);
-        draw_set_valign(fa_middle);
-        draw_set_colour(_palette.accent);
-        draw_text(
-            _socket_x + _socket.size*0.5,
-            _socket_y + _socket.size + 10,
-            "INSTALLED"
-        );
-        draw_set_halign(fa_left);
-        draw_set_valign(fa_top);
+            if (sprite_exists(_sprite))
+                draw_sprite_ext(
+                    _sprite,0,
+                    _socket_x + _socket.size*0.5,
+                    _socket_y + _socket.size*0.5,
+                    0.68,0.68,0,c_white,1
+                );
+        }
     }
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws carried modules in the Systems-tab module storage.

@@ -403,7 +403,73 @@ function sc_item_register_all()
     })
 
 
-// module
+    //==================================================
+    // SYSTEM MODULES
+    //==================================================
+
+    // ITEM: item_engine_governor_mk1 - Engine Governor Mk I
+    && sc_item_register({
+        identity: { key: "item_engine_governor_mk1", name: "Engine Governor Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 5, stack_max: 10 },
+        description: "A fixed-output engine controller that improves ship acceleration.",
+
+        module: {
+            system: ShipSystemType.ENGINES,
+            modifiers: [
+                { stat: "acceleration", add: 0.04 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(104,153,168), glow: make_colour_rgb(72,226,241), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_thruster_vectoring_mk1 - Thruster Vectoring Module Mk I
+    && sc_item_register({
+        identity: { key: "item_thruster_vectoring_mk1", name: "Thruster Vectoring Module Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 5, stack_max: 10 },
+        description: "A fixed-output thrust controller that improves ship rotation speed.",
+
+        module: {
+            system: ShipSystemType.THRUSTERS,
+            modifiers: [
+                { stat: "turn_speed", add: 0.4 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(91,142,160), glow: make_colour_rgb(62,216,247), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_shield_capacitor_mk1 - Shield Capacitor Mk I
+    && sc_item_register({
+        identity: { key: "item_shield_capacitor_mk1", name: "Shield Capacitor Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 6, stack_max: 10 },
+        description: "A fixed-output capacitor that improves shield recharge rate.",
+
+        module: {
+            system: ShipSystemType.SHIELD_GENERATOR,
+            modifiers: [
+                { stat: "shield_recharge_rate", add: 0.05 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(76,139,178), glow: make_colour_rgb(55,218,255), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_reactor_regulator_mk1 - Reactor Regulator Mk I
+    && sc_item_register({
+        identity: { key: "item_reactor_regulator_mk1", name: "Reactor Regulator Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 6, stack_max: 10 },
+        description: "A fixed-output reactor regulator that improves energy regeneration.",
+
+        module: {
+            system: ShipSystemType.REACTOR,
+            modifiers: [
+                { stat: "energy_regeneration", add: 0.05 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(121,115,166), glow: make_colour_rgb(170,116,255), draw_script: sc_item_plate_primitive_draw }
+    })
 
     // ITEM: item_coolant_module_mk1 - Coolant Module Mk I
     && sc_item_register({
@@ -413,17 +479,60 @@ function sc_item_register_all()
 
         module: {
             system: ShipSystemType.COOLING,
-
             modifiers: [
                 { stat: "weapon_cooling_rate", add: 0.25 }
             ]
         },
 
-        visual: {
-            colour: make_colour_rgb(87,171,185),
-            glow: make_colour_rgb(88,235,255),
-            draw_script: sc_item_plate_primitive_draw
-        }
+        visual: { colour: make_colour_rgb(87,171,185), glow: make_colour_rgb(88,235,255), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_weapon_stabilizer_mk1 - Weapon Stabilizer Mk I
+    && sc_item_register({
+        identity: { key: "item_weapon_stabilizer_mk1", name: "Weapon Stabilizer Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 5, stack_max: 10 },
+        description: "A fixed-output targeting stabilizer that reduces weapon spread.",
+
+        module: {
+            system: ShipSystemType.WEAPONS,
+            modifiers: [
+                { stat: "weapon_spread_multiplier", multiply: 0.95 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(157,125,102), glow: make_colour_rgb(255,169,78), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_sensor_hardening_mk1 - Sensor Hardening Module Mk I
+    && sc_item_register({
+        identity: { key: "item_sensor_hardening_mk1", name: "Sensor Hardening Module Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 4, stack_max: 10 },
+        description: "A fixed-output signal processor that reduces sensor disruption duration.",
+
+        module: {
+            system: ShipSystemType.SENSORS,
+            modifiers: [
+                { stat: "sensors_disruption_resistance", add: 0.1 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(86,157,148), glow: make_colour_rgb(70,245,214), draw_script: sc_item_plate_primitive_draw }
+    })
+
+    // ITEM: item_drone_command_processor_mk1 - Drone Command Processor Mk I
+    && sc_item_register({
+        identity: { key: "item_drone_command_processor_mk1", name: "Drone Command Processor Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 4, stack_max: 10 },
+        description: "A fixed-output command processor that reduces drone-bay disruption duration.",
+
+        module: {
+            system: ShipSystemType.DRONE_BAY,
+            modifiers: [
+                { stat: "drone_bay_disruption_resistance", add: 0.1 }
+            ]
+        },
+
+        visual: { colour: make_colour_rgb(92,135,153), glow: make_colour_rgb(75,213,241), draw_script: sc_item_plate_primitive_draw }
     })
 
     //==================================================

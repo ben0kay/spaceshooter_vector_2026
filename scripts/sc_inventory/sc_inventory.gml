@@ -33,17 +33,16 @@ function sc_player_inventory_create()
         },
 
         modules: {
-            engines: [undefined],
-            thrusters: [undefined],
-            shield_generator: [undefined],
-            reactor: [undefined],
-            cooling: [undefined],
-            weapons: [undefined],
-            sensors: [undefined],
-            drone_bay: [undefined]
+            engines: array_create(3,undefined),
+            thrusters: array_create(3,undefined),
+            shield_generator: array_create(3,undefined),
+            reactor: array_create(3,undefined),
+            cooling: array_create(3,undefined),
+            weapons: array_create(3,undefined),
+            sensors: array_create(3,undefined),
+            drone_bay: array_create(3,undefined)
         },
 
-        // Temporary three-slot test bay. Upgrade stats can control this later.
         drone_bay: sc_player_drone_bay_create(3),
 
         installation: {
