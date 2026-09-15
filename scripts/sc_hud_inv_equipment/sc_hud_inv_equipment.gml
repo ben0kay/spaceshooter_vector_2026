@@ -35,6 +35,10 @@ function sc_player_equipment_install_begin(_player,_slot_index,_replacing = fals
             if (!is_undefined(_player.inventory.equipment.armour) && !_replacing) return false;
         break;
 
+        case EquipmentSlot.TARGETING:
+            if (!is_undefined(_player.inventory.equipment.targeting) && !_replacing) return false;
+        break;
+
         default: return false;
     }
 
@@ -158,7 +162,7 @@ function sc_player_equipment_install_complete(_player)
                 condition: undefined
             };
 
-            // Installing new armour deliberately destroys any previous armour.
+            // Replacing armour destroys the previous armour piece.
             _player.inventory.equipment.armour = _installed;
             sc_player_equipment_modifiers_rebuild(_player);
 
@@ -171,6 +175,19 @@ function sc_player_equipment_install_complete(_player)
 
             _player.defence.armour.maximum = _maximum;
             _player.defence.armour.current = _maximum;
+        }
+        break;
+
+        case EquipmentSlot.TARGETING:
+        {
+            // A targeting slot holds exactly one radar. Replacing it destroys the old unit.
+            _player.inventory.equipment.targeting = {
+                key: _item.key,
+                name: _item.name,
+                grade: undefined
+            };
+
+            sc_player_equipment_modifiers_rebuild(_player);
         }
         break;
 

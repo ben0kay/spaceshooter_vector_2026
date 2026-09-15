@@ -280,20 +280,21 @@ function sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _m
     return _indices[_column];
 }
 
-/// @description Updates module dragging and armour replacement confirmation.
-function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _released)
+/// @description Updates equipment dragging and replacement confirmation.
+function sc_inventory_equipment_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
 {
     var _player = global.player_id;
     var _runtime = _hud.inventory;
     var _data = _hud.data.inventory;
     var _armour = _data.equipment.armour;
+    var _targeting = _data.equipment.slots.targeting;
 
-    if (sc_inventory_equipment_replace_update(_hud, _mouse_x, _mouse_y, _pressed))
+    if (sc_inventory_equipment_replace_update(_hud,_mouse_x,_mouse_y,_pressed))
         return;
 
     if (_pressed)
     {
-        var _slot = sc_inventory_equipment_storage_at_position(_player, _data, _mouse_x, _mouse_y);
+        var _slot = sc_inventory_equipment_storage_at_position(_player,_data,_mouse_x,_mouse_y);
 
         if (_slot >= 0)
         {
@@ -305,19 +306,40 @@ function sc_inventory_equipment_update(_hud, _mouse_x, _mouse_y, _pressed, _rele
 
     if (!_runtime.drag.active || !_released) return;
 
-    if (point_in_rectangle(
-        _mouse_x,
-        _mouse_y,
-        _armour.x,
-        _armour.y,
-        _armour.x + _armour.width,
-        _armour.y + _armour.height
-    ))
+    var _source_slot = _runtime.drag.source_slot;
+    var _item = _player.inventory.slots[_source_slot];
+
+    if (!is_undefined(_item))
     {
-        if (is_undefined(_player.inventory.equipment.armour))
-            sc_player_equipment_install_begin(_player, _runtime.drag.source_slot);
-        else
-            sc_inventory_equipment_replace_open(_hud, _runtime.drag.source_slot);
+        var _definition = variable_struct_get(global.data.items,_item.key);
+        var _equipment_slot = _definition.equipment.slot;
+
+        if (_equipment_slot == EquipmentSlot.ARMOUR
+        && point_in_rectangle(
+            _mouse_x,_mouse_y,
+            _armour.x,_armour.y,
+            _armour.x + _armour.width,
+            _armour.y + _armour.height
+        ))
+        {
+            if (is_undefined(_player.inventory.equipment.armour))
+                sc_player_equipment_install_begin(_player,_source_slot);
+            else
+                sc_inventory_equipment_replace_open(_hud,_source_slot);
+        }
+       else if (_equipment_slot == EquipmentSlot.TARGETING
+        && point_in_rectangle(
+            _mouse_x,_mouse_y,
+            _targeting.x,_targeting.y,
+            _targeting.x + _targeting.width,
+            _targeting.y + _targeting.height
+        ))
+        {
+            if (is_undefined(_player.inventory.equipment.targeting))
+                sc_player_equipment_install_begin(_player,_source_slot);
+            else
+                sc_inventory_equipment_replace_open(_hud,_source_slot);
+        }
     }
 
     _runtime.drag.active = false;
@@ -447,6 +469,77 @@ function sc_inventory_update(_hud)
     }
 }
 
+/// @description Draws the functional targeting and radar equipment slot.
+function sc_inventory_equipment_targeting_draw(_hud,_origin_x,_origin_y)
+{
+    var _player = global.player_id;
+    var _palette = _hud.data.palette;
+    var _slot = _hud.data.inventory.equipment.slots.targeting;
+    var _installed = _player.inventory.equipment.targeting;
+    var _installation = _player.inventory.installation;
+    var _installing = _installation.active && _installation.slot == EquipmentSlot.TARGETING;
+    var _display_item = _installing ? _installation.item : _installed;
+    var _x = _origin_x + _slot.x;
+    var _y = _origin_y + _slot.y;
+
+    draw_set_alpha(0.96);
+    draw_set_colour(_palette.void);
+    draw_rectangle(_x,_y,_x + _slot.width,_y + _slot.height,false);
+
+    draw_set_colour(is_undefined(_display_item) ? _palette.outline : _palette.accent);
+    draw_rectangle(_x,_y,_x + _slot.width,_y + _slot.height,true);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 14,_y + 19,"TARGETING / RADAR");
+
+    draw_set_alpha(0.4);
+    draw_line(_x + 14,_y + 34,_x + _slot.width - 14,_y + 34);
+
+    if (_installing)
+    {
+        var _progress = 1 - _installation.remaining/max(1,_installation.duration);
+        var _sprite = sc_resource_pickup_visual_cache_get(_display_item.key,0);
+        var _bar_x = _x + 58;
+        var _bar_y = _y + 70;
+        var _bar_width = _slot.width - 74;
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite,0,_x + 32,_y + 61,0.8,0.8,0,c_white,0.65);
+
+        draw_set_colour(_palette.accent);
+        draw_text(_x + 58,_y + 51,_display_item.name);
+
+        draw_set_colour(_palette.background);
+        draw_rectangle(_bar_x,_bar_y,_bar_x + _bar_width,_bar_y + 7,false);
+
+        draw_set_colour(_palette.accent);
+        draw_rectangle(_bar_x,_bar_y,_bar_x + _bar_width*_progress,_bar_y + 7,false);
+    }
+    else if (is_undefined(_installed))
+    {
+        draw_set_colour(_palette.muted);
+        draw_text(_x + 14,_y + 61,"EMPTY // RADAR OFFLINE");
+    }
+    else
+    {
+        var _definition = variable_struct_get(global.data.items,_installed.key);
+        var _ranges = _definition.equipment.radar.range_levels;
+        var _maximum_range = _ranges[array_length(_ranges) - 1];
+        var _sprite = sc_resource_pickup_visual_cache_get(_installed.key,0);
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(_sprite,0,_x + 32,_y + 61,0.8,0.8,0,c_white,1);
+
+        draw_set_colour(_palette.text);
+        draw_text(_x + 58,_y + 51,_installed.name);
+
+        draw_set_colour(_palette.accent);
+        draw_text(_x + 58,_y + 72,"MAX RANGE // " + string(_maximum_range));
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+}
 
 /// @description Draws the dynamic Ship Command contents.
 function sc_inventory_draw(_hud)
@@ -456,17 +549,12 @@ function sc_inventory_draw(_hud)
 
     var _data = _hud.data.inventory;
     var _palette = _hud.data.palette;
-    var _x = floor((display_get_gui_width() - _data.width) * 0.5);
-    var _y = floor((display_get_gui_height() - _data.height) * 0.5);
+    var _x = floor((display_get_gui_width() - _data.width)*0.5);
+    var _y = floor((display_get_gui_height() - _data.height)*0.5);
 
     draw_set_alpha(0.62);
     draw_set_colour(c_black);
-    draw_rectangle(
-        0,0,
-        display_get_gui_width(),
-        display_get_gui_height(),
-        false
-    );
+    draw_rectangle(0,0,display_get_gui_width(),display_get_gui_height(),false);
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
@@ -499,6 +587,7 @@ function sc_inventory_draw(_hud)
 
         case InventoryTab.EQUIPMENT:
             sc_inventory_equipment_draw(_hud,_x,_y);
+            sc_inventory_equipment_targeting_draw(_hud,_x,_y);
         break;
 
         case InventoryTab.UPGRADES:
@@ -513,9 +602,8 @@ function sc_inventory_draw(_hud)
         {
             draw_set_colour(_palette.muted);
             draw_set_halign(fa_center);
-
             draw_text(
-                _x + _data.width * 0.5,
+                _x + _data.width*0.5,
                 _y + 430,
                 _data.tabs[_runtime.tab] + " INTERFACE NOT INSTALLED"
             );

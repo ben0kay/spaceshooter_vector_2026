@@ -1,4 +1,6 @@
 /// @description Delays activation, then travels and emits a residual trail.
+if (!GAMEPLAY_ACTIVE) exit;
+
 if (!transfer.spawned)
 {
     transfer.spawn_delay--;

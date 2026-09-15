@@ -1,4 +1,5 @@
 /// @description Updates camera deadzone following, zoom, shake and cached world bounds.
+if (!GAMEPLAY_ACTIVE) exit;
 var _camera = camera_data;
 var _camera_id = _camera.camera_id;
 

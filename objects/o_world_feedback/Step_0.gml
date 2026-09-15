@@ -1,4 +1,5 @@
 /// @description Moves and expires generic world feedback.
+if (!GAMEPLAY_ACTIVE) exit;
 feedback.remaining--;
 x += feedback.drift_x;
 y -= feedback.rise_speed;

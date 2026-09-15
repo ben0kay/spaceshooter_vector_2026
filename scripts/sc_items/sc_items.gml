@@ -389,17 +389,28 @@ function sc_item_register_all()
     })
     && sc_item_register({
         identity: { key: "item_radar_array", name: "Radar Array" },
-        layer: ItemLayer.PRODUCT, type: ItemType.EQUIPMENT,
-        description: "A complete sensor and signal-processing assembly for ship targeting systems.",
+        layer: ItemLayer.PRODUCT,
+        type: ItemType.EQUIPMENT,
+        description: "A complete sensor array providing tactical radar coverage within a 3000-unit radius.",
         cargo: { weight: 12, stack_max: 10 },
 
         equipment: {
             slot: EquipmentSlot.TARGETING,
             install_duration: 300,
+
+            radar: {
+                range_levels: [1500,3000,4500,6000],
+                default_range_index: 3
+            },
+
             modifiers: []
         },
 
-        visual: { colour: make_colour_rgb(71,115,132), glow: make_colour_rgb(38,231,243), draw_script: sc_item_plate_primitive_draw }
+        visual: {
+            colour: make_colour_rgb(71,115,132),
+            glow: make_colour_rgb(38,231,243),
+            draw_script: sc_item_plate_primitive_draw
+        }
     })
     && sc_item_register({
         identity: { key: "item_scanning_drone", name: "Scanning Drone" },

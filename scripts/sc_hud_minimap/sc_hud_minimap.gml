@@ -436,6 +436,51 @@ function sc_hud_minimap_sweep_update(
     }
 }
 
+/// @description Returns the currently installed player radar definition.
+function sc_hud_minimap_radar_get()
+{
+    if (!instance_exists(global.player_id)) return undefined;
+
+    var _installed = global.player_id.inventory.equipment.targeting;
+    if (is_undefined(_installed)) return undefined;
+
+    return variable_struct_get(global.data.items,_installed.key);
+}
+
+/// @description Synchronizes minimap range presets with installed radar equipment.
+function sc_hud_minimap_radar_sync(_minimap,_radar)
+{
+    var _radar_key = _radar.identity.key;
+
+    if (!variable_struct_exists(_minimap,"radar_key"))
+        _minimap.radar_key = "";
+
+    if (_minimap.radar_key != _radar_key)
+    {
+        _minimap.radar_key = _radar_key;
+        _minimap.range_levels = _radar.equipment.radar.range_levels;
+        _minimap.range_index = clamp(
+            _radar.equipment.radar.default_range_index,
+            0,
+            array_length(_minimap.range_levels) - 1
+        );
+
+        _minimap.range = _minimap.range_levels[_minimap.range_index];
+        sc_hud_minimap_refresh_force(_minimap);
+        return true;
+    }
+
+    _minimap.range_levels = _radar.equipment.radar.range_levels;
+    _minimap.range_index = clamp(
+        _minimap.range_index,
+        0,
+        array_length(_minimap.range_levels) - 1
+    );
+
+    _minimap.range = _minimap.range_levels[_minimap.range_index];
+    return false;
+}
+
 /// @description Changes radar range by one configured zoom level.
 function sc_hud_minimap_zoom_change(_minimap, _amount)
 {
@@ -457,6 +502,22 @@ function sc_hud_minimap_update(_hud)
 {
     var _data = _hud.data.minimap;
     var _minimap = _hud.minimap;
+    var _radar = sc_hud_minimap_radar_get();
+
+    if (is_undefined(_radar))
+    {
+        _minimap.dragging = false;
+        _minimap.enemy_contacts = [];
+        _minimap.asteroid_contacts = [];
+
+        if (variable_struct_exists(_minimap,"radar_key"))
+            _minimap.radar_key = "";
+
+        return;
+    }
+
+    sc_hud_minimap_radar_sync(_minimap,_radar);
+
     var _mouse_x = device_mouse_x_to_gui(0);
     var _mouse_y = device_mouse_y_to_gui(0);
     var _pressed = mouse_check_button_pressed(mb_left);
@@ -465,18 +526,15 @@ function sc_hud_minimap_update(_hud)
     if (_released)
         _minimap.dragging = false;
 
-    if (global.PlayerState == PlayerState.ACTIVE
-    && _pressed)
+    if (global.PlayerState == PlayerState.ACTIVE && _pressed)
     {
         if (_minimap.minimized)
         {
             if (point_in_rectangle(
-                _mouse_x,
-                _mouse_y,
-                _minimap.x,
-                _minimap.y,
-                _minimap.x+_data.minimized_width,
-                _minimap.y+_data.minimized_height
+                _mouse_x,_mouse_y,
+                _minimap.x,_minimap.y,
+                _minimap.x + _data.minimized_width,
+                _minimap.y + _data.minimized_height
             ))
             {
                 _minimap.minimized = false;
@@ -485,51 +543,35 @@ function sc_hud_minimap_update(_hud)
         }
         else
         {
-            var _local_x = _mouse_x-_minimap.x;
-            var _local_y = _mouse_y-_minimap.y;
+            var _local_x = _mouse_x - _minimap.x;
+            var _local_y = _mouse_y - _minimap.y;
 
             if (point_in_rectangle(
-                _local_x,
-                _local_y,
-                _data.width-30,
-                5,
-                _data.width-7,
-                25
+                _local_x,_local_y,
+                _data.width - 30,5,
+                _data.width - 7,25
             ))
             {
                 _minimap.minimized = true;
                 _minimap.dragging = false;
             }
             else if (point_in_rectangle(
-                _local_x,
-                _local_y,
-                12,
-                _data.height-25,
-                38,
-                _data.height-7
+                _local_x,_local_y,
+                12,_data.height - 25,
+                38,_data.height - 7
             ))
             {
-                sc_hud_minimap_zoom_change(
-                    _minimap,
-                    -1
-                );
+                sc_hud_minimap_zoom_change(_minimap,-1);
             }
             else if (point_in_rectangle(
-                _local_x,
-                _local_y,
-                _data.width-38,
-                _data.height-25,
-                _data.width-12,
-                _data.height-7
+                _local_x,_local_y,
+                _data.width - 38,_data.height - 25,
+                _data.width - 12,_data.height - 7
             ))
             {
-                sc_hud_minimap_zoom_change(
-                    _minimap,
-                    1
-                );
+                sc_hud_minimap_zoom_change(_minimap,1);
             }
-            else if (_local_y >= 0
-            && _local_y <= _data.header_height)
+            else if (_local_y >= 0 && _local_y <= _data.header_height)
             {
                 _minimap.dragging = true;
                 _minimap.drag_offset_x = _local_x;
@@ -538,28 +580,25 @@ function sc_hud_minimap_update(_hud)
         }
     }
 
-    if (_minimap.dragging
-    && mouse_check_button(mb_left))
+    if (_minimap.dragging && mouse_check_button(mb_left))
     {
         var _gui_width = display_get_gui_width();
         var _gui_height = display_get_gui_height();
 
         _minimap.x = clamp(
-            _mouse_x-_minimap.drag_offset_x,
+            _mouse_x - _minimap.drag_offset_x,
             0,
-            _gui_width-_data.width
+            _gui_width - _data.width
         );
 
         _minimap.y = clamp(
-            _mouse_y-_minimap.drag_offset_y,
+            _mouse_y - _minimap.drag_offset_y,
             0,
-            _gui_height-_data.height
+            _gui_height - _data.height
         );
     }
 
-    if (_minimap.minimized
-    || !instance_exists(global.player_id))
-        return;
+    if (_minimap.minimized) return;
 
     var _player = global.player_id;
 
@@ -569,23 +608,11 @@ function sc_hud_minimap_update(_hud)
         _player
     );
 
-    if (GAME_TICK
-    >= _minimap.next_enemy_update_tick)
-    {
-        sc_hud_minimap_enemies_refresh(
-            _minimap,
-            _player
-        );
-    }
+    if (GAME_TICK >= _minimap.next_enemy_update_tick)
+        sc_hud_minimap_enemies_refresh(_minimap,_player);
 
-    if (GAME_TICK
-    >= _minimap.next_asteroid_update_tick)
-    {
-        sc_hud_minimap_asteroids_refresh(
-            _minimap,
-            _player
-        );
-    }
+    if (GAME_TICK >= _minimap.next_asteroid_update_tick)
+        sc_hud_minimap_asteroids_refresh(_minimap,_player);
 
     sc_hud_minimap_sweep_update(
         _minimap,
@@ -593,7 +620,6 @@ function sc_hud_minimap_update(_hud)
         _data.interference
     );
 }
-
 /// @description Converts one world position into local radar coordinates.
 function sc_hud_minimap_position_get(_minimap, _data, _player, _world_x, _world_y)
 {
@@ -918,9 +944,49 @@ function sc_hud_minimap_sweep_draw(_hud)
     }
 }
 
+/// @description Draws the tactical radar while no radar equipment is installed.
+function sc_hud_minimap_offline_draw(_hud)
+{
+    var _data = _hud.data.minimap;
+    var _palette = _hud.data.palette;
+    var _minimap = _hud.minimap;
+    var _x = _minimap.x;
+    var _y = _minimap.y;
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_sprite(_hud.cache.minimap_dock,0,_x,_y);
+
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_middle);
+    draw_set_colour(_palette.text);
+    draw_text(_x + 15,_y + _data.header_height*0.5,"TACTICAL RADAR");
+
+    draw_set_halign(fa_center);
+    draw_set_colour(_palette.warning);
+    draw_text(_x + _data.width*0.5,_y + 116,"RADAR OFFLINE");
+
+    draw_set_colour(_palette.muted);
+    draw_text(_x + _data.width*0.5,_y + 146,"INSTALL TARGETING EQUIPMENT");
+    draw_text(_x + _data.width*0.5,_y + 166,"IN SHIP COMMAND");
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
+
 /// @description Draws the complete movable minimap.
 function sc_hud_minimap_draw(_hud)
 {
+    var _radar = sc_hud_minimap_radar_get();
+
+    if (is_undefined(_radar))
+    {
+        sc_hud_minimap_offline_draw(_hud);
+        return;
+    }
+
     var _data = _hud.data.minimap;
     var _palette = _hud.data.palette;
     var _minimap = _hud.minimap;
@@ -936,63 +1002,59 @@ function sc_hud_minimap_draw(_hud)
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
-    draw_sprite(_hud.cache.minimap_dock, 0, _x, _y);
+    draw_sprite(_hud.cache.minimap_dock,0,_x,_y);
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.text);
-    draw_text(_x + 15, _y + _data.header_height * 0.5, "TACTICAL RADAR");
+    draw_text(_x + 15,_y + _data.header_height*0.5,"TACTICAL RADAR");
 
     draw_set_halign(fa_center);
     draw_set_colour(_palette.accent);
-    draw_text(_x + _data.width - 18, _y + 15, "_");
+    draw_text(_x + _data.width - 18,_y + 15,"_");
 
-    if (instance_exists(global.player_id))
-    {
-        var _player = global.player_id;
+    var _player = global.player_id;
 
-        sc_hud_minimap_asteroids_draw(_hud, _player);
-		sc_hud_minimap_structures_draw(_hud, _player);
-        sc_hud_minimap_enemies_draw(_hud, _player);
-        sc_hud_minimap_sweep_draw(_hud);
+    sc_hud_minimap_asteroids_draw(_hud,_player);
+    sc_hud_minimap_structures_draw(_hud,_player);
+    sc_hud_minimap_enemies_draw(_hud,_player);
+    sc_hud_minimap_sweep_draw(_hud);
 
-        var _centre_x = _x + _data.radar_centre_x;
-        var _centre_y = _y + _data.radar_centre_y;
-        var _angle = _player.draw_angle;
+    var _centre_x = _x + _data.radar_centre_x;
+    var _centre_y = _y + _data.radar_centre_y;
+    var _angle = _player.draw_angle;
 
-        draw_set_colour(_palette.core);
-        draw_set_alpha(1);
-        draw_triangle(
-            _centre_x + lengthdir_x(8, _angle),
-            _centre_y + lengthdir_y(8, _angle),
-            _centre_x + lengthdir_x(6, _angle + 145),
-            _centre_y + lengthdir_y(6, _angle + 145),
-            _centre_x + lengthdir_x(6, _angle - 145),
-            _centre_y + lengthdir_y(6, _angle - 145),
-            false
-        );
-    }
+    draw_set_colour(_palette.core);
+    draw_set_alpha(1);
+    draw_triangle(
+        _centre_x + lengthdir_x(8,_angle),
+        _centre_y + lengthdir_y(8,_angle),
+        _centre_x + lengthdir_x(6,_angle + 145),
+        _centre_y + lengthdir_y(6,_angle + 145),
+        _centre_x + lengthdir_x(6,_angle - 145),
+        _centre_y + lengthdir_y(6,_angle - 145),
+        false
+    );
 
     var _footer_y = _y + _data.height - 16;
 
-    draw_set_alpha(1);
     draw_set_colour(_palette.panel_light);
-    draw_rectangle(_x + 12, _footer_y - 9, _x + 38, _footer_y + 9, false);
-    draw_rectangle(_x + _data.width - 38, _footer_y - 9, _x + _data.width - 12, _footer_y + 9, false);
+    draw_rectangle(_x + 12,_footer_y - 9,_x + 38,_footer_y + 9,false);
+    draw_rectangle(_x + _data.width - 38,_footer_y - 9,_x + _data.width - 12,_footer_y + 9,false);
 
     draw_set_colour(_palette.outline);
-    draw_rectangle(_x + 12, _footer_y - 9, _x + 38, _footer_y + 9, true);
-    draw_rectangle(_x + _data.width - 38, _footer_y - 9, _x + _data.width - 12, _footer_y + 9, true);
+    draw_rectangle(_x + 12,_footer_y - 9,_x + 38,_footer_y + 9,true);
+    draw_rectangle(_x + _data.width - 38,_footer_y - 9,_x + _data.width - 12,_footer_y + 9,true);
 
     draw_set_halign(fa_center);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.core);
-    draw_text(_x + 25, _footer_y, "-");
-    draw_text(_x + _data.width - 25, _footer_y, "+");
+    draw_text(_x + 25,_footer_y,"-");
+    draw_text(_x + _data.width - 25,_footer_y,"+");
 
     draw_set_colour(_palette.muted);
     draw_text(
-        _x + _data.width * 0.5,
+        _x + _data.width*0.5,
         _footer_y,
         "RANGE // " + string(_minimap.range)
     );

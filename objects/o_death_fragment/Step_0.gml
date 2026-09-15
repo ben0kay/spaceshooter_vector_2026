@@ -1,4 +1,5 @@
 /// @description Updates every fragment within this visual effect.
+if (!GAMEPLAY_ACTIVE) exit;
 effect_age++;
 
 for (var _i = 0; _i < array_length(fragments); _i++)

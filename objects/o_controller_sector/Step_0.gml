@@ -1,4 +1,4 @@
 /// @description Processes travel through available sector boundaries.
-if (!initialized) exit;
+if (!initialized || !GAMEPLAY_ACTIVE) exit;
 
 sc_sector_transition_update();

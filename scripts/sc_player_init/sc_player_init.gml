@@ -136,6 +136,9 @@ function sc_player_init_inventory(_player)
     _player.defence.armour.maximum = _armour_maximum;
     _player.defence.armour.current = _armour_maximum;
 
+    // Temporary test equipment. Remove when radar progression is active.
+    sc_player_inventory_add(_player,"item_radar_array",1);
+
     sc_player_inventory_add(_player,"item_scanning_drone",3);
 
     var _slots = _player.inventory.drone_bay.slots;
