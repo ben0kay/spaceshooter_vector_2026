@@ -587,6 +587,8 @@ function sc_attack_area_damage_apply(_area)
     for (var _i = 0; _i < _count; ++_i)
     {
         var _target = _candidates[| _i];
+		
+		if (!instance_exists(_target)) continue;
 
         if (_target == _source.owner_id)
             continue;
@@ -740,6 +742,8 @@ function sc_beam_entity_hit_length_get(_area, _data, _maximum_length)
     for (var _i = 0; _i < _count; ++_i)
     {
         var _target = _candidates[| _i];
+		
+		if (!instance_exists(_target)) continue;
 
         if (_target == _source.owner_id
         || _target.entity.faction == _source.faction)
