@@ -357,6 +357,7 @@
     {"id":{"name":"s_rebel_gunship_hull","path":"sprites/s_rebel_gunship_hull/s_rebel_gunship_hull.yy",},},
     {"id":{"name":"s_rebel_minigun_v1","path":"sprites/s_rebel_minigun_v1/s_rebel_minigun_v1.yy",},},
     {"id":{"name":"s_rebel_minigun_v2","path":"sprites/s_rebel_minigun_v2/s_rebel_minigun_v2.yy",},},
+    {"id":{"name":"s_rebel_warwing_hull","path":"sprites/s_rebel_warwing_hull/s_rebel_warwing_hull.yy",},},
     {"id":{"name":"s_ring","path":"sprites/s_ring/s_ring.yy",},},
     {"id":{"name":"s_sharp","path":"sprites/s_sharp/s_sharp.yy",},},
     {"id":{"name":"s_sim_dreadwing_cannon","path":"sprites/s_sim_dreadwing_cannon/s_sim_dreadwing_cannon.yy",},},
