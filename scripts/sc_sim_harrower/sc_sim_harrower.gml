@@ -367,12 +367,12 @@ function sc_enemy_register_sim_harrower()
                         steps: [
                             {
                                 attack_key: "shard_minigun_stream",
-                                repeat: 1,
+                                repeat_amount: 1,
                                 gap_after: 15
                             },
                             {
                                 attack_key: "core_radial_orbs",
-                                repeat: 1,
+                                repeat_amount: 1,
                                 gap_after: 0
                             }
                         ],

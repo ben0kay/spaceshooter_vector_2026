@@ -83,8 +83,8 @@ function sc_enemy_attack_sequences_init(_enemy)
                 _step.attack_key
             );
 
-            _step.repeat = variable_struct_exists(_step,"repeat")
-                ? max(1,round(_step.repeat))
+            _step.repeat_amount = variable_struct_exists(_step,"repeat_amount")
+                ? max(1,round(_step.repeat_amount))
                 : 1;
 
             _step.gap_after = variable_struct_exists(_step,"gap_after")
@@ -1497,7 +1497,7 @@ function sc_enemy_attack_sequence_step_finish(_enemy)
     var _step = _sequence.steps[_runtime.step_index];
     _runtime.active_step = false;
 
-    if (_runtime.repeat_index + 1 < _step.repeat)
+    if (_runtime.repeat_index + 1 < _step.repeat_amount)
     {
         _runtime.repeat_index++;
         _runtime.next_step_tick = GAME_TICK + _step.gap_after;
