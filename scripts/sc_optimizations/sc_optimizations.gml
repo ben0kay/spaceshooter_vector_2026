@@ -6,13 +6,19 @@ function sc_optimization_init()
             ready: false,
             left: 0, top: 0,
             right: 0, bottom: 0
+        },
+
+        asteroid_visibility: {
+            cursor: 0,
+            checks_per_step: 64,
+            padding: 128
         }
     };
 
     return true;
 }
 
-/// @description Caches the active camera bounds once for all optimized systems.
+/// @description Caches the active camera bounds and staggers static asteroid visibility checks.
 function sc_optimization_camera_cache(_camera_id)
 {
     var _camera = global.optimization.camera;
@@ -24,6 +30,52 @@ function sc_optimization_camera_cache(_camera_id)
     _camera.right = _left + camera_get_view_width(_camera_id);
     _camera.bottom = _top + camera_get_view_height(_camera_id);
     _camera.ready = true;
+
+    sc_optimization_asteroid_visibility_update();
+}
+
+/// @description Updates one staggered batch of static asteroid visibility states.
+function sc_optimization_asteroid_visibility_update()
+{
+    var _visibility = global.optimization.asteroid_visibility;
+    var _count = instance_number(o_asteroid);
+
+    if (_count <= 0)
+    {
+        _visibility.cursor = 0;
+        return;
+    }
+
+    var _checks = min(_visibility.checks_per_step,_count);
+    var _camera = global.optimization.camera;
+    var _padding = _visibility.padding;
+
+    for (var _i = 0; _i < _checks; ++_i)
+    {
+        if (_visibility.cursor >= _count)
+            _visibility.cursor = 0;
+
+        var _asteroid = instance_find(
+            o_asteroid,
+            _visibility.cursor
+        );
+
+        _visibility.cursor++;
+
+        if (!instance_exists(_asteroid)) continue;
+
+        var _visual = _asteroid.asteroid.visual;
+        var _extent = _visual.radius*max(
+            abs(_visual.scale_x),
+            abs(_visual.scale_y)
+        ) + _padding;
+
+        _asteroid.visible =
+            _asteroid.x + _extent >= _camera.left
+            && _asteroid.x - _extent <= _camera.right
+            && _asteroid.y + _extent >= _camera.top
+            && _asteroid.y - _extent <= _camera.bottom;
+    }
 }
 
 /// @description Returns whether a circular visual area overlaps the cached camera bounds.
