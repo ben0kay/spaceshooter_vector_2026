@@ -118,12 +118,13 @@ function sc_player_init_resources(_player)
     };
 }
 
-/// @description Creates starting cargo, equipment and fills the temporary test drone bay.
+/// @description Creates starting cargo, equipment, modules and fills the temporary test drone bay.
 function sc_player_init_inventory(_player)
 {
     _player.inventory = sc_player_inventory_create();
 
     sc_player_equipment_modifiers_rebuild(_player);
+    sc_player_module_modifiers_rebuild(_player);
 
     var _armour = _player.inventory.equipment.armour;
     var _armour_maximum = _player.ship.stats.final.armour_max;
@@ -136,9 +137,8 @@ function sc_player_init_inventory(_player)
     _player.defence.armour.maximum = _armour_maximum;
     _player.defence.armour.current = _armour_maximum;
 
-    // Temporary test equipment. Remove when radar progression is active.
     sc_player_inventory_add(_player,"item_radar_array",1);
-
+    sc_player_inventory_add(_player,"item_coolant_module_mk1",1);
     sc_player_inventory_add(_player,"item_scanning_drone",3);
 
     var _slots = _player.inventory.drone_bay.slots;
@@ -151,6 +151,8 @@ function sc_player_init_inventory(_player)
             sc_player_drone_item_create("item_point_defence_drone")
         );
     }
+
+    return true;
 }
 
 /// @description Creates player movement, boost and dash runtime values.

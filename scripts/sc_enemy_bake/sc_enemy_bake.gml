@@ -67,8 +67,8 @@ function sc_enemy_visual_cache_init()
     return true;
 }
 
-/// @description Bakes one enemy primitive component into a sprite.
-function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _component_index, _canvas_size)
+/// @description Bakes one enemy visual component into a sprite.
+function sc_enemy_visual_component_bake(_enemy_key,_data,_component,_component_index,_canvas_size)
 {
     if (_canvas_size <= 0)
     {
@@ -76,7 +76,7 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
         return -1;
     }
 
-    var _surface = surface_create(_canvas_size, _canvas_size);
+    var _surface = surface_create(_canvas_size,_canvas_size);
 
     if (!surface_exists(_surface))
     {
@@ -88,50 +88,60 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
     var _centre = _canvas_size * 0.5;
 
     surface_set_target(_surface);
-    draw_clear_alpha(c_black, 0);
+    draw_clear_alpha(c_black,0);
     draw_set_alpha(1);
     draw_set_colour(c_white);
 
     switch (_component)
     {
         case "body":
-            _visual.draw.body(_centre, _centre, _visual.radius, 0, _visual);
+            _visual.draw.body(_centre,_centre,_visual.radius,0,_visual);
         break;
 
         case "damage_hull":
             _visual.damage_layers.hull_draw_script(
-                _centre, _centre, _visual.radius, 0, _visual, _component_index
+                _centre,_centre,_visual.radius,0,_visual,_component_index
             );
         break;
 
         case "damage_armour":
             _visual.damage_layers.armour_draw_script(
-                _centre, _centre, _visual.radius, 0, _visual, _component_index
+                _centre,_centre,_visual.radius,0,_visual,_component_index
             );
         break;
 
         case "core":
-            _visual.draw.core(_centre, _centre, _visual.radius, 0, _visual, 1);
+            _visual.draw.core(_centre,_centre,_visual.radius,0,_visual,1);
         break;
 
         case "thrust":
-            _visual.thrust.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1);
+            _visual.thrust.draw_script(_centre,_centre,_visual.radius,0,_visual,1);
         break;
 
         case "shield":
             var _radius_forward = _visual.radius * _data.collision.radius_forward_scale;
             var _radius_side = _visual.radius * _data.collision.radius_side_scale;
-            sc_visual_shield_bake_draw(_centre, _centre, _radius_forward, _radius_side, _visual.palette);
+
+            sc_visual_shield_bake_draw(
+                _centre,_centre,
+                _radius_forward,_radius_side,
+                _visual.palette
+            );
         break;
 
         case "hardpoint":
             var _hardpoint = _data.hardpoints[_component_index];
-            _hardpoint.draw_script(_centre, _centre, _visual.radius, 0, _visual, 1);
+
+            sc_enemy_hardpoint_dispatch(
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_hardpoint,1
+            );
         break;
 
         case "fragment":
             var _fragment_script = _visual.death.draw_scripts[_component_index];
-            _fragment_script(_centre, _centre, _visual.radius, 0, _visual);
+            _fragment_script(_centre,_centre,_visual.radius,0,_visual);
         break;
     }
 
@@ -140,8 +150,10 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
     surface_reset_target();
 
     var _sprite = sprite_create_from_surface(
-        _surface, 0, 0, _canvas_size, _canvas_size,
-        false, false, _centre, _centre
+        _surface,0,0,
+        _canvas_size,_canvas_size,
+        false,false,
+        _centre,_centre
     );
 
     surface_free(_surface);
@@ -154,7 +166,6 @@ function sc_enemy_visual_component_bake(_enemy_key, _data, _component, _componen
 
     return _sprite;
 }
-
 /// @description Returns one enemy's shared visual cache.
 function sc_enemy_visual_cache_get(_enemy_key)
 {
@@ -201,6 +212,36 @@ function sc_enemy_visual_cache_destroy()
 
     global.enemy_visual_cache = {};
     show_debug_message("ENEMY VISUAL CACHE DESTROYED");
+}
+
+/// @description Draws an authored enemy hardpoint or its primitive fallback.
+function sc_enemy_hardpoint_dispatch(_x,_y,_radius,_angle,_visual,_hardpoint,_alpha)
+{
+    if (variable_struct_exists(_visual,"authored")
+    && _visual.authored.enabled
+    && variable_struct_exists(_hardpoint,"authored"))
+    {
+        var _authored = _hardpoint.authored;
+
+        if (sprite_exists(_authored.sprite))
+        {
+            draw_sprite_ext(
+                _authored.sprite,0,
+                _x,_y,
+                _authored.scale,_authored.scale,
+                _angle,
+                c_white,_alpha
+            );
+
+            draw_set_alpha(1);
+            draw_set_colour(c_white);
+            return;
+        }
+    }
+
+    _hardpoint.draw_script(
+        _x,_y,_radius,_angle,_visual,_alpha
+    );
 }
 
 /// @description Draws an authored enemy hull or its primitive fallback.

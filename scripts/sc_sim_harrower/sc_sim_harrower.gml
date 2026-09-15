@@ -98,9 +98,6 @@ function sc_enemy_register_sim_harrower()
         },
 
         hardpoints: [
-            // ==================================================
-            // UPPER OUTER SHARD MINIGUN
-            // ==================================================
             {
                 key: "shard_upper_outer",
                 group: "shard_miniguns",
@@ -118,10 +115,6 @@ function sc_enemy_register_sim_harrower()
 
                 draw_script: sc_enemy_sim_harrower_shard_emitter_draw
             },
-
-            // ==================================================
-            // UPPER INNER SHARD MINIGUN
-            // ==================================================
             {
                 key: "shard_upper_inner",
                 group: "shard_miniguns",
@@ -139,10 +132,6 @@ function sc_enemy_register_sim_harrower()
 
                 draw_script: sc_enemy_sim_harrower_shard_emitter_draw
             },
-
-            // ==================================================
-            // CENTRAL BEAM
-            // ==================================================
             {
                 key: "beam_centre",
                 group: "beam",
@@ -160,10 +149,24 @@ function sc_enemy_register_sim_harrower()
 
                 draw_script: sc_enemy_simulant_thin_beam_emitter_draw
             },
+            {
+                key: "core_orbs",
+                group: "core_orbs",
+                forward: -0.12,
+                side: 0,
+                angle: 0,
+                muzzle_forward: 0,
+                recoil_scale: 0,
 
-            // ==================================================
-            // LOWER INNER SHARD MINIGUN
-            // ==================================================
+                rotation: {
+                    mode: HardpointRotation.FIXED,
+                    turn_speed: 0,
+                    arc: 0,
+                    return_to_rest: true
+                },
+
+                draw_script: sc_enemy_sim_harrower_core_hardpoint_draw
+            },
             {
                 key: "shard_lower_inner",
                 group: "shard_miniguns",
@@ -181,10 +184,6 @@ function sc_enemy_register_sim_harrower()
 
                 draw_script: sc_enemy_sim_harrower_shard_emitter_draw
             },
-
-            // ==================================================
-            // LOWER OUTER SHARD MINIGUN
-            // ==================================================
             {
                 key: "shard_lower_outer",
                 group: "shard_miniguns",
@@ -223,6 +222,10 @@ function sc_enemy_register_sim_harrower()
                 {
                     key: "beam",
                     selection: AttackSelection.WEIGHTED
+                },
+                {
+                    key: "core",
+                    selection: AttackSelection.WEIGHTED
                 }
             ],
 
@@ -260,7 +263,6 @@ function sc_enemy_register_sim_harrower()
                         cooldown: 95
                     }
                 },
-
                 {
                     key: "centre_beam",
                     channel: "beam",
@@ -301,8 +303,84 @@ function sc_enemy_register_sim_harrower()
                         duration: 72,
                         cooldown: 210
                     }
+                },
+                {
+                    key: "core_radial_orbs",
+                    channel: "core",
+                    weight: 100,
+                    hardpoint_group: "core_orbs",
+                    weapon_key: "weapon_simulant_orb",
+
+                    conditions: {
+                        line_of_sight: false,
+                        range_min: 0,
+                        range_max: 1080
+                    },
+
+                    aim: {
+                        mode: AimMode.MOUNT,
+                        angle_offset: 0,
+                        inaccuracy: 0,
+                        fire_tolerance: 360
+                    },
+
+                    shot: {
+                        pattern: ShotPattern.SINGLE,
+                        amount: 1
+                    },
+
+                    telegraph: {
+                        duration: 34,
+                        aim_lock_remaining: 0,
+                        track_during_active: true,
+                        scale: 0.28,
+                        particle_interval: 1,
+                        draw_script: sc_attack_telegraph_energy_draw,
+                        particle_script: sc_particles_attack_telegraph_emit
+                    },
+
+                    firing: {
+                        order: HardpointFireOrder.ALL,
+                        interval: 4,
+                        volley_max: 12,
+                        cooldown: 220,
+
+                        direction_pattern: {
+                            type: VolleyDirectionPattern.RADIAL,
+                            angle_total: 360,
+                            start_offset: 0,
+                            rotation_offset_per_attack: 15
+                        }
+                    }
                 }
-            ]
+            ],
+
+            sequences: {
+                enabled: true,
+                selection: AttackSelection.WEIGHTED,
+
+                entries: [
+                    {
+                        key: "shard_barrage_into_orbs",
+                        weight: 100,
+
+                        steps: [
+                            {
+                                attack_key: "shard_minigun_stream",
+                                repeat: 1,
+                                gap_after: 15
+                            },
+                            {
+                                attack_key: "core_radial_orbs",
+                                repeat: 1,
+                                gap_after: 0
+                            }
+                        ],
+
+                        cooldown: 260
+                    }
+                ]
+            }
         }
     });
 }
@@ -723,6 +801,12 @@ function sc_enemy_sim_harrower_core_draw(_x,_y,_radius,_angle,_visual,_alpha)
         _p,
         _alpha
     );
+}
+
+/// @description Leaves the Harrower's existing visual core unobstructed.
+function sc_enemy_sim_harrower_core_hardpoint_draw(_x,_y,_radius,_angle,_visual,_alpha)
+{
+    return;
 }
 
 /// @description Draws one Harrower shard minigun hardpoint.

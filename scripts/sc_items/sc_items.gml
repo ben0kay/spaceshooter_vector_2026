@@ -355,6 +355,29 @@ function sc_item_register_all()
     })
 
 
+// module
+
+    // ITEM: item_coolant_module_mk1 - Coolant Module Mk I
+    && sc_item_register({
+        identity: { key: "item_coolant_module_mk1", name: "Coolant Module Mk I" },
+        layer: ItemLayer.PRODUCT, type: ItemType.MODULE, cargo: { weight: 5, stack_max: 10 },
+        description: "A fixed-output cooling module that improves heat removal from ship weapons.",
+
+        module: {
+            system: ShipSystemType.COOLING,
+
+            modifiers: [
+                { stat: "weapon_cooling_rate", add: 0.25 }
+            ]
+        },
+
+        visual: {
+            colour: make_colour_rgb(87,171,185),
+            glow: make_colour_rgb(88,235,255),
+            draw_script: sc_item_plate_primitive_draw
+        }
+    })
+
     //==================================================
     // PRODUCTS
     //==================================================

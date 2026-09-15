@@ -109,29 +109,77 @@ function sc_enemy_register_rebel_gunship()
 
         hardpoints: [
             {
-                key: "turret_front_left", group: "turrets",
-                forward: 0.35, side: -0.47, angle: 0, muzzle_forward: 0.47,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 4.2, arc: 360, return_to_rest: true },
-                draw_script: sc_enemy_rebel_gunship_minigun_draw
-            },
-            {
-                key: "turret_front_right", group: "turrets",
-                forward: 0.35, side: 0.47, angle: 0, muzzle_forward: 0.47,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 4.2, arc: 360, return_to_rest: true },
-                draw_script: sc_enemy_rebel_gunship_minigun_draw
-            },
-            {
-                key: "turret_rear_left", group: "turrets",
-                forward: -0.33, side: -0.43, angle: 0, muzzle_forward: 0.47,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 4, arc: 360, return_to_rest: true },
-                draw_script: sc_enemy_rebel_gunship_minigun_draw
-            },
-            {
-                key: "turret_rear_right", group: "turrets",
-                forward: -0.33, side: 0.43, angle: 0, muzzle_forward: 0.47,
-                rotation: { mode: HardpointRotation.TARGET, turn_speed: 4, arc: 360, return_to_rest: true },
-                draw_script: sc_enemy_rebel_gunship_minigun_draw
-            },
+    key: "turret_front_left", group: "turrets",
+    forward: 0.35, side: -0.47, angle: 0, muzzle_forward: 0.47,
+
+    authored: {
+        sprite: s_rebel_minigun_v1,
+        scale: 0.17
+    },
+
+    rotation: {
+        mode: HardpointRotation.TARGET,
+        turn_speed: 4.2,
+        arc: 360,
+        return_to_rest: true
+    },
+
+    draw_script: sc_enemy_rebel_gunship_minigun_draw
+},
+{
+    key: "turret_front_right", group: "turrets",
+    forward: 0.35, side: 0.47, angle: 0, muzzle_forward: 0.47,
+
+    authored: {
+        sprite: s_rebel_minigun_v2,
+        scale: 0.17
+    },
+
+    rotation: {
+        mode: HardpointRotation.TARGET,
+        turn_speed: 4.2,
+        arc: 360,
+        return_to_rest: true
+    },
+
+    draw_script: sc_enemy_rebel_gunship_minigun_draw
+},
+{
+    key: "turret_rear_left", group: "turrets",
+    forward: -0.33, side: -0.43, angle: 0, muzzle_forward: 0.47,
+
+    authored: {
+        sprite: s_rebel_minigun_v1,
+        scale: 0.17
+    },
+
+    rotation: {
+        mode: HardpointRotation.TARGET,
+        turn_speed: 4,
+        arc: 360,
+        return_to_rest: true
+    },
+
+    draw_script: sc_enemy_rebel_gunship_minigun_draw
+},
+{
+    key: "turret_rear_right", group: "turrets",
+    forward: -0.33, side: 0.43, angle: 0, muzzle_forward: 0.47,
+
+    authored: {
+        sprite: s_rebel_minigun_v2,
+        scale: 0.17
+    },
+
+    rotation: {
+        mode: HardpointRotation.TARGET,
+        turn_speed: 4,
+        arc: 360,
+        return_to_rest: true
+    },
+
+    draw_script: sc_enemy_rebel_gunship_minigun_draw
+},
             {
                 key: "fixed_left", group: "forward_guns",
                 forward: 0.75, side: -0.18, angle: 0, muzzle_forward: 0.48,

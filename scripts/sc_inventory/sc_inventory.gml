@@ -6,7 +6,7 @@ Interface selection and the baked window belong to o_hud_level.
 Static panel, tabs and empty cargo slots are baked once.
 Items, quantities, selection and descriptions are drawn dynamically.
 */
-/// @description Creates the player's persistent cargo, equipment and drone bay.
+/// @description Creates the player's persistent cargo, equipment, system modules and drone bay.
 function sc_player_inventory_create()
 {
     var _columns = 8;
@@ -30,6 +30,17 @@ function sc_player_inventory_create()
             targeting: undefined,
             utility: undefined,
             auxiliary: undefined
+        },
+
+        modules: {
+            engines: [undefined],
+            thrusters: [undefined],
+            shield_generator: [undefined],
+            reactor: [undefined],
+            cooling: [undefined],
+            weapons: [undefined],
+            sensors: [undefined],
+            drone_bay: [undefined]
         },
 
         // Temporary three-slot test bay. Upgrade stats can control this later.

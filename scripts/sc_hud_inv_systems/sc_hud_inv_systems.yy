@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_hud_inv_systems",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_hud_inv_systems",
+  "parent":{
+    "name":"INVENTORY",
+    "path":"folders/SCRIPTS---/HUD/INVENTORY.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

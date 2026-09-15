@@ -7,6 +7,7 @@ function sc_enemy_attack_runtime_create()
         next_attack_index: 0,
         hardpoint_cursor: 0,
         volley_count: 0,
+        activation_index: 0,
         next_fire_tick: 0,
         cooldown_until: 0,
         attack_end_tick: 0,
@@ -25,6 +26,96 @@ function sc_enemy_attack_channel_bind(_controller, _channel)
     _controller.runtime = _channel.runtime;
 }
 
+/// @description Initializes optional authored attack sequences.
+function sc_enemy_attack_sequences_init(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+
+    if (!variable_struct_exists(_controller,"sequences")
+    || !_controller.sequences.enabled)
+        return true;
+
+    var _sequences = _controller.sequences;
+
+    if (!variable_struct_exists(_sequences,"entries")
+    || array_length(_sequences.entries) <= 0)
+    {
+        show_debug_message("ENEMY ATTACK ERROR - enabled sequences contain no entries: " + _enemy.enemy.key);
+        return false;
+    }
+
+    if (!variable_struct_exists(_sequences,"selection"))
+        _sequences.selection = AttackSelection.WEIGHTED;
+
+    for (var _s = 0; _s < array_length(_sequences.entries); ++_s)
+    {
+        var _sequence = _sequences.entries[_s];
+
+        if (!variable_struct_exists(_sequence,"steps")
+        || array_length(_sequence.steps) <= 0)
+        {
+            show_debug_message("ENEMY ATTACK ERROR - empty sequence: " + _sequence.key);
+            return false;
+        }
+
+        if (!variable_struct_exists(_sequence,"weight"))
+            _sequence.weight = 100;
+
+        if (!variable_struct_exists(_sequence,"cooldown"))
+            _sequence.cooldown = 180;
+
+        for (var _i = 0; _i < array_length(_sequence.steps); ++_i)
+        {
+            var _step = _sequence.steps[_i];
+
+            if (!variable_struct_exists(_controller.attack_lookup,_step.attack_key))
+            {
+                show_debug_message(
+                    "ENEMY ATTACK ERROR - unknown sequence attack "
+                    + _step.attack_key + " on " + _enemy.enemy.key
+                );
+
+                return false;
+            }
+
+            _step.attack = variable_struct_get(
+                _controller.attack_lookup,
+                _step.attack_key
+            );
+
+            _step.repeat = variable_struct_exists(_step,"repeat")
+                ? max(1,round(_step.repeat))
+                : 1;
+
+            _step.gap_after = variable_struct_exists(_step,"gap_after")
+                ? max(0,round(_step.gap_after))
+                : 0;
+        }
+    }
+
+    var _channel = {
+        key: "sequence",
+        selection: AttackSelection.SEQUENTIAL,
+        attacks: [],
+        runtime: sc_enemy_attack_runtime_create()
+    };
+
+    array_push(_controller.channels,_channel);
+
+    _controller.sequence_runtime = {
+        channel: _channel,
+        current_sequence: -1,
+        next_sequence_index: 0,
+        step_index: 0,
+        repeat_index: 0,
+        active_step: false,
+        next_step_tick: 0,
+        cooldown_until: 0
+    };
+
+    return true;
+}
+
 /// @description Initializes backward-compatible independent attack channels.
 function sc_enemy_attack_controller_init(_enemy)
 {
@@ -32,8 +123,27 @@ function sc_enemy_attack_controller_init(_enemy)
     var _controller = _data.attack_controller;
     var _source_attacks = _controller.attacks;
 
-    // Existing definitions automatically become one main channel.
-    if (!variable_struct_exists(_controller, "channels"))
+    _controller.attack_lookup = {};
+    _controller.activation_counts = {};
+
+    for (var _i = 0; _i < array_length(_source_attacks); ++_i)
+    {
+        var _attack = _source_attacks[_i];
+
+        variable_struct_set(
+            _controller.attack_lookup,
+            _attack.key,
+            _attack
+        );
+
+        variable_struct_set(
+            _controller.activation_counts,
+            _attack.key,
+            0
+        );
+    }
+
+    if (!variable_struct_exists(_controller,"channels"))
     {
         _controller.channels = [{
             key: "main",
@@ -50,24 +160,22 @@ function sc_enemy_attack_controller_init(_enemy)
             return false;
         }
 
-        // Prepare authored channel configuration.
-        for (var _i = 0; _i < array_length(_controller.channels); _i++)
+        for (var _i = 0; _i < array_length(_controller.channels); ++_i)
         {
             var _channel = _controller.channels[_i];
 
-            if (!variable_struct_exists(_channel, "selection"))
+            if (!variable_struct_exists(_channel,"selection"))
                 _channel.selection = _controller.selection;
 
             _channel.attacks = [];
             _channel.runtime = sc_enemy_attack_runtime_create();
         }
 
-        // Assign the existing flat attack definitions to their named channels.
-        for (var _i = 0; _i < array_length(_source_attacks); _i++)
+        for (var _i = 0; _i < array_length(_source_attacks); ++_i)
         {
             var _attack = _source_attacks[_i];
 
-            if (!variable_struct_exists(_attack, "channel"))
+            if (!variable_struct_exists(_attack,"channel"))
             {
                 show_debug_message(
                     "ENEMY ATTACK ERROR - missing channel on "
@@ -79,13 +187,13 @@ function sc_enemy_attack_controller_init(_enemy)
 
             var _assigned = false;
 
-            for (var _c = 0; _c < array_length(_controller.channels); _c++)
+            for (var _c = 0; _c < array_length(_controller.channels); ++_c)
             {
                 var _channel = _controller.channels[_c];
 
                 if (_channel.key != _attack.channel) continue;
 
-                array_push(_channel.attacks, _attack);
+                array_push(_channel.attacks,_attack);
                 _assigned = true;
                 break;
             }
@@ -104,12 +212,11 @@ function sc_enemy_attack_controller_init(_enemy)
 
     var _channel_count = array_length(_controller.channels);
 
-    _controller.max_active_channels = variable_struct_exists(_controller, "max_active_channels")
-        ? clamp(round(_controller.max_active_channels), 1, _channel_count)
+    _controller.max_active_channels = variable_struct_exists(_controller,"max_active_channels")
+        ? clamp(round(_controller.max_active_channels),1,_channel_count)
         : 1;
 
-    // Resolve every channel attack to its physical hardpoints.
-    for (var _c = 0; _c < _channel_count; _c++)
+    for (var _c = 0; _c < _channel_count; ++_c)
     {
         var _channel = _controller.channels[_c];
 
@@ -123,15 +230,15 @@ function sc_enemy_attack_controller_init(_enemy)
             return false;
         }
 
-        for (var _i = 0; _i < array_length(_channel.attacks); _i++)
+        for (var _i = 0; _i < array_length(_channel.attacks); ++_i)
         {
             var _attack = _channel.attacks[_i];
             _attack.hardpoint_indices = [];
 
-            for (var _h = 0; _h < array_length(_data.hardpoints); _h++)
+            for (var _h = 0; _h < array_length(_data.hardpoints); ++_h)
             {
                 if (_data.hardpoints[_h].group == _attack.hardpoint_group)
-                    array_push(_attack.hardpoint_indices, _h);
+                    array_push(_attack.hardpoint_indices,_h);
             }
 
             if (array_length(_attack.hardpoint_indices) <= 0)
@@ -146,8 +253,10 @@ function sc_enemy_attack_controller_init(_enemy)
         }
     }
 
-    // Keep the legacy aliases valid for the existing shared attack functions.
-    sc_enemy_attack_channel_bind(_controller, _controller.channels[0]);
+    if (!sc_enemy_attack_sequences_init(_enemy))
+        return false;
+
+    sc_enemy_attack_channel_bind(_controller,_controller.channels[0]);
     return true;
 }
 
@@ -260,10 +369,22 @@ function sc_enemy_attack_cancel(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
 
-    for (var _c = 0; _c < array_length(_controller.channels); _c++)
+    for (var _c = 0; _c < array_length(_controller.channels); ++_c)
         sc_enemy_attack_channel_cancel(_controller.channels[_c]);
 
-    sc_enemy_attack_channel_bind(_controller, _controller.channels[0]);
+    if (variable_struct_exists(_controller,"sequence_runtime"))
+    {
+        var _sequence = _controller.sequence_runtime;
+
+        _sequence.current_sequence = -1;
+        _sequence.step_index = 0;
+        _sequence.repeat_index = 0;
+        _sequence.active_step = false;
+        _sequence.next_step_tick = 0;
+        _sequence.cooldown_until = GAME_TICK + 15;
+    }
+
+    sc_enemy_attack_channel_bind(_controller,_controller.channels[0]);
 }
 
 /// @description Completes the currently bound attack and begins its cooldown.
@@ -725,28 +846,189 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
     return _transform;
 }
 
-/// @description Fires one aligned hardpoint when its target corridor remains clear.
-function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
+/*
+VOLLEY DIRECTION PATTERNS
+
+Optional. Omit direction_pattern for ordinary fire.
+
+RADIAL
+direction_pattern: {
+    type: VolleyDirectionPattern.RADIAL,
+    angle_total: 360,
+    start_offset: 0,
+    rotation_offset_per_attack: 0
+}
+
+SWEEP
+direction_pattern: {
+    type: VolleyDirectionPattern.SWEEP,
+    angle_total: 180,
+    start_offset: -90
+}
+
+ZIGZAG
+direction_pattern: {
+    type: VolleyDirectionPattern.ZIGZAG,
+    angle_step: 18,
+    start_offset: 0
+}
+
+ALTERNATE
+direction_pattern: {
+    type: VolleyDirectionPattern.ALTERNATE,
+    offsets: [-35,35],
+    start_offset: 0
+}
+*/
+
+/// @description Returns the directional offset belonging to the current volley.
+function sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
 {
+    if (!variable_struct_exists(_attack.firing,"direction_pattern"))
+        return 0;
+
+    var _pattern = _attack.firing.direction_pattern;
+    var _index = _runtime.volley_count;
+    var _amount = max(1,round(_attack.firing.volley_max));
+    var _rotation = variable_struct_exists(_pattern,"rotation_offset_per_attack")
+        ? _pattern.rotation_offset_per_attack * _runtime.activation_index
+        : 0;
+
+    var _offset = 0;
+
+    switch (_pattern.type)
+    {
+        case VolleyDirectionPattern.FIXED:
+            _offset = variable_struct_exists(_pattern,"start_offset")
+                ? _pattern.start_offset
+                : 0;
+        break;
+
+        case VolleyDirectionPattern.RADIAL:
+            var _total = variable_struct_exists(_pattern,"angle_total")
+                ? _pattern.angle_total
+                : 360;
+
+            var _start = variable_struct_exists(_pattern,"start_offset")
+                ? _pattern.start_offset
+                : 0;
+
+            _offset = _start + (_total / _amount) * _index;
+        break;
+
+        case VolleyDirectionPattern.SWEEP:
+            var _total = variable_struct_exists(_pattern,"angle_total")
+                ? _pattern.angle_total
+                : 180;
+
+            var _start = variable_struct_exists(_pattern,"start_offset")
+                ? _pattern.start_offset
+                : -_total * 0.5;
+
+            var _step = _amount > 1
+                ? _total / (_amount - 1)
+                : 0;
+
+            _offset = _start + _step * _index;
+        break;
+
+        case VolleyDirectionPattern.ZIGZAG:
+            var _start = variable_struct_exists(_pattern,"start_offset")
+                ? _pattern.start_offset
+                : 0;
+
+            var _step = variable_struct_exists(_pattern,"angle_step")
+                ? _pattern.angle_step
+                : 15;
+
+            if (_index <= 0)
+                _offset = _start;
+            else
+            {
+                var _distance = ceil(_index * 0.5) * _step;
+                var _side = (_index mod 2 == 1) ? 1 : -1;
+                _offset = _start + _distance * _side;
+            }
+        break;
+
+        case VolleyDirectionPattern.ALTERNATE:
+            var _start = variable_struct_exists(_pattern,"start_offset")
+                ? _pattern.start_offset
+                : 0;
+
+            var _offsets = variable_struct_exists(_pattern,"offsets")
+                ? _pattern.offsets
+                : [-30,30];
+
+            if (array_length(_offsets) > 0)
+                _offset = _start + _offsets[_index mod array_length(_offsets)];
+            else
+                _offset = _start;
+        break;
+    }
+
+    return _offset + _rotation;
+}
+
+/// @description Begins one selected attack on the currently bound channel.
+function sc_enemy_attack_begin(_enemy,_attack_index)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+    var _attack = _controller.attacks[_attack_index];
+    var _activation_count = variable_struct_get(
+        _controller.activation_counts,
+        _attack.key
+    );
+
+    _runtime.current_attack = _attack_index;
+    _runtime.hardpoint_cursor = 0;
+    _runtime.volley_count = 0;
+    _runtime.activation_index = _activation_count;
+    _runtime.active_deliveries = [];
+    _runtime.attack_end_tick = 0;
+
+    variable_struct_set(
+        _controller.activation_counts,
+        _attack.key,
+        _activation_count + 1
+    );
+
+    if (variable_struct_exists(_attack,"telegraph"))
+    {
+        _runtime.phase = EnemyAttackPhase.TELEGRAPH;
+        _runtime.telegraph_start_tick = GAME_TICK;
+        _runtime.telegraph_end_tick = GAME_TICK + max(1,round(_attack.telegraph.duration));
+        _runtime.next_telegraph_particle_tick = GAME_TICK;
+        return true;
+    }
+
+    return sc_enemy_attack_activate(_enemy,_attack);
+}
+
+/// @description Fires one aligned hardpoint when its target corridor remains clear.
+function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
     var _committed_beam = sc_enemy_attack_is_committed_beam(_attack);
 
-    // A beam that has already begun telegraphing must finish.
-    // Ordinary attacks still recheck aim and line of sight per shot.
     if (!_committed_beam)
     {
-        if (!sc_enemy_attack_hardpoint_aligned(_enemy, _attack, _hardpoint_index))
+        if (!sc_enemy_attack_hardpoint_aligned(_enemy,_attack,_hardpoint_index))
             return noone;
 
-                if (sc_enemy_attack_line_of_sight_required(_attack)
+        if (sc_enemy_attack_line_of_sight_required(_attack)
         && !sc_enemy_attack_line_of_sight_clear(_enemy,_attack))
             return noone;
     }
 
     var _transform = { x: 0, y: 0, direction: 0 };
-    sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, _transform);
+    sc_enemy_hardpoint_attack_transform(_enemy,_attack,_hardpoint_index,_transform);
 
     var _direction = _transform.direction
-        + random_range(-_attack.aim.inaccuracy, _attack.aim.inaccuracy);
+        + sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
+        + random_range(-_attack.aim.inaccuracy,_attack.aim.inaccuracy);
 
     var _delivery = sc_weapon_fire(
         _enemy,
@@ -760,13 +1042,17 @@ function sc_enemy_attack_fire_hardpoint(_enemy, _attack, _hardpoint_index)
 
     if (instance_exists(_delivery))
     {
-        _enemy.enemy.hardpoints[_hardpoint_index].runtime.recoil =
-            _enemy.enemy.visual.radius * 0.14;
+        var _hardpoint = _enemy.enemy.hardpoints[_hardpoint_index];
+        var _recoil_scale = variable_struct_exists(_hardpoint,"recoil_scale")
+            ? _hardpoint.recoil_scale
+            : 0.14;
+
+        _hardpoint.runtime.recoil =
+            _enemy.enemy.visual.radius * _recoil_scale;
     }
 
     return _delivery;
 }
-
 /// @description Starts the selected enemy attack after any telegraph finishes.
 function sc_enemy_attack_activate(_enemy, _attack)
 {
@@ -1022,23 +1308,7 @@ function sc_enemy_attack_channel_update(_enemy)
             return;
         }
 
-        _runtime.current_attack = _selected;
-        _runtime.hardpoint_cursor = 0;
-        _runtime.volley_count = 0;
-        _runtime.active_deliveries = [];
-
-        var _attack = _controller.attacks[_selected];
-
-        if (variable_struct_exists(_attack, "telegraph"))
-        {
-            _runtime.phase = EnemyAttackPhase.TELEGRAPH;
-            _runtime.telegraph_start_tick = GAME_TICK;
-            _runtime.telegraph_end_tick = GAME_TICK + max(1, round(_attack.telegraph.duration));
-            _runtime.next_telegraph_particle_tick = GAME_TICK;
-            return;
-        }
-
-        sc_enemy_attack_activate(_enemy, _attack);
+        sc_enemy_attack_begin(_enemy,_selected);
         return;
     }
 
@@ -1046,16 +1316,25 @@ function sc_enemy_attack_channel_update(_enemy)
 
     if (_runtime.phase == EnemyAttackPhase.TELEGRAPH)
     {
-        sc_enemy_attack_telegraph_update(_enemy, _attack);
+        sc_enemy_attack_telegraph_update(_enemy,_attack);
         return;
     }
 
-    var _weapon = variable_struct_get(global.data.weapons, _attack.weapon_key);
+    var _weapon = variable_struct_get(
+        global.data.weapons,
+        _attack.weapon_key
+    );
 
     if (_weapon.delivery.type == AttackDelivery.BEAM)
     {
-        if (GAME_TICK >= _runtime.attack_end_tick || !sc_enemy_beam_attack_sustain(_enemy, _attack))
-            sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
+        if (GAME_TICK >= _runtime.attack_end_tick
+        || !sc_enemy_beam_attack_sustain(_enemy,_attack))
+        {
+            sc_enemy_attack_finish(
+                _enemy,
+                _attack.firing.cooldown / _fire_rate
+            );
+        }
 
         return;
     }
@@ -1067,44 +1346,247 @@ function sc_enemy_attack_channel_update(_enemy)
     switch (_attack.firing.order)
     {
         case HardpointFireOrder.ALL:
-            for (var _i = 0; _i < array_length(_indices); _i++)
-                sc_enemy_attack_fire_hardpoint(_enemy, _attack, _indices[_i]);
+            for (var _i = 0; _i < array_length(_indices); ++_i)
+                sc_enemy_attack_fire_hardpoint(_enemy,_attack,_indices[_i]);
         break;
 
         case HardpointFireOrder.SEQUENTIAL:
             var _index = _indices[_runtime.hardpoint_cursor];
-            sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
-            _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_indices);
+            sc_enemy_attack_fire_hardpoint(_enemy,_attack,_index);
+
+            _runtime.hardpoint_cursor =
+                (_runtime.hardpoint_cursor + 1)
+                mod array_length(_indices);
         break;
 
         case HardpointFireOrder.RANDOM:
             var _index = _indices[irandom(array_length(_indices) - 1)];
-            sc_enemy_attack_fire_hardpoint(_enemy, _attack, _index);
+            sc_enemy_attack_fire_hardpoint(_enemy,_attack,_index);
         break;
     }
 
     _runtime.volley_count++;
 
     if (_runtime.volley_count >= _attack.firing.volley_max)
-        sc_enemy_attack_finish(_enemy, _attack.firing.cooldown / _fire_rate);
+    {
+        sc_enemy_attack_finish(
+            _enemy,
+            _attack.firing.cooldown / _fire_rate
+        );
+    }
     else
-        _runtime.next_fire_tick = GAME_TICK + max(1, round(_attack.firing.interval / _fire_rate));
+    {
+        _runtime.next_fire_tick = GAME_TICK + max(
+            1,
+            round(_attack.firing.interval / _fire_rate)
+        );
+    }
 }
 
-/// @description Updates every independent attack channel within its concurrency limit.
+/// @description Returns whether a sequence can begin with its first attack.
+function sc_enemy_attack_sequence_can_use(_enemy,_sequence)
+{
+    if (array_length(_sequence.steps) <= 0) return false;
+    return sc_enemy_attack_can_use(_enemy,_sequence.steps[0].attack);
+}
+
+/// @description Selects one currently usable authored attack sequence.
+function sc_enemy_attack_sequence_select(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _sequences = _controller.sequences;
+    var _runtime = _controller.sequence_runtime;
+    var _entries = _sequences.entries;
+    var _count = array_length(_entries);
+
+    switch (_sequences.selection)
+    {
+        case AttackSelection.SEQUENTIAL:
+            for (var _offset = 0; _offset < _count; ++_offset)
+            {
+                var _index =
+                    (_runtime.next_sequence_index + _offset)
+                    mod _count;
+
+                if (!sc_enemy_attack_sequence_can_use(_enemy,_entries[_index]))
+                    continue;
+
+                _runtime.next_sequence_index = (_index + 1) mod _count;
+                return _index;
+            }
+        break;
+
+        case AttackSelection.RANDOM:
+            var _selected = -1;
+            var _eligible_count = 0;
+
+            for (var _i = 0; _i < _count; ++_i)
+            {
+                if (!sc_enemy_attack_sequence_can_use(_enemy,_entries[_i]))
+                    continue;
+
+                _eligible_count++;
+
+                if (irandom(_eligible_count - 1) == 0)
+                    _selected = _i;
+            }
+
+            return _selected;
+
+        case AttackSelection.WEIGHTED:
+            var _weight_total = 0;
+
+            for (var _i = 0; _i < _count; ++_i)
+            {
+                var _sequence = _entries[_i];
+
+                if (sc_enemy_attack_sequence_can_use(_enemy,_sequence))
+                    _weight_total += _sequence.weight;
+            }
+
+            if (_weight_total <= 0) return -1;
+
+            var _roll = random(_weight_total);
+
+            for (var _i = 0; _i < _count; ++_i)
+            {
+                var _sequence = _entries[_i];
+
+                if (!sc_enemy_attack_sequence_can_use(_enemy,_sequence))
+                    continue;
+
+                _roll -= _sequence.weight;
+                if (_roll <= 0) return _i;
+            }
+        break;
+    }
+
+    return -1;
+}
+
+/// @description Begins the current step of an authored attack sequence.
+function sc_enemy_attack_sequence_step_begin(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _sequence_runtime = _controller.sequence_runtime;
+    var _sequence = _controller.sequences.entries[
+        _sequence_runtime.current_sequence
+    ];
+
+    var _step = _sequence.steps[_sequence_runtime.step_index];
+    var _channel = _sequence_runtime.channel;
+
+    sc_enemy_attack_channel_cancel(_channel);
+
+    _channel.attacks = [_step.attack];
+    _sequence_runtime.active_step = true;
+
+    sc_enemy_attack_channel_bind(_controller,_channel);
+    sc_enemy_attack_begin(_enemy,0);
+}
+
+/// @description Advances repetition, step or cooldown after a sequence attack ends.
+function sc_enemy_attack_sequence_step_finish(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.sequence_runtime;
+    var _sequence = _controller.sequences.entries[
+        _runtime.current_sequence
+    ];
+
+    var _step = _sequence.steps[_runtime.step_index];
+    _runtime.active_step = false;
+
+    if (_runtime.repeat_index + 1 < _step.repeat)
+    {
+        _runtime.repeat_index++;
+        _runtime.next_step_tick = GAME_TICK + _step.gap_after;
+        return;
+    }
+
+    _runtime.repeat_index = 0;
+    _runtime.step_index++;
+
+    if (_runtime.step_index < array_length(_sequence.steps))
+    {
+        _runtime.next_step_tick = GAME_TICK + _step.gap_after;
+        return;
+    }
+
+    var _fire_rate = _enemy.enemy.stats.final.fire_rate_multiplier;
+
+    _runtime.current_sequence = -1;
+    _runtime.step_index = 0;
+    _runtime.cooldown_until = GAME_TICK + max(
+        1,
+        round(_sequence.cooldown / _fire_rate)
+    );
+}
+
+/// @description Updates one enabled authored enemy attack sequence.
+function sc_enemy_attack_sequence_update(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.sequence_runtime;
+
+    if (_runtime.active_step)
+    {
+        sc_enemy_attack_channel_bind(_controller,_runtime.channel);
+        sc_enemy_attack_channel_update(_enemy);
+
+        var _attack_runtime = _runtime.channel.runtime;
+
+        if (_attack_runtime.phase == EnemyAttackPhase.COOLDOWN
+        && _attack_runtime.current_attack < 0)
+            sc_enemy_attack_sequence_step_finish(_enemy);
+
+        return;
+    }
+
+    if (GAME_TICK < _runtime.cooldown_until
+    || GAME_TICK < _runtime.next_step_tick)
+        return;
+
+    if (_runtime.current_sequence < 0)
+    {
+        var _selected = sc_enemy_attack_sequence_select(_enemy);
+
+        if (_selected < 0)
+        {
+            _runtime.cooldown_until = GAME_TICK + 15;
+            return;
+        }
+
+        _runtime.current_sequence = _selected;
+        _runtime.step_index = 0;
+        _runtime.repeat_index = 0;
+    }
+
+    sc_enemy_attack_sequence_step_begin(_enemy);
+}
+
+/// @description Updates enabled sequences or every independent attack channel.
 function sc_enemy_attack_update(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
+
+    if (variable_struct_exists(_controller,"sequence_runtime"))
+    {
+        sc_enemy_attack_sequence_update(_enemy);
+        sc_enemy_attack_channel_bind(_controller,_controller.channels[0]);
+        return;
+    }
+
     var _channels = _controller.channels;
     var _active_count = 0;
 
-    for (var _c = 0; _c < array_length(_channels); _c++)
+    for (var _c = 0; _c < array_length(_channels); ++_c)
     {
         if (sc_enemy_attack_channel_active(_channels[_c]))
             _active_count++;
     }
 
-    for (var _c = 0; _c < array_length(_channels); _c++)
+    for (var _c = 0; _c < array_length(_channels); ++_c)
     {
         var _channel = _channels[_c];
         var _runtime = _channel.runtime;
@@ -1119,14 +1601,16 @@ function sc_enemy_attack_update(_enemy)
         && _active_count >= _controller.max_active_channels)
             continue;
 
-        sc_enemy_attack_channel_bind(_controller, _channel);
+        sc_enemy_attack_channel_bind(_controller,_channel);
         sc_enemy_attack_channel_update(_enemy);
 
         var _is_active = sc_enemy_attack_channel_active(_channel);
 
-        if (!_was_active && _is_active) _active_count++;
-        else if (_was_active && !_is_active) _active_count--;
+        if (!_was_active && _is_active)
+            _active_count++;
+        else if (_was_active && !_is_active)
+            _active_count--;
     }
 
-    sc_enemy_attack_channel_bind(_controller, _channels[0]);
+    sc_enemy_attack_channel_bind(_controller,_channels[0]);
 }
