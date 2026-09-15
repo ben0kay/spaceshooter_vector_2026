@@ -1,3 +1,429 @@
+/*
+ENEMY ATTACK CONTROLLER AUTHORING SCHEMA
+
+attack_controller: {
+    selection: AttackSelection.WEIGHTED,       // Default: WEIGHTED
+    max_active_channels: 1,                    // Default: 1
+
+    channels: [                                // Optional: omission creates "main"
+        {
+            key: "main",
+            selection: AttackSelection.WEIGHTED
+        }
+    ],
+
+    attacks: [
+        {
+            key: "attack_key",                 // Required
+            channel: "main",                   // Required with explicit channels
+            weight: 100,                       // Default: 100
+            hardpoint_group: "weapons",        // Required
+            weapon_key: "weapon_key",          // Required
+
+            conditions: {                      // Optional: omitted condition = unrestricted
+                asteroid_target: true,
+                line_of_sight: true,            // Boolean or { solids:true, asteroids:true }
+                range_min: 0,
+                range_max: 1200,
+                shield_ratio_min: 0,
+                shield_ratio_max: 1,
+                armour_ratio_min: 0,
+                armour_ratio_max: 1,
+                hull_ratio_min: 0,
+                hull_ratio_max: 1
+            },
+
+            aim: {
+                mode: AimMode.MOUNT,            // Default: MOUNT
+                prediction_strength: 0,         // Default: 0
+                angle_offset: 0,                // Default: 0
+                inaccuracy: 0,                  // Default: 0
+                fire_tolerance: 360,            // Default: 360
+                world_direction: 0              // Default: 0
+            },
+
+            shot: {
+                pattern: ShotPattern.SINGLE,    // Default: SINGLE
+                amount: 1,                      // Default: 1
+                angle_total: 0                  // Default: 0
+            },
+
+            telegraph: {                        // Entire block optional
+                duration: 30,                   // Default: 30
+                aim_lock_remaining: 0,          // Default: 0
+                track_during_active: true,      // Default: true
+                scale: 0.2,                     // Default: 0.2
+                particle_interval: 1,           // Default: 1
+                draw_script: sc_attack_telegraph_energy_draw,
+                particle_script: sc_particles_attack_telegraph_emit
+            },
+
+            firing: {
+                order: HardpointFireOrder.ALL,  // Default: ALL
+                interval: 0,                    // Default: 0
+                volley_max: 1,                  // Default: 1
+                duration: 60,                   // Default: 60, beams only
+                cooldown: 120,                  // Default: 120
+
+                direction_pattern: {            // Entire block optional
+                    type: VolleyDirectionPattern.FIXED,
+                    start_offset: 0,
+                    angle_total: 360,
+                    angle_step: 15,
+                    offsets: [-30,30],
+                    rotation_offset_per_attack: 0
+                }
+            }
+        }
+    ],
+
+    sequences: {                               // Entire block optional
+        enabled: false,                        // Default: false
+        selection: AttackSelection.WEIGHTED,   // Default: WEIGHTED
+
+        entries: [
+            {
+                key: "sequence_key",            // Required
+                weight: 100,                    // Default: 100
+
+                conditions: {                   // Optional; fallback = first attack conditions
+                    line_of_sight: true,
+                    range_min: 0,
+                    range_max: 1200,
+                    shield_ratio_min: 0,
+                    shield_ratio_max: 1,
+                    armour_ratio_min: 0,
+                    armour_ratio_max: 1,
+                    hull_ratio_min: 0,
+                    hull_ratio_max: 1
+                },
+
+                modifiers: {
+                    fire_rate_multiplier: 1,        // Default: 1
+                    damage_multiplier: 1,           // Default: 1
+                    projectile_speed_multiplier: 1 // Default: 1
+                },
+
+                steps: [
+                    {
+                        attack_key: "attack_key",    // Required
+                        repeat_amount: 1,            // Default: 1
+                        gap_after: 0                 // Default: 0
+                    }
+                ],
+
+                cooldown: 180                       // Default: 180
+            }
+        ]
+    }
+}
+
+INTERNAL FIELDS - NEVER AUTHOR THESE
+
+attack_lookup
+activation_counts
+runtime
+sequence_runtime
+hardpoint_indices
+step.attack
+*/
+
+/// @description Applies defaults to one optional volley-direction pattern.
+function sc_enemy_attack_direction_defaults_apply(_pattern)
+{
+    if (!variable_struct_exists(_pattern,"type"))
+        _pattern.type = VolleyDirectionPattern.FIXED;
+
+    if (!variable_struct_exists(_pattern,"rotation_offset_per_attack"))
+        _pattern.rotation_offset_per_attack = 0;
+
+    switch (_pattern.type)
+    {
+        case VolleyDirectionPattern.FIXED:
+            if (!variable_struct_exists(_pattern,"start_offset"))
+                _pattern.start_offset = 0;
+        break;
+
+        case VolleyDirectionPattern.RADIAL:
+            if (!variable_struct_exists(_pattern,"start_offset"))
+                _pattern.start_offset = 0;
+
+            if (!variable_struct_exists(_pattern,"angle_total"))
+                _pattern.angle_total = 360;
+        break;
+
+        case VolleyDirectionPattern.SWEEP:
+            if (!variable_struct_exists(_pattern,"angle_total"))
+                _pattern.angle_total = 180;
+
+            if (!variable_struct_exists(_pattern,"start_offset"))
+                _pattern.start_offset = -_pattern.angle_total * 0.5;
+        break;
+
+        case VolleyDirectionPattern.ZIGZAG:
+            if (!variable_struct_exists(_pattern,"start_offset"))
+                _pattern.start_offset = 0;
+
+            if (!variable_struct_exists(_pattern,"angle_step"))
+                _pattern.angle_step = 15;
+        break;
+
+        case VolleyDirectionPattern.ALTERNATE:
+            if (!variable_struct_exists(_pattern,"start_offset"))
+                _pattern.start_offset = 0;
+
+            if (!variable_struct_exists(_pattern,"offsets"))
+                _pattern.offsets = [-30,30];
+        break;
+    }
+}
+
+/// @description Applies centralized defaults to one enemy attack definition.
+function sc_enemy_attack_defaults_apply(_enemy_key,_attack,_explicit_channels)
+{
+    if (!variable_struct_exists(_attack,"key")
+    || !variable_struct_exists(_attack,"hardpoint_group")
+    || !variable_struct_exists(_attack,"weapon_key"))
+    {
+        show_debug_message("ENEMY ATTACK ERROR - incomplete attack definition: " + _enemy_key);
+        return false;
+    }
+
+    if (_explicit_channels
+    && !variable_struct_exists(_attack,"channel"))
+    {
+        show_debug_message(
+            "ENEMY ATTACK ERROR - missing channel on "
+            + _enemy_key + ": " + _attack.key
+        );
+
+        return false;
+    }
+
+    if (!variable_struct_exists(_attack,"weight"))
+        _attack.weight = 100;
+
+    if (!variable_struct_exists(_attack,"aim"))
+        _attack.aim = {};
+
+    var _aim = _attack.aim;
+
+    if (!variable_struct_exists(_aim,"mode"))
+        _aim.mode = AimMode.MOUNT;
+
+    if (!variable_struct_exists(_aim,"prediction_strength"))
+        _aim.prediction_strength = 0;
+
+    if (!variable_struct_exists(_aim,"angle_offset"))
+        _aim.angle_offset = 0;
+
+    if (!variable_struct_exists(_aim,"inaccuracy"))
+        _aim.inaccuracy = 0;
+
+    if (!variable_struct_exists(_aim,"fire_tolerance"))
+        _aim.fire_tolerance = 360;
+
+    if (!variable_struct_exists(_aim,"world_direction"))
+        _aim.world_direction = 0;
+
+    if (!variable_struct_exists(_attack,"shot"))
+        _attack.shot = {};
+
+    var _shot = _attack.shot;
+
+    if (!variable_struct_exists(_shot,"pattern"))
+        _shot.pattern = ShotPattern.SINGLE;
+
+    if (!variable_struct_exists(_shot,"amount"))
+        _shot.amount = 1;
+
+    if (!variable_struct_exists(_shot,"angle_total"))
+        _shot.angle_total = 0;
+
+    if (!variable_struct_exists(_attack,"firing"))
+        _attack.firing = {};
+
+    var _firing = _attack.firing;
+
+    if (!variable_struct_exists(_firing,"order"))
+        _firing.order = HardpointFireOrder.ALL;
+
+    if (!variable_struct_exists(_firing,"interval"))
+        _firing.interval = 0;
+
+    if (!variable_struct_exists(_firing,"volley_max"))
+        _firing.volley_max = 1;
+
+    if (!variable_struct_exists(_firing,"duration"))
+        _firing.duration = 60;
+
+    if (!variable_struct_exists(_firing,"cooldown"))
+        _firing.cooldown = 120;
+
+    if (variable_struct_exists(_firing,"direction_pattern"))
+        sc_enemy_attack_direction_defaults_apply(_firing.direction_pattern);
+
+    if (variable_struct_exists(_attack,"telegraph"))
+    {
+        var _telegraph = _attack.telegraph;
+
+        if (!variable_struct_exists(_telegraph,"duration"))
+            _telegraph.duration = 30;
+
+        if (!variable_struct_exists(_telegraph,"aim_lock_remaining"))
+            _telegraph.aim_lock_remaining = 0;
+
+        if (!variable_struct_exists(_telegraph,"track_during_active"))
+            _telegraph.track_during_active = true;
+
+        if (!variable_struct_exists(_telegraph,"scale"))
+            _telegraph.scale = 0.2;
+
+        if (!variable_struct_exists(_telegraph,"particle_interval"))
+            _telegraph.particle_interval = 1;
+
+        if (!variable_struct_exists(_telegraph,"draw_script"))
+            _telegraph.draw_script = sc_attack_telegraph_energy_draw;
+
+        if (!variable_struct_exists(_telegraph,"particle_script"))
+            _telegraph.particle_script = sc_particles_attack_telegraph_emit;
+    }
+
+    return true;
+}
+
+/// @description Applies centralized defaults to one authored attack sequence.
+function sc_enemy_attack_sequence_defaults_apply(_enemy_key,_sequence)
+{
+    if (!variable_struct_exists(_sequence,"key")
+    || !variable_struct_exists(_sequence,"steps")
+    || !is_array(_sequence.steps)
+    || array_length(_sequence.steps) <= 0)
+    {
+        show_debug_message("ENEMY ATTACK ERROR - invalid sequence: " + _enemy_key);
+        return false;
+    }
+
+    if (!variable_struct_exists(_sequence,"weight"))
+        _sequence.weight = 100;
+
+    if (!variable_struct_exists(_sequence,"cooldown"))
+        _sequence.cooldown = 180;
+
+    if (!variable_struct_exists(_sequence,"modifiers"))
+        _sequence.modifiers = {};
+
+    var _modifiers = _sequence.modifiers;
+
+    if (!variable_struct_exists(_modifiers,"fire_rate_multiplier"))
+        _modifiers.fire_rate_multiplier = 1;
+
+    if (!variable_struct_exists(_modifiers,"damage_multiplier"))
+        _modifiers.damage_multiplier = 1;
+
+    if (!variable_struct_exists(_modifiers,"projectile_speed_multiplier"))
+        _modifiers.projectile_speed_multiplier = 1;
+
+    _modifiers.fire_rate_multiplier =
+        max(0.01,_modifiers.fire_rate_multiplier);
+
+    _modifiers.damage_multiplier =
+        max(0,_modifiers.damage_multiplier);
+
+    _modifiers.projectile_speed_multiplier =
+        max(0,_modifiers.projectile_speed_multiplier);
+
+    for (var _i = 0; _i < array_length(_sequence.steps); ++_i)
+    {
+        var _step = _sequence.steps[_i];
+
+        if (!variable_struct_exists(_step,"attack_key"))
+        {
+            show_debug_message(
+                "ENEMY ATTACK ERROR - sequence step missing attack key: "
+                + _enemy_key + " / " + _sequence.key
+            );
+
+            return false;
+        }
+
+        if (!variable_struct_exists(_step,"repeat_amount"))
+            _step.repeat_amount = 1;
+
+        if (!variable_struct_exists(_step,"gap_after"))
+            _step.gap_after = 0;
+
+        _step.repeat_amount = max(1,round(_step.repeat_amount));
+        _step.gap_after = max(0,round(_step.gap_after));
+    }
+
+    return true;
+}
+
+/// @description Applies defaults and validates one enemy attack controller.
+function sc_enemy_attack_controller_defaults_apply(_enemy_key,_controller)
+{
+    if (!is_struct(_controller)
+    || !variable_struct_exists(_controller,"attacks")
+    || !is_array(_controller.attacks)
+    || array_length(_controller.attacks) <= 0)
+    {
+        show_debug_message("ENEMY ATTACK ERROR - no attacks: " + _enemy_key);
+        return false;
+    }
+
+    if (!variable_struct_exists(_controller,"selection"))
+        _controller.selection = AttackSelection.WEIGHTED;
+
+    if (!variable_struct_exists(_controller,"max_active_channels"))
+        _controller.max_active_channels = 1;
+
+    var _explicit_channels = variable_struct_exists(_controller,"channels");
+
+    for (var _i = 0; _i < array_length(_controller.attacks); ++_i)
+    {
+        if (!sc_enemy_attack_defaults_apply(
+            _enemy_key,
+            _controller.attacks[_i],
+            _explicit_channels
+        ))
+            return false;
+    }
+
+    if (!variable_struct_exists(_controller,"sequences"))
+        return true;
+
+    var _sequences = _controller.sequences;
+
+    if (!variable_struct_exists(_sequences,"enabled"))
+        _sequences.enabled = false;
+
+    if (!variable_struct_exists(_sequences,"selection"))
+        _sequences.selection = AttackSelection.WEIGHTED;
+
+    if (!_sequences.enabled)
+        return true;
+
+    if (!variable_struct_exists(_sequences,"entries")
+    || !is_array(_sequences.entries)
+    || array_length(_sequences.entries) <= 0)
+    {
+        show_debug_message("ENEMY ATTACK ERROR - enabled sequences contain no entries: " + _enemy_key);
+        return false;
+    }
+
+    for (var _i = 0; _i < array_length(_sequences.entries); ++_i)
+    {
+        if (!sc_enemy_attack_sequence_defaults_apply(
+            _enemy_key,
+            _sequences.entries[_i]
+        ))
+            return false;
+    }
+
+    return true;
+}
+
 /// @description Creates one independent enemy attack-channel runtime.
 function sc_enemy_attack_runtime_create()
 {
@@ -37,32 +463,9 @@ function sc_enemy_attack_sequences_init(_enemy)
 
     var _sequences = _controller.sequences;
 
-    if (!variable_struct_exists(_sequences,"entries")
-    || array_length(_sequences.entries) <= 0)
-    {
-        show_debug_message("ENEMY ATTACK ERROR - enabled sequences contain no entries: " + _enemy.enemy.key);
-        return false;
-    }
-
-    if (!variable_struct_exists(_sequences,"selection"))
-        _sequences.selection = AttackSelection.WEIGHTED;
-
     for (var _s = 0; _s < array_length(_sequences.entries); ++_s)
     {
         var _sequence = _sequences.entries[_s];
-
-        if (!variable_struct_exists(_sequence,"steps")
-        || array_length(_sequence.steps) <= 0)
-        {
-            show_debug_message("ENEMY ATTACK ERROR - empty sequence: " + _sequence.key);
-            return false;
-        }
-
-        if (!variable_struct_exists(_sequence,"weight"))
-            _sequence.weight = 100;
-
-        if (!variable_struct_exists(_sequence,"cooldown"))
-            _sequence.cooldown = 180;
 
         for (var _i = 0; _i < array_length(_sequence.steps); ++_i)
         {
@@ -82,14 +485,6 @@ function sc_enemy_attack_sequences_init(_enemy)
                 _controller.attack_lookup,
                 _step.attack_key
             );
-
-            _step.repeat_amount = variable_struct_exists(_step,"repeat_amount")
-                ? max(1,round(_step.repeat_amount))
-                : 1;
-
-            _step.gap_after = variable_struct_exists(_step,"gap_after")
-                ? max(0,round(_step.gap_after))
-                : 0;
         }
     }
 
@@ -909,84 +1304,60 @@ function sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
     var _pattern = _attack.firing.direction_pattern;
     var _index = _runtime.volley_count;
     var _amount = max(1,round(_attack.firing.volley_max));
-    var _rotation = variable_struct_exists(_pattern,"rotation_offset_per_attack")
-        ? _pattern.rotation_offset_per_attack * _runtime.activation_index
-        : 0;
-
     var _offset = 0;
 
     switch (_pattern.type)
     {
         case VolleyDirectionPattern.FIXED:
-            _offset = variable_struct_exists(_pattern,"start_offset")
-                ? _pattern.start_offset
-                : 0;
+            _offset = _pattern.start_offset;
         break;
 
         case VolleyDirectionPattern.RADIAL:
-            var _total = variable_struct_exists(_pattern,"angle_total")
-                ? _pattern.angle_total
-                : 360;
-
-            var _start = variable_struct_exists(_pattern,"start_offset")
-                ? _pattern.start_offset
-                : 0;
-
-            _offset = _start + (_total / _amount) * _index;
+            _offset =
+                _pattern.start_offset
+                + (_pattern.angle_total / _amount) * _index;
         break;
 
         case VolleyDirectionPattern.SWEEP:
-            var _total = variable_struct_exists(_pattern,"angle_total")
-                ? _pattern.angle_total
-                : 180;
-
-            var _start = variable_struct_exists(_pattern,"start_offset")
-                ? _pattern.start_offset
-                : -_total * 0.5;
-
             var _step = _amount > 1
-                ? _total / (_amount - 1)
+                ? _pattern.angle_total / (_amount - 1)
                 : 0;
 
-            _offset = _start + _step * _index;
+            _offset = _pattern.start_offset + _step * _index;
         break;
 
         case VolleyDirectionPattern.ZIGZAG:
-            var _start = variable_struct_exists(_pattern,"start_offset")
-                ? _pattern.start_offset
-                : 0;
-
-            var _step = variable_struct_exists(_pattern,"angle_step")
-                ? _pattern.angle_step
-                : 15;
-
             if (_index <= 0)
-                _offset = _start;
+                _offset = _pattern.start_offset;
             else
             {
-                var _distance = ceil(_index * 0.5) * _step;
-                var _side = (_index mod 2 == 1) ? 1 : -1;
-                _offset = _start + _distance * _side;
+                var _distance =
+                    ceil(_index * 0.5)
+                    * _pattern.angle_step;
+
+                var _side = (_index mod 2 == 1)
+                    ? 1
+                    : -1;
+
+                _offset =
+                    _pattern.start_offset
+                    + _distance * _side;
             }
         break;
 
         case VolleyDirectionPattern.ALTERNATE:
-            var _start = variable_struct_exists(_pattern,"start_offset")
+            var _offsets = _pattern.offsets;
+
+            _offset = array_length(_offsets) > 0
                 ? _pattern.start_offset
-                : 0;
-
-            var _offsets = variable_struct_exists(_pattern,"offsets")
-                ? _pattern.offsets
-                : [-30,30];
-
-            if (array_length(_offsets) > 0)
-                _offset = _start + _offsets[_index mod array_length(_offsets)];
-            else
-                _offset = _start;
+                    + _offsets[_index mod array_length(_offsets)]
+                : _pattern.start_offset;
         break;
     }
 
-    return _offset + _rotation;
+    return _offset
+        + _pattern.rotation_offset_per_attack
+        * _runtime.activation_index;
 }
 
 /// @description Begins one selected attack on the currently bound channel.
@@ -1041,22 +1412,6 @@ function sc_enemy_attack_fire_rate_get(_enemy)
     return max(0.01,_fire_rate);
 }
 
-/// @description Returns active sequence damage and projectile-speed modifiers.
-function sc_enemy_attack_delivery_modifiers_get(_enemy)
-{
-    var _controller = _enemy.enemy.attack_controller;
-
-    if (variable_struct_exists(_controller,"sequence_runtime")
-    && _controller.sequence_runtime.current_sequence >= 0)
-        return _controller.sequence_runtime.modifiers;
-
-    return {
-        fire_rate_multiplier: 1,
-        damage_multiplier: 1,
-        projectile_speed_multiplier: 1
-    };
-}
-
 /// @description Fires one aligned hardpoint when its target corridor remains clear.
 function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
 {
@@ -1066,7 +1421,11 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
 
     if (!_committed_beam)
     {
-        if (!sc_enemy_attack_hardpoint_aligned(_enemy,_attack,_hardpoint_index))
+        if (!sc_enemy_attack_hardpoint_aligned(
+            _enemy,
+            _attack,
+            _hardpoint_index
+        ))
             return noone;
 
         if (sc_enemy_attack_line_of_sight_required(_attack)
@@ -1075,16 +1434,38 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
     }
 
     var _transform = { x: 0, y: 0, direction: 0 };
-    sc_enemy_hardpoint_attack_transform(_enemy,_attack,_hardpoint_index,_transform);
+
+    sc_enemy_hardpoint_attack_transform(
+        _enemy,
+        _attack,
+        _hardpoint_index,
+        _transform
+    );
 
     var _direction = _transform.direction
         + sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
-        + random_range(-_attack.aim.inaccuracy,_attack.aim.inaccuracy);
+        + random_range(
+            -_attack.aim.inaccuracy,
+            _attack.aim.inaccuracy
+        );
 
-    var _modifiers = sc_enemy_attack_delivery_modifiers_get(_enemy);
     var _damage_multiplier =
-        _enemy.enemy.stats.final.damage_multiplier
-        * _modifiers.damage_multiplier;
+        _enemy.enemy.stats.final.damage_multiplier;
+
+    var _projectile_speed_multiplier = 1;
+
+    if (variable_struct_exists(_controller,"sequence_runtime")
+    && _controller.sequence_runtime.current_sequence >= 0)
+    {
+        var _modifiers =
+            _controller.sequence_runtime.modifiers;
+
+        _damage_multiplier *=
+            _modifiers.damage_multiplier;
+
+        _projectile_speed_multiplier =
+            _modifiers.projectile_speed_multiplier;
+    }
 
     var _delivery = sc_weapon_fire(
         _enemy,
@@ -1094,18 +1475,22 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
         _transform.y,
         _direction,
         _damage_multiplier,
-        _modifiers.projectile_speed_multiplier
+        _projectile_speed_multiplier
     );
 
     if (instance_exists(_delivery))
     {
-        var _hardpoint = _enemy.enemy.hardpoints[_hardpoint_index];
-        var _recoil_scale = variable_struct_exists(_hardpoint,"recoil_scale")
+        var _hardpoint =
+            _enemy.enemy.hardpoints[_hardpoint_index];
+
+        var _recoil_scale =
+            variable_struct_exists(_hardpoint,"recoil_scale")
             ? _hardpoint.recoil_scale
             : 0.14;
 
         _hardpoint.runtime.recoil =
-            _enemy.enemy.visual.radius * _recoil_scale;
+            _enemy.enemy.visual.radius
+            * _recoil_scale;
     }
 
     return _delivery;
@@ -1441,32 +1826,20 @@ function sc_enemy_attack_channel_update(_enemy)
     }
 }
 
-/// @description Captures optional sequence-wide combat modifiers.
+/// @description Captures one sequence's normalized combat modifiers.
 function sc_enemy_attack_sequence_modifiers_capture(_sequence,_runtime)
 {
-    var _source = variable_struct_exists(_sequence,"modifiers")
-        ? _sequence.modifiers
-        : undefined;
-
+    var _source = _sequence.modifiers;
     var _modifiers = _runtime.modifiers;
 
     _modifiers.fire_rate_multiplier =
-        is_struct(_source)
-        && variable_struct_exists(_source,"fire_rate_multiplier")
-        ? max(0.01,_source.fire_rate_multiplier)
-        : 1;
+        _source.fire_rate_multiplier;
 
     _modifiers.damage_multiplier =
-        is_struct(_source)
-        && variable_struct_exists(_source,"damage_multiplier")
-        ? max(0,_source.damage_multiplier)
-        : 1;
+        _source.damage_multiplier;
 
     _modifiers.projectile_speed_multiplier =
-        is_struct(_source)
-        && variable_struct_exists(_source,"projectile_speed_multiplier")
-        ? max(0,_source.projectile_speed_multiplier)
-        : 1;
+        _source.projectile_speed_multiplier;
 }
 
 /// @description Returns whether an authored sequence may begin.
@@ -1665,6 +2038,7 @@ function sc_enemy_attack_sequence_update(_enemy)
 
     sc_enemy_attack_sequence_step_begin(_enemy);
 }
+
 /// @description Updates enabled sequences or every independent attack channel.
 function sc_enemy_attack_update(_enemy)
 {
