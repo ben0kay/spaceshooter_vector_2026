@@ -110,7 +110,13 @@ function sc_enemy_attack_sequences_init(_enemy)
         repeat_index: 0,
         active_step: false,
         next_step_tick: 0,
-        cooldown_until: 0
+        cooldown_until: 0,
+
+        modifiers: {
+            fire_rate_multiplier: 1,
+            damage_multiplier: 1,
+            projectile_speed_multiplier: 1
+        }
     };
 
     return true;
@@ -651,67 +657,80 @@ function sc_enemy_attack_alignment_ready(_enemy, _attack)
     return false;
 }
 
-/// @description Returns whether an attack currently satisfies all firing conditions.
-function sc_enemy_attack_can_use(_enemy, _attack)
+/// @description Checks shared range, sight and defence-ratio conditions.
+function sc_enemy_attack_conditions_met(_enemy,_conditions)
 {
     var _data = _enemy.enemy;
-    var _defence = _data.defence;
     var _target = sc_enemy_attack_target_get(_enemy);
     var _destroying_asteroid = sc_enemy_asteroid_destroy_active(_enemy);
 
     if (!instance_exists(_target)) return false;
+    if (!is_struct(_conditions)) return true;
 
-    var _dx = _target.x - _enemy.x;
-    var _dy = _target.y - _enemy.y;
-    var _distance_sq = _dx * _dx + _dy * _dy;
+    if (_destroying_asteroid
+    && variable_struct_exists(_conditions,"asteroid_target")
+    && !_conditions.asteroid_target)
+        return false;
 
-    if (variable_struct_exists(_attack, "conditions"))
+    if (!_destroying_asteroid)
     {
-        var _conditions = _attack.conditions;
+        var _dx = _target.x - _enemy.x;
+        var _dy = _target.y - _enemy.y;
+        var _distance_sq = _dx * _dx + _dy * _dy;
 
-        // Certain attacks may be excluded from deliberate asteroid destruction.
-        if (_destroying_asteroid
-        && variable_struct_exists(_conditions, "asteroid_target")
-        && !_conditions.asteroid_target)
+        if (variable_struct_exists(_conditions,"range_min")
+        && _distance_sq < sqr(_conditions.range_min))
             return false;
 
-        // Obstacle destruction ignores ordinary combat range restrictions.
-        if (!_destroying_asteroid)
-        {
-            if (variable_struct_exists(_conditions, "range_min")
-            && _distance_sq < sqr(_conditions.range_min))
-                return false;
+        if (variable_struct_exists(_conditions,"range_max")
+        && _distance_sq > sqr(_conditions.range_max))
+            return false;
 
-            if (variable_struct_exists(_conditions, "range_max")
-            && _distance_sq > sqr(_conditions.range_max))
-                return false;
-
-            if (sc_enemy_attack_line_of_sight_required(_attack)
-            && !sc_enemy_attack_line_of_sight_clear(_enemy, _attack))
-                return false;
-        }
-
-        var _shield_ratio = _defence.shield.maximum > 0
-            ? _defence.shield.current / _defence.shield.maximum
-            : 0;
-
-        var _armour_ratio = _defence.armour.maximum > 0
-            ? _defence.armour.current / _defence.armour.maximum
-            : 0;
-
-        var _hull_ratio = _defence.hull.maximum > 0
-            ? _defence.hull.current / _defence.hull.maximum
-            : 0;
-
-        if (variable_struct_exists(_conditions, "shield_ratio_min") && _shield_ratio < _conditions.shield_ratio_min) return false;
-        if (variable_struct_exists(_conditions, "shield_ratio_max") && _shield_ratio > _conditions.shield_ratio_max) return false;
-        if (variable_struct_exists(_conditions, "armour_ratio_min") && _armour_ratio < _conditions.armour_ratio_min) return false;
-        if (variable_struct_exists(_conditions, "armour_ratio_max") && _armour_ratio > _conditions.armour_ratio_max) return false;
-        if (variable_struct_exists(_conditions, "hull_ratio_min") && _hull_ratio < _conditions.hull_ratio_min) return false;
-        if (variable_struct_exists(_conditions, "hull_ratio_max") && _hull_ratio > _conditions.hull_ratio_max) return false;
+        if (variable_struct_exists(_conditions,"line_of_sight")
+        && _conditions.line_of_sight != false
+        && !sc_enemy_attack_line_of_sight_clear_to(
+            _enemy,
+            _target,
+            _conditions.line_of_sight
+        ))
+            return false;
     }
 
-    return sc_enemy_attack_alignment_ready(_enemy, _attack);
+    var _defence = _data.defence;
+
+    var _shield_ratio = _defence.shield.maximum > 0
+        ? _defence.shield.current / _defence.shield.maximum
+        : 0;
+
+    var _armour_ratio = _defence.armour.maximum > 0
+        ? _defence.armour.current / _defence.armour.maximum
+        : 0;
+
+    var _hull_ratio = _defence.hull.maximum > 0
+        ? _defence.hull.current / _defence.hull.maximum
+        : 0;
+
+    if (variable_struct_exists(_conditions,"shield_ratio_min") && _shield_ratio < _conditions.shield_ratio_min) return false;
+    if (variable_struct_exists(_conditions,"shield_ratio_max") && _shield_ratio > _conditions.shield_ratio_max) return false;
+    if (variable_struct_exists(_conditions,"armour_ratio_min") && _armour_ratio < _conditions.armour_ratio_min) return false;
+    if (variable_struct_exists(_conditions,"armour_ratio_max") && _armour_ratio > _conditions.armour_ratio_max) return false;
+    if (variable_struct_exists(_conditions,"hull_ratio_min") && _hull_ratio < _conditions.hull_ratio_min) return false;
+    if (variable_struct_exists(_conditions,"hull_ratio_max") && _hull_ratio > _conditions.hull_ratio_max) return false;
+
+    return true;
+}
+
+/// @description Returns whether an attack currently satisfies all firing conditions.
+function sc_enemy_attack_can_use(_enemy,_attack)
+{
+    var _conditions = variable_struct_exists(_attack,"conditions")
+        ? _attack.conditions
+        : undefined;
+
+    if (!sc_enemy_attack_conditions_met(_enemy,_conditions))
+        return false;
+
+    return sc_enemy_attack_alignment_ready(_enemy,_attack);
 }
 
 /// @description Chooses one currently usable attack using the registered selection method.
@@ -1006,6 +1025,38 @@ function sc_enemy_attack_begin(_enemy,_attack_index)
     return sc_enemy_attack_activate(_enemy,_attack);
 }
 
+/// @description Returns the active sequence-adjusted enemy fire rate.
+function sc_enemy_attack_fire_rate_get(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+    var _fire_rate = _enemy.enemy.stats.final.fire_rate_multiplier;
+
+    if (variable_struct_exists(_controller,"sequence_runtime")
+    && _controller.sequence_runtime.current_sequence >= 0)
+    {
+        _fire_rate *=
+            _controller.sequence_runtime.modifiers.fire_rate_multiplier;
+    }
+
+    return max(0.01,_fire_rate);
+}
+
+/// @description Returns active sequence damage and projectile-speed modifiers.
+function sc_enemy_attack_delivery_modifiers_get(_enemy)
+{
+    var _controller = _enemy.enemy.attack_controller;
+
+    if (variable_struct_exists(_controller,"sequence_runtime")
+    && _controller.sequence_runtime.current_sequence >= 0)
+        return _controller.sequence_runtime.modifiers;
+
+    return {
+        fire_rate_multiplier: 1,
+        damage_multiplier: 1,
+        projectile_speed_multiplier: 1
+    };
+}
+
 /// @description Fires one aligned hardpoint when its target corridor remains clear.
 function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
 {
@@ -1030,6 +1081,11 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
         + sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
         + random_range(-_attack.aim.inaccuracy,_attack.aim.inaccuracy);
 
+    var _modifiers = sc_enemy_attack_delivery_modifiers_get(_enemy);
+    var _damage_multiplier =
+        _enemy.enemy.stats.final.damage_multiplier
+        * _modifiers.damage_multiplier;
+
     var _delivery = sc_weapon_fire(
         _enemy,
         _attack.weapon_key,
@@ -1037,7 +1093,8 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
         _transform.x,
         _transform.y,
         _direction,
-        _enemy.enemy.stats.final.damage_multiplier
+        _damage_multiplier,
+        _modifiers.projectile_speed_multiplier
     );
 
     if (instance_exists(_delivery))
@@ -1053,6 +1110,7 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
 
     return _delivery;
 }
+
 /// @description Starts the selected enemy attack after any telegraph finishes.
 function sc_enemy_attack_activate(_enemy, _attack)
 {
@@ -1289,7 +1347,7 @@ function sc_enemy_attack_channel_update(_enemy)
     var _data = _enemy.enemy;
     var _controller = _data.attack_controller;
     var _runtime = _controller.runtime;
-    var _fire_rate = _data.stats.final.fire_rate_multiplier;
+    var _fire_rate = sc_enemy_attack_fire_rate_get(_enemy);
 
     if (_runtime.phase == EnemyAttackPhase.COOLDOWN)
     {
@@ -1383,11 +1441,48 @@ function sc_enemy_attack_channel_update(_enemy)
     }
 }
 
-/// @description Returns whether a sequence can begin with its first attack.
+/// @description Captures optional sequence-wide combat modifiers.
+function sc_enemy_attack_sequence_modifiers_capture(_sequence,_runtime)
+{
+    var _source = variable_struct_exists(_sequence,"modifiers")
+        ? _sequence.modifiers
+        : undefined;
+
+    var _modifiers = _runtime.modifiers;
+
+    _modifiers.fire_rate_multiplier =
+        is_struct(_source)
+        && variable_struct_exists(_source,"fire_rate_multiplier")
+        ? max(0.01,_source.fire_rate_multiplier)
+        : 1;
+
+    _modifiers.damage_multiplier =
+        is_struct(_source)
+        && variable_struct_exists(_source,"damage_multiplier")
+        ? max(0,_source.damage_multiplier)
+        : 1;
+
+    _modifiers.projectile_speed_multiplier =
+        is_struct(_source)
+        && variable_struct_exists(_source,"projectile_speed_multiplier")
+        ? max(0,_source.projectile_speed_multiplier)
+        : 1;
+}
+
+/// @description Returns whether an authored sequence may begin.
 function sc_enemy_attack_sequence_can_use(_enemy,_sequence)
 {
     if (array_length(_sequence.steps) <= 0) return false;
-    return sc_enemy_attack_can_use(_enemy,_sequence.steps[0].attack);
+
+    var _first_attack = _sequence.steps[0].attack;
+
+    if (!variable_struct_exists(_sequence,"conditions"))
+        return sc_enemy_attack_can_use(_enemy,_first_attack);
+
+    if (!sc_enemy_attack_conditions_met(_enemy,_sequence.conditions))
+        return false;
+
+    return sc_enemy_attack_alignment_ready(_enemy,_first_attack);
 }
 
 /// @description Selects one currently usable authored attack sequence.
@@ -1495,12 +1590,15 @@ function sc_enemy_attack_sequence_step_finish(_enemy)
     ];
 
     var _step = _sequence.steps[_runtime.step_index];
+    var _fire_rate = sc_enemy_attack_fire_rate_get(_enemy);
+    var _gap = round(_step.gap_after / _fire_rate);
+
     _runtime.active_step = false;
 
     if (_runtime.repeat_index + 1 < _step.repeat_amount)
     {
         _runtime.repeat_index++;
-        _runtime.next_step_tick = GAME_TICK + _step.gap_after;
+        _runtime.next_step_tick = GAME_TICK + _gap;
         return;
     }
 
@@ -1509,11 +1607,9 @@ function sc_enemy_attack_sequence_step_finish(_enemy)
 
     if (_runtime.step_index < array_length(_sequence.steps))
     {
-        _runtime.next_step_tick = GAME_TICK + _step.gap_after;
+        _runtime.next_step_tick = GAME_TICK + _gap;
         return;
     }
-
-    var _fire_rate = _enemy.enemy.stats.final.fire_rate_multiplier;
 
     _runtime.current_sequence = -1;
     _runtime.step_index = 0;
@@ -1560,11 +1656,15 @@ function sc_enemy_attack_sequence_update(_enemy)
         _runtime.current_sequence = _selected;
         _runtime.step_index = 0;
         _runtime.repeat_index = 0;
+
+        sc_enemy_attack_sequence_modifiers_capture(
+            _controller.sequences.entries[_selected],
+            _runtime
+        );
     }
 
     sc_enemy_attack_sequence_step_begin(_enemy);
 }
-
 /// @description Updates enabled sequences or every independent attack channel.
 function sc_enemy_attack_update(_enemy)
 {

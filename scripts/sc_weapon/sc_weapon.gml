@@ -189,23 +189,34 @@ function sc_weapon_projectile_target_apply(_projectile, _target)
 }
 
 /// @description Fires one registered weapon using a generic owner and shot pattern.
-function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_multiplier)
+function sc_weapon_fire(
+    _owner,
+    _weapon_key,
+    _shot,
+    _x,
+    _y,
+    _direction,
+    _damage_multiplier,
+    _projectile_speed_multiplier = 1
+)
 {
-    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+    var _weapon = variable_struct_get(global.data.weapons,_weapon_key);
+
     var _source = {
         owner_id: _owner,
         faction: _owner.entity.faction,
-        damage_multiplier: _damage_multiplier
+        damage_multiplier: _damage_multiplier,
+        projectile_speed_multiplier: max(0,_projectile_speed_multiplier)
     };
 
     var _amount = _shot.pattern == ShotPattern.SINGLE
         ? 1
-        : max(1, round(_shot.amount));
+        : max(1,round(_shot.amount));
 
-    var _targets = variable_struct_exists(_shot, "volley_target_script")
+    var _targets = variable_struct_exists(_shot,"volley_target_script")
         ? _shot.volley_target_script(
-            _owner, _weapon,
-            _x, _y, _direction,
+            _owner,_weapon,
+            _x,_y,_direction,
             _amount
         )
         : [];
@@ -233,10 +244,12 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_
             _first_delivery = _delivery;
 
         if (_i < array_length(_targets))
+        {
             sc_weapon_projectile_target_apply(
                 _delivery,
                 _targets[_i]
             );
+        }
     }
 
     return _amount == 1

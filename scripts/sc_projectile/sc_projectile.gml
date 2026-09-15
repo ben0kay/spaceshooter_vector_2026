@@ -1,51 +1,66 @@
 /// @description Initializes a reusable projectile with optional defence, detonation and expiry emissions.
-function sc_projectile_init(_projectile, _create)
+function sc_projectile_init(_projectile,_create)
 {
-    if (!variable_struct_exists(global.data.projectiles, _create.key))
+    if (!variable_struct_exists(global.data.projectiles,_create.key))
     {
         show_debug_message("PROJECTILE INITIALIZATION ERROR - unknown key: " + _create.key);
         return false;
     }
 
-    var _data = variable_struct_get(global.data.projectiles, _create.key);
+    var _data = variable_struct_get(global.data.projectiles,_create.key);
     var _delivery = _create.delivery;
     var _launch = _delivery.projectile;
     var _guidance = _delivery.guidance;
-    var _scale = max(0.01, _launch.scale);
-    var _life = max(1, round(_launch.life));
+    var _scale = max(0.01,_launch.scale);
+    var _life = max(1,round(_launch.life));
+
+    var _speed_multiplier =
+        variable_struct_exists(_create.source,"projectile_speed_multiplier")
+        ? max(0,_create.source.projectile_speed_multiplier)
+        : 1;
+
     var _collision = variable_clone(_data.collision);
     var _visual = variable_clone(_data.visual);
     var _cache = sc_projectile_visual_cache_get(_create.key);
     var _frame_count = array_length(_cache.sprites);
-    var _has_trail = variable_struct_exists(_visual, "trail");
-    var _has_trail_script = variable_struct_exists(_visual, "trail_script");
+    var _has_trail = variable_struct_exists(_visual,"trail");
+    var _has_trail_script = variable_struct_exists(_visual,"trail_script");
 
     _collision.radius *= _scale;
 
     _visual.runtime = {
         cache: _cache,
-        trail_cache: _has_trail ? sc_projectile_trail_cache_get() : undefined,
-        phase: _frame_count > 1 ? irandom(_frame_count - 1) : 0,
+        trail_cache: _has_trail
+            ? sc_projectile_trail_cache_get()
+            : undefined,
+
+        phase: _frame_count > 1
+            ? irandom(_frame_count - 1)
+            : 0,
+
         hit_alpha: 0
     };
 
     var _detonation = undefined;
 
-    if (variable_struct_exists(_data, "detonation"))
+    if (variable_struct_exists(_data,"detonation"))
     {
         _detonation = {
             area: variable_clone(_data.detonation.area),
             scale: _delivery.detonation.scale,
             damage: variable_clone(_delivery.detonation.damage),
-            emissions: variable_struct_exists(_data.detonation, "emissions")
+
+            emissions:
+                variable_struct_exists(_data.detonation,"emissions")
                 ? variable_clone(_data.detonation.emissions)
                 : []
         };
     }
 
-    var _expiry = variable_struct_exists(_data, "expiry")
+    var _expiry = variable_struct_exists(_data,"expiry")
         ? {
-            emissions: variable_struct_exists(_data.expiry, "emissions")
+            emissions:
+                variable_struct_exists(_data.expiry,"emissions")
                 ? variable_clone(_data.expiry.emissions)
                 : []
         }
@@ -53,10 +68,10 @@ function sc_projectile_init(_projectile, _create)
 
     var _defence = undefined;
 
-    if (variable_struct_exists(_data, "defence"))
+    if (variable_struct_exists(_data,"defence"))
     {
-        var _armour = max(0, _data.defence.armour);
-        var _hull = max(1, _data.defence.hull);
+        var _armour = max(0,_data.defence.armour);
+        var _hull = max(1,_data.defence.hull);
         var _health_bar = sc_health_bar_create(false);
 
         _health_bar.damaged_duration = 90;
@@ -70,7 +85,9 @@ function sc_projectile_init(_projectile, _create)
             armour: { current: _armour, maximum: _armour },
             hull: { current: _hull, maximum: _hull },
             health_bar: _health_bar,
-            detonate_on_destroy: variable_struct_exists(_data.defence, "detonate_on_destroy")
+
+            detonate_on_destroy:
+                variable_struct_exists(_data.defence,"detonate_on_destroy")
                 ? _data.defence.detonate_on_destroy
                 : false
         };
@@ -88,7 +105,9 @@ function sc_projectile_init(_projectile, _create)
     {
         _runtime.target_id = noone;
         _runtime.next_target_tick = GAME_TICK;
-        _runtime.guidance_ready_tick = GAME_TICK + _guidance.guidance_delay;
+        _runtime.guidance_ready_tick =
+            GAME_TICK + _guidance.guidance_delay;
+
         _runtime.avoidance_direction = _create.direction;
         _runtime.avoidance_until_tick = GAME_TICK;
     }
@@ -106,7 +125,7 @@ function sc_projectile_init(_projectile, _create)
         effects: sc_effect_runtime_create(),
 
         movement: {
-            speed: max(0, _launch.speed)
+            speed: max(0,_launch.speed * _speed_multiplier)
         },
 
         life: {
@@ -115,7 +134,7 @@ function sc_projectile_init(_projectile, _create)
         },
 
         guidance: _guidance,
-        damage: sc_damage_packet_create(_delivery.damage, _create.source, true),
+        damage: sc_damage_packet_create(_delivery.damage,_create.source,true),
         collision: _collision,
         visual: _visual,
         defence: _defence,
