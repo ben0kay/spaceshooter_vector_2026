@@ -333,10 +333,22 @@ function sc_enemy_register_rebel_warwing()
 /// @description Returns the Rebel Warwing visual definition.
 function sc_enemy_rebel_warwing_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius:132,
         motion_strength:1.7,
         palette:sc_faction_palette_get(Faction.REBEL),
+
+        authored:{
+            enabled:_authored_enabled,
+
+            body:{
+                sprite:s_rebel_warwing_hull,
+                scale:0.5,
+                fallback_script:sc_enemy_rebel_warwing_body_draw
+            }
+        },
 
         core:{
             forward:0,
@@ -344,12 +356,12 @@ function sc_enemy_rebel_warwing_visual_data()
         },
 
         draw:{
-            body:sc_enemy_rebel_warwing_body_draw,
+            body:sc_enemy_body_dispatch,
             core:sc_enemy_rebel_warwing_core_draw
         },
 
         damage_layers:{
-            enabled:true,
+            enabled:!_authored_enabled,
             damage_stages:4,
             hull_draw_script:sc_enemy_rebel_warwing_hull_draw,
             armour_draw_script:sc_enemy_rebel_warwing_armour_draw
@@ -371,7 +383,7 @@ function sc_enemy_rebel_warwing_visual_data()
         },
 
         bake:{
-            body_canvas_size:640,
+            body_canvas_size:768,
             core_canvas_size:64,
             hardpoint_canvas_size:160,
             thrust_canvas_size:160,

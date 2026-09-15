@@ -3,20 +3,42 @@ DEBUG ENEMY SPAWNER
 
 F1 opens a paused registry-driven enemy spawning panel.
 Enemies are grouped into one column per currently registered faction.
+
+Each faction also has a CLUSTER button which spawns a weighted mixed group.
+Cluster class weighting heavily favours smaller enemy classes.
 */
+
+/// @description Returns a readable EnemyClass name for F1 unit labels.
+function sc_debug_enemy_class_name(_class)
+{
+    switch (_class)
+    {
+        case EnemyClass.TINY: return "TINY";
+        case EnemyClass.LIGHT: return "LIGHT";
+        case EnemyClass.STANDARD: return "STANDARD";
+        case EnemyClass.HEAVY: return "HEAVY";
+        case EnemyClass.SUPERHEAVY: return "SUPERHEAVY";
+        case EnemyClass.CAPITAL: return "CAPITAL";
+        case EnemyClass.TITAN: return "TITAN";
+    }
+
+    return "UNKNOWN";
+}
 
 /// @description Creates the taller scrollable three-column F1 enemy-spawning interface.
 function sc_debug_enemy_spawn_init(_hud)
 {
     var _keys = variable_struct_get_names(global.data.enemies);
     var _enemy_buttons = [];
+    var _cluster_buttons = [];
+
     var _factions = [
         { faction: Faction.SIMULANT, name: "SIMULANT" },
         { faction: Faction.CORPORATION, name: "CORPORATION" },
         { faction: Faction.REBEL, name: "REBEL" }
     ];
 
-    var _viewport = { x: 34, y: 136, width: 1258, height: 510 };
+    var _viewport = { x: 34, y: 188, width: 1258, height: 458 };
     var _column_gap = 14;
     var _column_width = floor((_viewport.width - _column_gap * 2) / 3);
     var _button_height = 42;
@@ -26,6 +48,19 @@ function sc_debug_enemy_spawn_init(_hud)
 
     for (var _f = 0; _f < array_length(_factions); ++_f)
     {
+        array_push(
+            _cluster_buttons,
+            sc_gui_button_create(
+                _factions[_f].faction,
+                _viewport.x + _f * (_column_width + _column_gap),
+                136,
+                _column_width,
+                38,
+                "SPAWN CLUSTER x14",
+                GUIButtonStyle.PRIMARY
+            )
+        );
+
         // EnemyClass enum order: TINY -> LIGHT -> STANDARD -> HEAVY -> SUPERHEAVY -> CAPITAL -> TITAN.
         for (var _class = EnemyClass.TINY; _class <= EnemyClass.TITAN; ++_class)
         {
@@ -44,7 +79,7 @@ function sc_debug_enemy_spawn_init(_hud)
                     _faction_rows[_f] * _row_step,
                     _column_width,
                     _button_height,
-                    _enemy.identity.name,
+                    _enemy.identity.name + " // " + sc_debug_enemy_class_name(_class),
                     GUIButtonStyle.STANDARD
                 );
 
@@ -55,7 +90,10 @@ function sc_debug_enemy_spawn_init(_hud)
         }
     }
 
-    var _largest_row_count = max(_faction_rows[0],max(_faction_rows[1],_faction_rows[2]));
+    var _largest_row_count = max(
+        _faction_rows[0],
+        max(_faction_rows[1],_faction_rows[2])
+    );
 
     _hud.debug_enemy_spawn = {
         open: false,
@@ -65,6 +103,7 @@ function sc_debug_enemy_spawn_init(_hud)
         factions: _factions,
         faction_rows: _faction_rows,
         enemy_buttons: _enemy_buttons,
+        cluster_buttons: _cluster_buttons,
 
         viewport: _viewport,
         column_gap: _column_gap,
@@ -81,20 +120,53 @@ function sc_debug_enemy_spawn_init(_hud)
         formation: DebugSpawnFormation.LINE,
         formation_radius: 500,
 
+        cluster_amount: 14,
+
+        // TINY, LIGHT, STANDARD, HEAVY, SUPERHEAVY, CAPITAL, TITAN.
+        cluster_class_weights: [120,90,60,30,12,4,1],
+
         buttons: {
-            amount_1: sc_gui_button_create(1,220,720,82,42,"x1",GUIButtonStyle.STANDARD),
-            amount_5: sc_gui_button_create(5,312,720,82,42,"x5",GUIButtonStyle.STANDARD),
-            amount_10: sc_gui_button_create(10,404,720,82,42,"x10",GUIButtonStyle.STANDARD),
+            amount_1: sc_gui_button_create(1,220,720,72,42,"x1",GUIButtonStyle.STANDARD),
+            amount_5: sc_gui_button_create(5,302,720,72,42,"x5",GUIButtonStyle.STANDARD),
+            amount_10: sc_gui_button_create(10,384,720,72,42,"x10",GUIButtonStyle.STANDARD),
+            amount_25: sc_gui_button_create(25,466,720,72,42,"x25",GUIButtonStyle.STANDARD),
 
-            formation_line: sc_gui_button_create(DebugSpawnFormation.LINE,220,772,128,42,"LINE",GUIButtonStyle.STANDARD),
-            formation_circle: sc_gui_button_create(DebugSpawnFormation.CIRCLE,358,772,128,42,"CIRCLE",GUIButtonStyle.STANDARD),
+            formation_line: sc_gui_button_create(
+                DebugSpawnFormation.LINE,
+                180,772,110,42,
+                "LINE",
+                GUIButtonStyle.STANDARD
+            ),
 
-            distance_500: sc_gui_button_create(500,720,720,120,42,"500 PX",GUIButtonStyle.STANDARD),
-            distance_1000: sc_gui_button_create(1000,850,720,120,42,"1000 PX",GUIButtonStyle.STANDARD),
-            distance_2000: sc_gui_button_create(2000,980,720,120,42,"2000 PX",GUIButtonStyle.STANDARD),
-            distance_5000: sc_gui_button_create(5000,1110,720,120,42,"5000 PX",GUIButtonStyle.STANDARD),
+            formation_circle: sc_gui_button_create(
+                DebugSpawnFormation.CIRCLE,
+                300,772,110,42,
+                "CIRCLE",
+                GUIButtonStyle.STANDARD
+            ),
 
-            close: sc_gui_button_create("close",1282,26,38,38,"X",GUIButtonStyle.DANGER)
+            radius_250: sc_gui_button_create(250,620,772,86,42,"250",GUIButtonStyle.STANDARD),
+            radius_500: sc_gui_button_create(500,716,772,86,42,"500",GUIButtonStyle.STANDARD),
+            radius_1000: sc_gui_button_create(1000,812,772,96,42,"1000",GUIButtonStyle.STANDARD),
+
+            distance_500: sc_gui_button_create(500,820,720,100,42,"500 PX",GUIButtonStyle.STANDARD),
+            distance_1000: sc_gui_button_create(1000,930,720,100,42,"1000 PX",GUIButtonStyle.STANDARD),
+            distance_2000: sc_gui_button_create(2000,1040,720,100,42,"2000 PX",GUIButtonStyle.STANDARD),
+            distance_5000: sc_gui_button_create(5000,1150,720,100,42,"5000 PX",GUIButtonStyle.STANDARD),
+
+            clear: sc_gui_button_create(
+                "clear",
+                1040,772,210,42,
+                "CLEAR ENEMIES",
+                GUIButtonStyle.DANGER
+            ),
+
+            close: sc_gui_button_create(
+                "close",
+                1282,26,38,38,
+                "X",
+                GUIButtonStyle.DANGER
+            )
         }
     };
 
@@ -122,6 +194,7 @@ function sc_debug_enemy_spawn_toggle(_hud)
     _debug.scroll = 0;
     _debug.scroll_target = 0;
     global.LevelState = LevelState.DEBUG;
+
     return true;
 }
 
@@ -159,6 +232,7 @@ function sc_debug_enemy_spawn_execute(_enemy_key,_amount,_distance,_formation,_f
         else
         {
             var _side = _start + _i * _spacing;
+
             _x = _centre_x + lengthdir_x(_side,_side_direction);
             _y = _centre_y + lengthdir_y(_side,_side_direction);
         }
@@ -166,7 +240,12 @@ function sc_debug_enemy_spawn_execute(_enemy_key,_amount,_distance,_formation,_f
         _x = clamp(_x,_radius,room_width - _radius);
         _y = clamp(_y,_radius,room_height - _radius);
 
-        instance_create_layer(_x,_y,"Enemy",o_enemy,{ enemy_key: _enemy_key });
+        instance_create_layer(
+            _x,_y,
+            "Enemy",
+            o_enemy,
+            { enemy_key: _enemy_key }
+        );
     }
 
     show_debug_message(
@@ -182,6 +261,135 @@ function sc_debug_enemy_spawn_execute(_enemy_key,_amount,_distance,_formation,_f
     return true;
 }
 
+/// @description Spawns a weighted mixed-faction enemy cluster ahead of the player.
+function sc_debug_enemy_spawn_cluster_execute(_faction,_amount,_distance,_formation_radius,_class_weights)
+{
+    if (!instance_exists(global.player_id))
+        return false;
+
+    var _keys = variable_struct_get_names(global.data.enemies);
+
+    var _pools = [
+        { ship_class: EnemyClass.TINY, keys: [], weight: _class_weights[EnemyClass.TINY] },
+        { ship_class: EnemyClass.LIGHT, keys: [], weight: _class_weights[EnemyClass.LIGHT] },
+        { ship_class: EnemyClass.STANDARD, keys: [], weight: _class_weights[EnemyClass.STANDARD] },
+        { ship_class: EnemyClass.HEAVY, keys: [], weight: _class_weights[EnemyClass.HEAVY] },
+        { ship_class: EnemyClass.SUPERHEAVY, keys: [], weight: _class_weights[EnemyClass.SUPERHEAVY] },
+        { ship_class: EnemyClass.CAPITAL, keys: [], weight: _class_weights[EnemyClass.CAPITAL] },
+        { ship_class: EnemyClass.TITAN, keys: [], weight: _class_weights[EnemyClass.TITAN] }
+    ];
+
+    for (var _i = 0; _i < array_length(_keys); ++_i)
+    {
+        var _key = _keys[_i];
+        var _enemy = variable_struct_get(global.data.enemies,_key);
+
+        if (_enemy.identity.faction != _faction)
+            continue;
+
+        for (var _p = 0; _p < array_length(_pools); ++_p)
+        {
+            if (_enemy.identity.ship_class != _pools[_p].ship_class)
+                continue;
+
+            array_push(_pools[_p].keys,_key);
+            break;
+        }
+    }
+
+    var _total_weight = 0;
+
+    for (var _p = 0; _p < array_length(_pools); ++_p)
+    {
+        if (array_length(_pools[_p].keys) > 0)
+            _total_weight += _pools[_p].weight;
+    }
+
+    if (_total_weight <= 0)
+        return false;
+
+    var _player = global.player_id;
+    var _direction = _player.draw_angle;
+    var _centre_x = _player.x + lengthdir_x(_distance,_direction);
+    var _centre_y = _player.y + lengthdir_y(_distance,_direction);
+
+    for (var _i = 0; _i < _amount; ++_i)
+    {
+        var _roll = random(_total_weight);
+        var _selected_pool = undefined;
+
+        for (var _p = 0; _p < array_length(_pools); ++_p)
+        {
+            if (array_length(_pools[_p].keys) <= 0)
+                continue;
+
+            _roll -= _pools[_p].weight;
+
+            if (_roll < 0)
+            {
+                _selected_pool = _pools[_p];
+                break;
+            }
+        }
+
+        var _enemy_key = _selected_pool.keys[
+            irandom(array_length(_selected_pool.keys) - 1)
+        ];
+
+        var _enemy = variable_struct_get(global.data.enemies,_enemy_key);
+        var _radius = _enemy.visual.radius;
+
+        var _scatter_direction = random(360);
+        var _scatter_distance = sqrt(random(1)) * _formation_radius;
+
+        var _x = _centre_x
+            + lengthdir_x(_scatter_distance,_scatter_direction);
+
+        var _y = _centre_y
+            + lengthdir_y(_scatter_distance,_scatter_direction);
+
+        _x = clamp(_x,_radius,room_width - _radius);
+        _y = clamp(_y,_radius,room_height - _radius);
+
+        instance_create_layer(
+            _x,_y,
+            "Enemy",
+            o_enemy,
+            { enemy_key: _enemy_key }
+        );
+    }
+
+    show_debug_message(
+        "DEBUG ENEMY CLUSTER - FACTION "
+        + string(_faction)
+        + " x"
+        + string(_amount)
+        + " AT "
+        + string(_distance)
+        + " PX // RADIUS "
+        + string(_formation_radius)
+    );
+
+    return true;
+}
+
+/// @description Immediately removes every active enemy instance.
+function sc_debug_enemy_spawn_clear()
+{
+    var _count = instance_number(o_enemy);
+
+    with (o_enemy)
+        instance_destroy();
+
+    show_debug_message(
+        "DEBUG ENEMIES CLEARED - "
+        + string(_count)
+        + " REMOVED"
+    );
+
+    return true;
+}
+
 /// @description Returns whether an enemy button is fully visible inside the list viewport.
 function sc_debug_enemy_spawn_button_visible(_debug,_button)
 {
@@ -191,7 +399,7 @@ function sc_debug_enemy_spawn_button_visible(_debug,_button)
         && _draw_y + _button.height <= _debug.viewport.height;
 }
 
-/// @description Updates scrolling, formation amount, shape, distance and enemy selection.
+/// @description Updates scrolling, clusters, formation controls and enemy selection.
 function sc_debug_enemy_spawn_update(_hud)
 {
     var _debug = _hud.debug_enemy_spawn;
@@ -211,7 +419,36 @@ function sc_debug_enemy_spawn_update(_hud)
         return;
     }
 
-    var _amount_buttons = [_buttons.amount_1,_buttons.amount_5,_buttons.amount_10];
+    if (sc_gui_button_update(_buttons.clear,_mouse_x,_mouse_y,_pressed))
+    {
+        sc_debug_enemy_spawn_clear();
+        return;
+    }
+
+    for (var _i = 0; _i < array_length(_debug.cluster_buttons); ++_i)
+    {
+        var _button = _debug.cluster_buttons[_i];
+
+        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
+        {
+            sc_debug_enemy_spawn_cluster_execute(
+                _button.id,
+                _debug.cluster_amount,
+                _debug.spawn_distance,
+                _debug.formation_radius,
+                _debug.cluster_class_weights
+            );
+
+            return;
+        }
+    }
+
+    var _amount_buttons = [
+        _buttons.amount_1,
+        _buttons.amount_5,
+        _buttons.amount_10,
+        _buttons.amount_25
+    ];
 
     for (var _i = 0; _i < array_length(_amount_buttons); ++_i)
     {
@@ -225,7 +462,10 @@ function sc_debug_enemy_spawn_update(_hud)
         }
     }
 
-    var _formation_buttons = [_buttons.formation_line,_buttons.formation_circle];
+    var _formation_buttons = [
+        _buttons.formation_line,
+        _buttons.formation_circle
+    ];
 
     for (var _i = 0; _i < array_length(_formation_buttons); ++_i)
     {
@@ -235,6 +475,24 @@ function sc_debug_enemy_spawn_update(_hud)
         if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
         {
             _debug.formation = _button.id;
+            return;
+        }
+    }
+
+    var _radius_buttons = [
+        _buttons.radius_250,
+        _buttons.radius_500,
+        _buttons.radius_1000
+    ];
+
+    for (var _i = 0; _i < array_length(_radius_buttons); ++_i)
+    {
+        var _button = _radius_buttons[_i];
+        _button.selected = _debug.formation_radius == _button.id;
+
+        if (sc_gui_button_update(_button,_mouse_x,_mouse_y,_pressed))
+        {
+            _debug.formation_radius = _button.id;
             return;
         }
     }
@@ -272,8 +530,17 @@ function sc_debug_enemy_spawn_update(_hud)
     if (_wheel != 0)
         _debug.scroll_target += _wheel * _debug.scroll_speed;
 
-    var _scroll_max = max(0,_debug.content_height - _viewport.height);
-    _debug.scroll_target = clamp(_debug.scroll_target,0,_scroll_max);
+    var _scroll_max = max(
+        0,
+        _debug.content_height - _viewport.height
+    );
+
+    _debug.scroll_target = clamp(
+        _debug.scroll_target,
+        0,
+        _scroll_max
+    );
+
     _debug.scroll = _debug.scroll_target;
 
     var _list_mouse_x = _mouse_x - _viewport.x;
@@ -282,12 +549,19 @@ function sc_debug_enemy_spawn_update(_hud)
     for (var _i = 0; _i < array_length(_debug.enemy_buttons); ++_i)
     {
         var _button = _debug.enemy_buttons[_i];
+
         _button.hovered = false;
         _button.pressed = false;
 
-        if (!sc_debug_enemy_spawn_button_visible(_debug,_button)) continue;
+        if (!sc_debug_enemy_spawn_button_visible(_debug,_button))
+            continue;
 
-        if (sc_gui_button_update(_button,_list_mouse_x,_list_mouse_y,_pressed))
+        if (sc_gui_button_update(
+            _button,
+            _list_mouse_x,
+            _list_mouse_y,
+            _pressed
+        ))
         {
             sc_debug_enemy_spawn_execute(
                 _button.id,
@@ -312,11 +586,18 @@ function sc_debug_enemy_spawn_draw(_hud)
     var _viewport = _debug.viewport;
     var _width = _debug.width;
     var _height = _debug.height;
-    var _x = floor((display_get_gui_width() - _width) * 0.5);
-    var _y = floor((display_get_gui_height() - _height) * 0.5);
+
+    var _x = floor(
+        (display_get_gui_width() - _width) * 0.5
+    );
+
+    var _y = floor(
+        (display_get_gui_height() - _height) * 0.5
+    );
 
     draw_set_alpha(0.72);
     draw_set_colour(c_black);
+
     draw_rectangle(
         0,0,
         display_get_gui_width(),
@@ -326,34 +607,64 @@ function sc_debug_enemy_spawn_draw(_hud)
 
     draw_set_alpha(0.98);
     draw_set_colour(_palette.background);
-    draw_rectangle(_x,_y,_x + _width,_y + _height,false);
+
+    draw_rectangle(
+        _x,_y,
+        _x + _width,
+        _y + _height,
+        false
+    );
 
     draw_set_alpha(1);
     draw_set_colour(_palette.outline);
-    draw_rectangle(_x,_y,_x + _width,_y + _height,true);
+
+    draw_rectangle(
+        _x,_y,
+        _x + _width,
+        _y + _height,
+        true
+    );
 
     draw_set_colour(_palette.accent);
-    draw_line_width(_x + 24,_y + 78,_x + _width - 24,_y + 78,2);
-    draw_line_width(_x + 24,_y + 680,_x + _width - 24,_y + 680,2);
+
+    draw_line_width(
+        _x + 24,_y + 78,
+        _x + _width - 24,_y + 78,
+        2
+    );
+
+    draw_line_width(
+        _x + 24,_y + 680,
+        _x + _width - 24,_y + 680,
+        2
+    );
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
+
     draw_set_colour(_palette.core);
-    draw_text(_x + 34,_y + 27,"DEBUG // ENEMY DEPLOYMENT");
+    draw_text(
+        _x + 34,
+        _y + 27,
+        "DEBUG // ENEMY DEPLOYMENT"
+    );
 
     draw_set_colour(_palette.muted);
+
     draw_text(
         _x + 34,
         _y + 52,
-        "Select a faction unit, formation amount and deployment distance"
+        "Spawn individual units or weighted faction clusters"
     );
 
     for (var _f = 0; _f < array_length(_debug.factions); ++_f)
     {
-        var _column_x = _x + _viewport.x
+        var _column_x = _x
+            + _viewport.x
             + _f * (_debug.column_width + _debug.column_gap);
 
         draw_set_colour(_palette.core);
+
         draw_text(
             _column_x,
             _y + 101,
@@ -361,6 +672,7 @@ function sc_debug_enemy_spawn_draw(_hud)
         );
 
         draw_set_colour(_palette.muted);
+
         draw_text(
             _column_x + _debug.column_width - 72,
             _y + 101,
@@ -368,11 +680,18 @@ function sc_debug_enemy_spawn_draw(_hud)
         );
 
         draw_set_colour(_palette.outline);
+
         draw_line(
             _column_x,
             _y + 125,
             _column_x + _debug.column_width,
             _y + 125
+        );
+
+        sc_gui_button_draw(
+            _debug.cluster_buttons[_f],
+            _x,_y,
+            _palette
         );
     }
 
@@ -394,16 +713,21 @@ function sc_debug_enemy_spawn_draw(_hud)
         }
     }
 
-    var _scroll_max = max(0,_debug.content_height - _viewport.height);
+    var _scroll_max = max(
+        0,
+        _debug.content_height - _viewport.height
+    );
 
     if (_scroll_max > 0)
     {
         var _track_x = _x + 1310;
         var _track_y1 = _y + _viewport.y;
         var _track_y2 = _track_y1 + _viewport.height;
+
         var _handle_height = max(
             44,
-            _viewport.height * (_viewport.height / _debug.content_height)
+            _viewport.height
+            * (_viewport.height / _debug.content_height)
         );
 
         var _handle_y = _track_y1
@@ -412,6 +736,7 @@ function sc_debug_enemy_spawn_draw(_hud)
 
         draw_set_alpha(0.35);
         draw_set_colour(_palette.outline);
+
         draw_rectangle(
             _track_x,
             _track_y1,
@@ -422,6 +747,7 @@ function sc_debug_enemy_spawn_draw(_hud)
 
         draw_set_alpha(1);
         draw_set_colour(_palette.accent);
+
         draw_rectangle(
             _track_x,
             _handle_y,
@@ -434,22 +760,30 @@ function sc_debug_enemy_spawn_draw(_hud)
     draw_set_halign(fa_left);
     draw_set_valign(fa_middle);
     draw_set_colour(_palette.text);
+
     draw_text(_x + 34,_y + 741,"FORMATION AMOUNT");
-    draw_text(_x + 34,_y + 793,"FORMATION SHAPE");
+    draw_text(_x + 34,_y + 793,"FORMATION");
+    draw_text(_x + 450,_y + 793,"RADIUS");
     draw_text(_x + 670,_y + 741,"SPAWN DISTANCE");
 
     sc_gui_button_draw(_debug.buttons.amount_1,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.amount_5,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.amount_10,_x,_y,_palette);
+    sc_gui_button_draw(_debug.buttons.amount_25,_x,_y,_palette);
 
     sc_gui_button_draw(_debug.buttons.formation_line,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.formation_circle,_x,_y,_palette);
+
+    sc_gui_button_draw(_debug.buttons.radius_250,_x,_y,_palette);
+    sc_gui_button_draw(_debug.buttons.radius_500,_x,_y,_palette);
+    sc_gui_button_draw(_debug.buttons.radius_1000,_x,_y,_palette);
 
     sc_gui_button_draw(_debug.buttons.distance_500,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.distance_1000,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.distance_2000,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.distance_5000,_x,_y,_palette);
 
+    sc_gui_button_draw(_debug.buttons.clear,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.close,_x,_y,_palette);
 
     draw_set_alpha(1);
