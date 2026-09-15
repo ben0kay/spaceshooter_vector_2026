@@ -1,3 +1,5 @@
+#region AUTHOR SCHEMA
+
 /*
 ENEMY ATTACK CONTROLLER AUTHORING SCHEMA
 
@@ -127,6 +129,8 @@ sequence_runtime
 hardpoint_indices
 step.attack
 */
+
+#endregion
 
 /// @description Applies defaults to one optional volley-direction pattern.
 function sc_enemy_attack_direction_defaults_apply(_pattern)
@@ -1260,6 +1264,8 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
     return _transform;
 }
 
+
+#region volley direction patterns to implement later
 /*
 VOLLEY DIRECTION PATTERNS
 
@@ -1294,6 +1300,8 @@ direction_pattern: {
     start_offset: 0
 }
 */
+
+#endregion
 
 /// @description Returns the directional offset belonging to the current volley.
 function sc_enemy_attack_volley_direction_offset_get(_attack,_runtime)
@@ -1826,6 +1834,8 @@ function sc_enemy_attack_channel_update(_enemy)
     }
 }
 
+#region ATTACK SEQUENCE 
+
 /// @description Captures one sequence's normalized combat modifiers.
 function sc_enemy_attack_sequence_modifiers_capture(_sequence,_runtime)
 {
@@ -2038,6 +2048,8 @@ function sc_enemy_attack_sequence_update(_enemy)
 
     sc_enemy_attack_sequence_step_begin(_enemy);
 }
+
+#endregion
 
 /// @description Updates enabled sequences or every independent attack channel.
 function sc_enemy_attack_update(_enemy)

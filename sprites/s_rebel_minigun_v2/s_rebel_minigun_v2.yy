@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":9,
   "parent":{
-    "name":"enemies",
-    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/enemies.yy",
+    "name":"weapons",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/weapons.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

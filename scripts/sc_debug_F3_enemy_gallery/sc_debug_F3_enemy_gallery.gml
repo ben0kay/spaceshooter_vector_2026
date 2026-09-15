@@ -112,6 +112,7 @@ function sc_debug_enemy_visual_init(_hud)
 
     _hud.debug_enemy_visual = {
         open: false,
+        show_hardpoints: true,
         width: 1780,
         height: 960,
         viewport: _viewport,
@@ -123,6 +124,11 @@ function sc_debug_enemy_visual_init(_hud)
         surface: -1,
 
         buttons: {
+            hardpoints: sc_gui_button_create(
+                "hardpoints",1484,26,210,38,
+                "HARDPOINTS: ON",GUIButtonStyle.STANDARD
+            ),
+
             close: sc_gui_button_create(
                 "close",1712,26,38,38,
                 "X",GUIButtonStyle.DANGER
@@ -130,6 +136,7 @@ function sc_debug_enemy_visual_init(_hud)
         }
     };
 
+    _hud.debug_enemy_visual.buttons.hardpoints.selected = true;
     return true;
 }
 
@@ -157,7 +164,7 @@ function sc_debug_enemy_visual_toggle(_hud)
     return true;
 }
 
-/// @description Updates scrolling and close-button input for the F3 gallery.
+/// @description Updates scrolling and button input for the F3 gallery.
 function sc_debug_enemy_visual_update(_hud)
 {
     var _debug = _hud.debug_enemy_visual;
@@ -173,6 +180,15 @@ function sc_debug_enemy_visual_update(_hud)
     {
         sc_debug_enemy_visual_toggle(_hud);
         return;
+    }
+
+    if (sc_gui_button_update(_debug.buttons.hardpoints,_mouse_x,_mouse_y,_pressed))
+    {
+        _debug.show_hardpoints = !_debug.show_hardpoints;
+        _debug.buttons.hardpoints.selected = _debug.show_hardpoints;
+        _debug.buttons.hardpoints.text = _debug.show_hardpoints
+            ? "HARDPOINTS: ON"
+            : "HARDPOINTS: OFF";
     }
 
     var _viewport = _debug.viewport;
@@ -200,7 +216,7 @@ function sc_debug_enemy_visual_update(_hud)
 }
 
 /// @description Draws one complete enemy from its baked component cache.
-function sc_debug_enemy_visual_ship_draw(_enemy_key,_x,_y)
+function sc_debug_enemy_visual_ship_draw(_enemy_key,_x,_y,_show_hardpoints)
 {
     var _data = variable_struct_get(global.data.enemies,_enemy_key);
     var _visual = _data.visual;
@@ -241,23 +257,26 @@ function sc_debug_enemy_visual_ship_draw(_enemy_key,_x,_y)
         _core_x,_core_y,1,1,_angle,c_white,1
     );
 
-    for (var _i = 0; _i < array_length(_data.hardpoints); ++_i)
+    if (_show_hardpoints)
     {
-        var _hardpoint = _data.hardpoints[_i];
-        var _hardpoint_angle = _angle + _hardpoint.angle;
-        var _hardpoint_x = _x
-            + lengthdir_x(_hardpoint.forward * _radius,_angle)
-            + lengthdir_x(_hardpoint.side * _radius,_angle + 90);
+        for (var _i = 0; _i < array_length(_data.hardpoints); ++_i)
+        {
+            var _hardpoint = _data.hardpoints[_i];
+            var _hardpoint_angle = _angle + _hardpoint.angle;
+            var _hardpoint_x = _x
+                + lengthdir_x(_hardpoint.forward * _radius,_angle)
+                + lengthdir_x(_hardpoint.side * _radius,_angle + 90);
 
-        var _hardpoint_y = _y
-            + lengthdir_y(_hardpoint.forward * _radius,_angle)
-            + lengthdir_y(_hardpoint.side * _radius,_angle + 90);
+            var _hardpoint_y = _y
+                + lengthdir_y(_hardpoint.forward * _radius,_angle)
+                + lengthdir_y(_hardpoint.side * _radius,_angle + 90);
 
-        draw_sprite_ext(
-            _cache.hardpoints[_i],0,
-            _hardpoint_x,_hardpoint_y,
-            1,1,_hardpoint_angle,c_white,1
-        );
+            draw_sprite_ext(
+                _cache.hardpoints[_i],0,
+                _hardpoint_x,_hardpoint_y,
+                1,1,_hardpoint_angle,c_white,1
+            );
+        }
     }
 
     draw_set_alpha(1);
@@ -310,7 +329,10 @@ function sc_debug_enemy_visual_card_draw(_hud,_entry,_draw_y)
     draw_line(_x1 + 18,_y1 + 66,_x2 - 18,_y1 + 66);
 
     draw_set_alpha(1);
-    sc_debug_enemy_visual_ship_draw(_entry.key,_ship_x,_ship_y);
+    sc_debug_enemy_visual_ship_draw(
+        _entry.key,_ship_x,_ship_y,
+        _hud.debug_enemy_visual.show_hardpoints
+    );
 }
 
 /// @description Ensures the F3 clipping surface exists at the correct size.
@@ -433,6 +455,7 @@ function sc_debug_enemy_visual_draw(_hud)
         );
     }
 
+    sc_gui_button_draw(_debug.buttons.hardpoints,_x,_y,_palette);
     sc_gui_button_draw(_debug.buttons.close,_x,_y,_palette);
 
     draw_set_alpha(1);
