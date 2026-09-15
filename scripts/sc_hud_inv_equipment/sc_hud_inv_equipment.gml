@@ -139,7 +139,7 @@ function sc_player_equipment_modifiers_rebuild(_player)
     return sc_player_stats_recalculate(_player);
 }
 
-/// @description Completes the currently installing module.
+/// @description Completes the currently installing equipment item.
 function sc_player_equipment_install_complete(_player)
 {
     var _installation = _player.inventory.installation;
@@ -150,17 +150,28 @@ function sc_player_equipment_install_complete(_player)
     switch (_installation.slot)
     {
         case EquipmentSlot.ARMOUR:
-            _player.inventory.equipment.armour = {
+        {
+            var _installed = {
                 key: _item.key,
                 name: _item.name,
-                grade: _item.grade
+                grade: _item.grade,
+                condition: undefined
             };
 
+            // Installing new armour deliberately destroys any previous armour.
+            _player.inventory.equipment.armour = _installed;
             sc_player_equipment_modifiers_rebuild(_player);
 
             var _maximum = _player.ship.stats.final.armour_max;
+
+            _installed.condition = {
+                current: _maximum,
+                maximum: _maximum
+            };
+
             _player.defence.armour.maximum = _maximum;
             _player.defence.armour.current = _maximum;
+        }
         break;
 
         default: return false;

@@ -384,11 +384,10 @@ function sc_enemy_damage(_enemy, _packet, _impact = undefined)
     return _result;
 }
 
-/// @description Applies directional damage through the player's layered defence.
-function sc_player_damage(_player, _packet, _impact = undefined)
+/// @description Applies a resolved damage packet to the player.
+function sc_player_damage(_player,_packet,_impact = undefined)
 {
-    if (global.PlayerState == PlayerState.DESTROYED)
-        return false;
+    if (global.PlayerState == PlayerState.DESTROYED) return false;
 
     var _dash = _player.movement.dash;
 
@@ -407,17 +406,9 @@ function sc_player_damage(_player, _packet, _impact = undefined)
 
     if (_focus.active && is_struct(_impact))
     {
-        var _impact_direction = point_direction(
-            _player.x,
-            _player.y,
-            _impact.x,
-            _impact.y
-        );
-
-        var _inside_arc = abs(angle_difference(
-            _impact_direction,
-            _player.draw_angle
-        )) <= _stats.shield_focus_arc * 0.5;
+        var _impact_direction = point_direction(_player.x,_player.y,_impact.x,_impact.y);
+        var _inside_arc = abs(angle_difference(_impact_direction,_player.draw_angle))
+            <= _stats.shield_focus_arc*0.5;
 
         _focus.impact_direction = _impact_direction;
         _focus.protected_impact = _inside_arc;
@@ -425,8 +416,7 @@ function sc_player_damage(_player, _packet, _impact = undefined)
         if (_inside_arc)
         {
             _packet_resolve = variable_clone(_packet);
-            _packet_resolve.amount *=
-                _stats.shield_focus_damage_multiplier;
+            _packet_resolve.amount *= _stats.shield_focus_damage_multiplier;
         }
         else
         {
@@ -441,9 +431,7 @@ function sc_player_damage(_player, _packet, _impact = undefined)
         _defence.hull.current
     );
 
-    if (_focus.active
-    && is_struct(_impact)
-    && !_focus.protected_impact)
+    if (_focus.active && is_struct(_impact) && !_focus.protected_impact)
     {
         _result.shield = _defence.shield.current;
         _result.shield_focus_bypassed = true;
@@ -453,19 +441,29 @@ function sc_player_damage(_player, _packet, _impact = undefined)
         _result.shield_focus_bypassed = false;
     }
 
-    _result.shield_focus_protected =
-        _focus.active
-        && _focus.protected_impact;
+    _result.shield_focus_protected = _focus.active && _focus.protected_impact;
 
     _defence.shield.current = _result.shield;
     _defence.armour.current = _result.armour;
     _defence.hull.current = _result.hull;
 
-    if (_defence.armour.current <= 0)
-        _player.inventory.equipment.armour = undefined;
+    var _armour_item = _player.inventory.equipment.armour;
 
-    if (_result.dealt.total <= 0)
-        return false;
+    if (!is_undefined(_armour_item))
+    {
+        _armour_item.condition.current = _defence.armour.current;
+        _armour_item.condition.maximum = _defence.armour.maximum;
+
+        if (_defence.armour.current <= 0)
+        {
+            _player.inventory.equipment.armour = undefined;
+            sc_player_equipment_modifiers_rebuild(_player);
+            sc_player_stats_runtime_sync(_player);
+            _stats = _player.ship.stats.final;
+        }
+    }
+
+    if (_result.dealt.total <= 0) return false;
 
     sc_shield_break_effect_try(
         _player,
@@ -478,8 +476,7 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     if (_player.inventory.installation.active)
         sc_player_equipment_install_cancel(_player);
 
-    _defence.shield.recharge_delay_remaining =
-        _stats.shield_recharge_delay;
+    _defence.shield.recharge_delay_remaining = _stats.shield_recharge_delay;
 
     sc_health_bar_damage_show(_player.health_bar);
 
@@ -490,12 +487,11 @@ function sc_player_damage(_player, _packet, _impact = undefined)
     {
         _defence.hull.current = 0;
         global.PlayerState = PlayerState.DESTROYED;
-        sc_player_die(_player, _packet);
+        sc_player_die(_player,_packet);
         return _result;
     }
 
-    sc_damage_effect_player_apply(_player, _result.effect);
-
+    sc_damage_effect_player_apply(_player,_result.effect);
     return _result;
 }
 

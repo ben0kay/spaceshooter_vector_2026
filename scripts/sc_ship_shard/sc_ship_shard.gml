@@ -1178,21 +1178,73 @@ part_type_blend(_focus, true);
     );
 }
 
-/// @description Emits one powerful layered Shard engine ignition burst.
-function sc_particles_shard_ignition(_x, _y, _direction, _scale, _power)
+/// @description Emits one layered Shard engine ignition burst.
+function sc_particles_shard_ignition(
+    _x,_y,_direction,_scale,_power
+)
 {
     var _types = sc_particles_group_get("shard");
     if (!is_struct(_types)) return false;
 
-    var _strength = max(1, _power);
-    part_type_size(_types.ring, 0.22 * _scale, 0.31 * _scale, 0.055 * _scale, 0);
-    part_type_size(_types.flash, 0.24 * _scale, 0.34 * _scale, -0.022 * _scale, 0);
-    part_type_size(_types.dash, 0.38 * _scale, 0.56 * _scale, -0.018 * _scale, 0);
-    part_type_direction(_types.dash, _direction - 6, _direction + 6, 0, 0);
+    var _strength = max(1,_power);
 
-    part_particles_create(global.particles.system, _x, _y, _types.ring, 2);
-    part_particles_create(global.particles.system, _x, _y, _types.flash, 2);
-    part_particles_create(global.particles.system, _x, _y, _types.dash, _strength > 1 ? 5 : 3);
+    // Ring sits forward at the engine aperture while the exhaust begins behind it.
+    var _ring_offset = 28;
+    var _ring_direction = _direction + 180;
+    var _ring_x = _x + lengthdir_x(_ring_offset,_ring_direction);
+    var _ring_y = _y + lengthdir_y(_ring_offset,_ring_direction);
+
+    part_type_size(
+        _types.ring,
+        0.22 * _scale,
+        0.31 * _scale,
+        0.055 * _scale,
+        0
+    );
+
+    part_type_size(
+        _types.flash,
+        0.24 * _scale,
+        0.34 * _scale,
+        -0.022 * _scale,
+        0
+    );
+
+    part_type_size(
+        _types.dash,
+        0.38 * _scale,
+        0.56 * _scale,
+        -0.018 * _scale,
+        0
+    );
+
+    part_type_direction(
+        _types.dash,
+        _direction - 6,
+        _direction + 6,
+        0,
+        0
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _ring_x,_ring_y,
+        _types.ring,2
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _x,_y,
+        _types.flash,2
+    );
+
+    part_particles_create(
+        global.particles.system,
+        _x,_y,
+        _types.dash,
+        _strength > 1 ? 5 : 3
+    );
+
     return true;
 }
 

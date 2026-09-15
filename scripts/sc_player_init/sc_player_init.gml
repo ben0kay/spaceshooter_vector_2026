@@ -125,15 +125,18 @@ function sc_player_init_inventory(_player)
 
     sc_player_equipment_modifiers_rebuild(_player);
 
+    var _armour = _player.inventory.equipment.armour;
     var _armour_maximum = _player.ship.stats.final.armour_max;
+
+    _armour.condition = {
+        current: _armour_maximum,
+        maximum: _armour_maximum
+    };
+
     _player.defence.armour.maximum = _armour_maximum;
     _player.defence.armour.current = _armour_maximum;
 
-    sc_player_inventory_add(
-        _player,
-        "item_scanning_drone",
-        3
-    );
+    sc_player_inventory_add(_player,"item_scanning_drone",3);
 
     var _slots = _player.inventory.drone_bay.slots;
 
@@ -142,9 +145,7 @@ function sc_player_init_inventory(_player)
         sc_player_drone_slot_fill(
             _player,
             _i,
-            sc_player_drone_item_create(
-                "item_point_defence_drone"
-            )
+            sc_player_drone_item_create("item_point_defence_drone")
         );
     }
 }
