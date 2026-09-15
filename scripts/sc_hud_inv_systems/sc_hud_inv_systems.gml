@@ -136,36 +136,64 @@ function sc_inventory_systems_data()
     return {
         cards: [
             { system: ShipSystemType.ENGINES, key: "engines", name: "ENGINES", x: 45, y: 175 },
-            { system: ShipSystemType.THRUSTERS, key: "thrusters", name: "THRUSTERS", x: 685, y: 175 },
-            { system: ShipSystemType.SHIELD_GENERATOR, key: "shield_generator", name: "SHIELD GENERATOR", x: 45, y: 330 },
-            { system: ShipSystemType.REACTOR, key: "reactor", name: "REACTOR", x: 685, y: 330 },
-            { system: ShipSystemType.COOLING, key: "cooling", name: "COOLING", x: 45, y: 485 },
-            { system: ShipSystemType.WEAPONS, key: "weapons", name: "WEAPONS", x: 685, y: 485 },
-            { system: ShipSystemType.SENSORS, key: "sensors", name: "SENSORS", x: 45, y: 640 },
-            { system: ShipSystemType.DRONE_BAY, key: "drone_bay", name: "DRONE BAY", x: 685, y: 640 }
+            { system: ShipSystemType.THRUSTERS, key: "thrusters", name: "THRUSTERS", x: 465, y: 175 },
+            { system: ShipSystemType.SHIELD_GENERATOR, key: "shield_generator", name: "SHIELD GENERATOR", x: 45, y: 305 },
+            { system: ShipSystemType.REACTOR, key: "reactor", name: "REACTOR", x: 465, y: 305 },
+            { system: ShipSystemType.COOLING, key: "cooling", name: "COOLING", x: 45, y: 435 },
+            { system: ShipSystemType.WEAPONS, key: "weapons", name: "WEAPONS", x: 465, y: 435 },
+            { system: ShipSystemType.SENSORS, key: "sensors", name: "SENSORS", x: 45, y: 565 },
+            { system: ShipSystemType.DRONE_BAY, key: "drone_bay", name: "DRONE BAY", x: 465, y: 565 }
         ],
 
-        card_width: 600,
-        card_height: 135,
+        card_width: 400,
+        card_height: 115,
 
         socket: {
-            offset_x: 438,
-            offset_y: 49,
+            offset_x: 232,
+            offset_y: 56,
             size: 42,
             gap: 8,
             count: 3
         },
 
+        inspector: {
+            x: 895,
+            y: 175,
+            width: 820,
+            height: 505
+        },
+
         storage: {
-            x: 1335,
-            y: 240,
-            width: 380,
-            height: 555,
-            columns: 4,
+            x: 45,
+            y: 755,
+            width: 1670,
+            height: 115,
+            columns: 18,
             slot_size: 74,
             gap: 10
         }
     };
+}
+
+/// @description Returns the system card beneath panel-local coordinates.
+function sc_inventory_systems_card_at_position(_mouse_x,_mouse_y)
+{
+    var _data = sc_inventory_systems_data();
+
+    for (var _i = 0; _i < array_length(_data.cards); ++_i)
+    {
+        var _card = _data.cards[_i];
+
+        if (point_in_rectangle(
+            _mouse_x,_mouse_y,
+            _card.x,_card.y,
+            _card.x + _data.card_width,
+            _card.y + _data.card_height
+        ))
+            return _i;
+    }
+
+    return -1;
 }
 
 /// @description Returns the module-storage cargo slot beneath panel-local coordinates.
@@ -197,12 +225,11 @@ function sc_inventory_systems_storage_at_position(_player,_mouse_x,_mouse_y)
 function sc_inventory_systems_socket_at_position(_mouse_x,_mouse_y)
 {
     var _data = sc_inventory_systems_data();
-    var _cards = _data.cards;
     var _socket = _data.socket;
 
-    for (var _card_index = 0; _card_index < array_length(_cards); ++_card_index)
+    for (var _card_index = 0; _card_index < array_length(_data.cards); ++_card_index)
     {
-        var _card = _cards[_card_index];
+        var _card = _data.cards[_card_index];
 
         for (var _socket_index = 0; _socket_index < _socket.count; ++_socket_index)
         {
@@ -225,7 +252,7 @@ function sc_inventory_systems_socket_at_position(_mouse_x,_mouse_y)
     return undefined;
 }
 
-/// @description Updates Systems-tab module installation and removal.
+/// @description Updates system selection, module installation and module removal.
 function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
 {
     var _player = global.player_id;
@@ -252,6 +279,8 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
 
         if (!is_undefined(_target))
         {
+            _runtime.selected_system = _target.card_index;
+
             var _card = _data.cards[_target.card_index];
             var _installed = sc_player_module_get(
                 _player,
@@ -265,7 +294,16 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
                     _card.system,
                     _target.socket_index
                 );
+
+            return;
         }
+
+        var _card_index = sc_inventory_systems_card_at_position(
+            _mouse_x,_mouse_y
+        );
+
+        if (_card_index >= 0)
+            _runtime.selected_system = _card_index;
     }
 
     if (!_runtime.drag.active || !_released) return;
@@ -278,20 +316,187 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
     {
         var _card = _data.cards[_target.card_index];
 
-        sc_player_module_install(
+        if (sc_player_module_install(
             _player,
             _runtime.drag.source_slot,
             _card.system,
             _target.socket_index
-        );
+        ))
+            _runtime.selected_system = _target.card_index;
     }
 
     _runtime.drag.active = false;
     _runtime.drag.source_slot = -1;
 }
 
-/// @description Draws one Systems-tab ship-system card and its three module sockets.
-function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_origin_y)
+/// @description Returns the live readout rows for one selected ship system.
+function sc_inventory_systems_readout_get(_hud,_player,_card)
+{
+    var _stats = _player.ship.stats.final;
+    var _rows = [];
+
+    switch (_card.system)
+    {
+        case ShipSystemType.ENGINES:
+            array_push(_rows,{ label: "MAXIMUM SPEED", value: string_format(_stats.speed_max,1,2) });
+            array_push(_rows,{ label: "ACCELERATION", value: string_format(_stats.acceleration,1,2) });
+            array_push(_rows,{ label: "DECELERATION", value: string_format(_stats.deceleration,1,2) });
+        break;
+
+        case ShipSystemType.THRUSTERS:
+            array_push(_rows,{ label: "TURN SPEED", value: string_format(_stats.turn_speed,1,2) });
+            array_push(_rows,{ label: "REVERSE SPEED", value: string(round(_stats.directional_speed_min*100)) + "%" });
+            array_push(_rows,{ label: "REVERSE THRUST", value: string(round(_stats.directional_thrust_min*100)) + "%" });
+        break;
+
+        case ShipSystemType.SHIELD_GENERATOR:
+            array_push(_rows,{
+                label: "SHIELD CAPACITY",
+                value: string(round(_player.defence.shield.current))
+                    + " / "
+                    + string(round(_player.defence.shield.maximum))
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE RATE",
+                value: string_format(_stats.shield_recharge_rate,1,2) + " / STEP"
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE DELAY",
+                value: string_format(_player.defence.shield.recharge_delay_remaining/60,1,1) + "s"
+            });
+        break;
+
+        case ShipSystemType.REACTOR:
+            array_push(_rows,{
+                label: "ENERGY",
+                value: string(round(_player.resources.energy.current))
+                    + " / "
+                    + string(round(_player.resources.energy.maximum))
+            });
+
+            array_push(_rows,{
+                label: "ENERGY REGENERATION",
+                value: string_format(_stats.energy_regeneration,1,2) + " / STEP"
+            });
+
+            array_push(_rows,{
+                label: "RECHARGE DELAY",
+                value: string_format(_player.resources.energy.recharge_delay_remaining/60,1,1) + "s"
+            });
+        break;
+
+        case ShipSystemType.COOLING:
+            array_push(_rows,{
+                label: "PRIMARY HEAT",
+                value: string(round(_player.combat.primary.heat.current))
+                    + " / "
+                    + string(round(_stats.weapon_heat_maximum))
+            });
+
+            array_push(_rows,{
+                label: "SECONDARY HEAT",
+                value: string(round(_player.combat.secondary.heat.current))
+                    + " / "
+                    + string(round(_stats.weapon_heat_maximum))
+            });
+
+            array_push(_rows,{
+                label: "COOLING RATE",
+                value: string_format(_stats.weapon_cooling_rate*_stats.cooling_efficiency,1,2) + " / STEP"
+            });
+
+            array_push(_rows,{
+                label: "PRIMARY COOLING DELAY",
+                value: string_format(_player.combat.primary.heat.cooling_delay_remaining/60,1,1) + "s"
+            });
+
+            array_push(_rows,{
+                label: "SECONDARY COOLING DELAY",
+                value: string_format(_player.combat.secondary.heat.cooling_delay_remaining/60,1,1) + "s"
+            });
+        break;
+
+        case ShipSystemType.WEAPONS:
+            array_push(_rows,{
+                label: "PRIMARY FIRE COOLDOWN",
+                value: string_format(max(0,_player.combat.primary.next_fire_tick - GAME_TICK)/60,1,2) + "s"
+            });
+
+            array_push(_rows,{
+                label: "SECONDARY FIRE COOLDOWN",
+                value: string_format(max(0,_player.combat.secondary.next_fire_tick - GAME_TICK)/60,1,2) + "s"
+            });
+
+            array_push(_rows,{
+                label: "FIRE RATE MULTIPLIER",
+                value: string_format(_stats.fire_rate_multiplier,1,2)
+            });
+
+            array_push(_rows,{
+                label: "WEAPON SPREAD",
+                value: string(round(_stats.weapon_spread_multiplier*100)) + "%"
+            });
+
+            array_push(_rows,{
+                label: "WEAPON RECOIL",
+                value: string(round(_stats.weapon_recoil_multiplier*100)) + "%"
+            });
+        break;
+
+        case ShipSystemType.SENSORS:
+            var _radar = _player.inventory.equipment.targeting;
+
+            array_push(_rows,{
+                label: "RADAR ARRAY",
+                value: is_undefined(_radar) ? "NOT INSTALLED" : _radar.name
+            });
+
+            array_push(_rows,{
+                label: "CURRENT RADAR RANGE",
+                value: is_undefined(_radar) ? "OFFLINE" : string(round(_hud.minimap.range))
+            });
+
+            array_push(_rows,{
+                label: "DISRUPTION RESISTANCE",
+                value: string(round(_stats.sensors_disruption_resistance*100)) + "%"
+            });
+        break;
+
+        case ShipSystemType.DRONE_BAY:
+            var _slots = _player.inventory.drone_bay.slots;
+            var _occupied = 0;
+            var _deployed = 0;
+
+            for (var _i = 0; _i < array_length(_slots); ++_i)
+            {
+                if (!is_undefined(_slots[_i].item)) _occupied++;
+                if (_slots[_i].active_id != noone) _deployed++;
+            }
+
+            array_push(_rows,{
+                label: "DRONE SLOTS",
+                value: string(_occupied) + " / " + string(array_length(_slots))
+            });
+
+            array_push(_rows,{
+                label: "DEPLOYED DRONES",
+                value: string(_deployed)
+            });
+
+            array_push(_rows,{
+                label: "DISRUPTION RESISTANCE",
+                value: string(round(_stats.drone_bay_disruption_resistance*100)) + "%"
+            });
+        break;
+    }
+
+    return _rows;
+}
+
+/// @description Draws one selectable ship-system card and its three module sockets.
+function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_origin_x,_origin_y)
 {
     var _palette = _hud.data.palette;
     var _socket = _data.socket;
@@ -299,6 +504,7 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
     var _x = _origin_x + _card.x;
     var _y = _origin_y + _card.y;
     var _condition = round(_system.condition_current/max(1,_system.condition_max)*100);
+    var _selected = _hud.inventory.selected_system == _card_index;
     var _status = "ONLINE";
     var _status_colour = _palette.accent;
 
@@ -314,11 +520,11 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
     }
 
     draw_set_alpha(0.96);
-    draw_set_colour(_palette.background);
+    draw_set_colour(_selected ? _palette.panel_light : _palette.background);
     draw_rectangle(_x,_y,_x + _data.card_width,_y + _data.card_height,false);
 
-    draw_set_colour(_status_colour);
-    draw_set_alpha(0.7);
+    draw_set_colour(_selected ? _palette.accent : _status_colour);
+    draw_set_alpha(_selected ? 1 : 0.65);
     draw_rectangle(_x,_y,_x + _data.card_width,_y + _data.card_height,true);
     draw_line(_x + 14,_y + 37,_x + _data.card_width - 14,_y + 37);
 
@@ -332,35 +538,19 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
     draw_set_halign(fa_left);
 
     draw_set_colour(_palette.muted);
-    draw_text(_x + 16,_y + 58,"CONDITION");
-    draw_text(_x + 16,_y + 84,"MODULES");
+    draw_text(_x + 16,_y + 61,"CONDITION");
 
     draw_set_colour(_palette.text);
-    draw_text(_x + 115,_y + 58,string(_condition) + "%");
+    draw_text(_x + 112,_y + 61,string(_condition) + "%");
 
     if (_system.disruption.remaining > 0)
     {
         draw_set_colour(_palette.warning);
         draw_text(
-            _x + 200,
-            _y + 58,
-            "DISRUPTION // " + string(ceil(_system.disruption.remaining/60)) + "s"
+            _x + 16,
+            _y + 87,
+            "DISRUPTION // " + string_format(_system.disruption.remaining/60,1,1) + "s"
         );
-    }
-
-    if (_card.system == ShipSystemType.COOLING)
-    {
-        var _base = _player.ship.stats.base.weapon_cooling_rate;
-        var _final = _player.ship.stats.final.weapon_cooling_rate;
-
-        draw_set_colour(_palette.muted);
-        draw_text(_x + 16,_y + 110,"WEAPON COOLING");
-
-        draw_set_colour(_palette.text);
-        draw_text(_x + 150,_y + 110,string_format(_base,1,2) + "  >  ");
-
-        draw_set_colour(_final > _base ? _palette.accent : _palette.text);
-        draw_text(_x + 224,_y + 110,string_format(_final,1,2));
     }
 
     for (var _socket_index = 0; _socket_index < _socket.count; ++_socket_index)
@@ -421,38 +611,133 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_data,_origin_x,_orig
     draw_set_colour(c_white);
 }
 
-/// @description Draws carried modules in the Systems-tab module storage.
+/// @description Draws the selected ship system's live status and calculated values.
+function sc_inventory_systems_inspector_draw(_hud,_player,_origin_x,_origin_y)
+{
+    var _palette = _hud.data.palette;
+    var _data = sc_inventory_systems_data();
+    var _inspector = _data.inspector;
+    var _selected = clamp(_hud.inventory.selected_system,0,array_length(_data.cards) - 1);
+    var _card = _data.cards[_selected];
+    var _system = variable_struct_get(_player.ship.systems,_card.key);
+    var _rows = sc_inventory_systems_readout_get(_hud,_player,_card);
+    var _effectiveness = sc_ship_system_effectiveness_get(_player.ship,_card.key);
+    var _condition = round(_system.condition_current/max(1,_system.condition_max)*100);
+    var _x = _origin_x + _inspector.x;
+    var _y = _origin_y + _inspector.y;
+    var _status = "ONLINE";
+    var _status_colour = _palette.accent;
+
+    if (!_system.enabled || _system.condition_current <= 0)
+    {
+        _status = "OFFLINE";
+        _status_colour = _palette.danger;
+    }
+    else if (_system.disruption.remaining > 0)
+    {
+        _status = "DISRUPTED";
+        _status_colour = _palette.warning;
+    }
+
+    draw_set_alpha(0.96);
+    draw_set_colour(_palette.background);
+    draw_rectangle(
+        _x,_y,
+        _x + _inspector.width,
+        _y + _inspector.height,
+        false
+    );
+
+    draw_set_colour(_status_colour);
+    draw_rectangle(
+        _x,_y,
+        _x + _inspector.width,
+        _y + _inspector.height,
+        true
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 20,_y + 25,"SYSTEM STATUS // " + _card.name);
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_status_colour);
+    draw_text(_x + _inspector.width - 20,_y + 25,_status);
+    draw_set_halign(fa_left);
+
+    draw_set_colour(_palette.outline);
+    draw_line(_x + 20,_y + 54,_x + _inspector.width - 20,_y + 54);
+
+    draw_set_colour(_palette.muted);
+    draw_text(_x + 20,_y + 82,"CONDITION");
+    draw_text(_x + 20,_y + 110,"EFFECTIVENESS");
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_palette.text);
+    draw_text(_x + _inspector.width - 20,_y + 82,string(_condition) + "%");
+    draw_text(
+        _x + _inspector.width - 20,
+        _y + 110,
+        string(round(_effectiveness*100)) + "%"
+    );
+    draw_set_halign(fa_left);
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 20,_y + 154,"LIVE SYSTEM VALUES");
+
+    draw_set_colour(_palette.outline);
+    draw_line(_x + 20,_y + 181,_x + _inspector.width - 20,_y + 181);
+
+    for (var _i = 0; _i < array_length(_rows); ++_i)
+    {
+        var _row = _rows[_i];
+        var _row_y = _y + 212 + _i*38;
+
+        draw_set_colour(_palette.muted);
+        draw_text(_x + 20,_row_y,_row.label);
+
+        draw_set_halign(fa_right);
+        draw_set_colour(_palette.text);
+        draw_text(_x + _inspector.width - 20,_row_y,_row.value);
+        draw_set_halign(fa_left);
+    }
+}
+
+/// @description Draws carried modules in the Systems-tab bottom storage strip.
 function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
 {
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _storage = _data.storage;
     var _indices = sc_inventory_module_indices_get(_player);
-    var _x = _origin_x + _storage.x;
-    var _y = _origin_y + 175;
+    var _panel_x = _origin_x + _storage.x;
+    var _panel_y = _origin_y + 700;
 
     draw_set_alpha(0.96);
     draw_set_colour(_palette.background);
     draw_rectangle(
-        _x,_y,
-        _x + _storage.width,
-        _y + _storage.height + 65,
+        _panel_x,_panel_y,
+        _panel_x + _storage.width,
+        _origin_y + 885,
         false
     );
 
     draw_set_colour(_palette.outline);
     draw_rectangle(
-        _x,_y,
-        _x + _storage.width,
-        _y + _storage.height + 65,
+        _panel_x,_panel_y,
+        _panel_x + _storage.width,
+        _origin_y + 885,
         true
     );
 
     draw_set_colour(_palette.accent);
-    draw_text(_x + 16,_y + 24,"SYSTEM MODULE STORAGE");
+    draw_text(_panel_x + 16,_panel_y + 18,"AVAILABLE SYSTEM MODULES");
 
     draw_set_colour(_palette.muted);
-    draw_text(_x + 16,_y + 50,"DRAG MODULE INTO A COMPATIBLE SOCKET");
+    draw_text(
+        _panel_x + 260,
+        _panel_y + 18,
+        "DRAG A MODULE INTO A COMPATIBLE SOCKET"
+    );
 
     var _stride = _storage.slot_size + _storage.gap;
 
@@ -503,6 +788,8 @@ function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
         );
         draw_set_halign(fa_left);
     }
+
+    draw_set_alpha(1);
 }
 
 /// @description Draws the complete live ship-systems and module interface.
@@ -511,7 +798,6 @@ function sc_inventory_systems_draw(_hud,_origin_x,_origin_y)
     var _player = global.player_id;
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
-    var _cards = _data.cards;
 
     draw_set_halign(fa_left);
     draw_set_valign(fa_top);
@@ -525,10 +811,20 @@ function sc_inventory_systems_draw(_hud,_origin_x,_origin_y)
         false
     );
 
-    for (var _i = 0; _i < array_length(_cards); ++_i)
+    for (var _i = 0; _i < array_length(_data.cards); ++_i)
         sc_inventory_systems_card_draw(
-            _hud,_player,_cards[_i],_data,_origin_x,_origin_y
+            _hud,
+            _player,
+            _data.cards[_i],
+            _i,
+            _data,
+            _origin_x,
+            _origin_y
         );
+
+    sc_inventory_systems_inspector_draw(
+        _hud,_player,_origin_x,_origin_y
+    );
 
     sc_inventory_systems_storage_draw(
         _hud,_player,_origin_x,_origin_y
