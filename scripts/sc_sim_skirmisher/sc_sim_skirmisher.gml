@@ -140,14 +140,30 @@ function sc_enemy_register_sim_skirmisher()
 /// @description Returns the complete visual definition for the Simulant Skirmisher.
 function sc_enemy_sim_skirmisher_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 52,
-		motion_strength: 4,
+        motion_strength: 4,
         palette: sc_faction_palette_get(Faction.SIMULANT),
-		core: { forward: 0, side: 0 },
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_sim_skirmisher_hull,
+                scale: 0.095,
+                fallback_script: sc_enemy_sim_skirmisher_body_draw
+            }
+        },
+
+        core: {
+            forward: 0,
+            side: 0
+        },
 
         draw: {
-            body: sc_enemy_sim_skirmisher_body_draw,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_sim_skirmisher_core_draw
         },
 
@@ -162,10 +178,10 @@ function sc_enemy_sim_skirmisher_visual_data()
         },
 
         thrust: {
-	    draw_script: sc_enemy_simulant_thrust_draw,
-	    ignition_script: sc_particles_enemy_thrust_ignition,
-	    particle_script: sc_particles_enemy_thrust_emit
-	},
+            draw_script: sc_enemy_simulant_thrust_draw,
+            ignition_script: sc_particles_enemy_thrust_ignition,
+            particle_script: sc_particles_enemy_thrust_emit
+        },
 
         bake: {
             body_canvas_size: 256,
