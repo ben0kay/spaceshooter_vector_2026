@@ -441,23 +441,37 @@ function sc_enemy_register_sim_harrower()
 /// @description Returns the Harrower's extra-wide visual definition.
 function sc_enemy_sim_harrower_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 112,
         motion_strength: 1.8,
         palette: sc_faction_palette_get(Faction.SIMULANT),
 
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_sim_harrower_hull,
+                scale: 0.4,
+                fallback_script: sc_enemy_sim_harrower_body_draw
+            }
+        },
+
         core: {
-            forward: -0.12,
+            forward: -0.02,
             side: 0
         },
 
         draw: {
-            body: sc_enemy_sim_harrower_body_draw,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_sim_harrower_core_draw
         },
 
         damage_layers: {
-            enabled: true,
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled: !_authored_enabled,
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_harrower_hull_draw,
             armour_draw_script: sc_enemy_sim_harrower_armour_draw
