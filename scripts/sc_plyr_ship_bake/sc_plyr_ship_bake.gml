@@ -18,19 +18,19 @@ function sc_ship_visual_cache_init()
         || !variable_struct_exists(_visual, "bake"))
             continue;
 
-        var _stage_count =
-            _visual.bake.damage_stages;
-
-        var _muzzle_frames =
-            _visual.bake.muzzle_frames;
+        var _stage_count = _visual.bake.damage_stages;
+        var _muzzle_frames = _visual.bake.muzzle_frames;
+        var _hardpoint_count = array_length(_data.hardpoints.primary);
 
         var _cache = {
             hull: array_create(_stage_count, -1),
             armour: array_create(_stage_count, -1),
             wing_hull: array_create(_stage_count, -1),
             wing_armour: array_create(_stage_count, -1),
+
             core: -1,
-            hardpoint: -1,
+            hardpoints: array_create(_hardpoint_count, -1),
+
             muzzle_flash: array_create(_muzzle_frames, -1),
             shield: -1,
             focus: -1,
@@ -81,12 +81,16 @@ function sc_ship_visual_cache_init()
             _visual.bake.core_canvas_size
         );
 
-        _cache.hardpoint = sc_ship_visual_component_bake(
-            _data,
-            "hardpoint",
-            0,
-            _visual.bake.hardpoint_canvas_size
-        );
+        for (var _h = 0; _h < _hardpoint_count; ++_h)
+        {
+            _cache.hardpoints[_h] =
+                sc_ship_visual_component_bake(
+                    _data,
+                    "hardpoint",
+                    _h,
+                    _visual.bake.hardpoint_canvas_size
+                );
+        }
 
         for (var _frame = 0;
         _frame < _muzzle_frames;
@@ -137,6 +141,7 @@ function sc_ship_visual_cache_init()
     return true;
 }
 
+
 /// @description Bakes one player ship visual component.
 function sc_ship_visual_component_bake(
     _data,
@@ -154,10 +159,10 @@ function sc_ship_visual_component_bake(
         return -1;
 
     var _visual = _data.visual;
-    var _centre = _canvas_size * 0.5;
+    var _centre = _canvas_size*0.5;
 
     surface_set_target(_surface);
-    draw_clear_alpha(c_black, 0);
+    draw_clear_alpha(c_black,0);
     draw_set_alpha(1);
     draw_set_colour(c_white);
 
@@ -165,87 +170,68 @@ function sc_ship_visual_component_bake(
     {
         case "hull":
             _visual.draw.hull(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_stage
             );
         break;
 
         case "armour":
             _visual.draw.armour(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_stage
             );
         break;
 
         case "wing_hull":
             _visual.draw.wing_hull(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_stage
             );
         break;
 
         case "wing_armour":
             _visual.draw.wing_armour(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_stage
             );
         break;
 
         case "core":
             _visual.draw.core(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
+                _centre,_centre,
+                _visual.radius,0,
                 _visual
             );
         break;
 
         case "hardpoint":
+            var _hardpoint =
+                _data.hardpoints.primary[_stage];
+
             _visual.draw.hardpoint(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_hardpoint
             );
         break;
 
         case "muzzle_flash":
             _visual.draw.muzzle_flash(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
-                _visual,
-                _stage,
+                _centre,_centre,
+                _visual.radius,0,
+                _visual,_stage,
                 _visual.bake.muzzle_frames
             );
         break;
 
         case "shield":
             _visual.draw.shield(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
+                _centre,_centre,
+                _visual.radius,0,
                 _visual,
                 _data.collision
             );
@@ -253,20 +239,16 @@ function sc_ship_visual_component_bake(
 
         case "focus":
             _visual.draw.focus(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
+                _centre,_centre,
+                _visual.radius,0,
                 _visual
             );
         break;
 
         case "thrust":
             _visual.draw.thrust(
-                _centre,
-                _centre,
-                _visual.radius,
-                0,
+                _centre,_centre,
+                _visual.radius,0,
                 _visual
             );
         break;
@@ -278,19 +260,52 @@ function sc_ship_visual_component_bake(
 
     var _sprite = sprite_create_from_surface(
         _surface,
-        0,
-        0,
-        _canvas_size,
-        _canvas_size,
-        false,
-        false,
-        _centre,
-        _centre
+        0,0,
+        _canvas_size,_canvas_size,
+        false,false,
+        _centre,_centre
     );
 
     surface_free(_surface);
     return _sprite;
 }
+
+
+/// @description Draws an authored player hardpoint or its primitive fallback.
+function sc_ship_hardpoint_dispatch(
+    _x,_y,_radius,_angle,
+    _visual,_hardpoint
+)
+{
+    if (variable_struct_exists(_visual,"authored")
+    && _visual.authored.enabled
+    && variable_struct_exists(_hardpoint,"authored"))
+    {
+        var _authored = _hardpoint.authored;
+
+        if (sprite_exists(_authored.sprite))
+        {
+            draw_sprite_ext(
+                _authored.sprite,0,
+                _x,_y,
+                _authored.scale,
+                _authored.scale,
+                _angle,
+                c_white,1
+            );
+
+            draw_set_alpha(1);
+            draw_set_colour(c_white);
+            return;
+        }
+    }
+
+    _hardpoint.draw_script(
+        _x,_y,_radius,_angle,
+        _visual,0
+    );
+}
+
 
 /// @description Deletes all generated player ship sprites.
 function sc_ship_visual_cache_destroy()
@@ -330,6 +345,14 @@ function sc_ship_visual_cache_destroy()
                 sprite_delete(_cache.wing_armour[_stage]);
         }
 
+        for (var _h = 0;
+        _h < array_length(_cache.hardpoints);
+        ++_h)
+        {
+            if (sprite_exists(_cache.hardpoints[_h]))
+                sprite_delete(_cache.hardpoints[_h]);
+        }
+
         for (var _frame = 0;
         _frame < array_length(_cache.muzzle_flash);
         ++_frame)
@@ -346,9 +369,6 @@ function sc_ship_visual_cache_destroy()
 
         if (sprite_exists(_cache.core))
             sprite_delete(_cache.core);
-
-        if (sprite_exists(_cache.hardpoint))
-            sprite_delete(_cache.hardpoint);
 
         if (sprite_exists(_cache.shield))
             sprite_delete(_cache.shield);
@@ -367,11 +387,19 @@ function sc_ship_visual_cache_destroy()
     );
 }
 
+
 /// @description Returns one ship's layered visual cache.
 function sc_ship_visual_cache_get(_ship_key)
 {
-    if (!variable_global_exists("ship_visual_cache") || !variable_struct_exists(global.ship_visual_cache, _ship_key))
+    if (!variable_global_exists("ship_visual_cache")
+    || !variable_struct_exists(
+        global.ship_visual_cache,
+        _ship_key
+    ))
         return undefined;
 
-    return variable_struct_get(global.ship_visual_cache, _ship_key);
+    return variable_struct_get(
+        global.ship_visual_cache,
+        _ship_key
+    );
 }

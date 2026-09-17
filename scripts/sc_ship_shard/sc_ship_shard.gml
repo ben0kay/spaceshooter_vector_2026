@@ -72,8 +72,9 @@ function sc_ship_register_shard()
         visual: sc_ship_shard_visual_data(),
 
         hardpoints: {
-    // All physical weapon mounts remain in this array so the existing
-    // drawing, recoil, muzzle-flash and destruction systems still work.
+    // ==================================================
+    // INNER PRIMARY HARDPOINTS
+    // ==================================================
     primary: [
         {
             key: "primary_left",
@@ -82,7 +83,14 @@ function sc_ship_register_shard()
             y: -8.5,
             angle: 0,
             muzzle_forward: 18,
-            scale: 0.7
+            scale: 0.7,
+
+            authored: {
+                sprite: s_plyr_inner_primary_hardpoints,
+                scale: 0.08
+            },
+
+            draw_script: sc_ship_shard_cannon_draw
         },
 
         {
@@ -92,9 +100,19 @@ function sc_ship_register_shard()
             y: 8.5,
             angle: 0,
             muzzle_forward: 18,
-            scale: 0.7
+            scale: 0.7,
+
+            authored: {
+                sprite: s_plyr_inner_primary_hardpoints,
+                scale: 0.08
+            },
+
+            draw_script: sc_ship_shard_cannon_draw
         },
 
+        // ==================================================
+        // CENTRAL BEAM HARDPOINT
+        // ==================================================
         {
             key: "secondary_beam",
             group: "secondary_beam",
@@ -102,9 +120,19 @@ function sc_ship_register_shard()
             y: 0,
             angle: 0,
             muzzle_forward: 14,
-            scale: 0.62
+            scale: 0.62,
+
+            authored: {
+                sprite: s_plyr_central_hardpoint,
+                scale: 0.06
+            },
+
+            draw_script: sc_ship_shard_cannon_draw
         },
 
+        // ==================================================
+        // OUTER SECONDARY ROCKET HARDPOINTS
+        // ==================================================
         {
             key: "secondary_rocket_left",
             group: "secondary_rockets",
@@ -112,7 +140,14 @@ function sc_ship_register_shard()
             y: -23.5,
             angle: 0,
             muzzle_forward: 24,
-            scale: 1.05
+            scale: 1.05,
+
+            authored: {
+                sprite: s_plyr_outer_secondary_hardpoints,
+                scale: 0.05
+            },
+
+            draw_script: sc_ship_shard_cannon_draw
         },
 
         {
@@ -122,7 +157,14 @@ function sc_ship_register_shard()
             y: 23.5,
             angle: 0,
             muzzle_forward: 24,
-            scale: 1.05
+            scale: 1.05,
+
+            authored: {
+                sprite: s_plyr_outer_secondary_hardpoints,
+                scale: 0.05
+            },
+
+            draw_script: sc_ship_shard_cannon_draw
         }
     ],
 
@@ -281,7 +323,7 @@ function sc_ship_shard_visual_data()
             wing_hull: sc_ship_shard_wing_hull_dispatch,
             wing_armour: sc_ship_shard_wing_armour_dispatch,
             core: sc_ship_shard_core_draw,
-            hardpoint: sc_ship_shard_cannon_draw,
+            hardpoint: sc_ship_hardpoint_dispatch,
             muzzle_flash: sc_ship_shard_muzzle_flash_draw,
             shield: sc_ship_shard_shield_draw,
             thrust: sc_ship_shard_thrust_draw,
@@ -991,7 +1033,7 @@ function sc_ship_shard_death(_player)
         var _direction = _angle + 55 * _side + random_range(-14, 14);
 
         array_push(_fragments, sc_death_fragment_data(
-            _cache.hardpoint, _mount_x, _mount_y,
+            _cache.hardpoints[_i], _mount_x, _mount_y,
             _direction, random_range(2.5, 3.8),
             _angle + _hardpoint.angle, 10 * _side,
             _hardpoint.scale, _hardpoint.scale
