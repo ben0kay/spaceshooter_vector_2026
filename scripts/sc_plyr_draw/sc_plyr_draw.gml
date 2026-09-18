@@ -127,7 +127,7 @@ function sc_player_hardpoints_draw(_player, _draw_x, _draw_y, _colour, _alpha)
             + lengthdir_y(_hardpoint.y, _player_angle + 90)
             - lengthdir_y(_recoil, _angle);
 
-        draw_sprite_ext(_cache.hardpoint, 0, _mount_x, _mount_y, _hardpoint.scale, _hardpoint.scale, _angle, _colour, _alpha);
+        draw_sprite_ext(_cache.hardpoints[_i], 0, _mount_x, _mount_y, _hardpoint.scale, _hardpoint.scale, _angle, _colour, _alpha);
     }
 
     gpu_set_blendmode(bm_add);
