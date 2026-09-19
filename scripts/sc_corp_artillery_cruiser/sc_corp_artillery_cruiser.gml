@@ -296,19 +296,34 @@ function sc_enemy_register_corporation_artillery_cruiser()
 /// @description Returns the Artillery Cruiser's elite layered visual definition.
 function sc_enemy_corporation_artillery_cruiser_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 190,
         motion_strength: 0.65,
         palette: sc_faction_palette_elite_get(Faction.CORPORATION),
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_corp_artillery_cruiser_hull,
+                scale: 0.42,
+                fallback_script: sc_enemy_corporation_artillery_cruiser_body_draw
+            }
+        },
+
         core: { forward: -0.92, side: 0 },
 
         draw: {
-            body: sc_enemy_corporation_artillery_cruiser_body_draw,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_corporation_artillery_cruiser_core_draw
         },
 
         damage_layers: {
-            enabled: true,
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled: !_authored_enabled,
             damage_stages: 4,
             hull_draw_script: sc_enemy_corporation_artillery_cruiser_hull_draw,
             armour_draw_script: sc_enemy_corporation_artillery_cruiser_armour_draw
