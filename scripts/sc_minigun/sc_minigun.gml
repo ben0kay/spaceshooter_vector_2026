@@ -11,8 +11,8 @@ function sc_weapon_register_minigun()
 {
     return sc_weapon_register({
         identity: { key: "weapon_minigun", name: "Minigun" },
-		
-		resource: { type: ResourceType.BULLETS, cost: 1 },
+
+        resource: { type: ResourceType.BULLETS, cost: 1 },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
@@ -30,7 +30,7 @@ function sc_weapon_register_minigun()
                 effect: DamageEffect.NONE
             },
 
-            guidance: 0,
+            guidance: 0
         },
 
         shot: {
@@ -45,16 +45,19 @@ function sc_weapon_register_minigun()
             recoil: 2.5,
             muzzle_flash_duration: 3
         },
-		
-		heat: {
-    amount: 1.4,
-    cooling_delay: 35
-},
+
+        heat: {
+            amount: 1.4,
+            cooling_delay: 35
+        },
 
         audio: {
-            sound: noone,
-            volume: 0.2,
-            pitch_range: 0.12
+            mode: WeaponAudioMode.LOOP,
+            sound: snd_plyr_shard_minigun_fire,
+            volume: 0.28,
+            pitch_range: 0.02,
+            priority: 85,
+            release_delay: 4
         }
     });
 }

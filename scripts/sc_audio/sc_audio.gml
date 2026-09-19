@@ -31,6 +31,7 @@ function sc_audio_config_create()
             world_priority: 45,
             instance_maximum: 6,
             cooldown: 0,
+            loop_release_delay: 4,
             falloff_reference: 280,
             falloff_maximum: 1200,
             falloff_factor: 1
@@ -50,6 +51,7 @@ function sc_audio_init()
     global.audio = {
         initialized: true,
         active: [],
+        loops: [],
         cooldowns: {},
         paused: false,
         cleanup_tick: 0,
@@ -57,15 +59,14 @@ function sc_audio_init()
         listener_y: 0
     };
 
-    audio_listener_position(0,0,0);
+    audio_listener_position(0, 0, 0);
     return true;
 }
 
 /// @description Stops managed audio and releases its runtime data.
 function sc_audio_cleanup()
 {
-    if (!variable_global_exists("audio")
-    || !is_struct(global.audio))
+    if (!variable_global_exists("audio") || !is_struct(global.audio))
         return;
 
     var _active = global.audio.active;
@@ -79,6 +80,7 @@ function sc_audio_cleanup()
     }
 
     global.audio.active = [];
+    global.audio.loops = [];
     global.audio.cooldowns = {};
     global.audio.initialized = false;
 }
@@ -193,6 +195,18 @@ function sc_audio_active_register(_handle, _key, _category, _priority)
         category: _category,
         priority: _priority
     });
+}
+
+/// @description Removes one managed sound using its playback handle.
+function sc_audio_active_handle_remove(_handle)
+{
+    var _active = global.audio.active;
+
+    for (var _i = array_length(_active) - 1; _i >= 0; --_i)
+    {
+        if (_active[_i].handle == _handle)
+            array_delete(_active, _i, 1);
+    }
 }
 
 #endregion
@@ -378,34 +392,119 @@ function sc_audio_play_at(
 
 #region WEAPONS
 
-/// @description Plays the configured sound belonging to one weapon discharge.
+/// @description Refreshes or starts one managed weapon audio loop.
+function sc_audio_weapon_loop_refresh(_owner, _weapon, _x, _y)
+{
+    var _audio = _weapon.audio;
+    var _sound = sc_audio_value_get(_audio, "sound", noone);
+
+    if (_sound == noone)
+        return -1;
+
+    var _config = GCFG.audio.weapon;
+    var _weapon_key = variable_struct_exists(_weapon, "identity")
+        ? _weapon.identity.key
+        : string(_sound);
+
+    var _key = "weapon_loop_" + string(_owner) + "_" + _weapon_key;
+    var _release_delay = sc_audio_value_get(_audio, "release_delay", _config.loop_release_delay);
+    var _loops = global.audio.loops;
+
+    for (var _i = array_length(_loops) - 1; _i >= 0; --_i)
+    {
+        var _loop = _loops[_i];
+
+        if (_loop.key != _key)
+            continue;
+
+        if (audio_is_playing(_loop.handle))
+        {
+            _loop.release_tick = GAME_TICK + _release_delay;
+            return _loop.handle;
+        }
+
+        sc_audio_active_handle_remove(_loop.handle);
+        array_delete(_loops, _i, 1);
+    }
+
+    var _player = _owner.entity.faction == Faction.PLAYER;
+    var _category = _player ? AudioCategory.PLAYER : AudioCategory.WORLD;
+    var _priority = sc_audio_value_get(
+        _audio,
+        "priority",
+        _player ? _config.player_priority : _config.world_priority
+    );
+
+    if (!sc_audio_request_allowed(_sound, _key, _priority, 1, 0))
+        return -1;
+
+    var _handle = audio_play_sound(_sound, _priority, true);
+
+    if (_handle < 0)
+        return -1;
+
+    audio_sound_gain(_handle, sc_audio_gain_get(_category, sc_audio_value_get(_audio, "volume", 1)), 0);
+    audio_sound_pitch(_handle, sc_audio_pitch_get(sc_audio_value_get(_audio, "pitch_range", 0)));
+
+    sc_audio_active_register(_handle, _key, _category, _priority);
+
+    array_push(global.audio.loops, {
+        key: _key,
+        handle: _handle,
+        release_tick: GAME_TICK + _release_delay
+    });
+
+    return _handle;
+}
+
+/// @description Stops weapon loops that are no longer being refreshed.
+function sc_audio_weapon_loops_update()
+{
+    var _loops = global.audio.loops;
+
+    for (var _i = array_length(_loops) - 1; _i >= 0; --_i)
+    {
+        var _loop = _loops[_i];
+
+        if (GAME_TICK <= _loop.release_tick && audio_is_playing(_loop.handle))
+            continue;
+
+        if (audio_is_playing(_loop.handle))
+            audio_stop_sound(_loop.handle);
+
+        sc_audio_active_handle_remove(_loop.handle);
+        array_delete(_loops, _i, 1);
+    }
+}
+
+/// @description Plays or refreshes the configured sound belonging to one weapon discharge.
 function sc_audio_weapon_play(_owner, _weapon, _x, _y)
 {
-    if (!variable_struct_exists(_weapon,"audio"))
+    if (!variable_struct_exists(_weapon, "audio"))
         return -1;
 
     var _audio = _weapon.audio;
-    var _sound = sc_audio_value_get(_audio,"sound",noone);
+    var _mode = sc_audio_value_get(_audio, "mode", WeaponAudioMode.ONESHOT);
+
+    if (_mode == WeaponAudioMode.LOOP)
+        return sc_audio_weapon_loop_refresh(_owner, _weapon, _x, _y);
+
+    var _sound = sc_audio_value_get(_audio, "sound", noone);
 
     if (_sound == noone)
         return -1;
 
     var _config = GCFG.audio.weapon;
     var _player = _owner.entity.faction == Faction.PLAYER;
-    var _category = _player
-        ? AudioCategory.PLAYER
-        : AudioCategory.WORLD;
+    var _category = _player ? AudioCategory.PLAYER : AudioCategory.WORLD;
 
     var _priority = sc_audio_value_get(
         _audio,
         "priority",
-        _player
-            ? _config.player_priority
-            : _config.world_priority
+        _player ? _config.player_priority : _config.world_priority
     );
 
-    var _key = variable_struct_exists(_weapon,"identity")
-    && variable_struct_exists(_weapon.identity,"key")
+    var _key = variable_struct_exists(_weapon, "identity")
         ? "weapon_" + _weapon.identity.key
         : "weapon_" + string(_sound);
 
@@ -414,34 +513,14 @@ function sc_audio_weapon_play(_owner, _weapon, _x, _y)
         _x,
         _y,
         _category,
-        sc_audio_value_get(_audio,"volume",1),
-        sc_audio_value_get(_audio,"pitch_range",0),
+        sc_audio_value_get(_audio, "volume", 1),
+        sc_audio_value_get(_audio, "pitch_range", 0),
         _priority,
-        sc_audio_value_get(
-            _audio,
-            "instance_maximum",
-            _config.instance_maximum
-        ),
-        sc_audio_value_get(
-            _audio,
-            "cooldown",
-            _config.cooldown
-        ),
-        sc_audio_value_get(
-            _audio,
-            "falloff_reference",
-            _config.falloff_reference
-        ),
-        sc_audio_value_get(
-            _audio,
-            "falloff_maximum",
-            _config.falloff_maximum
-        ),
-        sc_audio_value_get(
-            _audio,
-            "falloff_factor",
-            _config.falloff_factor
-        ),
+        sc_audio_value_get(_audio, "instance_maximum", _config.instance_maximum),
+        sc_audio_value_get(_audio, "cooldown", _config.cooldown),
+        sc_audio_value_get(_audio, "falloff_reference", _config.falloff_reference),
+        sc_audio_value_get(_audio, "falloff_maximum", _config.falloff_maximum),
+        sc_audio_value_get(_audio, "falloff_factor", _config.falloff_factor),
         _key
     );
 }
@@ -520,7 +599,7 @@ function sc_audio_pause_set(_paused)
 
 #region UPDATE
 
-/// @description Updates the listener, pause state and staggered audio cleanup.
+/// @description Updates the listener, managed loops, pause state and staggered audio cleanup.
 function sc_audio_update()
 {
     if (!global.audio.initialized)
@@ -530,25 +609,20 @@ function sc_audio_update()
     {
         global.audio.listener_x = global.player_id.x;
         global.audio.listener_y = global.player_id.y;
-
-        audio_listener_position(
-            global.audio.listener_x,
-            global.audio.listener_y,
-            0
-        );
+        audio_listener_position(global.audio.listener_x, global.audio.listener_y, 0);
     }
 
-    sc_audio_pause_set(
-        global.LevelState == LevelState.PAUSED
-    );
+    sc_audio_pause_set(global.LevelState == LevelState.PAUSED);
 
-    if (global.audio.paused
-    || GAME_TICK < global.audio.cleanup_tick)
+    if (global.audio.paused)
         return;
 
-    global.audio.cleanup_tick =
-        GAME_TICK + GCFG.audio.cleanup_interval;
+    sc_audio_weapon_loops_update();
 
+    if (GAME_TICK < global.audio.cleanup_tick)
+        return;
+
+    global.audio.cleanup_tick = GAME_TICK + GCFG.audio.cleanup_interval;
     sc_audio_active_cleanup();
 }
 

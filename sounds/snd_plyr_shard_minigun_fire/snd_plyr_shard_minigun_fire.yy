@@ -1,6 +1,6 @@
 {
   "$GMSound":"v2",
-  "%Name":"snd_plyr_shar_minigun_fire",
+  "%Name":"snd_plyr_shard_minigun_fire",
   "audioGroupId":{
     "name":"audiogroup_default",
     "path":"audiogroups/audiogroup_default",
@@ -12,7 +12,7 @@
   "conversionMode":0,
   "duration":0.65,
   "exportDir":"",
-  "name":"snd_plyr_shar_minigun_fire",
+  "name":"snd_plyr_shard_minigun_fire",
   "parent":{
     "name":"Audio",
     "path":"folders/SCRIPTS---/PLAYER/ships/SHARD/Audio.yy",
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"snd_plyr_shar_minigun_fire.wav",
+  "soundFile":"snd_plyr_shard_minigun_fire.wav",
   "volume":1.0,
 }

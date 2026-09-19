@@ -126,3 +126,4 @@ enum DroneSlotState { EMPTY, DOCKED, DEPLOYED, RETURNING }
 enum DebugSpawnFormation { LINE, CIRCLE }
 
 enum AudioCategory { UI, PLAYER, WORLD, AMBIENT, MUSIC }
+enum WeaponAudioMode { ONESHOT, LOOP }
