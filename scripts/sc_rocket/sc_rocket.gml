@@ -180,9 +180,11 @@ function sc_weapon_register_shard_missile_salvo()
         },
 
         audio: {
-            sound: noone,
-            volume: 0.5,
-            pitch_range: 0.08
+            sound: snd_plyr_shard_rocket_fire,
+            volume: 0.32,
+            pitch_range: 0.1,
+            instance_maximum: 4,
+            cooldown: 2
         }
     });
 }
@@ -260,9 +262,11 @@ function sc_weapon_register_shard_rocket()
         },
 
         audio: {
-            sound: noone,
+            sound: snd_plyr_shard_rocket_fire,
             volume: 0.55,
-            pitch_range: 0.05
+            pitch_range: 0.05,
+            instance_maximum: 3,
+            cooldown: 2
         }
     });
 }

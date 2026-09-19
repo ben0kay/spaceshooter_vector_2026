@@ -188,12 +188,17 @@ function sc_weapon_projectile_target_apply(_projectile, _target)
     return true;
 }
 
+/// @description Triggers shared audiovisual effects for one weapon discharge.
+function sc_weapon_discharge_effects(_owner, _weapon, _x, _y)
+{
+    sc_audio_weapon_play(_owner, _weapon, _x, _y);
+    return true;
+}
+
 /// @description Fires one registered weapon using a generic owner and shot pattern.
 function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_multiplier, _projectile_speed_multiplier = 1)
 {
     var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
-
-    sc_audio_weapon_play(_owner, _weapon, _x, _y);
 
     var _source = {
         owner_id: _owner,
@@ -223,6 +228,9 @@ function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_
         if (_i < array_length(_targets))
             sc_weapon_projectile_target_apply(_delivery, _targets[_i]);
     }
+
+    if (_first_delivery != noone)
+        sc_weapon_discharge_effects(_owner, _weapon, _x, _y);
 
     return _amount == 1 ? _first_delivery : true;
 }

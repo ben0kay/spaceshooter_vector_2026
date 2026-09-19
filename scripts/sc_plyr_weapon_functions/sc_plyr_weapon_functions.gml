@@ -87,10 +87,7 @@ function sc_player_weapon_burst_begin(
 }
 
 /// @description Releases the next projectile belonging to an active player burst.
-function sc_player_weapon_burst_update(
-    _player,_runtime,_weapon,_shot,_firing,
-    _x,_y,_direction,_hardpoint_runtime
-)
+function sc_player_weapon_burst_update(_player, _runtime, _weapon, _shot, _firing, _x, _y, _direction, _hardpoint_runtime)
 {
     var _burst = _runtime.burst;
 
@@ -104,47 +101,28 @@ function sc_player_weapon_burst_update(
         damage_multiplier: _player.ship.stats.final.damage_multiplier
     };
 
-    var _shot_direction = sc_weapon_shot_direction_get(
-        _shot,_direction,_index
-    );
-
-    var _delivery = sc_weapon_delivery_fire(
-        _player,_weapon,_source,
-        _x,_y,_shot_direction
-    );
+    var _shot_direction = sc_weapon_shot_direction_get(_shot, _direction, _index);
+    var _delivery = sc_weapon_delivery_fire(_player, _weapon, _source, _x, _y, _shot_direction);
 
     if (!_delivery) return false;
 
-    sc_player_weapon_heat_add(
-        _player,_runtime,_weapon
-    );
+    sc_weapon_discharge_effects(_player, _weapon, _x, _y);
+    sc_player_weapon_heat_add(_player, _runtime, _weapon);
 
     if (_index < array_length(_burst.targets))
-    {
-        sc_weapon_projectile_target_apply(
-            _delivery,
-            _burst.targets[_index]
-        );
-    }
+        sc_weapon_projectile_target_apply(_delivery, _burst.targets[_index]);
 
     if (_firing.mount_mode == WeaponMountMode.HARDPOINT)
     {
         _hardpoint_runtime.recoil = _firing.recoil;
         _hardpoint_runtime.muzzle_flash = _firing.muzzle_flash_duration;
-        _hardpoint_runtime.muzzle_flash_max = max(
-            1,_firing.muzzle_flash_duration
-        );
+        _hardpoint_runtime.muzzle_flash_max = max(1, _firing.muzzle_flash_duration);
 
-        var _hardpoints = sc_player_hardpoint_group_get(
-            _player,_firing
-        );
-
-        _runtime.hardpoint_cursor = (
-            _runtime.hardpoint_cursor + 1
-        ) mod array_length(_hardpoints);
+        var _hardpoints = sc_player_hardpoint_group_get(_player, _firing);
+        _runtime.hardpoint_cursor = (_runtime.hardpoint_cursor + 1) mod array_length(_hardpoints);
     }
 
-    _burst.shot_index++;
+    _burst.shot_index += 1;
 
     if (_burst.shot_index >= _burst.shot_amount)
     {
@@ -155,11 +133,7 @@ function sc_player_weapon_burst_update(
     }
 
     var _fire_rate = _player.ship.stats.final.fire_rate_multiplier;
-
-    _burst.next_shot_tick = GAME_TICK + max(
-        1,
-        round(_shot.projectile_interval / _fire_rate)
-    );
+    _burst.next_shot_tick = GAME_TICK + max(1, round(_shot.projectile_interval / _fire_rate));
 
     return true;
 }
