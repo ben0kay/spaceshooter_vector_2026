@@ -446,6 +446,49 @@ function sc_audio_weapon_play(_owner, _weapon, _x, _y)
     );
 }
 
+/// @description Plays the configured positional sound belonging to one projectile detonation.
+function sc_audio_projectile_detonation_play(_projectile)
+{
+    var _data = _projectile.projectile;
+    var _definition = variable_struct_get(global.data.projectiles, _data.key);
+
+    if (!variable_struct_exists(_definition, "detonation")
+    || !variable_struct_exists(_definition.detonation, "audio"))
+        return -1;
+
+    var _audio = _definition.detonation.audio;
+    var _sound = sc_audio_value_get(_audio, "sound", noone);
+
+    if (_sound == noone)
+        return -1;
+
+    var _config = GCFG.audio.defaults;
+    var _volume = sc_audio_value_get(_audio, "volume", 1);
+
+    if (sc_audio_value_get(_audio, "scale_volume", false))
+        _volume *= clamp(_data.scale, 0.35, 1.5);
+
+    var _category = _data.source.faction == Faction.PLAYER
+        ? AudioCategory.PLAYER
+        : AudioCategory.WORLD;
+
+    return sc_audio_play_at(
+        _sound,
+        _projectile.x,
+        _projectile.y,
+        _category,
+        _volume,
+        sc_audio_value_get(_audio, "pitch_range", 0),
+        sc_audio_value_get(_audio, "priority", _config.priority),
+        sc_audio_value_get(_audio, "instance_maximum", _config.instance_maximum),
+        sc_audio_value_get(_audio, "cooldown", _config.cooldown),
+        sc_audio_value_get(_audio, "falloff_reference", _config.falloff_reference),
+        sc_audio_value_get(_audio, "falloff_maximum", _config.falloff_maximum),
+        sc_audio_value_get(_audio, "falloff_factor", _config.falloff_factor),
+        "projectile_detonation_" + _data.key
+    );
+}
+
 #endregion
 
 #region PAUSE

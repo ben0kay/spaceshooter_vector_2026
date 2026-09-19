@@ -13,17 +13,30 @@ function sc_projectile_register_shard_rocket()
 
     return sc_projectile_register({
         identity: { key: "projectile_shard_rocket", name: "Shard Rocket" },
-		projectile_motion: ProjectileMotion.ROCKET,
+        projectile_motion: ProjectileMotion.ROCKET,
         projectile_class: ProjectileClass.HEAVY,
         collision: { radius: 7 },
-		
-		defence: {
+
+        defence: {
             armour: 0,
             hull: 8,
             detonate_on_destroy: true
         },
 
         detonation: {
+            audio: {
+                sound: snd_plyr_shard_rocket_explode,
+                volume: 0.7,
+                scale_volume: true,
+                pitch_range: 0.08,
+                priority: 75,
+                instance_maximum: 12,
+                cooldown: 0,
+                falloff_reference: 360,
+                falloff_maximum: 1500,
+                falloff_factor: 1
+            },
+
             area: {
                 shape: AttackAreaShape.CIRCLE,
                 geometry: { radius: 82 },
@@ -64,7 +77,7 @@ function sc_projectile_register_shard_rocket()
             }
         },
 
-                visual: {
+        visual: {
             radius: 8,
             length: 34,
             palette: _palette,

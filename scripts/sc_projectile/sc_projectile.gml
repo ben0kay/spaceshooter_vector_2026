@@ -403,6 +403,8 @@ function sc_projectile_detonate(_projectile)
 
     _data.runtime.detonated = true;
 
+    sc_audio_projectile_detonation_play(_projectile);
+
     sc_attack_area_create(
         _detonation.area,
         _data.source,
