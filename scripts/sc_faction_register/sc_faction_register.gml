@@ -92,16 +92,16 @@ function sc_faction_register_simulant()
             },
 
 		    critical_response: {
-    chance: 0.05,
-    trigger_layer: DefenceLayer.HULL,
-    trigger_ratio: 0.1,
-    max_attempts: 1,
-    cooldown: 300,
-    speed_scale: 1,
-    sway_amount: 4,
-    sway_speed: 0.025,
+			    chance: 0.05,
+			    trigger_layer: DefenceLayer.HULL,
+			    trigger_ratio: 0.1,
+			    max_attempts: 1,
+			    cooldown: 300,
+			    speed_scale: 1,
+			    sway_amount: 4,
+			    sway_speed: 0.025,
 
-    responses: [
+		   responses: [
         {
             response: EnemyCriticalResponse.FLEE,
             weight: 100,

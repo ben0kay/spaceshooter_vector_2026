@@ -859,10 +859,22 @@ function sc_enemy_register_sim_nexus()
 /// @description Returns the Nexus's complete visual definition.
 function sc_enemy_sim_nexus_visual_data()
 {
+    var _authored_enabled = true;
+
     return {
         radius: 300,
         motion_strength: 0.65,
         palette: sc_faction_palette_get(Faction.SIMULANT),
+
+        authored: {
+            enabled: _authored_enabled,
+
+            body: {
+                sprite: s_sim_nexus_hull,
+                scale: 0.54,
+                fallback_script: sc_enemy_sim_nexus_body_draw
+            }
+        },
 
         core: {
             forward: 0,
@@ -870,12 +882,14 @@ function sc_enemy_sim_nexus_visual_data()
         },
 
         draw: {
-            body: sc_enemy_sim_nexus_body_draw,
+            body: sc_enemy_body_dispatch,
             core: sc_enemy_sim_nexus_core_draw
         },
 
         damage_layers: {
-            enabled: true,
+            // Authored damage layers do not exist yet.
+            // Disabling authored mode restores primitive damage stages.
+            enabled: !_authored_enabled,
             damage_stages: 4,
             hull_draw_script: sc_enemy_sim_nexus_hull_draw,
             armour_draw_script: sc_enemy_sim_nexus_armour_draw
@@ -890,8 +904,8 @@ function sc_enemy_sim_nexus_visual_data()
                 sc_enemy_sim_nexus_fragment_module_draw
             ]
         },
-			
-		thrust: {
+
+        thrust: {
             draw_script: sc_enemy_simulant_thrust_draw,
             ignition_script: sc_particles_enemy_thrust_ignition,
             particle_script: sc_particles_enemy_thrust_emit
