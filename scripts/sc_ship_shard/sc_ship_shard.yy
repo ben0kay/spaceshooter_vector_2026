@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"sc_ship_shard",
   "parent":{
-    "name":"ships",
-    "path":"folders/SCRIPTS---/PLAYER/ships.yy",
+    "name":"SHARD",
+    "path":"folders/SCRIPTS---/PLAYER/ships/SHARD.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
