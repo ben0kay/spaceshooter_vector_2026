@@ -181,9 +181,9 @@ function sc_weapon_register_shard_missile_salvo()
 
         audio: {
             sound: snd_plyr_shard_rocket_fire,
-            volume: 0.32,
+            volume: 0.2,
             pitch_range: 0.1,
-            instance_maximum: 4,
+            instance_maximum: 12,
             cooldown: 2
         }
     });

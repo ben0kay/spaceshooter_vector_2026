@@ -72,26 +72,67 @@ function sc_player_module_compatible(_item_key,_system)
         && _definition.module.system == _system;
 }
 
-/// @description Installs one fixed-quality module from cargo into an empty system socket.
-function sc_player_module_install(_player,_cargo_slot,_system,_socket_index)
+/// @description Installs or replaces one fixed-quality ship-system module.
+function sc_player_module_install(_player, _cargo_slot, _system, _socket_index)
 {
     var _cargo_item = _player.inventory.slots[_cargo_slot];
     if (is_undefined(_cargo_item)) return false;
-    if (!sc_player_module_compatible(_cargo_item.key,_system)) return false;
+    if (!sc_player_module_compatible(_cargo_item.key, _system)) return false;
 
     var _system_key = sc_player_module_system_key_get(_system);
     if (_system_key == "") return false;
 
-    var _sockets = variable_struct_get(_player.inventory.modules,_system_key);
+    var _sockets = variable_struct_get(_player.inventory.modules, _system_key);
     if (_socket_index < 0 || _socket_index >= array_length(_sockets)) return false;
-    if (!is_undefined(_sockets[_socket_index])) return false;
 
-    var _removed = sc_player_inventory_slot_remove(_player,_cargo_slot,1);
+    var _installed = _sockets[_socket_index];
+    var _new_key = _cargo_item.key;
+    var _new_name = _cargo_item.name;
+
+    if (!is_undefined(_installed))
+    {
+        var _return_space = sc_player_inventory_space_get(
+            _player,
+            _installed.key
+        );
+
+        var _source_slot_will_empty = _cargo_item.amount <= 1;
+
+        if (_return_space <= 0 && !_source_slot_will_empty)
+            return false;
+    }
+
+    var _removed = sc_player_inventory_slot_remove(
+        _player,
+        _cargo_slot,
+        1
+    );
+
     if (_removed.amount <= 0) return false;
 
+    if (!is_undefined(_installed))
+    {
+        var _returned = sc_player_inventory_add(
+            _player,
+            _installed.key,
+            1
+        );
+
+        if (_returned.accepted <= 0)
+        {
+            sc_player_inventory_add(
+                _player,
+                _new_key,
+                1
+            );
+
+            return false;
+        }
+    }
+
     _sockets[_socket_index] = {
-        key: _cargo_item.key,
-        name: _cargo_item.name
+        key: _new_key,
+        name: _new_name
     };
 
     sc_player_module_modifiers_rebuild(_player);
@@ -661,17 +702,32 @@ function sc_inventory_systems_readout_get(_hud,_player,_card)
 }
 
 /// @description Draws one selectable ship-system card and its three module sockets.
-function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_origin_x,_origin_y)
+function sc_inventory_systems_card_draw(_hud, _player, _card, _card_index, _data, _origin_x, _origin_y)
 {
     var _palette = _hud.data.palette;
     var _socket = _data.socket;
-    var _system = variable_struct_get(_player.ship.systems,_card.key);
+    var _system = variable_struct_get(_player.ship.systems, _card.key);
     var _x = _origin_x + _card.x;
     var _y = _origin_y + _card.y;
-    var _condition = round(_system.condition_current/max(1,_system.condition_max)*100);
+    var _condition = round(_system.condition_current/max(1, _system.condition_max)*100);
     var _selected = _hud.inventory.selected_system == _card_index;
     var _status = "ONLINE";
     var _status_colour = _palette.accent;
+    var _dragging = _hud.inventory.drag.active;
+    var _drag_compatible = false;
+
+    if (_dragging)
+    {
+        var _drag_item = _player.inventory.slots[
+            _hud.inventory.drag.source_slot
+        ];
+
+        if (!is_undefined(_drag_item))
+            _drag_compatible = sc_player_module_compatible(
+                _drag_item.key,
+                _card.system
+            );
+    }
 
     if (!_system.enabled || _system.condition_current <= 0)
     {
@@ -686,27 +742,53 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
 
     draw_set_alpha(0.96);
     draw_set_colour(_selected ? _palette.panel_light : _palette.background);
-    draw_rectangle(_x,_y,_x + _data.card_width,_y + _data.card_height,false);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _data.card_width,
+        _y + _data.card_height,
+        false
+    );
 
     draw_set_colour(_selected ? _palette.accent : _status_colour);
     draw_set_alpha(_selected ? 1 : 0.65);
-    draw_rectangle(_x,_y,_x + _data.card_width,_y + _data.card_height,true);
-    draw_line(_x + 14,_y + 37,_x + _data.card_width - 14,_y + 37);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _data.card_width,
+        _y + _data.card_height,
+        true
+    );
+
+    draw_line(
+        _x + 14,
+        _y + 37,
+        _x + _data.card_width - 14,
+        _y + 37
+    );
 
     draw_set_alpha(1);
     draw_set_colour(_palette.text);
-    draw_text(_x + 16,_y + 19,_card.name);
+    draw_text(_x + 16, _y + 19, _card.name);
 
     draw_set_halign(fa_right);
     draw_set_colour(_status_colour);
-    draw_text(_x + _data.card_width - 16,_y + 19,_status);
+    draw_text(
+        _x + _data.card_width - 16,
+        _y + 19,
+        _status
+    );
     draw_set_halign(fa_left);
 
     draw_set_colour(_palette.muted);
-    draw_text(_x + 16,_y + 61,"CONDITION");
+    draw_text(_x + 16, _y + 61, "CONDITION");
 
     draw_set_colour(_palette.text);
-    draw_text(_x + 112,_y + 61,string(_condition) + "%");
+    draw_text(
+        _x + 112,
+        _y + 61,
+        string(_condition) + "%"
+    );
 
     if (_system.disruption.remaining > 0)
     {
@@ -714,7 +796,9 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
         draw_text(
             _x + 16,
             _y + 87,
-            "DISRUPTION // " + string_format(_system.disruption.remaining/60,1,1) + "s"
+            "DISRUPTION // "
+                + string_format(_system.disruption.remaining/60, 1, 1)
+                + "s"
         );
     }
 
@@ -726,20 +810,40 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
             _socket_index
         );
 
-        var _socket_x = _x + _socket.offset_x + _socket_index*(_socket.size + _socket.gap);
-        var _socket_y = _y + _socket.offset_y;
+        var _socket_x = _x
+            + _socket.offset_x
+            + _socket_index*(_socket.size + _socket.gap);
 
+        var _socket_y = _y + _socket.offset_y;
+        var _socket_colour = is_undefined(_installed)
+            ? _palette.outline
+            : _palette.accent;
+
+        var _socket_alpha = 1;
+
+        if (_dragging)
+        {
+            _socket_colour = _drag_compatible
+                ? _palette.warning
+                : _palette.outline;
+
+            _socket_alpha = _drag_compatible ? 1 : 0.25;
+        }
+
+        draw_set_alpha(_socket_alpha);
         draw_set_colour(_palette.void);
         draw_rectangle(
-            _socket_x,_socket_y,
+            _socket_x,
+            _socket_y,
             _socket_x + _socket.size,
             _socket_y + _socket.size,
             false
         );
 
-        draw_set_colour(is_undefined(_installed) ? _palette.outline : _palette.accent);
+        draw_set_colour(_socket_colour);
         draw_rectangle(
-            _socket_x,_socket_y,
+            _socket_x,
+            _socket_y,
             _socket_x + _socket.size,
             _socket_y + _socket.size,
             true
@@ -749,7 +853,7 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
         {
             draw_set_halign(fa_center);
             draw_set_valign(fa_middle);
-            draw_set_colour(_palette.muted);
+            draw_set_colour(_drag_compatible ? _palette.warning : _palette.muted);
             draw_text(
                 _socket_x + _socket.size*0.5,
                 _socket_y + _socket.size*0.5,
@@ -758,14 +862,22 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
         }
         else
         {
-            var _sprite = sc_resource_pickup_visual_cache_get(_installed.key,0);
+            var _sprite = sc_resource_pickup_visual_cache_get(
+                _installed.key,
+                0
+            );
 
             if (sprite_exists(_sprite))
                 draw_sprite_ext(
-                    _sprite,0,
+                    _sprite,
+                    0,
                     _socket_x + _socket.size*0.5,
                     _socket_y + _socket.size*0.5,
-                    0.68,0.68,0,c_white,1
+                    0.68,
+                    0.68,
+                    0,
+                    c_white,
+                    _socket_alpha
                 );
         }
     }
@@ -776,20 +888,35 @@ function sc_inventory_systems_card_draw(_hud,_player,_card,_card_index,_data,_or
     draw_set_colour(c_white);
 }
 
-/// @description Draws the selected ship system's live status and calculated values.
-function sc_inventory_systems_inspector_draw(_hud,_player,_origin_x,_origin_y)
+/// @description Draws the selected system's live values and installed modules.
+function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y)
 {
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _inspector = _data.inspector;
-    var _selected = clamp(_hud.inventory.selected_system,0,array_length(_data.cards) - 1);
+    var _selected = clamp(
+        _hud.inventory.selected_system,
+        0,
+        array_length(_data.cards) - 1
+    );
+
     var _card = _data.cards[_selected];
-    var _system = variable_struct_get(_player.ship.systems,_card.key);
-    var _rows = sc_inventory_systems_readout_get(_hud,_player,_card);
-    var _effectiveness = sc_ship_system_effectiveness_get(_player.ship,_card.key);
-    var _condition = round(_system.condition_current/max(1,_system.condition_max)*100);
+    var _system = variable_struct_get(_player.ship.systems, _card.key);
+    var _rows = sc_inventory_systems_readout_get(_hud, _player, _card);
+    var _effectiveness = sc_ship_system_effectiveness_get(
+        _player.ship,
+        _card.key
+    );
+
+    var _condition = round(
+        _system.condition_current
+        / max(1, _system.condition_max)
+        * 100
+    );
+
     var _x = _origin_x + _inspector.x;
     var _y = _origin_y + _inspector.y;
+    var _divider_x = _x + 430;
     var _status = "ONLINE";
     var _status_colour = _palette.accent;
 
@@ -807,7 +934,8 @@ function sc_inventory_systems_inspector_draw(_hud,_player,_origin_x,_origin_y)
     draw_set_alpha(0.96);
     draw_set_colour(_palette.background);
     draw_rectangle(
-        _x,_y,
+        _x,
+        _y,
         _x + _inspector.width,
         _y + _inspector.height,
         false
@@ -815,42 +943,73 @@ function sc_inventory_systems_inspector_draw(_hud,_player,_origin_x,_origin_y)
 
     draw_set_colour(_status_colour);
     draw_rectangle(
-        _x,_y,
+        _x,
+        _y,
         _x + _inspector.width,
         _y + _inspector.height,
         true
     );
 
     draw_set_colour(_palette.accent);
-    draw_text(_x + 20,_y + 25,"SYSTEM STATUS // " + _card.name);
+    draw_text(
+        _x + 20,
+        _y + 25,
+        "SYSTEM STATUS // " + _card.name
+    );
 
     draw_set_halign(fa_right);
     draw_set_colour(_status_colour);
-    draw_text(_x + _inspector.width - 20,_y + 25,_status);
+    draw_text(
+        _x + _inspector.width - 20,
+        _y + 25,
+        _status
+    );
     draw_set_halign(fa_left);
 
     draw_set_colour(_palette.outline);
-    draw_line(_x + 20,_y + 54,_x + _inspector.width - 20,_y + 54);
+    draw_line(
+        _x + 20,
+        _y + 54,
+        _x + _inspector.width - 20,
+        _y + 54
+    );
+
+    draw_line(
+        _divider_x,
+        _y + 70,
+        _divider_x,
+        _y + _inspector.height - 20
+    );
 
     draw_set_colour(_palette.muted);
-    draw_text(_x + 20,_y + 82,"CONDITION");
-    draw_text(_x + 20,_y + 110,"EFFECTIVENESS");
+    draw_text(_x + 20, _y + 82, "CONDITION");
+    draw_text(_x + 20, _y + 110, "EFFECTIVENESS");
 
     draw_set_halign(fa_right);
     draw_set_colour(_palette.text);
-    draw_text(_x + _inspector.width - 20,_y + 82,string(_condition) + "%");
     draw_text(
-        _x + _inspector.width - 20,
+        _divider_x - 20,
+        _y + 82,
+        string(_condition) + "%"
+    );
+
+    draw_text(
+        _divider_x - 20,
         _y + 110,
         string(round(_effectiveness*100)) + "%"
     );
     draw_set_halign(fa_left);
 
     draw_set_colour(_palette.accent);
-    draw_text(_x + 20,_y + 154,"LIVE SYSTEM VALUES");
+    draw_text(_x + 20, _y + 154, "LIVE SYSTEM VALUES");
 
     draw_set_colour(_palette.outline);
-    draw_line(_x + 20,_y + 181,_x + _inspector.width - 20,_y + 181);
+    draw_line(
+        _x + 20,
+        _y + 181,
+        _divider_x - 20,
+        _y + 181
+    );
 
     for (var _i = 0; _i < array_length(_rows); ++_i)
     {
@@ -858,29 +1017,152 @@ function sc_inventory_systems_inspector_draw(_hud,_player,_origin_x,_origin_y)
         var _row_y = _y + 212 + _i*38;
 
         draw_set_colour(_palette.muted);
-        draw_text(_x + 20,_row_y,_row.label);
+        draw_text(
+            _x + 20,
+            _row_y,
+            _row.label
+        );
 
         draw_set_halign(fa_right);
         draw_set_colour(_palette.text);
-        draw_text(_x + _inspector.width - 20,_row_y,_row.value);
+        draw_text(
+            _divider_x - 20,
+            _row_y,
+            _row.value
+        );
         draw_set_halign(fa_left);
     }
+
+    var _module_x = _divider_x + 20;
+    var _module_width = _inspector.width - 470;
+
+    draw_set_colour(_palette.accent);
+    draw_text(
+        _module_x,
+        _y + 82,
+        "INSTALLED MODULES"
+    );
+
+    for (var _socket_index = 0; _socket_index < 3; ++_socket_index)
+    {
+        var _installed = sc_player_module_get(
+            _player,
+            _card.system,
+            _socket_index
+        );
+
+        var _slot_y = _y + 115 + _socket_index*120;
+
+        draw_set_colour(_palette.void);
+        draw_rectangle(
+            _module_x,
+            _slot_y,
+            _module_x + _module_width,
+            _slot_y + 102,
+            false
+        );
+
+        draw_set_colour(
+            is_undefined(_installed)
+                ? _palette.outline
+                : _palette.accent
+        );
+
+        draw_rectangle(
+            _module_x,
+            _slot_y,
+            _module_x + _module_width,
+            _slot_y + 102,
+            true
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text(
+            _module_x + 12,
+            _slot_y + 15,
+            "SOCKET " + string(_socket_index + 1)
+        );
+
+        if (is_undefined(_installed))
+        {
+            draw_set_colour(_palette.muted);
+            draw_text(
+                _module_x + 12,
+                _slot_y + 52,
+                "EMPTY MODULE SOCKET"
+            );
+
+            continue;
+        }
+
+        var _definition = variable_struct_get(
+            global.data.items,
+            _installed.key
+        );
+
+        var _sprite = sc_resource_pickup_visual_cache_get(
+            _installed.key,
+            0
+        );
+
+        if (sprite_exists(_sprite))
+            draw_sprite_ext(
+                _sprite,
+                0,
+                _module_x + 40,
+                _slot_y + 63,
+                0.8,
+                0.8,
+                0,
+                c_white,
+                1
+            );
+
+        draw_set_colour(_palette.text);
+        draw_text(
+            _module_x + 78,
+            _slot_y + 42,
+            _installed.name
+        );
+
+        draw_set_colour(_palette.muted);
+        draw_text_ext(
+            _module_x + 78,
+            _slot_y + 66,
+            _definition.description,
+            16,
+            _module_width - 92
+        );
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
 }
 
 /// @description Draws carried modules in the Systems-tab bottom storage strip.
-function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
+function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
 {
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _storage = _data.storage;
     var _indices = sc_inventory_module_indices_get(_player);
+    var _selected = clamp(
+        _hud.inventory.selected_system,
+        0,
+        array_length(_data.cards) - 1
+    );
+
+    var _selected_system = _data.cards[_selected].system;
     var _panel_x = _origin_x + _storage.x;
     var _panel_y = _origin_y + 700;
 
     draw_set_alpha(0.96);
     draw_set_colour(_palette.background);
     draw_rectangle(
-        _panel_x,_panel_y,
+        _panel_x,
+        _panel_y,
         _panel_x + _storage.width,
         _origin_y + 885,
         false
@@ -888,20 +1170,26 @@ function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
 
     draw_set_colour(_palette.outline);
     draw_rectangle(
-        _panel_x,_panel_y,
+        _panel_x,
+        _panel_y,
         _panel_x + _storage.width,
         _origin_y + 885,
         true
     );
 
     draw_set_colour(_palette.accent);
-    draw_text(_panel_x + 16,_panel_y + 18,"AVAILABLE SYSTEM MODULES");
+    draw_text(
+        _panel_x + 16,
+        _panel_y + 18,
+        "AVAILABLE SYSTEM MODULES"
+    );
 
     draw_set_colour(_palette.muted);
     draw_text(
         _panel_x + 260,
         _panel_y + 18,
-        "DRAG A MODULE INTO A COMPATIBLE SOCKET"
+        "COMPATIBLE MODULES ARE HIGHLIGHTED FOR "
+            + _data.cards[_selected].name
     );
 
     var _stride = _storage.slot_size + _storage.gap;
@@ -912,24 +1200,50 @@ function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
         var _row = floor(_i/_storage.columns);
         var _slot_index = _indices[_i];
         var _item = _player.inventory.slots[_slot_index];
-        var _slot_x = _origin_x + _storage.x + _column*_stride;
-        var _slot_y = _origin_y + _storage.y + _row*_stride;
-        var _sprite = sc_resource_pickup_visual_cache_get(_item.key,_i mod 4);
+        var _compatible = sc_player_module_compatible(
+            _item.key,
+            _selected_system
+        );
+
+        var _slot_x = _origin_x
+            + _storage.x
+            + _column*_stride;
+
+        var _slot_y = _origin_y
+            + _storage.y
+            + _row*_stride;
+
+        var _sprite = sc_resource_pickup_visual_cache_get(
+            _item.key,
+            _i mod 4
+        );
+
         var _dragged = _hud.inventory.drag.active
             && _hud.inventory.drag.source_slot == _slot_index;
 
-        draw_set_alpha(_dragged ? 0.3 : 1);
+        var _alpha = _dragged
+            ? 0.25
+            : (_compatible ? 1 : 0.32);
+
+        draw_set_alpha(_alpha);
         draw_set_colour(_palette.void);
         draw_rectangle(
-            _slot_x,_slot_y,
+            _slot_x,
+            _slot_y,
             _slot_x + _storage.slot_size,
             _slot_y + _storage.slot_size,
             false
         );
 
-        draw_set_colour(_palette.accent);
+        draw_set_colour(
+            _compatible
+                ? _palette.accent
+                : _palette.outline
+        );
+
         draw_rectangle(
-            _slot_x,_slot_y,
+            _slot_x,
+            _slot_y,
             _slot_x + _storage.slot_size,
             _slot_y + _storage.slot_size,
             true
@@ -937,24 +1251,35 @@ function sc_inventory_systems_storage_draw(_hud,_player,_origin_x,_origin_y)
 
         if (sprite_exists(_sprite))
             draw_sprite_ext(
-                _sprite,0,
+                _sprite,
+                0,
                 _slot_x + _storage.slot_size*0.5,
                 _slot_y + _storage.slot_size*0.5,
-                1.1,1.1,0,c_white,
-                _dragged ? 0.3 : 1
+                1.1,
+                1.1,
+                0,
+                c_white,
+                _alpha
             );
 
         draw_set_halign(fa_right);
-        draw_set_colour(_palette.text);
+        draw_set_colour(
+            _compatible
+                ? _palette.text
+                : _palette.muted
+        );
+
         draw_text(
             _slot_x + _storage.slot_size - 5,
             _slot_y + _storage.slot_size - 9,
             "x" + string(_item.amount)
         );
+
         draw_set_halign(fa_left);
     }
 
     draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Draws the complete live ship-systems and module interface.

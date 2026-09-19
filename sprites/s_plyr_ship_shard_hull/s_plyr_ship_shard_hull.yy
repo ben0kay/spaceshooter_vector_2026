@@ -25,8 +25,8 @@
   "nineSlice":null,
   "origin":4,
   "parent":{
-    "name":"SHARD",
-    "path":"folders/SCRIPTS---/PLAYER/ships/SHARD.yy",
+    "name":"Sprites",
+    "path":"folders/SCRIPTS---/PLAYER/ships/SHARD/Sprites.yy",
   },
   "preMultiplyAlpha":false,
   "resourceType":"GMSprite",

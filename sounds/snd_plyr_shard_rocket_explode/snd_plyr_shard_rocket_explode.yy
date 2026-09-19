@@ -1,6 +1,6 @@
 {
   "$GMSound":"v2",
-  "%Name":"snd_plyr_shard_rocket_fire",
+  "%Name":"snd_plyr_shard_rocket_explode",
   "audioGroupId":{
     "name":"audiogroup_default",
     "path":"audiogroups/audiogroup_default",
@@ -10,9 +10,9 @@
   "compression":0,
   "compressionQuality":4,
   "conversionMode":0,
-  "duration":0.82,
+  "duration":1.35,
   "exportDir":"",
-  "name":"snd_plyr_shard_rocket_fire",
+  "name":"snd_plyr_shard_rocket_explode",
   "parent":{
     "name":"Audio",
     "path":"folders/SCRIPTS---/PLAYER/ships/SHARD/Audio.yy",
@@ -21,6 +21,6 @@
   "resourceType":"GMSound",
   "resourceVersion":"2.0",
   "sampleRate":44100,
-  "soundFile":"snd_plyr_shard_rocket_fire.wav",
+  "soundFile":"snd_plyr_shard_rocket_explode.wav",
   "volume":1.0,
 }
