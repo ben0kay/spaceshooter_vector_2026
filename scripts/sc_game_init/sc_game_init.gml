@@ -15,6 +15,7 @@ function sc_game_init()
     global.player_id = noone;
 
     if (!sc_config_init()) { show_debug_message("GAME INIT FAILED - CONFIG"); return false; }
+    if (!sc_audio_init()) { show_debug_message("GAME INIT FAILED - AUDIO"); return false; }
     if (!sc_optimization_init()) { show_debug_message("GAME INIT FAILED - OPTIMIZATION"); return false; }
     if (!sc_data_init()) { show_debug_message("GAME INIT FAILED - DATA"); return false; }
     if (!sc_particles_init()) { show_debug_message("GAME INIT FAILED - PARTICLES"); return false; }
@@ -35,9 +36,10 @@ function sc_game_init()
     return true;
 }
 
-/// @description Releases all generated runtime visual resources.
+/// @description Releases all generated runtime resources.
 function sc_game_cleanup()
 {
+    sc_audio_cleanup();
     sc_projectile_visual_cache_destroy();
     sc_ship_visual_cache_destroy();
     sc_enemy_visual_cache_destroy();

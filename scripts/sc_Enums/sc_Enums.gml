@@ -92,6 +92,7 @@ enum ShipSystemType { ENGINES, THRUSTERS, SHIELD_GENERATOR, REACTOR, COOLING, WE
 //==================================================
 enum FacilityService { REFINERY, FABRICATOR, REPAIR }
 enum StructureCollisionShape { CIRCLE, RECTANGLE }
+enum FacilityRecipeCategory { REFINED, COMPONENTS, CONSUMABLES, MODULES, EQUIPMENT }
 
 //==================================================
 // ASTEROIDS / WORLD GENERATION
@@ -123,3 +124,5 @@ enum DroneSlotState { EMPTY, DOCKED, DEPLOYED, RETURNING }
 // DEBUG
 //==================================================
 enum DebugSpawnFormation { LINE, CIRCLE }
+
+enum AudioCategory { UI, PLAYER, WORLD, AMBIENT, MUSIC }

@@ -371,8 +371,8 @@ function sc_hud_level_data()
     category_x: 30,
     category_y: 145,
     category_width: 290,
-    category_height: 120,
-    category_gap: 14,
+    category_height: 108,
+    category_gap: 10,
 
     recipe_x: 350,
     recipe_y: 145,
@@ -392,22 +392,32 @@ function sc_hud_level_data()
     status_y: 645,
 
     categories: [
-    {
-        layer: ItemLayer.REFINED,
-        name: "REFINED",
-        description: "REFINED RESOURCES, COMPOSITES AND ALLOYS"
-    },
-    {
-        layer: ItemLayer.COMPONENT,
-        name: "COMPONENTS",
-        description: "MECHANICAL, ELECTRICAL AND STRUCTURAL COMPONENTS"
-    },
-    {
-        layer: ItemLayer.PRODUCT,
-        name: "PRODUCTS",
-        description: "MODULES, WEAPONS, DRONES, AMMUNITION AND DEVICES"
-    }
-]
+        {
+            category: FacilityRecipeCategory.REFINED,
+            name: "REFINED",
+            description: "REFINED RESOURCES, COMPOSITES AND ALLOYS"
+        },
+        {
+            category: FacilityRecipeCategory.COMPONENTS,
+            name: "COMPONENTS",
+            description: "MECHANICAL, ELECTRICAL AND STRUCTURAL COMPONENTS"
+        },
+        {
+            category: FacilityRecipeCategory.CONSUMABLES,
+            name: "PRODUCTS - CONSUMABLES",
+            description: "AMMUNITION, DRONES AND DEPLOYABLE DEVICES"
+        },
+        {
+            category: FacilityRecipeCategory.MODULES,
+            name: "PRODUCTS - MODULES",
+            description: "FIXED-QUALITY SHIP SYSTEM MODULES"
+        },
+        {
+            category: FacilityRecipeCategory.EQUIPMENT,
+            name: "PRODUCTS - EQUIPMENT",
+            description: "ARMOUR, WEAPONS AND FITTED SHIP EQUIPMENT"
+        }
+    ]
 },
 			
 		inventory: {
@@ -619,7 +629,7 @@ function sc_hud_level_init(_hud_object)
             next_scan_tick: GAME_TICK,
             scan_interval: 10,
 
-            selected_layer: ItemLayer.REFINED,
+            selected_category: 0,
             recipe_keys: [],
             selected_recipe: 0,
             recipe_scroll_row: 0,

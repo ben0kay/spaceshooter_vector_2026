@@ -189,70 +189,40 @@ function sc_weapon_projectile_target_apply(_projectile, _target)
 }
 
 /// @description Fires one registered weapon using a generic owner and shot pattern.
-function sc_weapon_fire(
-    _owner,
-    _weapon_key,
-    _shot,
-    _x,
-    _y,
-    _direction,
-    _damage_multiplier,
-    _projectile_speed_multiplier = 1
-)
+function sc_weapon_fire(_owner, _weapon_key, _shot, _x, _y, _direction, _damage_multiplier, _projectile_speed_multiplier = 1)
 {
-    var _weapon = variable_struct_get(global.data.weapons,_weapon_key);
+    var _weapon = variable_struct_get(global.data.weapons, _weapon_key);
+
+    sc_audio_weapon_play(_owner, _weapon, _x, _y);
 
     var _source = {
         owner_id: _owner,
         faction: _owner.entity.faction,
         damage_multiplier: _damage_multiplier,
-        projectile_speed_multiplier: max(0,_projectile_speed_multiplier)
+        projectile_speed_multiplier: max(0, _projectile_speed_multiplier)
     };
 
     var _amount = _shot.pattern == ShotPattern.SINGLE
         ? 1
-        : max(1,round(_shot.amount));
+        : max(1, round(_shot.amount));
 
-    var _targets = variable_struct_exists(_shot,"volley_target_script")
-        ? _shot.volley_target_script(
-            _owner,_weapon,
-            _x,_y,_direction,
-            _amount
-        )
+    var _targets = variable_struct_exists(_shot, "volley_target_script")
+        ? _shot.volley_target_script(_owner, _weapon, _x, _y, _direction, _amount)
         : [];
 
     var _first_delivery = noone;
 
     for (var _i = 0; _i < _amount; ++_i)
     {
-        var _shot_direction = sc_weapon_shot_direction_get(
-            _shot,
-            _direction,
-            _i
-        );
-
-        var _delivery = sc_weapon_delivery_fire(
-            _owner,
-            _weapon,
-            _source,
-            _x,
-            _y,
-            _shot_direction
-        );
+        var _shot_direction = sc_weapon_shot_direction_get(_shot, _direction, _i);
+        var _delivery = sc_weapon_delivery_fire(_owner, _weapon, _source, _x, _y, _shot_direction);
 
         if (_i == 0)
             _first_delivery = _delivery;
 
         if (_i < array_length(_targets))
-        {
-            sc_weapon_projectile_target_apply(
-                _delivery,
-                _targets[_i]
-            );
-        }
+            sc_weapon_projectile_target_apply(_delivery, _targets[_i]);
     }
 
-    return _amount == 1
-        ? _first_delivery
-        : true;
+    return _amount == 1 ? _first_delivery : true;
 }

@@ -265,8 +265,40 @@ function sc_facility_nearest_find(_player)
     return _nearest;
 }
 
-/// @description Builds the supported recipe list for one output layer.
-function sc_facility_recipe_keys_get(_structure, _layer)
+/// @description Returns whether one recipe output belongs to a facility category.
+function sc_facility_recipe_category_match(_item,_category)
+{
+    switch (_category)
+    {
+        case FacilityRecipeCategory.REFINED:
+            return _item.layer == ItemLayer.REFINED;
+
+        case FacilityRecipeCategory.COMPONENTS:
+            return _item.layer == ItemLayer.COMPONENT;
+
+        case FacilityRecipeCategory.CONSUMABLES:
+            if (_item.layer != ItemLayer.PRODUCT) return false;
+
+            return _item.type == ItemType.AMMUNITION
+                || _item.type == ItemType.DRONE
+                || _item.type == ItemType.DEVICE;
+
+        case FacilityRecipeCategory.MODULES:
+            return _item.layer == ItemLayer.PRODUCT
+                && _item.type == ItemType.MODULE;
+
+        case FacilityRecipeCategory.EQUIPMENT:
+            if (_item.layer != ItemLayer.PRODUCT) return false;
+
+            return _item.type == ItemType.EQUIPMENT
+                || _item.type == ItemType.WEAPON;
+    }
+
+    return false;
+}
+
+/// @description Builds the supported recipe list for one facility category.
+function sc_facility_recipe_keys_get(_structure,_category)
 {
     var _facility = _structure.structure.facility;
     var _keys = variable_struct_get_names(global.data.recipes);
@@ -274,41 +306,51 @@ function sc_facility_recipe_keys_get(_structure, _layer)
 
     for (var _i = 0; _i < array_length(_keys); ++_i)
     {
-        var _recipe = variable_struct_get(global.data.recipes, _keys[_i]);
+        var _recipe = variable_struct_get(global.data.recipes,_keys[_i]);
         var _output = _recipe.outputs[0];
-        var _item = variable_struct_get(global.data.items, _output[0]);
+        var _item = variable_struct_get(global.data.items,_output[0]);
 
-        if (_item.layer == _layer
-        && sc_facility_service_has(_facility, _recipe.service))
-            array_push(_recipes, _keys[_i]);
+        if (sc_facility_recipe_category_match(_item,_category)
+        && sc_facility_service_has(_facility,_recipe.service))
+            array_push(_recipes,_keys[_i]);
     }
 
     return _recipes;
 }
 
 /// @description Selects one facility recipe-output category.
-function sc_facility_category_select(_hud, _layer)
+function sc_facility_category_select(_hud,_category_index)
 {
     var _runtime = _hud.facility;
+    var _category = _hud.data.facility.categories[_category_index];
 
-    _runtime.selected_layer = _layer;
-    _runtime.recipe_keys = sc_facility_recipe_keys_get(_runtime.active_id, _layer);
+    _runtime.selected_category = _category_index;
+    _runtime.recipe_keys = sc_facility_recipe_keys_get(
+        _runtime.active_id,
+        _category.category
+    );
+
     _runtime.selected_recipe = 0;
     _runtime.recipe_scroll_row = 0;
     _runtime.amount = 1;
 }
 
 /// @description Opens one nearby industrial-processing interface.
-function sc_facility_interface_open(_hud, _structure)
+function sc_facility_interface_open(_hud,_structure)
 {
     var _runtime = _hud.facility;
+    var _category = _hud.data.facility.categories[0];
 
     sc_player_control_suspend(global.player_id);
 
     _runtime.open = true;
     _runtime.active_id = _structure;
-    _runtime.selected_layer = ItemLayer.REFINED;
-    _runtime.recipe_keys = sc_facility_recipe_keys_get(_structure, _runtime.selected_layer);
+    _runtime.selected_category = 0;
+    _runtime.recipe_keys = sc_facility_recipe_keys_get(
+        _structure,
+        _category.category
+    );
+
     _runtime.selected_recipe = 0;
     _runtime.recipe_scroll_row = 0;
     _runtime.amount = 1;
@@ -416,7 +458,7 @@ function sc_facility_interface_update(_hud)
                 _y+_data.category_height
             ))
             {
-                sc_facility_category_select(_hud,_category.layer);
+                sc_facility_category_select(_hud,_i);
                 return;
             }
         }
@@ -706,7 +748,7 @@ function sc_facility_interface_draw(_hud)
         var _category = _data.categories[_i];
         var _x = _panel_x+_data.category_x;
         var _y = _panel_y+_data.category_y+_i*(_data.category_height+_data.category_gap);
-        var _selected = _runtime.selected_layer == _category.layer;
+        var _selected = _runtime.selected_category == _i;
 
         draw_set_colour(_selected ? _palette.panel_light : _palette.void);
         draw_rectangle(_x,_y,_x+_data.category_width,_y+_data.category_height,false);

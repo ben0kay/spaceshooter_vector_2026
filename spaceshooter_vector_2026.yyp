@@ -154,6 +154,7 @@
     {"id":{"name":"sc_asteroid_visual","path":"scripts/sc_asteroid_visual/sc_asteroid_visual.yy",},},
     {"id":{"name":"sc_asteroids","path":"scripts/sc_asteroids/sc_asteroids.yy",},},
     {"id":{"name":"sc_attack_area","path":"scripts/sc_attack_area/sc_attack_area.yy",},},
+    {"id":{"name":"sc_audio","path":"scripts/sc_audio/sc_audio.yy",},},
     {"id":{"name":"sc_background_boss","path":"scripts/sc_background_boss/sc_background_boss.yy",},},
     {"id":{"name":"sc_background_space","path":"scripts/sc_background_space/sc_background_space.yy",},},
     {"id":{"name":"sc_boot","path":"scripts/sc_boot/sc_boot.yy",},},
