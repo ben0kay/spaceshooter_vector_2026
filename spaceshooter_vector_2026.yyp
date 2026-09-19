@@ -329,6 +329,7 @@
     {"id":{"name":"sc_world_structure","path":"scripts/sc_world_structure/sc_world_structure.yy",},},
     {"id":{"name":"Script157","path":"scripts/Script157/Script157.yy",},},
     {"id":{"name":"sim_visuals_shared","path":"scripts/sim_visuals_shared/sim_visuals_shared.yy",},},
+    {"id":{"name":"snd_plyr_shar_minigun_fire","path":"sounds/snd_plyr_shar_minigun_fire/snd_plyr_shar_minigun_fire.yy",},},
     {"id":{"name":"snd_plyr_shard_rocket_explode","path":"sounds/snd_plyr_shard_rocket_explode/snd_plyr_shard_rocket_explode.yy",},},
     {"id":{"name":"snd_plyr_shard_rocket_fire","path":"sounds/snd_plyr_shard_rocket_fire/snd_plyr_shard_rocket_fire.yy",},},
     {"id":{"name":"asteroid_rock","path":"sprites/asteroid_rock/asteroid_rock.yy",},},

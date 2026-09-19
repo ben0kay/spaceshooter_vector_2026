@@ -446,17 +446,15 @@ function sc_audio_weapon_play(_owner, _weapon, _x, _y)
     );
 }
 
-/// @description Plays the configured positional sound belonging to one projectile detonation.
+/// @description Plays the resolved positional sound belonging to one projectile detonation.
 function sc_audio_projectile_detonation_play(_projectile)
 {
     var _data = _projectile.projectile;
-    var _definition = variable_struct_get(global.data.projectiles, _data.key);
+    var _audio = _data.detonation.audio;
 
-    if (!variable_struct_exists(_definition, "detonation")
-    || !variable_struct_exists(_definition.detonation, "audio"))
+    if (!is_struct(_audio))
         return -1;
 
-    var _audio = _definition.detonation.audio;
     var _sound = sc_audio_value_get(_audio, "sound", noone);
 
     if (_sound == noone)
