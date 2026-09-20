@@ -206,12 +206,13 @@ function sc_inventory_systems_data()
 
         storage: {
             x: 45,
-            y: 755,
+            y: 742,
             width: 1670,
-            height: 115,
-            columns: 18,
-            slot_size: 74,
-            gap: 10
+            height: 143,
+            columns: 24,
+            rows: 2,
+            slot_size: 58,
+            gap: 8
         }
     };
 }
@@ -238,7 +239,7 @@ function sc_inventory_systems_card_at_position(_mouse_x,_mouse_y)
 }
 
 /// @description Returns the module-storage cargo slot beneath panel-local coordinates.
-function sc_inventory_systems_storage_at_position(_player,_mouse_x,_mouse_y)
+function sc_inventory_systems_storage_at_position(_player, _mouse_x, _mouse_y)
 {
     var _data = sc_inventory_systems_data();
     var _storage = _data.storage;
@@ -247,7 +248,9 @@ function sc_inventory_systems_storage_at_position(_player,_mouse_x,_mouse_y)
     var _column = floor((_mouse_x - _storage.x)/_stride);
     var _row = floor((_mouse_y - _storage.y)/_stride);
 
-    if (_column < 0 || _column >= _storage.columns || _row < 0) return -1;
+    if (_column < 0 || _column >= _storage.columns
+    || _row < 0 || _row >= _storage.rows)
+        return -1;
 
     var _list_index = _row*_storage.columns + _column;
     if (_list_index >= array_length(_indices)) return -1;
@@ -293,7 +296,7 @@ function sc_inventory_systems_socket_at_position(_mouse_x,_mouse_y)
     return undefined;
 }
 
-/// @description Updates system selection, module inspection, installation and removal.
+/// @description Updates system selection, module installation and module removal.
 function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _released)
 {
     var _player = global.player_id;
@@ -311,7 +314,6 @@ function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _releas
         if (_cargo_slot >= 0)
         {
             _runtime.selected_slot = _cargo_slot;
-            _runtime.selected_system_module_slot = _cargo_slot;
             _runtime.drag.active = true;
             _runtime.drag.source_slot = _cargo_slot;
             return;
@@ -325,7 +327,6 @@ function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _releas
         if (!is_undefined(_target))
         {
             _runtime.selected_system = _target.card_index;
-            _runtime.selected_system_module_slot = -1;
 
             var _card = _data.cards[_target.card_index];
             var _installed = sc_player_module_get(
@@ -350,10 +351,7 @@ function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _releas
         );
 
         if (_card_index >= 0)
-        {
             _runtime.selected_system = _card_index;
-            _runtime.selected_system_module_slot = -1;
-        }
     }
 
     if (!_runtime.drag.active || !_released) return;
@@ -373,10 +371,7 @@ function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _releas
             _card.system,
             _target.socket_index
         ))
-        {
             _runtime.selected_system = _target.card_index;
-            _runtime.selected_system_module_slot = -1;
-        }
     }
 
     _runtime.drag.active = false;
@@ -901,256 +896,9 @@ function sc_inventory_systems_card_draw(_hud, _player, _card, _card_index, _data
     draw_set_colour(c_white);
 }
 
-/// @description Draws one selected cargo module in the Systems inspector.
-function sc_inventory_systems_module_inspector_draw(_hud, _player, _item, _origin_x, _origin_y)
-{
-    var _palette = _hud.data.palette;
-    var _data = sc_inventory_systems_data();
-    var _inspector = _data.inspector;
-    var _definition = variable_struct_get(global.data.items, _item.key);
-    var _module = _definition.module;
-    var _modifiers = _module.modifiers;
-
-    var _x = _origin_x + _inspector.x;
-    var _y = _origin_y + _inspector.y;
-    var _system_name = "UNKNOWN SYSTEM";
-
-    for (var _i = 0; _i < array_length(_data.cards); ++_i)
-    {
-        if (_data.cards[_i].system == _module.system)
-        {
-            _system_name = _data.cards[_i].name;
-            break;
-        }
-    }
-
-    draw_set_alpha(0.96);
-    draw_set_colour(_palette.background);
-    draw_rectangle(
-        _x,
-        _y,
-        _x + _inspector.width,
-        _y + _inspector.height,
-        false
-    );
-
-    draw_set_colour(_palette.accent);
-    draw_rectangle(
-        _x,
-        _y,
-        _x + _inspector.width,
-        _y + _inspector.height,
-        true
-    );
-
-    draw_set_colour(_palette.accent);
-    draw_text(_x + 20, _y + 25, "SYSTEM MODULE INSPECTOR");
-
-    draw_set_halign(fa_right);
-    draw_set_colour(_palette.muted);
-    draw_text(
-        _x + _inspector.width - 20,
-        _y + 25,
-        "FIXED QUALITY"
-    );
-    draw_set_halign(fa_left);
-
-    draw_set_colour(_palette.outline);
-    draw_line(
-        _x + 20,
-        _y + 54,
-        _x + _inspector.width - 20,
-        _y + 54
-    );
-
-    var _sprite = sc_resource_pickup_visual_cache_get(_item.key, 0);
-
-    draw_set_colour(_palette.void);
-    draw_rectangle(
-        _x + 20,
-        _y + 78,
-        _x + 124,
-        _y + 182,
-        false
-    );
-
-    draw_set_colour(_palette.accent);
-    draw_rectangle(
-        _x + 20,
-        _y + 78,
-        _x + 124,
-        _y + 182,
-        true
-    );
-
-    if (sprite_exists(_sprite))
-        draw_sprite_ext(
-            _sprite,
-            0,
-            _x + 72,
-            _y + 130,
-            1.45,
-            1.45,
-            0,
-            c_white,
-            1
-        );
-
-    draw_set_colour(_palette.text);
-    draw_text(_x + 150, _y + 82, _item.name);
-
-    draw_set_colour(_palette.muted);
-    draw_text(_x + 150, _y + 112, "SYSTEM COMPATIBILITY");
-
-    draw_set_colour(_palette.accent);
-    draw_text(_x + 150, _y + 140, _system_name);
-
-    draw_set_colour(_palette.muted);
-    draw_text(_x + 150, _y + 170, "MODULES DO NOT HAVE ITEM GRADES");
-
-    draw_set_colour(_palette.outline);
-    draw_line(
-        _x + 20,
-        _y + 205,
-        _x + _inspector.width - 20,
-        _y + 205
-    );
-
-    draw_set_colour(_palette.accent);
-    draw_text(_x + 20, _y + 228, "DESCRIPTION");
-
-    draw_set_colour(_palette.text);
-    draw_text_ext(
-        _x + 20,
-        _y + 260,
-        _definition.description,
-        22,
-        _inspector.width - 40
-    );
-
-    draw_set_colour(_palette.outline);
-    draw_line(
-        _x + 20,
-        _y + 332,
-        _x + _inspector.width - 20,
-        _y + 332
-    );
-
-    draw_set_colour(_palette.accent);
-    draw_text(_x + 20, _y + 355, "MODULE EFFECTS");
-
-    if (array_length(_modifiers) <= 0)
-    {
-        draw_set_colour(_palette.muted);
-        draw_text(_x + 20, _y + 394, "NO STAT MODIFIERS");
-    }
-    else
-    {
-        for (var _modifier_index = 0; _modifier_index < array_length(_modifiers); ++_modifier_index)
-        {
-            var _modifier = _modifiers[_modifier_index];
-            var _row_y = _y + 394 + _modifier_index*32;
-            var _stat_name = string_upper(
-                string_replace_all(_modifier.stat, "_", " ")
-            );
-
-            var _value = "";
-
-            if (variable_struct_exists(_modifier, "add"))
-            {
-                var _add = _modifier.add;
-                _value = (_add >= 0 ? "+" : "") + string(_add);
-            }
-            else if (variable_struct_exists(_modifier, "multiply"))
-            {
-                var _multiply = _modifier.multiply;
-                var _percent = round((_multiply - 1)*100);
-                _value = (_percent >= 0 ? "+" : "") + string(_percent) + "%";
-            }
-
-            draw_set_colour(_palette.muted);
-            draw_text(_x + 20, _row_y, _stat_name);
-
-            draw_set_halign(fa_right);
-            draw_set_colour(_palette.text);
-            draw_text(
-                _x + _inspector.width - 20,
-                _row_y,
-                _value
-            );
-            draw_set_halign(fa_left);
-        }
-    }
-
-    draw_set_halign(fa_right);
-    draw_set_colour(_palette.muted);
-    draw_text(
-        _x + _inspector.width - 150,
-        _y + _inspector.height - 35,
-        "MASS"
-    );
-
-    draw_set_colour(_palette.text);
-    draw_text(
-        _x + _inspector.width - 90,
-        _y + _inspector.height - 35,
-        string(_definition.cargo.weight)
-    );
-
-    draw_set_colour(_palette.muted);
-    draw_text(
-        _x + _inspector.width - 55,
-        _y + _inspector.height - 35,
-        "QTY"
-    );
-
-    draw_set_colour(_palette.text);
-    draw_text(
-        _x + _inspector.width - 20,
-        _y + _inspector.height - 35,
-        string(_item.amount)
-    );
-
-    draw_set_halign(fa_left);
-    draw_set_alpha(1);
-    draw_set_colour(c_white);
-    draw_set_valign(fa_top);
-}
-
-/// @description Draws the selected module or selected system's live information.
+/// @description Draws the selected system's live values and installed modules.
 function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y)
 {
-    var _module_slot = _hud.inventory.selected_system_module_slot;
-
-    if (_module_slot >= 0
-    && _module_slot < array_length(_player.inventory.slots))
-    {
-        var _module_item = _player.inventory.slots[_module_slot];
-
-        if (!is_undefined(_module_item))
-        {
-            var _module_definition = variable_struct_get(
-                global.data.items,
-                _module_item.key
-            );
-
-            if (_module_definition.type == ItemType.MODULE)
-            {
-                sc_inventory_systems_module_inspector_draw(
-                    _hud,
-                    _player,
-                    _module_item,
-                    _origin_x,
-                    _origin_y
-                );
-
-                return;
-            }
-        }
-
-        _hud.inventory.selected_system_module_slot = -1;
-    }
-
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _inspector = _data.inspector;
@@ -1393,13 +1141,107 @@ function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y
     draw_set_valign(fa_top);
 }
 
-/// @description Draws carried modules in the Systems-tab bottom storage strip.
+/// @description Draws a compact tooltip for one hovered system module.
+function sc_inventory_systems_storage_tooltip_draw(_hud, _item, _mouse_x, _mouse_y, _origin_x, _origin_y)
+{
+    var _palette = _hud.data.palette;
+    var _data = sc_inventory_systems_data();
+    var _definition = variable_struct_get(global.data.items, _item.key);
+    var _system_name = "UNKNOWN SYSTEM";
+
+    for (var _i = 0; _i < array_length(_data.cards); ++_i)
+    {
+        if (_data.cards[_i].system == _definition.module.system)
+        {
+            _system_name = _data.cards[_i].name;
+            break;
+        }
+    }
+
+    var _width = 390;
+    var _height = 126;
+
+    var _x = clamp(
+        _mouse_x + 18,
+        _origin_x + 45,
+        _origin_x + _hud.data.inventory.width - _width - 45
+    );
+
+    var _y = _mouse_y - _height - 14;
+
+    if (_y < _origin_y + 155)
+        _y = _mouse_y + 18;
+
+    draw_set_alpha(0.98);
+    draw_set_colour(_palette.void);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _width,
+        _y + _height,
+        false
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _width,
+        _y + _height,
+        true
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 14, _y + 12, _item.name);
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + _width - 14,
+        _y + 12,
+        _system_name
+    );
+    draw_set_halign(fa_left);
+
+    draw_set_colour(_palette.outline);
+    draw_line(
+        _x + 14,
+        _y + 38,
+        _x + _width - 14,
+        _y + 38
+    );
+
+    draw_set_colour(_palette.text);
+    draw_text_ext(
+        _x + 14,
+        _y + 51,
+        _definition.description,
+        18,
+        _width - 28
+    );
+
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + 14,
+        _y + _height - 23,
+        "MASS " + string(_definition.cargo.weight)
+            + "  //  QUANTITY " + string(_item.amount)
+    );
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
+}
+
+/// @description Draws two rows of carried modules with hover tooltips.
 function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
 {
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _storage = _data.storage;
     var _indices = sc_inventory_module_indices_get(_player);
+
     var _selected = clamp(
         _hud.inventory.selected_system,
         0,
@@ -1409,6 +1251,16 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
     var _selected_system = _data.cards[_selected].system;
     var _panel_x = _origin_x + _storage.x;
     var _panel_y = _origin_y + 700;
+    var _mouse_x = device_mouse_x_to_gui(0);
+    var _mouse_y = device_mouse_y_to_gui(0);
+    var _local_mouse_x = _mouse_x - _origin_x;
+    var _local_mouse_y = _mouse_y - _origin_y;
+
+    var _hovered_slot = sc_inventory_systems_storage_at_position(
+        _player,
+        _local_mouse_x,
+        _local_mouse_y
+    );
 
     draw_set_alpha(0.96);
     draw_set_colour(_palette.background);
@@ -1445,17 +1297,24 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
     );
 
     var _stride = _storage.slot_size + _storage.gap;
+    var _visible_count = min(
+        array_length(_indices),
+        _storage.columns*_storage.rows
+    );
 
-    for (var _i = 0; _i < array_length(_indices); ++_i)
+    for (var _i = 0; _i < _visible_count; ++_i)
     {
         var _column = _i mod _storage.columns;
         var _row = floor(_i/_storage.columns);
         var _slot_index = _indices[_i];
         var _item = _player.inventory.slots[_slot_index];
+
         var _compatible = sc_player_module_compatible(
             _item.key,
             _selected_system
         );
+
+        var _hovered = _slot_index == _hovered_slot;
 
         var _slot_x = _origin_x
             + _storage.x
@@ -1475,7 +1334,7 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
 
         var _alpha = _dragged
             ? 0.25
-            : (_compatible ? 1 : 0.32);
+            : (_hovered || _compatible ? 1 : 0.32);
 
         draw_set_alpha(_alpha);
         draw_set_colour(_palette.void);
@@ -1487,11 +1346,12 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
             false
         );
 
-        draw_set_colour(
-            _compatible
-                ? _palette.accent
-                : _palette.outline
-        );
+        if (_hovered)
+            draw_set_colour(_palette.text);
+        else if (_compatible)
+            draw_set_colour(_palette.accent);
+        else
+            draw_set_colour(_palette.outline);
 
         draw_rectangle(
             _slot_x,
@@ -1501,29 +1361,38 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
             true
         );
 
+        if (_hovered)
+            draw_rectangle(
+                _slot_x + 2,
+                _slot_y + 2,
+                _slot_x + _storage.slot_size - 2,
+                _slot_y + _storage.slot_size - 2,
+                true
+            );
+
         if (sprite_exists(_sprite))
             draw_sprite_ext(
                 _sprite,
                 0,
                 _slot_x + _storage.slot_size*0.5,
                 _slot_y + _storage.slot_size*0.5,
-                1.1,
-                1.1,
+                0.86,
+                0.86,
                 0,
                 c_white,
                 _alpha
             );
 
         draw_set_halign(fa_right);
-        draw_set_colour(
-            _compatible
-                ? _palette.text
-                : _palette.muted
-        );
+
+        if (_hovered || _compatible)
+            draw_set_colour(_palette.text);
+        else
+            draw_set_colour(_palette.muted);
 
         draw_text(
-            _slot_x + _storage.slot_size - 5,
-            _slot_y + _storage.slot_size - 9,
+            _slot_x + _storage.slot_size - 4,
+            _slot_y + _storage.slot_size - 8,
             "x" + string(_item.amount)
         );
 
@@ -1532,6 +1401,27 @@ function sc_inventory_systems_storage_draw(_hud, _player, _origin_x, _origin_y)
 
     draw_set_alpha(1);
     draw_set_colour(c_white);
+
+    if (_hovered_slot >= 0
+    && !_hud.inventory.drag.active)
+    {
+        var _hovered_item = _player.inventory.slots[_hovered_slot];
+
+        if (!is_undefined(_hovered_item))
+            sc_inventory_systems_storage_tooltip_draw(
+                _hud,
+                _hovered_item,
+                _mouse_x,
+                _mouse_y,
+                _origin_x,
+                _origin_y
+            );
+    }
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_halign(fa_left);
+    draw_set_valign(fa_top);
 }
 
 /// @description Draws the complete live ship-systems and module interface.

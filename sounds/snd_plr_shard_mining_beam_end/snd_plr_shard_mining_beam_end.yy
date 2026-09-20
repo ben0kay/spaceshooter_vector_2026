@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"snd_plr_shard_mining_beam_end",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":0.55,
+  "exportDir":"",
+  "name":"snd_plr_shard_mining_beam_end",
+  "parent":{
+    "name":"Audio",
+    "path":"folders/SCRIPTS---/PLAYER/ships/SHARD/Audio.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"snd_plr_shard_mining_beam_end.wav",
+  "volume":1.0,
+}
