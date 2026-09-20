@@ -1,279 +1,263 @@
-Yes. Here is the planned progression from the current foundation to the completed ship equipment/module system.
+/*
+===============================================================================
+SHIP EQUIPMENT AND SYSTEM MODULES — CURRENT FOUNDATION / FUTURE WORK
+===============================================================================
 
-What is working now
-Equipment foundation
-Equipment is major fitted ship hardware.
-Equipment uses dedicated EquipmentSlot positions.
-Armour installation works.
-Armour condition follows actual ship armour.
-Armour is destroyed at zero integrity.
-Replacing armour destroys the old armour.
-Optional grades are controlled per modifier with:
-grade_scaled: true
-Missing grade_scaled means the modifier is not affected by grade.
-Radar occupies the single Targeting slot.
-Only one radar can be installed.
-No radar means the tactical minimap is offline.
-Each radar definition owns its range presets.
-Modules and drones remain ungraded.
-Module backend foundation
+SYSTEM MODEL
 
-The code from the most recent pass establishes:
+EQUIPMENT
+- Major physical ship assemblies.
+- Installed through the EQUIPMENT tab into EquipmentSlot positions.
+- Equipment may enable complete ship capabilities.
+- Equipment grades are optional.
+- A modifier is affected by grade only when it explicitly contains:
+      grade_scaled: true
+- Missing grade_scaled means that modifier never scales with grade.
 
-ShipSystemType
-Persistent sockets grouped by ship system
-Fixed-quality ItemType.MODULE items
-Module compatibility checks
-Module installation
-Module removal
-Module stat rebuilding
-ship.stats.modifiers.modules
-Coolant Module Mk I
-Coolant module crafting recipe
+SYSTEM MODULES
+- Small fixed-quality tuning units crafted from components.
+- Installed through the SYSTEMS tab.
+- Modules never have item grades.
+- Modules modify existing ship systems through the normal stat pipeline.
+- Installed modules are reusable and are not destroyed when replaced.
 
-Once that compiles, the data pipeline is:
+CURRENTLY WORKING
+
+EQUIPMENT
+- EquipmentSlot enum and equipment inventory structure.
+- Armour equipment installation and replacement.
+- Armour condition follows the ship's actual armour integrity.
+- Installed armour is destroyed when its integrity reaches zero.
+- Replacing armour destroys the previous armour.
+- Radar Array installs into the single Targeting equipment slot.
+- Only one radar can be installed at a time.
+- No radar means the tactical minimap is offline.
+- Radar definitions own their available minimap range presets.
+- Equipment modifier rebuilding.
+- Explicit per-modifier grade scaling.
+
+SYSTEM MODULES
+- Eight ShipSystemType systems:
+    Engines
+    Thrusters
+    Shield Generator
+    Reactor
+    Cooling
+    Weapons
+    Sensors
+    Drone Bay
+- Three functional module sockets currently exist for every system.
+- Persistent installed-module arrays.
+- Module compatibility checks.
+- Drag-and-drop installation.
+- Incompatible socket rejection.
+- Module removal back into cargo.
+- Direct module replacement.
+- Full-cargo protection during removal and replacement.
+- Module modifier rebuilding.
+- Final ship-stat recalculation after module changes.
+- Modules remain fixed-quality and ungraded.
+
+SYSTEMS INTERFACE
+- Eight selectable system cards.
+- Condition, effectiveness and ONLINE/DISRUPTED/OFFLINE status.
+- Live system values read from actual runtime/base/final stats.
+- Three visible module sockets per system.
+- Installed-module information in the selected system inspector.
+- Compatible cargo modules are highlighted.
+- Two-row available-module storage.
+- Hovered cargo modules display a compact information tooltip.
+- Module tooltips show name, compatible system, description, mass and quantity.
+- The right inspector remains dedicated to the selected system.
+
+CURRENT MK I MODULE SET
+
+- Engine Governor Mk I
+    System: Engines
+    Effect: Acceleration
+
+- Thruster Vectoring Module Mk I
+    System: Thrusters
+    Effect: Turn speed
+
+- Shield Capacitor Mk I
+    System: Shield Generator
+    Effect: Shield recharge rate
+
+- Reactor Regulator Mk I
+    System: Reactor
+    Effect: Energy regeneration
+
+- Coolant Module Mk I
+    System: Cooling
+    Effect: Weapon cooling rate
+
+- Weapon Stabilizer Mk I
+    System: Weapons
+    Effect: Weapon spread
+
+- Sensor Hardening Module Mk I
+    System: Sensors
+    Effect: Sensor disruption resistance
+
+- Drone Command Processor Mk I
+    System: Drone Bay
+    Effect: Drone-bay disruption resistance
+
+- All eight modules have Fabricator crafting recipes.
+- Temporary starting copies are still added in sc_player_init_inventory()
+  for testing.
+
+ACTIVE DATA PIPELINE
 
 Crafted module
 → Cargo
 → Compatible system socket
-→ Module modifiers rebuilt
-→ Final ship stats recalculated
-Planned implementation progression
-Pass 1 — Systems interface foundation
+→ player.inventory.modules
+→ sc_player_module_modifiers_rebuild()
+→ player.ship.stats.modifiers.modules
+→ sc_player_stats_recalculate()
+→ Updated final stats
+→ Systems interface reads updated runtime values
 
-Create the actual SYSTEMS tab.
+NEXT PASS WHEN MODULE WORK RESUMES
 
-It will show these eight system cards:
+1. MOVE SOCKET OWNERSHIP TO SHIP DATA
 
-Engines
-Thrusters
-Shield Generator
-Reactor
-Cooling
-Weapons
-Sensors
-Drone Bay
+The generic player inventory currently hardcodes three sockets for every system.
 
-Each card will display:
-
-System name
-Condition
-ONLINE, DISRUPTED or OFFLINE
-Module socket
-Important live values
-
-Only the Cooling socket needs complete interaction during this pass.
-
-Pass 2 — Coolant module interaction
-
-Connect the existing backend to the Systems interface:
-
-Coolant Module Mk I appears in module storage.
-Drag it into the Cooling socket.
-Reject it from incompatible sockets.
-Install it without an item grade.
-Rebuild module modifiers.
-Update the Cooling card immediately.
-
-The card should show something like:
-
-WEAPON COOLING
-BASE     1.00
-FINAL    1.25
-
-Both values will come from the actual stats:
-
-_player.ship.stats.base.weapon_cooling_rate
-_player.ship.stats.final.weapon_cooling_rate
-Pass 3 — Module removal and replacement
-
-Complete normal module management:
-
-Click or drag an installed module out.
-Return it to cargo.
-Prevent removal if cargo is full.
-Replace an installed module.
-Return the previous module to cargo.
-Prevent replacement if the old module cannot be stored.
-Provide clear compatibility/replacement feedback.
-
-Modules will normally be reusable. They are not destroyed like overridden armour.
-
-Pass 4 — Socket-count ownership
-
-Move socket counts out of the temporary inventory defaults.
-
-Each registered ship should eventually specify its system socket capacity:
+Move these counts into each registered player ship:
 
 module_sockets: {
-    engines: 1,
-    thrusters: 1,
-    shield_generator: 1,
-    reactor: 2,
-    cooling: 2,
-    weapons: 2,
-    sensors: 1,
-    drone_bay: 1
+    engines: 3,
+    thrusters: 3,
+    shield_generator: 3,
+    reactor: 3,
+    cooling: 3,
+    weapons: 3,
+    sensors: 3,
+    drone_bay: 3
 }
 
-This allows different ship identities:
+The Shard should initially retain three sockets for every system.
 
-Shard: balanced socket distribution.
-Fast ship: additional Thruster/Engine sockets.
-Heavy ship: additional Reactor/Shield/Cooling sockets.
-Drone carrier: additional Drone Bay sockets.
+The inventory should build its module arrays from the active ship's
+module_sockets definition instead of hardcoding array_create(3, undefined).
 
-Upgrade-tree nodes can later add sockets on top of the ship’s base allocation.
+This will later allow different ship identities and upgrades to provide
+different socket distributions.
 
-Pass 5 — First full module set
+2. REMOVE TEMPORARY TEST ITEMS
 
-Add one basic module for each system:
+After module crafting and installation have been fully verified, remove the
+eight free Mk I modules from sc_player_init_inventory().
 
-System	Example module	Possible effect
-Engines	Engine Governor Mk I	Acceleration
-Thrusters	Vectoring Module Mk I	Turn speed
-Shield Generator	Shield Capacitor Mk I	Shield capacity
-Reactor	Reactor Regulator Mk I	Energy regeneration
-Cooling	Coolant Module Mk I	Weapon cooling
-Weapons	Stabilizer Module Mk I	Weapon spread
-Sensors	Sensor Amplifier Mk I	Detection/radar behavior
-Drone Bay	Command Processor Mk I	Drone capacity/control
+Do not remove their item definitions or crafting recipes.
 
-Each module remains fixed-quality and declares its own modifiers.
+Decide separately whether the free test Radar Array and test drones should
+also be removed.
 
-Pass 6 — Systems-tab live values
+3. COMPLETE REMAINING EQUIPMENT SLOTS
 
-Give every card useful live information.
+Activate the currently reserved EquipmentSlot positions:
 
-For example:
+- Shield
+- Reactor
+- Thruster
+- Utility
+- Auxiliary
 
-Engines
+Later equipment work may also include:
 
-Maximum speed
-Acceleration
-Engine disruption
+- Weapon assemblies
+- Drone-bay hardware
+- Deployable equipment
+- Ammunition and rocket equipment
 
-Thrusters
+Equipment provides the main physical capability.
+System modules tune that capability.
 
-Rotation speed
-Dash/boost performance
-Thruster disruption
+4. ADD EQUIPMENT/SYSTEM DEPENDENCIES
 
-Shield Generator
+Examples:
 
-Shield maximum
-Recharge rate
-Recharge delay
+- No Shield Generator equipment:
+    Shield Generator system is offline.
+    Installed shield modules remain fitted but provide no effect.
 
-Reactor
+- No Targeting/Radar equipment:
+    Tactical minimap remains offline.
+    Relevant sensor-module behavior may be inactive.
 
-Energy maximum
-Energy regeneration
-Energy consumption modifiers
+- No Drone Bay equipment:
+    Drone deployment is unavailable.
+    Installed Drone Bay modules remain fitted but provide no effect.
 
-Cooling
+- Missing or destroyed Reactor:
+    Energy-dependent systems become impaired.
 
-Cooling rate
-Cooling delay
-Cooling efficiency
+Do not remove installed modules when parent equipment becomes unavailable.
+Their modifiers should become inactive until the parent equipment works again.
 
-Weapons
+5. FINISH DISRUPTION PRESENTATION
 
-Damage multiplier
-Fire-rate multiplier
-Spread
-Weapon heat
+The functional disruption pipeline already exists:
 
-Sensors
+- System disruption application.
+- Duration resistance.
+- Strength resistance.
+- System effectiveness reduction.
+- DISRUPTED system-card status.
+- Remaining disruption time.
+- Disruption defence values.
 
-Radar status
-Current radar range
-Sensor disruption
+Possible remaining presentation work:
 
-Drone Bay
+- Stronger warning pulse or animation.
+- Clear disruption-strength display.
+- More obvious recovery feedback.
+- Confirm each system's gameplay behavior respects its effectiveness.
 
-Drone capacity
-Active drones
-Drone deployment status
+Do not create a separate UI-only disruption state.
 
-The UI must always read actual runtime/base/final values. It should not separately simulate them.
+6. SAVE AND MULTI-SHIP PERSISTENCE
 
-Pass 7 — System disruption integration
+When owned ships and HQ ship switching are implemented, persist per ship:
 
-Connect existing system disruption completely to the interface:
+- Installed equipment.
+- Armour condition.
+- Installed system modules.
+- Individual socket assignments.
+- Active radar range.
+- Drone-bay contents.
+- Equipment installation state if required.
 
-Status changes to DISRUPTED.
-Remaining disruption time is displayed.
-Disruption strength is displayed.
-System card pulses or changes colour.
-Module effects remain installed but the system may stop functioning.
-Resistance modules reduce disruption through normal final stats.
+Each owned ship must restore its own fitted configuration when selected.
 
-No second UI-specific disruption state should be created.
+FINAL ARCHITECTURE
 
-Pass 8 — Equipment completion
-
-Return to the EQUIPMENT tab and activate the remaining major slots:
-
-Shield generator
-Reactor
-Thruster assembly
-Utility
-Auxiliary
-Weapon assemblies
-Drone bay hardware
-Deployable/ammunition equipment
-
-The Equipment item provides the main capability. Modules tune that capability.
-
-For example:
-
-Shield Generator equipment
-→ enables and defines the shield system
-
-Shield Capacitor module
-→ improves the installed shield system
-Pass 9 — Equipment/system dependency rules
-
-Modules should eventually require their parent equipment when appropriate:
-
-No shield generator equipment: Shield system offline; its modules inactive.
-No radar equipment: minimap offline; Sensor modules may be inactive.
-No drone bay equipment: drones unavailable; Drone Bay modules inactive.
-Reactor missing or destroyed: energy-dependent systems impaired.
-
-Modules can remain installed while their parent equipment is offline, but their effects should not operate until the equipment returns.
-
-Pass 10 — Saving and multi-ship persistence
-
-Persist all of this per owned ship:
-
-Installed equipment
-Armour condition
-Installed modules
-Socket assignments
-Active radar range
-Drone bay contents
-Equipment/module changes
-
-Switching ships at HQ should restore each ship’s individual fitted configuration.
-
-Final architecture
 UPGRADES
-Permanent account/ship progression
-No physical item
-No cargo slot
+- Permanent progression.
+- Not a physical cargo item.
+- May add stats, capabilities or module sockets.
 
 EQUIPMENT
-Major physical ship assemblies
-Installed in EquipmentSlot
-May selectively support grade scaling
-Can enable complete capabilities
+- Major physical ship assemblies.
+- Installed into EquipmentSlot positions.
+- May selectively support item grades.
+- Can enable complete ship systems or capabilities.
 
-MODULES
-Small fixed-quality tuning units
-Installed through the SYSTEMS tab
-Never graded
-Modify existing system performance
+SYSTEM MODULES
+- Small fixed-quality tuning units.
+- Installed through the SYSTEMS tab.
+- Never graded.
+- Modify the performance of existing ship systems.
 
-The immediate next step is therefore narrow: draw the eight Systems cards and make the existing Cooling socket/Coolant Module backend usable. After that, we test before expanding the module catalogue.
+CURRENT RESTART POINT
+
+Resume with ship-owned module socket counts.
+
+Until then, the Systems/module foundation is functional enough to pause safely
+while world-generation work continues.
+===============================================================================
+*/

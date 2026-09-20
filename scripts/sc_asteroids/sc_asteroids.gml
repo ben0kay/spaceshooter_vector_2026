@@ -66,6 +66,22 @@ function sc_asteroid_register_rock()
     return sc_asteroid_register({
         identity: { key: "asteroid_rock", name: "Rock Asteroid" },
         item_key: "item_rock",
+
+        generation: {
+            weight: 33,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: false,
+                weight: 0,
+                min_sector_east: 0
+            }
+        },
+
+        yield: {
+            ore_chance: 0
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 0.7, yield_multiplier: 1 },
         palette: {
@@ -82,6 +98,22 @@ function sc_asteroid_register_carbon()
     return sc_asteroid_register({
         identity: { key: "asteroid_carbon", name: "Carbon Asteroid" },
         item_key: "item_carbon",
+
+        generation: {
+            weight: 13,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 13,
+                min_sector_east: 0
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 0.85, yield_multiplier: 1.2 },
         palette: {
@@ -98,6 +130,22 @@ function sc_asteroid_register_iron()
     return sc_asteroid_register({
         identity: { key: "asteroid_iron", name: "Iron Asteroid" },
         item_key: "item_iron",
+
+        generation: {
+            weight: 11,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 11,
+                min_sector_east: 0
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 1.2, yield_multiplier: 1 },
         palette: {
@@ -114,6 +162,22 @@ function sc_asteroid_register_copper()
     return sc_asteroid_register({
         identity: { key: "asteroid_copper", name: "Copper Asteroid" },
         item_key: "item_copper",
+
+        generation: {
+            weight: 8,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 8,
+                min_sector_east: 0
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 1, yield_multiplier: 1 },
         palette: {
@@ -134,6 +198,22 @@ function sc_asteroid_register_silicon()
         },
 
         item_key: "item_silicon",
+
+        generation: {
+            weight: 7,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 7,
+                min_sector_east: 1
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: {
             health_multiplier: 1.05,
@@ -157,6 +237,22 @@ function sc_asteroid_register_ice()
     return sc_asteroid_register({
         identity: { key: "asteroid_ice", name: "Ice Asteroid" },
         item_key: "item_ice",
+
+        generation: {
+            weight: 10,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 8,
+                min_sector_east: 2
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 0.65, yield_multiplier: 1.3 },
         palette: {
@@ -173,6 +269,22 @@ function sc_asteroid_register_sulfur()
     return sc_asteroid_register({
         identity: { key: "asteroid_sulfur", name: "Sulfur Asteroid" },
         item_key: "item_sulfur",
+
+        generation: {
+            weight: 8,
+            min_sector_east: 0,
+
+            rich: {
+                enabled: true,
+                weight: 6,
+                min_sector_east: 3
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 1 },
         stats: { health_multiplier: 0.9, yield_multiplier: 0.9 },
         palette: {
@@ -182,6 +294,7 @@ function sc_asteroid_register_sulfur()
         }
     });
 }
+
 
 // ============================================================================
 // MINING STRENGTH 2
@@ -197,6 +310,22 @@ function sc_asteroid_register_quartz()
         },
 
         item_key: "item_quartz",
+
+        generation: {
+            weight: 4,
+            min_sector_east: 2,
+
+            rich: {
+                enabled: true,
+                weight: 3,
+                min_sector_east: 4
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 2 },
         stats: {
             health_multiplier: 1,
@@ -220,6 +349,22 @@ function sc_asteroid_register_lithium()
     return sc_asteroid_register({
         identity: { key: "asteroid_lithium", name: "Lithium Asteroid" },
         item_key: "item_lithium",
+
+        generation: {
+            weight: 4,
+            min_sector_east: 2,
+
+            rich: {
+                enabled: true,
+                weight: 3,
+                min_sector_east: 4
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 2 },
         stats: { health_multiplier: 0.8, yield_multiplier: 0.85 },
         palette: {
@@ -236,6 +381,22 @@ function sc_asteroid_register_nickel()
     return sc_asteroid_register({
         identity: { key: "asteroid_nickel", name: "Nickel Asteroid" },
         item_key: "item_nickel",
+
+        generation: {
+            weight: 4,
+            min_sector_east: 2,
+
+            rich: {
+                enabled: true,
+                weight: 3,
+                min_sector_east: 4
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 2 },
         stats: { health_multiplier: 1.3, yield_multiplier: 0.8 },
         palette: {
@@ -245,6 +406,7 @@ function sc_asteroid_register_nickel()
         }
     });
 }
+
 
 // ============================================================================
 // MINING STRENGTH 3
@@ -256,6 +418,22 @@ function sc_asteroid_register_titanium()
     return sc_asteroid_register({
         identity: { key: "asteroid_titanium", name: "Titanium Asteroid" },
         item_key: "item_titanium",
+
+        generation: {
+            weight: 3,
+            min_sector_east: 3,
+
+            rich: {
+                enabled: true,
+                weight: 1.5,
+                min_sector_east: 6
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 3 },
         stats: { health_multiplier: 1.55, yield_multiplier: 0.7 },
         palette: {
@@ -272,6 +450,22 @@ function sc_asteroid_register_crystal()
     return sc_asteroid_register({
         identity: { key: "asteroid_crystal", name: "Crystal Asteroid" },
         item_key: "item_crystal",
+
+        generation: {
+            weight: 2,
+            min_sector_east: 5,
+
+            rich: {
+                enabled: true,
+                weight: 0.75,
+                min_sector_east: 9
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 3 },
         stats: { health_multiplier: 1.1, yield_multiplier: 0.55 },
         palette: {
@@ -288,6 +482,22 @@ function sc_asteroid_register_cobalt()
     return sc_asteroid_register({
         identity: { key: "asteroid_cobalt", name: "Cobalt Asteroid" },
         item_key: "item_cobalt",
+
+        generation: {
+            weight: 2.5,
+            min_sector_east: 4,
+
+            rich: {
+                enabled: true,
+                weight: 1,
+                min_sector_east: 7
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 3 },
         stats: { health_multiplier: 1.4, yield_multiplier: 0.7 },
         palette: {
@@ -297,6 +507,7 @@ function sc_asteroid_register_cobalt()
         }
     });
 }
+
 
 // ============================================================================
 // MINING STRENGTH 4
@@ -312,6 +523,22 @@ function sc_asteroid_register_uranium()
         },
 
         item_key: "item_uranium",
+
+        generation: {
+            weight: 1,
+            min_sector_east: 6,
+
+            rich: {
+                enabled: true,
+                weight: 0.2,
+                min_sector_east: 12
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 4 },
         stats: {
             health_multiplier: 1.3,
@@ -335,6 +562,22 @@ function sc_asteroid_register_tungsten()
     return sc_asteroid_register({
         identity: { key: "asteroid_tungsten", name: "Tungsten Asteroid" },
         item_key: "item_tungsten",
+
+        generation: {
+            weight: 1.5,
+            min_sector_east: 6,
+
+            rich: {
+                enabled: true,
+                weight: 0.4,
+                min_sector_east: 10
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 4 },
         stats: { health_multiplier: 1.75, yield_multiplier: 0.5 },
         palette: {
@@ -351,6 +594,22 @@ function sc_asteroid_register_platinum()
     return sc_asteroid_register({
         identity: { key: "asteroid_platinum", name: "Platinum Asteroid" },
         item_key: "item_platinum",
+
+        generation: {
+            weight: 0.8,
+            min_sector_east: 7,
+
+            rich: {
+                enabled: true,
+                weight: 0.15,
+                min_sector_east: 12
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
         mining: { strength_required: 4 },
         stats: { health_multiplier: 1.45, yield_multiplier: 0.45 },
         palette: {
@@ -361,12 +620,42 @@ function sc_asteroid_register_platinum()
     });
 }
 
+
 // ============================================================================
 // MINING STRENGTH 5
 // ============================================================================
 
 /// @description Registers iridium-bearing asteroids.
 function sc_asteroid_register_iridium()
+{
+    return sc_asteroid_register({
+        identity: { key: "asteroid_iridium", name: "Iridium Asteroid" },
+        item_key: "item_iridium",
+
+        generation: {
+            weight: 0.3,
+            min_sector_east: 9,
+
+            rich: {
+                enabled: true,
+                weight: 0.05,
+                min_sector_east: 15
+            }
+        },
+
+        yield: {
+            ore_chance: 0.50
+        },
+
+        mining: { strength_required: 5 },
+        stats: { health_multiplier: 1.9, yield_multiplier: 0.35 },
+        palette: {
+            void: make_colour_rgb(7,6,13), dark: make_colour_rgb(25,22,42),
+            mid: make_colour_rgb(50,45,82), light: make_colour_rgb(96,91,149),
+            resource: make_colour_rgb(190,207,255), glow: make_colour_rgb(115,74,255)
+        }
+    });
+}
 {
     return sc_asteroid_register({
         identity: { key: "asteroid_iridium", name: "Iridium Asteroid" },

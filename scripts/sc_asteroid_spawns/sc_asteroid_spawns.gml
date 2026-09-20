@@ -553,39 +553,35 @@ function sc_asteroid_spawn_shape_position_get(_shape, _distribution)
 /// @description Returns asteroid materials currently available at this sector depth.
 function sc_asteroid_spawn_material_pool_get(_rich)
 {
-    var _source =
-        GCFG.sector.asteroid_fields.materials;
-
-    var _sector_east = max(
-        0,
-        global.game.sector.x
-    );
-
+    var _sector_east = max(0, global.game.sector.x);
+    var _keys = variable_struct_get_names(global.data.asteroids);
     var _pool = [];
 
-    for (var _i = 0; _i < array_length(_source); ++_i)
+    for (var _i = 0; _i < array_length(_keys); ++_i)
     {
-        var _material = _source[_i];
+        var _definition = variable_struct_get(global.data.asteroids, _keys[_i]);
+        var _generation = _definition.generation;
+        var _weight = _generation.weight;
 
-        if (_sector_east < _material.min_sector_east)
+        if (_sector_east < _generation.min_sector_east)
             continue;
-
-        var _weight = _material.weight;
 
         if (_rich)
         {
-            if (_sector_east
-            < _material.rich_min_sector_east)
+            var _rich_generation = _generation.rich;
+
+            if (!_rich_generation.enabled
+            || _sector_east < _rich_generation.min_sector_east)
                 continue;
 
-            _weight = _material.rich_weight;
+            _weight = _rich_generation.weight;
         }
 
         if (_weight <= 0)
             continue;
 
         array_push(_pool, {
-            key: _material.key,
+            key: _definition.identity.key,
             weight: _weight
         });
     }

@@ -21,21 +21,19 @@ function sc_asteroid_size_data(_size)
 }
 
 /// @description Initializes one generic factionless asteroid.
-function sc_asteroid_init(_asteroid,_create)
+function sc_asteroid_init(_asteroid, _create)
 {
     if (!is_struct(_create)
-    || !variable_struct_exists(global.data.asteroids,_create.key))
+    || !variable_struct_exists(global.data.asteroids, _create.key))
         return false;
 
-    var _definition = variable_struct_get(
-        global.data.asteroids,
-        _create.key
-    );
-
+    var _definition = variable_struct_get(global.data.asteroids, _create.key);
     var _size = sc_asteroid_size_data(_create.size);
-    if (!is_struct(_size)) return false;
 
-    var _modifier_key = variable_struct_exists(_create,"modifier_key")
+    if (!is_struct(_size))
+        return false;
+
+    var _modifier_key = variable_struct_exists(_create, "modifier_key")
         ? _create.modifier_key
         : "";
 
@@ -52,43 +50,40 @@ function sc_asteroid_init(_asteroid,_create)
         ? _modifier.definition.stats.yield_multiplier
         : 1;
 
-    var _radius = _size.radius*random_range(0.9,1.1);
+    var _radius = _size.radius * random_range(0.9, 1.1);
 
     var _health = round(
         _size.health
-        *_definition.stats.health_multiplier
-        *_health_multiplier
+        * _definition.stats.health_multiplier
+        * _health_multiplier
     );
 
     var _yield = max(
         1,
         round(
-            irandom_range(_size.yield_min,_size.yield_max)
-            *_definition.stats.yield_multiplier
-            *_yield_multiplier
+            irandom_range(_size.yield_min, _size.yield_max)
+            * _definition.stats.yield_multiplier
+            * _yield_multiplier
         )
     );
-
-    var _composition_config = GCFG.asteroid.composition;
-    var _is_rock = _definition.item_key == _composition_config.rock_item_key;
 
     _asteroid.draw_angle = random(360);
 
     _asteroid.asteroid = {
         key: _create.key,
-        item_key: _definition.item_key,
+        item_key: _definition.item.item_key,
         size: _create.size,
         modifier: _modifier,
 
-        persistent_id: variable_struct_exists(_create,"persistent_id")
+        persistent_id: variable_struct_exists(_create, "persistent_id")
             ? _create.persistent_id
             : -1,
 
-        field_index: variable_struct_exists(_create,"field_index")
+        field_index: variable_struct_exists(_create, "field_index")
             ? _create.field_index
             : -1,
 
-        zone_index: variable_struct_exists(_create,"zone_index")
+        zone_index: variable_struct_exists(_create, "zone_index")
             ? _create.zone_index
             : -1,
 
@@ -97,10 +92,10 @@ function sc_asteroid_init(_asteroid,_create)
             maximum: _health,
             stage: 0
         },
-			
-		mining: {
-    strength_required: _definition.mining.strength_required
-},
+
+        mining: {
+            strength_required: _definition.mining.strength_required
+        },
 
         yield: {
             total: _yield,
@@ -108,25 +103,23 @@ function sc_asteroid_init(_asteroid,_create)
             progress: 0,
 
             composition: {
-                rock_item_key: _composition_config.rock_item_key,
+                rock_item_key: GCFG.asteroid.composition.rock_item_key,
                 ore_item_key: _definition.item_key,
-                ore_chance: _is_rock
-                    ? 0
-                    : clamp(_composition_config.ore_chance,0,1)
+                ore_chance: clamp(_definition.yield.ore_chance, 0, 1)
             }
         },
 
         collision: {
-            radius: _radius*0.82
+            radius: _radius * 0.82
         },
 
         visual: {
             radius: _radius,
             variant: irandom(5),
             start_angle: random(360),
-            rotation_speed: random_range(-0.08,0.08),
-            scale_x: random_range(0.92,1.08)*choose(-1,1),
-            scale_y: random_range(0.92,1.08)*choose(-1,1)
+            rotation_speed: random_range(-0.08, 0.08),
+            scale_x: random_range(0.92, 1.08) * choose(-1, 1),
+            scale_y: random_range(0.92, 1.08) * choose(-1, 1)
         }
     };
 
