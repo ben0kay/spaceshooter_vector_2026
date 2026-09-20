@@ -139,7 +139,7 @@ function sc_enemy_utility_asteroid_debug_draw(_enemy)
     draw_set_colour(c_white);
 }
 
-/// @description Restarts the campaign room using another procedural debug seed.
+/// @description Restarts the campaign room using a newly randomized procedural debug seed.
 function sc_debug_room_restart_update()
 {
     if (!GCFG.debug.room_restart
@@ -147,10 +147,15 @@ function sc_debug_room_restart_update()
     || !sc_sector_campaign_active())
         return false;
 
-    if (!variable_struct_exists(global.game.sector, "debug_seed_offset"))
-        global.game.sector.debug_seed_offset = 0;
+    randomize();
 
-    global.game.sector.debug_seed_offset++;
+    global.game.sector.debug_seed_offset = irandom(2147483646);
+
+    show_debug_message(
+        "SECTOR DEBUG REGENERATION // OFFSET "
+        + string(global.game.sector.debug_seed_offset)
+    );
+
     global.PlayerState = PlayerState.INITIALIZING;
     global.LevelState = LevelState.EXITING;
 

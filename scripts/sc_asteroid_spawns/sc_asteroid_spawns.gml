@@ -226,12 +226,36 @@ function sc_asteroid_spawn_generation_data()
     };
 }
 
-/// @description Initializes the reusable asteroid generator data.
+/// @description Creates optional features that can modify complete asteroid fields.
+function sc_asteroid_spawn_feature_data()
+{
+    return {
+        derelict_core: {
+            key: "derelict_core",
+            name: "DERELICT CORE",
+
+            enabled: true,
+            chance: 0.12,
+            min_sector_east: 1,
+
+            scale_minimum: AsteroidFieldScale.MEDIUM,
+            density_excluded: AsteroidFieldDensity.SPARSE,
+            distribution_required: AsteroidFieldDistribution.DENSE_CORE,
+
+            clearing_radius_scale: 0.12,
+            wall_radial_power: 2.2,
+
+            structure_key: "derelict_test",
+            persistent_prefix: "field_derelict_"
+        }
+    };
+}
+
+/// @description Initializes reusable asteroid generation and field-feature data.
 function sc_asteroid_spawn_register_all()
 {
-    global.data.asteroid_spawn_generation =
-        sc_asteroid_spawn_generation_data();
-
+    global.data.asteroid_spawn_generation = sc_asteroid_spawn_generation_data();
+    global.data.asteroid_field_features = sc_asteroid_spawn_feature_data();
     return true;
 }
 
@@ -277,6 +301,52 @@ function sc_asteroid_spawn_subformation_get(_key)
             return _subformations[_i];
 
     return undefined;
+}
+
+/// @description Rolls the optional feature belonging to one asteroid-field request.
+function sc_asteroid_spawn_feature_roll(_request)
+{
+    if (!_request.field)
+        return undefined;
+
+    var _feature = global.data.asteroid_field_features.derelict_core;
+    var _sector_east = max(0, global.game.sector.x);
+
+    if (!_feature.enabled
+    || _sector_east < _feature.min_sector_east
+    || _request.scale < _feature.scale_minimum
+    || _request.density_type == _feature.density_excluded
+    || _request.distribution_type != _feature.distribution_required
+    || random(1) >= _feature.chance)
+        return undefined;
+
+    return variable_clone(_feature);
+}
+
+/// @description Applies one rolled feature to its asteroid-field request.
+function sc_asteroid_spawn_feature_apply(_request, _feature)
+{
+    if (!is_struct(_feature))
+        return false;
+
+    switch (_feature.key)
+    {
+        case "derelict_core":
+            _request.distribution.inner_radius_scale = max(
+                _request.distribution.inner_radius_scale,
+                _feature.clearing_radius_scale
+            );
+
+            _request.distribution.radial_power = max(
+                _request.distribution.radial_power,
+                _feature.wall_radial_power
+            );
+
+            _request.name += " // " + _feature.name;
+            return true;
+    }
+
+    return false;
 }
 
 /// @description Resolves one field radius using scale and room dimensions.
@@ -1067,6 +1137,10 @@ function sc_asteroid_spawn_create(
         amount: _total_spawned,
         initial_amount: _total_spawned,
         remaining_amount: _total_spawned,
+
+        feature: variable_struct_exists(_request, "feature")
+            ? _request.feature
+            : undefined,
 
         shape: _shape,
         zones: _zones

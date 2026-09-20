@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"snd_asteroid_death_explosion",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":1.25,
+  "exportDir":"",
+  "name":"snd_asteroid_death_explosion",
+  "parent":{
+    "name":"General",
+    "path":"folders/AUDIO/General.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"snd_asteroid_death_explosion.wav",
+  "volume":1.0,
+}

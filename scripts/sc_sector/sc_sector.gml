@@ -96,6 +96,36 @@ function sc_sector_field_structure_clear(_x, _y, _radius)
     return true;
 }
 
+/// @description Creates the persistent world feature belonging to one asteroid field.
+function sc_sector_asteroid_field_feature_spawn(_field, _layer, _field_index)
+{
+    if (!is_struct(_field.feature))
+        return noone;
+
+    var _feature = _field.feature;
+
+    switch (_feature.key)
+    {
+        case "derelict_core":
+            return instance_create_layer(
+                _field.x,
+                _field.y,
+                _layer,
+                o_derelict,
+                {
+                    structure_create: {
+                        key: _feature.structure_key,
+                        persistent_id: _feature.persistent_prefix + string(_field_index),
+                        angle: random(360),
+                        collision_layer: _layer
+                    }
+                }
+            );
+    }
+
+    return noone;
+}
+
 /// @description Generates varied asteroid formations within count and instance budgets.
 function sc_sector_asteroid_fields_spawn(_layer)
 {
@@ -116,6 +146,7 @@ function sc_sector_asteroid_fields_spawn(_layer)
     var _centres = [];
     var _formations_spawned = 0;
     var _asteroids_spawned = 0;
+    var _features_spawned = 0;
     var _attempts = 0;
     var _attempts_max = _formation_limit * 80;
 
@@ -123,11 +154,9 @@ function sc_sector_asteroid_fields_spawn(_layer)
     && _asteroids_spawned < _asteroid_budget
     && _attempts < _attempts_max)
     {
-        _attempts++;
+        _attempts += 1;
 
-        var _request =
-            sc_asteroid_spawn_request_create();
-
+        var _request = sc_asteroid_spawn_request_create();
         var _radius = _request.radius;
 
         var _padding = max(
@@ -177,9 +206,13 @@ function sc_sector_asteroid_fields_spawn(_layer)
             ? array_length(_fields)
             : -1;
 
-        var _remaining_budget =
-            _asteroid_budget
-            - _asteroids_spawned;
+        var _feature = sc_asteroid_spawn_feature_roll(_request);
+
+        if (is_struct(_feature)
+        && sc_asteroid_spawn_feature_apply(_request, _feature))
+            _request.feature = _feature;
+
+        var _remaining_budget = _asteroid_budget - _asteroids_spawned;
 
         var _spawn = sc_asteroid_spawn_create(
             _x,
@@ -201,10 +234,21 @@ function sc_sector_asteroid_fields_spawn(_layer)
         });
 
         if (_spawn.field)
+        {
             array_push(_fields, _spawn);
 
+            var _feature_instance = sc_sector_asteroid_field_feature_spawn(
+                _spawn,
+                _layer,
+                _field_index
+            );
+
+            if (instance_exists(_feature_instance))
+                _features_spawned += 1;
+        }
+
         _asteroids_spawned += _spawn.amount;
-        _formations_spawned++;
+        _formations_spawned += 1;
     }
 
     _sector.asteroid_fields = _fields;
@@ -214,7 +258,9 @@ function sc_sector_asteroid_fields_spawn(_layer)
         + string(_formations_spawned)
         + " FORMATIONS // "
         + string(_asteroids_spawned)
-        + " ASTEROIDS // BUDGET "
+        + " ASTEROIDS // "
+        + string(_features_spawned)
+        + " FEATURES // BUDGET "
         + string(_asteroid_budget)
     );
 
