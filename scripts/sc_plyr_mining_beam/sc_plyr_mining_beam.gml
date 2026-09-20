@@ -9,10 +9,10 @@ It deals weak combat damage but extracts asteroid resources efficiently.
 function sc_weapon_register_shard_mining_beam()
 {
     var _palette = {
-        glow: make_colour_rgb(120,65,0),
-        accent: make_colour_rgb(225,125,10),
-        energy: make_colour_rgb(255,195,35),
-        core: make_colour_rgb(255,248,185)
+        glow: make_colour_rgb(120, 65, 0),
+        accent: make_colour_rgb(225, 125, 10),
+        energy: make_colour_rgb(255, 195, 35),
+        core: make_colour_rgb(255, 248, 185)
     };
 
     return sc_weapon_register({
@@ -67,16 +67,13 @@ function sc_weapon_register_shard_mining_beam()
                         segment_length: 75,
                         width_start: 0.82,
                         width_end: 1.12,
-
                         pulse_amount: 0.08,
                         pulse_speed: 0.38,
                         pulse_secondary_amount: 0,
                         pulse_secondary_speed: 0,
-
                         wobble_amount: 0.12,
                         wobble_speed: 0.29,
                         wobble_step: 0.83,
-
                         glow_width: 4,
                         glow_alpha: 0.13,
                         body_width: 2,
@@ -85,17 +82,14 @@ function sc_weapon_register_shard_mining_beam()
                         inner_alpha: 0.95,
                         hot_width: 0.25,
                         hot_alpha: 1,
-
                         body_colour_mix: 0,
                         inner_colour_mix: 0,
                         hot_colour_mix: 0,
-
                         band_spacing: 95,
                         band_length: 14,
                         band_speed: 4,
                         band_width: 0.2,
                         band_alpha: 0.18,
-
                         source_flare_radius: 0.75,
                         source_flare_alpha: 0.9
                     },
@@ -131,9 +125,16 @@ function sc_weapon_register_shard_mining_beam()
         },
 
         audio: {
-            sound: noone,
-            volume: 0.4,
-            pitch_range: 0.04
+            mode: WeaponAudioMode.LOOP,
+            start_sound: snd_plr_shard_mining_beam_start,
+            sound: snd_plr_shard_mining_beam_loop,
+            end_sound: snd_plr_shard_mining_beam_end,
+            volume: 0.34,
+            start_volume: 0.45,
+            end_volume: 0.4,
+            pitch_range: 0.01,
+            priority: 84,
+            release_delay: 2
         }
     });
 }

@@ -419,6 +419,8 @@ function sc_audio_weapon_loop_refresh(_owner, _weapon, _x, _y)
 
         if (audio_is_playing(_loop.handle))
         {
+            _loop.x = _x;
+            _loop.y = _y;
             _loop.release_tick = GAME_TICK + _release_delay;
             return _loop.handle;
         }
@@ -429,11 +431,29 @@ function sc_audio_weapon_loop_refresh(_owner, _weapon, _x, _y)
 
     var _player = _owner.entity.faction == Faction.PLAYER;
     var _category = _player ? AudioCategory.PLAYER : AudioCategory.WORLD;
-    var _priority = sc_audio_value_get(
-        _audio,
-        "priority",
-        _player ? _config.player_priority : _config.world_priority
-    );
+    var _priority = sc_audio_value_get(_audio, "priority", _player ? _config.player_priority : _config.world_priority);
+    var _volume = sc_audio_value_get(_audio, "volume", 1);
+    var _pitch_range = sc_audio_value_get(_audio, "pitch_range", 0);
+    var _start_sound = sc_audio_value_get(_audio, "start_sound", noone);
+
+    if (_start_sound != noone)
+    {
+        sc_audio_play_at(
+            _start_sound,
+            _x,
+            _y,
+            _category,
+            sc_audio_value_get(_audio, "start_volume", _volume),
+            _pitch_range,
+            _priority,
+            1,
+            0,
+            sc_audio_value_get(_audio, "falloff_reference", _config.falloff_reference),
+            sc_audio_value_get(_audio, "falloff_maximum", _config.falloff_maximum),
+            sc_audio_value_get(_audio, "falloff_factor", _config.falloff_factor),
+            "weapon_start_" + _key
+        );
+    }
 
     if (!sc_audio_request_allowed(_sound, _key, _priority, 1, 0))
         return -1;
@@ -443,21 +463,30 @@ function sc_audio_weapon_loop_refresh(_owner, _weapon, _x, _y)
     if (_handle < 0)
         return -1;
 
-    audio_sound_gain(_handle, sc_audio_gain_get(_category, sc_audio_value_get(_audio, "volume", 1)), 0);
-    audio_sound_pitch(_handle, sc_audio_pitch_get(sc_audio_value_get(_audio, "pitch_range", 0)));
-
+    audio_sound_gain(_handle, sc_audio_gain_get(_category, _volume), 0);
+    audio_sound_pitch(_handle, sc_audio_pitch_get(_pitch_range));
     sc_audio_active_register(_handle, _key, _category, _priority);
 
     array_push(global.audio.loops, {
         key: _key,
         handle: _handle,
+        x: _x,
+        y: _y,
+        category: _category,
+        priority: _priority,
+        pitch_range: _pitch_range,
+        end_sound: sc_audio_value_get(_audio, "end_sound", noone),
+        end_volume: sc_audio_value_get(_audio, "end_volume", _volume),
+        falloff_reference: sc_audio_value_get(_audio, "falloff_reference", _config.falloff_reference),
+        falloff_maximum: sc_audio_value_get(_audio, "falloff_maximum", _config.falloff_maximum),
+        falloff_factor: sc_audio_value_get(_audio, "falloff_factor", _config.falloff_factor),
         release_tick: GAME_TICK + _release_delay
     });
 
     return _handle;
 }
 
-/// @description Stops weapon loops that are no longer being refreshed.
+/// @description Stops expired weapon loops and plays their optional release sounds.
 function sc_audio_weapon_loops_update()
 {
     var _loops = global.audio.loops;
@@ -474,6 +503,25 @@ function sc_audio_weapon_loops_update()
 
         sc_audio_active_handle_remove(_loop.handle);
         array_delete(_loops, _i, 1);
+
+        if (_loop.end_sound == noone)
+            continue;
+
+        sc_audio_play_at(
+            _loop.end_sound,
+            _loop.x,
+            _loop.y,
+            _loop.category,
+            _loop.end_volume,
+            _loop.pitch_range,
+            _loop.priority,
+            1,
+            0,
+            _loop.falloff_reference,
+            _loop.falloff_maximum,
+            _loop.falloff_factor,
+            "weapon_end_" + _loop.key
+        );
     }
 }
 

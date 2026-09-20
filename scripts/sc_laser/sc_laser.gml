@@ -6,12 +6,10 @@ It rapidly extends while LMB is held, remains attached to its mount,
 applies damage on registered tick intervals and releases into a short fade.
 */
 
-/// @description Registers the Shard's sustained aqua laser.
+/// @description Registers the Shard's sustained combat laser.
 function sc_weapon_register_shard_laser()
 {
-    var _palette = variable_struct_get(
-        global.data.ships,"ship_shard"
-    ).visual.palette;
+    var _palette = variable_struct_get(global.data.ships, "ship_shard").visual.palette;
 
     return sc_weapon_register({
         identity: {
@@ -58,16 +56,13 @@ function sc_weapon_register_shard_laser()
                         segment_length: 85,
                         width_start: 1,
                         width_end: 1,
-
                         pulse_amount: 0.13,
                         pulse_speed: 0.42,
                         pulse_secondary_amount: 0.07,
                         pulse_secondary_speed: 0.17,
-
                         wobble_amount: 0.22,
                         wobble_speed: 0.34,
                         wobble_step: 0.91,
-
                         glow_width: 4.4,
                         glow_alpha: 0.13,
                         body_width: 2.25,
@@ -76,17 +71,14 @@ function sc_weapon_register_shard_laser()
                         inner_alpha: 0.92,
                         hot_width: 0.28,
                         hot_alpha: 1,
-
                         body_colour_mix: 1,
                         inner_colour_mix: 1,
                         hot_colour_mix: 1,
-
                         band_spacing: 145,
                         band_length: 24,
                         band_speed: 5,
                         band_width: 0.22,
                         band_alpha: 0.22,
-
                         source_flare_radius: 0.9,
                         source_flare_alpha: 1
                     },
@@ -127,9 +119,16 @@ function sc_weapon_register_shard_laser()
         },
 
         audio: {
-            sound: noone,
-            volume: 0.5,
-            pitch_range: 0.03
+            mode: WeaponAudioMode.LOOP,
+            start_sound: snd_plyr_shard_beam_start,
+            sound: snd_plyr_shard_beam_loop,
+            end_sound: snd_plyr_shard_beam_end,
+            volume: 0.42,
+            start_volume: 0.55,
+            end_volume: 0.48,
+            pitch_range: 0.01,
+            priority: 88,
+            release_delay: 2
         }
     });
 }
