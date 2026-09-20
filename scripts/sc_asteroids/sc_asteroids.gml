@@ -649,19 +649,7 @@ function sc_asteroid_register_iridium()
 
         mining: { strength_required: 5 },
         stats: { health_multiplier: 1.9, yield_multiplier: 0.35 },
-        palette: {
-            void: make_colour_rgb(7,6,13), dark: make_colour_rgb(25,22,42),
-            mid: make_colour_rgb(50,45,82), light: make_colour_rgb(96,91,149),
-            resource: make_colour_rgb(190,207,255), glow: make_colour_rgb(115,74,255)
-        }
-    });
-}
-{
-    return sc_asteroid_register({
-        identity: { key: "asteroid_iridium", name: "Iridium Asteroid" },
-        item_key: "item_iridium",
-        mining: { strength_required: 5 },
-        stats: { health_multiplier: 1.9, yield_multiplier: 0.35 },
+
         palette: {
             void: make_colour_rgb(7,6,13), dark: make_colour_rgb(25,22,42),
             mid: make_colour_rgb(50,45,82), light: make_colour_rgb(96,91,149),

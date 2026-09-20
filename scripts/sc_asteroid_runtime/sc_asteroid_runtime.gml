@@ -71,7 +71,7 @@ function sc_asteroid_init(_asteroid, _create)
 
     _asteroid.asteroid = {
         key: _create.key,
-        item_key: _definition.item.item_key,
+        item_key: _definition.item_key,
         size: _create.size,
         modifier: _modifier,
 
