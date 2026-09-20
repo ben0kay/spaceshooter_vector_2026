@@ -293,8 +293,8 @@ function sc_inventory_systems_socket_at_position(_mouse_x,_mouse_y)
     return undefined;
 }
 
-/// @description Updates system selection, module installation and module removal.
-function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
+/// @description Updates system selection, module inspection, installation and removal.
+function sc_inventory_systems_update(_hud, _mouse_x, _mouse_y, _pressed, _released)
 {
     var _player = global.player_id;
     var _runtime = _hud.inventory;
@@ -303,24 +303,29 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
     if (_pressed)
     {
         var _cargo_slot = sc_inventory_systems_storage_at_position(
-            _player,_mouse_x,_mouse_y
+            _player,
+            _mouse_x,
+            _mouse_y
         );
 
         if (_cargo_slot >= 0)
         {
             _runtime.selected_slot = _cargo_slot;
+            _runtime.selected_system_module_slot = _cargo_slot;
             _runtime.drag.active = true;
             _runtime.drag.source_slot = _cargo_slot;
             return;
         }
 
         var _target = sc_inventory_systems_socket_at_position(
-            _mouse_x,_mouse_y
+            _mouse_x,
+            _mouse_y
         );
 
         if (!is_undefined(_target))
         {
             _runtime.selected_system = _target.card_index;
+            _runtime.selected_system_module_slot = -1;
 
             var _card = _data.cards[_target.card_index];
             var _installed = sc_player_module_get(
@@ -340,17 +345,22 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
         }
 
         var _card_index = sc_inventory_systems_card_at_position(
-            _mouse_x,_mouse_y
+            _mouse_x,
+            _mouse_y
         );
 
         if (_card_index >= 0)
+        {
             _runtime.selected_system = _card_index;
+            _runtime.selected_system_module_slot = -1;
+        }
     }
 
     if (!_runtime.drag.active || !_released) return;
 
     var _target = sc_inventory_systems_socket_at_position(
-        _mouse_x,_mouse_y
+        _mouse_x,
+        _mouse_y
     );
 
     if (!is_undefined(_target))
@@ -363,7 +373,10 @@ function sc_inventory_systems_update(_hud,_mouse_x,_mouse_y,_pressed,_released)
             _card.system,
             _target.socket_index
         ))
+        {
             _runtime.selected_system = _target.card_index;
+            _runtime.selected_system_module_slot = -1;
+        }
     }
 
     _runtime.drag.active = false;
@@ -888,9 +901,256 @@ function sc_inventory_systems_card_draw(_hud, _player, _card, _card_index, _data
     draw_set_colour(c_white);
 }
 
-/// @description Draws the selected system's live values and installed modules.
+/// @description Draws one selected cargo module in the Systems inspector.
+function sc_inventory_systems_module_inspector_draw(_hud, _player, _item, _origin_x, _origin_y)
+{
+    var _palette = _hud.data.palette;
+    var _data = sc_inventory_systems_data();
+    var _inspector = _data.inspector;
+    var _definition = variable_struct_get(global.data.items, _item.key);
+    var _module = _definition.module;
+    var _modifiers = _module.modifiers;
+
+    var _x = _origin_x + _inspector.x;
+    var _y = _origin_y + _inspector.y;
+    var _system_name = "UNKNOWN SYSTEM";
+
+    for (var _i = 0; _i < array_length(_data.cards); ++_i)
+    {
+        if (_data.cards[_i].system == _module.system)
+        {
+            _system_name = _data.cards[_i].name;
+            break;
+        }
+    }
+
+    draw_set_alpha(0.96);
+    draw_set_colour(_palette.background);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _inspector.width,
+        _y + _inspector.height,
+        false
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_rectangle(
+        _x,
+        _y,
+        _x + _inspector.width,
+        _y + _inspector.height,
+        true
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 20, _y + 25, "SYSTEM MODULE INSPECTOR");
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + _inspector.width - 20,
+        _y + 25,
+        "FIXED QUALITY"
+    );
+    draw_set_halign(fa_left);
+
+    draw_set_colour(_palette.outline);
+    draw_line(
+        _x + 20,
+        _y + 54,
+        _x + _inspector.width - 20,
+        _y + 54
+    );
+
+    var _sprite = sc_resource_pickup_visual_cache_get(_item.key, 0);
+
+    draw_set_colour(_palette.void);
+    draw_rectangle(
+        _x + 20,
+        _y + 78,
+        _x + 124,
+        _y + 182,
+        false
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_rectangle(
+        _x + 20,
+        _y + 78,
+        _x + 124,
+        _y + 182,
+        true
+    );
+
+    if (sprite_exists(_sprite))
+        draw_sprite_ext(
+            _sprite,
+            0,
+            _x + 72,
+            _y + 130,
+            1.45,
+            1.45,
+            0,
+            c_white,
+            1
+        );
+
+    draw_set_colour(_palette.text);
+    draw_text(_x + 150, _y + 82, _item.name);
+
+    draw_set_colour(_palette.muted);
+    draw_text(_x + 150, _y + 112, "SYSTEM COMPATIBILITY");
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 150, _y + 140, _system_name);
+
+    draw_set_colour(_palette.muted);
+    draw_text(_x + 150, _y + 170, "MODULES DO NOT HAVE ITEM GRADES");
+
+    draw_set_colour(_palette.outline);
+    draw_line(
+        _x + 20,
+        _y + 205,
+        _x + _inspector.width - 20,
+        _y + 205
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 20, _y + 228, "DESCRIPTION");
+
+    draw_set_colour(_palette.text);
+    draw_text_ext(
+        _x + 20,
+        _y + 260,
+        _definition.description,
+        22,
+        _inspector.width - 40
+    );
+
+    draw_set_colour(_palette.outline);
+    draw_line(
+        _x + 20,
+        _y + 332,
+        _x + _inspector.width - 20,
+        _y + 332
+    );
+
+    draw_set_colour(_palette.accent);
+    draw_text(_x + 20, _y + 355, "MODULE EFFECTS");
+
+    if (array_length(_modifiers) <= 0)
+    {
+        draw_set_colour(_palette.muted);
+        draw_text(_x + 20, _y + 394, "NO STAT MODIFIERS");
+    }
+    else
+    {
+        for (var _modifier_index = 0; _modifier_index < array_length(_modifiers); ++_modifier_index)
+        {
+            var _modifier = _modifiers[_modifier_index];
+            var _row_y = _y + 394 + _modifier_index*32;
+            var _stat_name = string_upper(
+                string_replace_all(_modifier.stat, "_", " ")
+            );
+
+            var _value = "";
+
+            if (variable_struct_exists(_modifier, "add"))
+            {
+                var _add = _modifier.add;
+                _value = (_add >= 0 ? "+" : "") + string(_add);
+            }
+            else if (variable_struct_exists(_modifier, "multiply"))
+            {
+                var _multiply = _modifier.multiply;
+                var _percent = round((_multiply - 1)*100);
+                _value = (_percent >= 0 ? "+" : "") + string(_percent) + "%";
+            }
+
+            draw_set_colour(_palette.muted);
+            draw_text(_x + 20, _row_y, _stat_name);
+
+            draw_set_halign(fa_right);
+            draw_set_colour(_palette.text);
+            draw_text(
+                _x + _inspector.width - 20,
+                _row_y,
+                _value
+            );
+            draw_set_halign(fa_left);
+        }
+    }
+
+    draw_set_halign(fa_right);
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + _inspector.width - 150,
+        _y + _inspector.height - 35,
+        "MASS"
+    );
+
+    draw_set_colour(_palette.text);
+    draw_text(
+        _x + _inspector.width - 90,
+        _y + _inspector.height - 35,
+        string(_definition.cargo.weight)
+    );
+
+    draw_set_colour(_palette.muted);
+    draw_text(
+        _x + _inspector.width - 55,
+        _y + _inspector.height - 35,
+        "QTY"
+    );
+
+    draw_set_colour(_palette.text);
+    draw_text(
+        _x + _inspector.width - 20,
+        _y + _inspector.height - 35,
+        string(_item.amount)
+    );
+
+    draw_set_halign(fa_left);
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
+    draw_set_valign(fa_top);
+}
+
+/// @description Draws the selected module or selected system's live information.
 function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y)
 {
+    var _module_slot = _hud.inventory.selected_system_module_slot;
+
+    if (_module_slot >= 0
+    && _module_slot < array_length(_player.inventory.slots))
+    {
+        var _module_item = _player.inventory.slots[_module_slot];
+
+        if (!is_undefined(_module_item))
+        {
+            var _module_definition = variable_struct_get(
+                global.data.items,
+                _module_item.key
+            );
+
+            if (_module_definition.type == ItemType.MODULE)
+            {
+                sc_inventory_systems_module_inspector_draw(
+                    _hud,
+                    _player,
+                    _module_item,
+                    _origin_x,
+                    _origin_y
+                );
+
+                return;
+            }
+        }
+
+        _hud.inventory.selected_system_module_slot = -1;
+    }
+
     var _palette = _hud.data.palette;
     var _data = sc_inventory_systems_data();
     var _inspector = _data.inspector;
@@ -1017,11 +1277,7 @@ function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y
         var _row_y = _y + 212 + _i*38;
 
         draw_set_colour(_palette.muted);
-        draw_text(
-            _x + 20,
-            _row_y,
-            _row.label
-        );
+        draw_text(_x + 20, _row_y, _row.label);
 
         draw_set_halign(fa_right);
         draw_set_colour(_palette.text);
@@ -1037,11 +1293,7 @@ function sc_inventory_systems_inspector_draw(_hud, _player, _origin_x, _origin_y
     var _module_width = _inspector.width - 470;
 
     draw_set_colour(_palette.accent);
-    draw_text(
-        _module_x,
-        _y + 82,
-        "INSTALLED MODULES"
-    );
+    draw_text(_module_x, _y + 82, "INSTALLED MODULES");
 
     for (var _socket_index = 0; _socket_index < 3; ++_socket_index)
     {

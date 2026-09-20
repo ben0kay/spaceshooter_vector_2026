@@ -649,6 +649,7 @@ function sc_hud_level_init(_hud_object)
             tab: InventoryTab.CARGO,
             selected_slot: 0,
 			selected_system: 0,
+			selected_system_module_slot: -1,
 
             drag: {
                 active: false,
