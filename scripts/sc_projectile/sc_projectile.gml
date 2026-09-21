@@ -1,4 +1,4 @@
-/// @description Initializes a reusable projectile with optional defence, detonation and expiry emissions.
+/// @description Initializes a reusable projectile with optional defence and emission triggers.
 function sc_projectile_init(_projectile, _create)
 {
     if (!variable_struct_exists(global.data.projectiles, _create.key))
@@ -80,6 +80,13 @@ function sc_projectile_init(_projectile, _create)
         }
         : undefined;
 
+    var _proximity = variable_struct_exists(_data, "proximity")
+        ? {
+            range_sq: sqr(max(1, _data.proximity.range)),
+            emissions: variable_clone(_data.proximity.emissions)
+        }
+        : undefined;
+
     var _defence = undefined;
 
     if (variable_struct_exists(_data, "defence"))
@@ -151,6 +158,7 @@ function sc_projectile_init(_projectile, _create)
         defence: _defence,
         detonation: _detonation,
         expiry: _expiry,
+        proximity: _proximity,
         runtime: _runtime
     };
 
@@ -450,6 +458,38 @@ function sc_projectile_update(_projectile)
     }
 }
 
+/// @description Splits a projectile when it reaches the opposing player.
+function sc_projectile_proximity_update(_projectile, _data)
+{
+    var _proximity = _data.proximity;
+    if (!is_struct(_proximity)) return false;
+
+    var _target = global.player_id;
+    if (!instance_exists(_target)) return false;
+    if (_data.source.faction == _target.entity.faction) return false;
+
+    var _dx = _target.x - _projectile.x;
+    var _dy = _target.y - _projectile.y;
+
+    if (_dx * _dx + _dy * _dy > _proximity.range_sq)
+        return false;
+
+    // The carrier flies straight. Only the released cone aims at the player.
+    _data.direction = point_direction(_projectile.x, _projectile.y, _target.x, _target.y);
+
+    _data.visual.impact_script(
+        _projectile.x,
+        _projectile.y,
+        _data.direction,
+        noone,
+        _data.scale
+    );
+
+    sc_projectile_emissions_emit(_projectile, _proximity.emissions);
+    instance_destroy(_projectile);
+    return true;
+}
+
 /// @description Updates one damaging travelling projectile.
 function sc_projectile_active_update(_projectile, _data)
 {
@@ -460,6 +500,9 @@ function sc_projectile_active_update(_projectile, _data)
     _projectile.y += lengthdir_y(_data.movement.speed, _data.direction);
     _projectile.draw_angle = _data.direction;
 
+    if (sc_projectile_proximity_update(_projectile, _data))
+        return;
+
     if (_data.runtime.has_trail_script)
         _data.visual.trail_script(_projectile, _data);
 
@@ -469,7 +512,6 @@ function sc_projectile_active_update(_projectile, _data)
     if (is_struct(_data.expiry)
     && array_length(_data.expiry.emissions) > 0)
     {
-        // Give an emitting projectile a visible breakup before it disappears.
         _data.visual.impact_script(
             _projectile.x,
             _projectile.y,

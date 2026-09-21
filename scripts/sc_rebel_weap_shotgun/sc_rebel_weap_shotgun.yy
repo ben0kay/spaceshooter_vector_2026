@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_weap_shotgun",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_weap_shotgun",
+  "parent":{
+    "name":"weapons",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/weapons.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
