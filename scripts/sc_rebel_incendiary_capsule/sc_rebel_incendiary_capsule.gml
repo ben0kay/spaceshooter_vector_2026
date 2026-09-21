@@ -25,12 +25,18 @@ function sc_projectile_register_rebel_incendiary_canister()
                 },
 
                 behaviour: {
-                    duration: 120,
+                    duration: 145,
                     tick_interval: 15,
                     hit_once: false,
                     max_targets: 0,
                     falloff_minimum: 1,
-                    falloff_exponent: 1
+                    falloff_exponent: 1,
+
+                    expanding_circle: {
+                        enabled: true,
+                        start_radius: 10,
+                        expand_duration: 25
+                    }
                 },
 
                 visual: {
@@ -57,7 +63,6 @@ function sc_projectile_register_rebel_incendiary_canister()
         }
     });
 }
-
 
 /// @description Registers particles used across the stationary fire circle.
 function sc_rebel_incendiary_fire_particles_register()
@@ -103,10 +108,10 @@ function sc_rebel_incendiary_fire_particles_register()
     });
 }
 
-/// @description Distributes flames throughout the full damaging circle.
+/// @description Spreads flames through the radius currently reached by the fire.
 function sc_attack_area_rebel_incendiary_fire_emit(_area, _data)
 {
-    var _radius = _data.geometry.radius;
+    var _radius = _data.runtime.circle_radius;
     if (!sc_optimization_circle_visible(_area.x, _area.y, _radius, 64)) return;
 
     var _particles = sc_particles_group_get("rebel_incendiary_fire");
@@ -136,10 +141,10 @@ function sc_attack_area_rebel_incendiary_fire_emit(_area, _data)
     }
 }
 
-/// @description Draws the persistent fire's faint boundary beneath its flames.
+/// @description Draws the current fire boundary beneath the flame particles.
 function sc_attack_area_rebel_incendiary_fire_draw(_area, _data)
 {
-    var _radius = _data.geometry.radius;
+    var _radius = _data.runtime.circle_radius;
     var _alpha = min(1, _data.runtime.life / 18);
 
     draw_set_colour(make_colour_rgb(210, 70, 20));
