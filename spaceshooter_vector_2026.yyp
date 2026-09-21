@@ -277,6 +277,7 @@
     {"id":{"name":"sc_rebel_napalm_gunship","path":"scripts/sc_rebel_napalm_gunship/sc_rebel_napalm_gunship.yy",},},
     {"id":{"name":"sc_rebel_register","path":"scripts/sc_rebel_register/sc_rebel_register.yy",},},
     {"id":{"name":"sc_rebel_rocket_salvo","path":"scripts/sc_rebel_rocket_salvo/sc_rebel_rocket_salvo.yy",},},
+    {"id":{"name":"sc_rebel_salvohawk","path":"scripts/sc_rebel_salvohawk/sc_rebel_salvohawk.yy",},},
     {"id":{"name":"sc_rebel_skirmisher","path":"scripts/sc_rebel_skirmisher/sc_rebel_skirmisher.yy",},},
     {"id":{"name":"sc_rebel_slug","path":"scripts/sc_rebel_slug/sc_rebel_slug.yy",},},
     {"id":{"name":"sc_rebel_visual_helper","path":"scripts/sc_rebel_visual_helper/sc_rebel_visual_helper.yy",},},

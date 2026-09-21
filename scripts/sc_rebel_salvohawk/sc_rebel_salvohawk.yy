@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_salvohawk",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_salvohawk",
+  "parent":{
+    "name":"enemies",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/enemies.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
