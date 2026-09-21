@@ -697,7 +697,7 @@ function sc_enemy_remove(_enemy,_reason)
 }
 
 /// @description Processes one enemy death and its final killing source.
-function sc_enemy_die(_enemy,_packet)
+function sc_enemy_die(_enemy, _packet)
 {
     var _data = _enemy.enemy;
     var _source = _packet.source;
@@ -708,6 +708,15 @@ function sc_enemy_die(_enemy,_packet)
     var _mass = _data.stats.final.mass;
 
     _data.visual.death.script(_enemy);
+
+    sc_audio_destruction_play(
+        snd_enemy_ship_death_explosion,
+        _death_x,
+        _death_y,
+        GCFG.audio.destruction.enemy,
+        AudioCategory.WORLD,
+        "enemy_ship_death"
+    );
 
     var _shake_magnitude = clamp(
         _shake_config.shake_base + _mass * _shake_config.shake_per_mass,
@@ -750,10 +759,6 @@ function sc_enemy_die(_enemy,_packet)
 
     // Roll registered enemy drops here later.
     // Process registered on-death abilities here later.
-    // Insert registered enemy death audio here later.
 
-    return sc_enemy_remove(
-        _enemy,
-        EnemyRemovalReason.KILLED
-    );
+    return sc_enemy_remove(_enemy, EnemyRemovalReason.KILLED);
 }

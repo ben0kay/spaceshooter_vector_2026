@@ -842,45 +842,6 @@ function sc_player_shield_focus_update(_player)
     return true;
 }
 
-/// @description Processes one player death immediately and disables the gameplay instance.
-function sc_player_die(_player, _packet)
-{
-    var _movement = _player.movement;
-    var _dash = _movement.dash;
-    var _hardpoints = _player.ship.hardpoints.primary;
-
-    sc_player_continuous_weapons_release(_player);
-
-    _player.combat.weapons_allowed = false;
-    _movement.boost.active = false;
-    _movement.moving = false;
-    _movement.input_x = 0;
-    _movement.input_y = 0;
-    _dash.remaining = 0;
-    _dash.double_tap_remaining = 0;
-    _dash.invulnerable = false;
-    _dash.ghost_count = 0;
-
-    for (var _i = 0; _i < array_length(_hardpoints); _i++)
-    {
-        _hardpoints[_i].runtime.recoil = 0;
-        _hardpoints[_i].runtime.muzzle_flash = 0;
-    }
-
-    _player.ship.visual.death_script(_player);
-
-    _movement.velocity_x = 0;
-    _movement.velocity_y = 0;
-    _movement.speed = 0;
-
-    _player.mask_index = -1;
-    _player.visible = false;
-    global.player_id = noone;
-
-    // Start the future defeat, respawn or spectator controller here.
-    return true;
-}
-
 /// @description Recharges player shields when the shield generator is operational.
 function sc_player_defence_update(_player)
 {
@@ -942,5 +903,53 @@ function sc_player_defence_update(_player)
         _shield.maximum,
         _shield.current + _restore
     );
+}
+
+/// @description Processes one player death immediately and disables the gameplay instance.
+function sc_player_die(_player, _packet)
+{
+    var _movement = _player.movement;
+    var _dash = _movement.dash;
+    var _hardpoints = _player.ship.hardpoints.primary;
+
+    sc_player_continuous_weapons_release(_player);
+
+    _player.combat.weapons_allowed = false;
+    _movement.boost.active = false;
+    _movement.moving = false;
+    _movement.input_x = 0;
+    _movement.input_y = 0;
+    _dash.remaining = 0;
+    _dash.double_tap_remaining = 0;
+    _dash.invulnerable = false;
+    _dash.ghost_count = 0;
+
+    for (var _i = 0; _i < array_length(_hardpoints); _i++)
+    {
+        _hardpoints[_i].runtime.recoil = 0;
+        _hardpoints[_i].runtime.muzzle_flash = 0;
+    }
+
+    sc_audio_destruction_play(
+        snd_plyr_death_explosion,
+        _player.x,
+        _player.y,
+        GCFG.audio.destruction.player,
+        AudioCategory.PLAYER,
+        "player_death"
+    );
+
+    _player.ship.visual.death_script(_player);
+
+    _movement.velocity_x = 0;
+    _movement.velocity_y = 0;
+    _movement.speed = 0;
+
+    _player.mask_index = -1;
+    _player.visible = false;
+    global.player_id = noone;
+
+    // Start the future defeat, respawn or spectator controller here.
+    return true;
 }
 

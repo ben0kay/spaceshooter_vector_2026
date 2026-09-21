@@ -35,6 +35,41 @@ function sc_audio_config_create()
             falloff_reference: 280,
             falloff_maximum: 1200,
             falloff_factor: 1
+        },
+
+        destruction: {
+            player: {
+                volume: 0.9,
+                pitch_range: 0.01,
+                priority: 100,
+                instance_maximum: 1,
+                cooldown: 10,
+                falloff_reference: 420,
+                falloff_maximum: 1800,
+                falloff_factor: 1
+            },
+
+            enemy: {
+                volume: 0.72,
+                pitch_range: 0.07,
+                priority: 65,
+                instance_maximum: 6,
+                cooldown: 1,
+                falloff_reference: 360,
+                falloff_maximum: 1800,
+                falloff_factor: 1
+            },
+
+            asteroid: {
+                volume: 0.68,
+                pitch_range: 0.11,
+                priority: 55,
+                instance_maximum: 5,
+                cooldown: 1,
+                falloff_reference: 380,
+                falloff_maximum: 1800,
+                falloff_factor: 1
+            }
         }
     };
 }
@@ -615,6 +650,27 @@ function sc_audio_projectile_detonation_play(_projectile)
 }
 
 #endregion
+
+
+/// @description Plays one configured positional destruction sound.
+function sc_audio_destruction_play(_sound, _x, _y, _audio, _category, _key)
+{
+    return sc_audio_play_at(
+        _sound,
+        _x,
+        _y,
+        _category,
+        _audio.volume,
+        _audio.pitch_range,
+        _audio.priority,
+        _audio.instance_maximum,
+        _audio.cooldown,
+        _audio.falloff_reference,
+        _audio.falloff_maximum,
+        _audio.falloff_factor,
+        _key
+    );
+}
 
 #region PAUSE
 

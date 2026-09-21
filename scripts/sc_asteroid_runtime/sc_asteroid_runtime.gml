@@ -355,48 +355,6 @@ function sc_asteroid_death_effect_create(_asteroid)
     return true;
 }
 
-/// @description Handles the complete death lifecycle of one asteroid.
-function sc_asteroid_die(_asteroid,_packet)
-{
-    sc_sector_persistence_asteroid_destroyed_add(
-        _asteroid
-    );
-
-    sc_sector_asteroid_field_population_remove(
-        _asteroid
-    );
-
-    if (_packet.source.faction == Faction.PLAYER)
-        sc_player_statistics_asteroid_destroyed(
-            _asteroid
-        );
-
-    var _modifier = _asteroid.asteroid.modifier;
-
-    if (is_struct(_modifier)
-    && !is_undefined(
-        _modifier.definition.behaviour.death_script
-    ))
-    {
-        _modifier.definition.behaviour.death_script(
-            _asteroid,
-            _packet
-        );
-    }
-
-    sc_asteroid_death_effect_create(
-        _asteroid
-    );
-
-    sc_asteroid_yield_destruction_release(
-        _asteroid,
-        _packet
-    );
-
-    instance_destroy(_asteroid);
-    return true;
-}
-
 /// @description Draws one visible cached asteroid with runtime variation.
 function sc_asteroid_draw(_asteroid)
 {
@@ -630,5 +588,38 @@ function sc_asteroid_test_field_spawn(
     }
 
     return _spawned;
+}
+
+/// @description Handles the complete death lifecycle of one asteroid.
+function sc_asteroid_die(_asteroid, _packet)
+{
+    sc_sector_persistence_asteroid_destroyed_add(_asteroid);
+    sc_sector_asteroid_field_population_remove(_asteroid);
+
+    if (_packet.source.faction == Faction.PLAYER)
+        sc_player_statistics_asteroid_destroyed(_asteroid);
+
+    var _modifier = _asteroid.asteroid.modifier;
+
+    if (is_struct(_modifier)
+    && !is_undefined(_modifier.definition.behaviour.death_script))
+    {
+        _modifier.definition.behaviour.death_script(_asteroid, _packet);
+    }
+
+    sc_audio_destruction_play(
+        snd_asteroid_death_explosion,
+        _asteroid.x,
+        _asteroid.y,
+        GCFG.audio.destruction.asteroid,
+        AudioCategory.WORLD,
+        "asteroid_death"
+    );
+
+    sc_asteroid_death_effect_create(_asteroid);
+    sc_asteroid_yield_destruction_release(_asteroid, _packet);
+
+    instance_destroy(_asteroid);
+    return true;
 }
 
