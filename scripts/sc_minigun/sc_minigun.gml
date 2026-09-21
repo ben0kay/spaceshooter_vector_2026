@@ -52,12 +52,13 @@ function sc_weapon_register_minigun()
         },
 
         audio: {
-            mode: WeaponAudioMode.LOOP,
+            mode: WeaponAudioMode.ONESHOT,
             sound: snd_minigun_fire,
             volume: 0.28,
             pitch_range: 0.02,
             priority: 85,
-            release_delay: 4
+            instance_maximum: 8,
+            cooldown: 0
         }
     });
 }

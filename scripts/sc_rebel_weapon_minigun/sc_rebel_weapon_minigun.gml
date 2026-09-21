@@ -30,13 +30,17 @@ function sc_weapon_register_rebel_minigun()
                 effect: DamageEffect.NONE
             },
 
-            guidance: 0,
+            guidance: 0
         },
 
         audio: {
-            sound: noone,
+            mode: WeaponAudioMode.ONESHOT,
+            sound: snd_minigun_fire,
             volume: 0.26,
-            pitch_range: 0.16
+            pitch_range: 0.16,
+            priority: 48,
+            instance_maximum: 6,
+            cooldown: 0
         }
     });
 }
