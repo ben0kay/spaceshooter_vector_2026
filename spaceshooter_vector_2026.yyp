@@ -380,6 +380,8 @@
     {"id":{"name":"s_rebel_gunship_hull","path":"sprites/s_rebel_gunship_hull/s_rebel_gunship_hull.yy",},},
     {"id":{"name":"s_rebel_minigun_v1","path":"sprites/s_rebel_minigun_v1/s_rebel_minigun_v1.yy",},},
     {"id":{"name":"s_rebel_minigun_v2","path":"sprites/s_rebel_minigun_v2/s_rebel_minigun_v2.yy",},},
+    {"id":{"name":"s_rebel_rocket_turret_regular","path":"sprites/s_rebel_rocket_turret_regular/s_rebel_rocket_turret_regular.yy",},},
+    {"id":{"name":"s_rebel_salvohawk_hull","path":"sprites/s_rebel_salvohawk_hull/s_rebel_salvohawk_hull.yy",},},
     {"id":{"name":"s_rebel_warwing_hull","path":"sprites/s_rebel_warwing_hull/s_rebel_warwing_hull.yy",},},
     {"id":{"name":"s_ring","path":"sprites/s_ring/s_ring.yy",},},
     {"id":{"name":"s_sharp","path":"sprites/s_sharp/s_sharp.yy",},},

@@ -242,7 +242,6 @@ function sc_asteroid_spawn_feature_data()
             density_excluded: AsteroidFieldDensity.SPARSE,
             distribution_required: AsteroidFieldDistribution.DENSE_CORE,
 
-            clearing_radius_scale: 0.12,
             wall_radial_power: 2.2,
 
             structure_key: "derelict_test",
@@ -332,9 +331,30 @@ function sc_asteroid_spawn_feature_apply(_request, _feature)
     switch (_feature.key)
     {
         case "derelict_core":
+        {
+            var _structure = sc_world_structure_get(_feature.structure_key);
+            if (!is_struct(_structure))
+                return false;
+
+            var _structure_width = _structure.visual.canvas_width;
+            var _structure_height = _structure.visual.canvas_height;
+
+            // The clearing radius equals the structure's largest full dimension.
+            // This provides approximately one extra structure radius around it.
+            var _clearing_radius = max(
+                _structure_width,
+                _structure_height
+            );
+
+            var _clearing_radius_scale = clamp(
+                _clearing_radius / max(1, _request.radius),
+                0,
+                0.9
+            );
+
             _request.distribution.inner_radius_scale = max(
                 _request.distribution.inner_radius_scale,
-                _feature.clearing_radius_scale
+                _clearing_radius_scale
             );
 
             _request.distribution.radial_power = max(
@@ -342,8 +362,10 @@ function sc_asteroid_spawn_feature_apply(_request, _feature)
                 _feature.wall_radial_power
             );
 
+            _feature.clearing_radius = _clearing_radius;
             _request.name += " // " + _feature.name;
             return true;
+        }
     }
 
     return false;
