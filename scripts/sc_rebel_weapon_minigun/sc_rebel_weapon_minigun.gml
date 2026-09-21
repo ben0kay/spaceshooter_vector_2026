@@ -39,7 +39,7 @@ function sc_weapon_register_rebel_minigun()
             volume: 0.26,
             pitch_range: 0.16,
             priority: 48,
-            instance_maximum: 6,
+            instance_maximum: 64,
             cooldown: 0
         }
     });

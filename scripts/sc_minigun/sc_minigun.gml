@@ -25,7 +25,7 @@ function sc_weapon_register_minigun()
             },
 
             damage: {
-                amount: 2,
+                amount: 3,
                 type: DamageType.KINETIC,
                 effect: DamageEffect.NONE
             },
@@ -41,7 +41,7 @@ function sc_weapon_register_minigun()
 
         firing: {
             mount_mode: WeaponMountMode.HARDPOINT,
-            interval: 2,
+            interval: 3,
             recoil: 2.5,
             muzzle_flash_duration: 3
         },
@@ -57,7 +57,7 @@ function sc_weapon_register_minigun()
             volume: 0.28,
             pitch_range: 0.02,
             priority: 85,
-            instance_maximum: 8,
+            instance_maximum: 64,
             cooldown: 0
         }
     });

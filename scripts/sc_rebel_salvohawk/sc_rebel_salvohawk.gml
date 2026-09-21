@@ -6,7 +6,8 @@ A Veteran Heavy Rebel rocket fighter.
 - Authored hull and reusable rocket hardpoints.
 - Two fixed wing-mounted launchers.
 - Fires four straight rockets, alternating launchers.
-- Orbits the target while aggressively weaving inward and outward.
+- Chases directly until it enters rocket range.
+- Weaves laterally while maintaining its preferred firing distance.
 */
 
 /// @description Registers the Salvo Hawk's unguided rocket weapon.
@@ -91,12 +92,12 @@ function sc_enemy_register_rebel_salvohawk()
             },
 
             range: {
-                detection: 1450,
-                combat: 1050,
-                backaway: 300,
-                forget: 1850,
+                detection: 1650,
+                combat: 1200,
+                backaway: 400,
+                forget: 2050,
                 wander: 520,
-                alert_share: 1350
+                alert_share: 1450
             },
 
             damage_multiplier: 1,
@@ -107,7 +108,7 @@ function sc_enemy_register_rebel_salvohawk()
             asteroid_response: AsteroidResponse.AVOID,
             idle_script: sc_enemy_movement_wander,
             chase_script: sc_enemy_movement_chase,
-            combat_script: sc_enemy_movement_orbit,
+            combat_script: sc_enemy_movement_combat_weave,
 
             facing: {
                 default_mode: EnemyFacingMode.TARGET,
@@ -117,17 +118,20 @@ function sc_enemy_register_rebel_salvohawk()
                 spin_speed: 0
             },
 
-            orbit: {
-                range: 620,
-                direction: 0,
-                radial_strength: 0.9,
-                direction_change_chance: 0.004
+            weave: {
+                range: 950,
+                range_tolerance: 80,
+                response_distance: 260,
+                lateral_strength: 1,
+                radial_strength: 0.85,
+                speed: 0.055,
+                speed_scale: 0.92
             },
 
-            // Shared strafe adds a fast inward/outward weave to its orbit.
+            // The combat callback supplies the Salvo Hawk's complete weave.
             strafe: {
-                amount: 0.85,
-                speed: 0.07
+                amount: 0,
+                speed: 0
             }
         },
 
@@ -224,8 +228,8 @@ function sc_enemy_register_rebel_salvohawk()
 
                     conditions: {
                         line_of_sight: true,
-                        range_min: 260,
-                        range_max: 1150
+                        range_min: 400,
+                        range_max: 1200
                     },
 
                     aim: {

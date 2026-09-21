@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_rebel_behavior",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_rebel_behavior",
+  "parent":{
+    "name":"behavior",
+    "path":"folders/SCRIPTS---/ENEMY/factions/REBEL/behavior.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
