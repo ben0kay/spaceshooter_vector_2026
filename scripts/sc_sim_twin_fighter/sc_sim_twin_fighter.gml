@@ -23,7 +23,7 @@ function sc_enemy_register_twin_fighter()
             mass: 1.15,
 
             handling: {
-                speed_max: 5.5,
+                speed_max: 6,
                 acceleration: 0.3,
                 friction_coeff: 0.985,
                 turn_speed: 4,
@@ -70,7 +70,7 @@ function sc_enemy_register_twin_fighter()
 			    clearance: 35,           // Additional clearance required around the ship at the destination.
 			    target_clearance: 320,   // Minimum permitted distance between the destination and the target.
 
-			    speed_scale: 1.55,       // Lunge speed as a multiplier of the ship's maximum speed.
+			    speed_scale: 2,       // Lunge speed as a multiplier of the ship's maximum speed.
 			    arrival_radius: 38,      // Distance from the destination considered close enough to begin braking.
 			    lunge_duration_max: 75,  // Maximum steps the lunge may continue before forced braking begins.
 

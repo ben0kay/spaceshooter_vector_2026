@@ -17,12 +17,12 @@ function sc_projectile_register_rebel_mongrel_carrier()
         },
 
         proximity: {
-            range: 260,
+            range: 400,
             emissions: [
                 sc_projectile_emission_cone_create(
                     "weapon_rebel_shrapnel",
                     6,
-                    58,
+                    35,
                     0
                 )
             ]
