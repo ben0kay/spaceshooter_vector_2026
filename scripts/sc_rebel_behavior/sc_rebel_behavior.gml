@@ -47,3 +47,32 @@ function sc_enemy_movement_combat_weave(_enemy)
     _command.direction = point_direction(0, 0, _move_x, _move_y);
     _command.speed_scale = min(_weave.speed_scale, _movement_strength);
 }
+
+/// @description Pursues the target using irregular changes in approach angle and speed.
+function sc_enemy_movement_erratic_skirmish(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _target = _data.target_id;
+    if (!instance_exists(_target)) return;
+
+    var _movement = _data.movement;
+    var _runtime = _movement.behaviour_runtime.erratic;
+    var _config = _data.movement_controller.erratic;
+
+    if (GAME_TICK >= _runtime.next_change_tick)
+    {
+        _runtime.angle_offset = random_range(_config.angle_min, _config.angle_max) * choose(-1, 1);
+        _runtime.speed_scale = random_range(_config.speed_min, _config.speed_max);
+        _runtime.next_change_tick = GAME_TICK + irandom_range(_config.change_min, _config.change_max);
+    }
+
+    var _toward = point_direction(_enemy.x, _enemy.y, _target.x, _target.y);
+    var _command = _movement.command;
+
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = _toward + _runtime.angle_offset;
+    _command.speed_scale = _runtime.speed_scale;
+    _command.face_direction = _toward;
+    _command.facing_mode = EnemyFacingMode.TARGET;
+}

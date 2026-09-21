@@ -1,11 +1,11 @@
 /// @description Registers the Mongrel's thick proximity-splitting carrier slug.
-function sc_projectile_register_rebel_mongrel_carrier()
+function sc_projectile_register_rebel_shotgun_burst()
 {
     var _palette = sc_faction_palette_get(Faction.REBEL);
 
     return sc_projectile_register({
         identity: {
-            key: "projectile_rebel_mongrel_carrier",
+            key: "projectile_rebel_shotgun_burst",
             name: "Mongrel Shrapnel Carrier"
         },
 
@@ -32,7 +32,7 @@ function sc_projectile_register_rebel_mongrel_carrier()
             radius: 8,
             length: 25,
             palette: _palette,
-            draw_script: sc_projectile_rebel_mongrel_carrier_draw,
+            draw_script: sc_projectile_rebel_shotgun_burst_draw,
             impact_script: sc_projectile_rebel_slug_impact,
 
             bake: {
@@ -79,7 +79,7 @@ function sc_projectile_register_rebel_shrapnel()
 }
 
 /// @description Draws the thick scrap shell that carries the shrapnel.
-function sc_projectile_rebel_mongrel_carrier_draw(_x, _y, _angle, _visual, _frame, _frame_count)
+function sc_projectile_rebel_shotgun_burst_draw(_x, _y, _angle, _visual, _frame, _frame_count)
 {
     var _p = _visual.palette;
     var _rear_x = _x - lengthdir_x(_visual.length * 0.6, _angle);

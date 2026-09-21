@@ -12,8 +12,10 @@ function sc_enemy_faction_rebel_register_all()
 function sc_enemy_faction_rebel_projectiles_register()
 {
     if (!sc_projectile_register_rebel_salvo_rocket()) return false;
-    if (!sc_projectile_register_rebel_mongrel_carrier()) return false;
+    if (!sc_projectile_register_rebel_shotgun_burst()) return false;
     if (!sc_projectile_register_rebel_shrapnel()) return false;
+	if (!sc_projectile_register_rebel_incendiary_canister()) return false;
+
     return true;
 }
 
@@ -27,7 +29,8 @@ function sc_enemy_faction_rebel_weapons_register()
     if (!sc_weapon_register_rebel_salvo_rocket()) return false;
     if (!sc_weapon_register_rebel_salvohawk_rocket()) return false;
     if (!sc_weapon_register_rebel_shrapnel()) return false;
-    if (!sc_weapon_register_rebel_mongrel_carrier()) return false;
+    if (!sc_weapon_register_rebel_shotgun_burst()) return false;
+	if (!sc_weapon_register_rebel_incendiary_cannon()) return false;
     return true;
 }
 

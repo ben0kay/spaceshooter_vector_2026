@@ -113,7 +113,7 @@ function sc_enemy_register_rebel_mongrel()
                     key: "shrapnel_carrier",
                     weight: 100,
                     hardpoint_group: "shotgun",
-                    weapon_key: "weapon_rebel_mongrel_carrier",
+                    weapon_key: "weapon_rebel_shotgun_burst",
 
                     conditions: {
                         line_of_sight: true,

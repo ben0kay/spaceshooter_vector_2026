@@ -1,15 +1,15 @@
 /// @description Registers the Mongrel's shrapnel-carrying cannon round.
-function sc_weapon_register_rebel_mongrel_carrier()
+function sc_weapon_register_rebel_shotgun_burst()
 {
     return sc_weapon_register({
         identity: {
-            key: "weapon_rebel_mongrel_carrier",
+            key: "weapon_rebel_shotgun_burst",
             name: "Mongrel Scrap Shotgun"
         },
 
         delivery: {
             type: AttackDelivery.PROJECTILE,
-            projectile_key: "projectile_rebel_mongrel_carrier",
+            projectile_key: "projectile_rebel_shotgun_burst",
 
             projectile: {
                 scale: 1,
