@@ -53,7 +53,7 @@ function sc_weapon_register_minigun()
 
         audio: {
             mode: WeaponAudioMode.LOOP,
-            sound: snd_plyr_shard_minigun_fire,
+            sound: snd_minigun_fire,
             volume: 0.28,
             pitch_range: 0.02,
             priority: 85,
