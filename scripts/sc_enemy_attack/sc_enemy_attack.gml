@@ -793,14 +793,20 @@ function sc_enemy_attack_cancel(_enemy)
 }
 
 /// @description Completes the currently bound attack and begins its cooldown.
-function sc_enemy_attack_finish(_enemy, _cooldown)
+function sc_enemy_attack_finish(_enemy,_cooldown)
 {
-    var _runtime = _enemy.enemy.attack_controller.runtime;
+    var _controller = _enemy.enemy.attack_controller;
+    var _runtime = _controller.runtime;
+
+    var _attack = _runtime.current_attack >= 0
+        ? _controller.attacks[_runtime.current_attack]
+        : undefined;
 
     for (var _i = 0; _i < array_length(_runtime.active_deliveries); _i++)
     {
         var _delivery = _runtime.active_deliveries[_i].delivery_id;
-        if (instance_exists(_delivery)) sc_beam_release(_delivery);
+        if (instance_exists(_delivery))
+            sc_beam_release(_delivery);
     }
 
     _runtime.active_deliveries = [];
@@ -812,7 +818,11 @@ function sc_enemy_attack_finish(_enemy, _cooldown)
     _runtime.telegraph_start_tick = 0;
     _runtime.telegraph_end_tick = 0;
     _runtime.next_telegraph_particle_tick = 0;
-    _runtime.cooldown_until = GAME_TICK + max(1, round(_cooldown));
+    _runtime.cooldown_until = GAME_TICK + max(1,round(_cooldown));
+
+    if (!is_undefined(_attack)
+    && variable_struct_exists(_attack,"finish_script"))
+        _attack.finish_script(_enemy,_attack);
 }
 
 /// @description Returns the current combat target without replacing the strategic player target.

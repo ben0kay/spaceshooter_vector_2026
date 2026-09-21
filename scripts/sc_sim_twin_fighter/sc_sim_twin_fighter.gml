@@ -6,19 +6,21 @@ function sc_enemy_register_twin_fighter()
             key: "enemy_twin_fighter",
             name: "Twin Fighter",
             faction: Faction.SIMULANT,
-			role: EnemyRole.FIGHTER,
-			ship_class: EnemyClass.STANDARD,
-			rank: EnemyRank.COMMON,
-			threat_value: 5
+            role: EnemyRole.FIGHTER,
+            ship_class: EnemyClass.STANDARD,
+            rank: EnemyRank.COMMON,
+            threat_value: 5
         },
 
-		reward: { credits: 20 },
+        reward: {
+            credits: 20
+        },
 
         stats_base: {
             shield_max: 50,
             armour_max: 200,
             hull_max: 60,
-			mass: 1.15,
+            mass: 1.15,
 
             handling: {
                 speed_max: 5.5,
@@ -30,55 +32,78 @@ function sc_enemy_register_twin_fighter()
                 directional_thrust_min: 0.58
             },
 
-		range: {
-            detection: 1080,
-            combat: 840,
-			backaway: 300,
-            forget: 1280,
-			wander: 500,
-			alert_share: 1200			
-		},
+            range: {
+                detection: 1500,
+                combat: 1080,
+                backaway: 384,
+                forget: 1850,
+                wander: 500,
+                alert_share: 2000
+            },
 
             damage_multiplier: 1,
             fire_rate_multiplier: 1
         },
-			
-		movement_controller: {
-			asteroid_response: AsteroidResponse.AVOID,
-		    idle_script: sc_enemy_movement_wander,
-		    chase_script: sc_enemy_movement_chase,
-		    combat_script: sc_enemy_movement_orbit,
 
-		    facing: {
-		        default_mode: EnemyFacingMode.TARGET,
-		        backaway_mode: EnemyFacingMode.MOVEMENT,
-		        angle_offset: 0,
-		        turn_speed_scale: 1,
-		        spin_speed: 0
-		    },
+        movement_controller: {
+            asteroid_response: AsteroidResponse.AVOID,
+            idle_script: sc_enemy_movement_wander,
+            chase_script: sc_enemy_movement_chase,
+            combat_script: sc_simulant_movement_post_attack_relocation,
 
-		    orbit: {
-		        range: 540,
-		        direction: 0,
-		        radial_strength: 0.65,
-		        direction_change_chance: 0.005
-		    },
+            facing: {
+                default_mode: EnemyFacingMode.TARGET,
+                backaway_mode: EnemyFacingMode.MOVEMENT,
+                angle_offset: 0,
+                turn_speed_scale: 1,
+                spin_speed: 0
+            },
 
-		    strafe: {
-		        amount: 0,
-		        speed: 0
-		    }
-		},
+            post_attack_relocation: {
+			    destination_script: sc_simulant_relocation_destination_side, // Selects a random left/right destination relative to the target.
+			    execution_script: sc_simulant_relocation_execute_lunge,      // Physically lunges toward the selected destination.
+			    fallback_script: sc_enemy_movement_hold_line_of_sight,       // Normal combat movement when not relocating.
 
-		awareness_controller: {
-		    unseen_damage_script: sc_enemy_awareness_investigate,
-		    alert_receive_script: sc_enemy_awareness_investigate,
-		    duration: 600,
-		    arrival_radius: 90,
-		    search_duration: 180,
-		    speed_scale: 0.65
-		},
+			    distance_min: 400,       // Minimum sideways relocation distance.
+			    distance_max: 600,       // Maximum sideways relocation distance.
+			    attempts: 6,             // Maximum candidate positions tested before cancelling the relocation.
+			    clearance: 35,           // Additional clearance required around the ship at the destination.
+			    target_clearance: 320,   // Minimum permitted distance between the destination and the target.
 
+			    speed_scale: 1.55,       // Lunge speed as a multiplier of the ship's maximum speed.
+			    arrival_radius: 38,      // Distance from the destination considered close enough to begin braking.
+			    lunge_duration_max: 75,  // Maximum steps the lunge may continue before forced braking begins.
+
+			    brake_duration: 18,      // Number of steps spent decelerating after the lunge.
+			    brake_multiplier: 0.86,  // Velocity retained each braking step; lower values stop the ship faster.
+
+			    attack_lockout: 50       // Minimum steps before another attack may begin after relocation starts.
+			},
+
+            strafe: {
+                amount: 0,
+                speed: 0
+            },
+
+            runtime: {
+                post_attack_relocation: {
+                    phase: SimulantRelocationPhase.IDLE,
+                    destination_x: 0,
+                    destination_y: 0,
+                    direction: 0,
+                    phase_until: 0
+                }
+            }
+        },
+
+        awareness_controller: {
+            unseen_damage_script: sc_enemy_awareness_investigate,
+            alert_receive_script: sc_enemy_awareness_investigate,
+            duration: 600,
+            arrival_radius: 90,
+            search_duration: 180,
+            speed_scale: 0.65
+        },
 
         visual: sc_enemy_twin_fighter_visual_data(),
 
@@ -89,13 +114,41 @@ function sc_enemy_register_twin_fighter()
         },
 
         hardpoints: [
-            { key: "cannon_left", group: "cannons", forward: 0.48, side: -0.56, angle: 0, muzzle_forward: 0.82, draw_script: sc_enemy_twin_fighter_cannon_draw },
-            { key: "cannon_right", group: "cannons", forward: 0.48, side: 0.56, angle: 0, muzzle_forward: 0.82, draw_script: sc_enemy_twin_fighter_cannon_draw }
+            {
+                key: "cannon_left",
+                group: "cannons",
+                forward: 0.48,
+                side: -0.56,
+                angle: 0,
+                muzzle_forward: 0.82,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            },
+            {
+                key: "cannon_right",
+                group: "cannons",
+                forward: 0.48,
+                side: 0.56,
+                angle: 0,
+                muzzle_forward: 0.82,
+                draw_script: sc_enemy_twin_fighter_cannon_draw
+            }
         ],
 
         thrusters: [
-            { key: "thruster_left", forward: -0.92, side: -0.29, angle: 180, scale: 0.82 },
-            { key: "thruster_right", forward: -0.92, side: 0.29, angle: 180, scale: 0.82 }
+            {
+                key: "thruster_left",
+                forward: -0.92,
+                side: -0.29,
+                angle: 180,
+                scale: 0.82
+            },
+            {
+                key: "thruster_right",
+                forward: -0.92,
+                side: 0.29,
+                angle: 180,
+                scale: 0.82
+            }
         ],
 
         attack_controller: {
@@ -107,16 +160,17 @@ function sc_enemy_register_twin_fighter()
                     weight: 100,
                     hardpoint_group: "cannons",
                     weapon_key: "weapon_simulant_pulse",
-					
-					conditions: {
-				    line_of_sight: true
-				},
+                    finish_script: sc_simulant_attack_finish_relocation,
+
+                    conditions: {
+                        line_of_sight: true
+                    },
 
                     aim: {
                         mode: AimMode.TARGET,
                         angle_offset: 0,
                         inaccuracy: 2,
-						fire_tolerance: 8
+                        fire_tolerance: 8
                     },
 
                     shot: {

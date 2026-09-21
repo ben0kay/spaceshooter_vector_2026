@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_simulant_post_att_reloc",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_simulant_post_att_reloc",
+  "parent":{
+    "name":"behavior",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/behavior.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
