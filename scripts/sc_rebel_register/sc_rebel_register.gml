@@ -43,5 +43,7 @@ function sc_enemy_faction_rebel_ships_register()
     if (!sc_enemy_register_rebel_warwing()) return false;
     if (!sc_enemy_register_rebel_salvohawk()) return false;
     if (!sc_enemy_register_rebel_mongrel()) return false;
+	if (!sc_enemy_register_rebel_bruiser()) return false;
+
     return true;
 }

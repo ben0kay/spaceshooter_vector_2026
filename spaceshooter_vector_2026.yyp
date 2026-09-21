@@ -275,6 +275,7 @@
     {"id":{"name":"sc_projectile","path":"scripts/sc_projectile/sc_projectile.yy",},},
     {"id":{"name":"sc_pulse","path":"scripts/sc_pulse/sc_pulse.yy",},},
     {"id":{"name":"sc_rebel_behavior","path":"scripts/sc_rebel_behavior/sc_rebel_behavior.yy",},},
+    {"id":{"name":"sc_rebel_bruiser","path":"scripts/sc_rebel_bruiser/sc_rebel_bruiser.yy",},},
     {"id":{"name":"sc_rebel_flamethrower","path":"scripts/sc_rebel_flamethrower/sc_rebel_flamethrower.yy",},},
     {"id":{"name":"sc_rebel_gunship","path":"scripts/sc_rebel_gunship/sc_rebel_gunship.yy",},},
     {"id":{"name":"sc_rebel_incendiary_capsule","path":"scripts/sc_rebel_incendiary_capsule/sc_rebel_incendiary_capsule.yy",},},
