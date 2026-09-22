@@ -20,6 +20,11 @@ function sc_sector_enemy_starting_profile_get()
             { key: "e_rebel_skirmisher", weight: 100 }
         ],
 
+        assignment: {
+            mode: "ZONE",
+            return_after_combat: false
+        },
+
         population_min: 3,
         population_max: 5,
 
@@ -52,6 +57,11 @@ function sc_sector_enemy_rebel_profile_get(_stage)
             { key: "e_rebel_skirmisher", weight: 80 },
             { key: "enemy_rebel_gunship", weight: 20 }
         ],
+
+        assignment: {
+            mode: "ROAM",
+            return_after_combat: false
+        },
 
         population_min: 3,
         population_max: 5,
@@ -88,6 +98,8 @@ function sc_sector_enemy_rebel_profile_get(_stage)
                 { key: "enemy_rebel_gunship", weight: 35 },
                 { key: "e_rebel_napalm_gunship", weight: 20 }
             ];
+            _profile.assignment.mode = "ZONE";
+            _profile.assignment.return_after_combat = true;
             _profile.population_min = 4;
             _profile.population_max = 7;
             break;
@@ -372,7 +384,7 @@ function sc_sector_enemy_spawn_position_find(_zone, _enemy_radius, _profile)
     };
 }
 
-/// @description Populates one faction zone with independent persistent enemies.
+/// @description Populates one faction zone with assigned persistent enemies.
 function sc_sector_enemy_zone_population_spawn(_zone, _amount, _profile)
 {
     _zone.population_requested = _amount;
@@ -403,12 +415,21 @@ function sc_sector_enemy_zone_population_spawn(_zone, _amount, _profile)
         if (!_position.found)
             continue;
 
-        // These indices remain stable when this sector regenerates from its seed.
         var _persistent_id =
             "zone_"
             + string(_zone.id)
             + "_enemy_"
             + string(_i);
+
+        var _assignment = sc_enemy_assignment_roam_create();
+
+        if (_profile.assignment.mode == "ZONE")
+        {
+            _assignment = sc_enemy_assignment_zone_create(
+                _zone,
+                _profile.assignment.return_after_combat
+            );
+        }
 
         var _enemy = instance_create_layer(
             _position.x,
@@ -417,7 +438,8 @@ function sc_sector_enemy_zone_population_spawn(_zone, _amount, _profile)
             o_enemy,
             {
                 enemy_key: _enemy_key,
-                enemy_persistent_id: _persistent_id
+                enemy_persistent_id: _persistent_id,
+                enemy_spawn_assignment: _assignment
             }
         );
 

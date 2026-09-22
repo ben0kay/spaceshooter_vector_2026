@@ -290,7 +290,6 @@ function sc_enemy_movement_stalk_range(_enemy)
     _command.facing_mode=EnemyFacingMode.TARGET;
 }
 
-
 /// @description Alternates between powered pursuit bursts and uncontrolled drifting.
 function sc_enemy_movement_burst_coast(_enemy)
 {
@@ -629,7 +628,7 @@ function sc_enemy_movement_swing(_enemy)
     _command.facing_mode = EnemyFacingMode.FIXED;
 }
 
-/// @description Resolves state, territory, obstacle response, facing and movement.
+/// @description Resolves state, assignment, obstacles, facing and movement.
 function sc_enemy_movement_update(_enemy)
 {
     var _data = _enemy.enemy;
@@ -661,11 +660,12 @@ function sc_enemy_movement_update(_enemy)
         case EnemyState.ATTACKING:
             if (instance_exists(_data.target_id))
             {
-                var _dx = _data.target_id.x-_enemy.x;
-                var _dy = _data.target_id.y-_enemy.y;
-                var _backaway = _data.stats.final.range.backaway*_data.movement.backaway_scale;
+                var _dx = _data.target_id.x - _enemy.x;
+                var _dy = _data.target_id.y - _enemy.y;
+                var _backaway = _data.stats.final.range.backaway
+                    * _data.movement.backaway_scale;
 
-                _data.target_distance_sq = _dx*_dx+_dy*_dy;
+                _data.target_distance_sq = _dx * _dx + _dy * _dy;
 
                 if (_backaway > 0
                 && _data.target_distance_sq < sqr(_backaway))
@@ -700,14 +700,11 @@ function sc_enemy_movement_update(_enemy)
         break;
     }
 
-    var _territory_override = false;
-
-    if (variable_struct_exists(_data,"territory"))
-        _territory_override = sc_enemy_territory_update(_enemy);
+    var _assignment_override = sc_enemy_assignment_update(_enemy);
 
     if (_state == EnemyState.ATTACKING
     && !_backawaying
-    && !_territory_override)
+    && !_assignment_override)
         sc_enemy_movement_strafe_apply(_enemy);
 
     sc_enemy_obstacle_response_apply(_enemy);

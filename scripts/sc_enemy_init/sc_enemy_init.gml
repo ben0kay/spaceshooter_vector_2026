@@ -283,10 +283,7 @@ function sc_enemy_init(_enemy, _enemy_key)
         return false;
     }
 
-    var _data = variable_struct_get(
-        global.data.enemies,
-        _enemy_key
-    );
+    var _data = variable_struct_get(global.data.enemies, _enemy_key);
 
     _enemy.enemy = sc_enemy_init_runtime_create(
         _enemy,
@@ -304,7 +301,6 @@ function sc_enemy_init(_enemy, _enemy_key)
     var _cache = sc_enemy_visual_cache_get(_enemy_key);
 
     _enemy.draw_angle = 0;
-
     _runtime.movement.command.facing_mode =
         _runtime.movement_controller.facing.default_mode;
 
@@ -323,8 +319,7 @@ function sc_enemy_init(_enemy, _enemy_key)
     sc_enemy_init_hardpoints(_enemy, _cache);
     sc_enemy_init_thrusters(_enemy);
 
-    // Territory is opt-in. Existing enemies have no controller and skip it.
-    if (!sc_enemy_territory_init(_enemy, _data))
+    if (!sc_enemy_assignment_init(_enemy, _data))
         return false;
 
     if (!sc_enemy_attack_controller_init(_enemy))

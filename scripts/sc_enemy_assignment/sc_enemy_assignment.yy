@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"sc_enemy_territory",
+  "%Name":"sc_enemy_assignment",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"sc_enemy_territory",
+  "name":"sc_enemy_assignment",
   "parent":{
     "name":"ENEMY",
     "path":"folders/SCRIPTS---/ENEMY.yy",

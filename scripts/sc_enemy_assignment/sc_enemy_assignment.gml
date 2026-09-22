@@ -1,3 +1,129 @@
+#region SPAWN ASSIGNMENTS
+
+/// @description Creates an assignment with no zone or return requirement.
+function sc_enemy_assignment_roam_create()
+{
+    return {
+        mode: "ROAM"
+    };
+}
+
+/// @description Creates an assignment tied to a generated sector zone.
+function sc_enemy_assignment_zone_create(_zone, _return_after_combat)
+{
+    return {
+        mode: "ZONE",
+        zone_id: _zone.id,
+        centre_x: _zone.x,
+        centre_y: _zone.y,
+        radius: _zone.radius,
+        return_after_combat: _return_after_combat
+    };
+}
+
+/// @description Initializes the assignment supplied when this enemy was spawned.
+function sc_enemy_assignment_init(_enemy, _definition)
+{
+    // Enemy-specific territory remains authoritative, including Wisps.
+    if (variable_struct_exists(_definition, "territory_controller"))
+        return sc_enemy_territory_init(_enemy, _definition);
+
+    if (!variable_instance_exists(_enemy, "enemy_spawn_assignment"))
+        return true;
+
+    var _assignment = variable_clone(_enemy.enemy_spawn_assignment);
+    _enemy.enemy.assignment = _assignment;
+
+    if (_assignment.mode == "ZONE")
+    {
+        // The existing wander-position check already understands RADIUS territories.
+        _enemy.enemy.territory = {
+            bound: true,
+            type: EnemyTerritoryType.RADIUS,
+            centre_x: _assignment.centre_x,
+            centre_y: _assignment.centre_y,
+            radius: _assignment.radius,
+            returning: false
+        };
+    }
+
+    return true;
+}
+
+/// @description Applies optional spawn behavior after the normal movement command.
+function sc_enemy_assignment_update(_enemy)
+{
+    var _data = _enemy.enemy;
+
+    if (variable_struct_exists(_data, "assignment"))
+    {
+        if (_data.assignment.mode == "ZONE")
+            return sc_enemy_assignment_zone_update(_enemy);
+
+        return false;
+    }
+
+    if (variable_struct_exists(_data, "territory"))
+        return sc_enemy_territory_update(_enemy);
+
+    return false;
+}
+
+#endregion
+
+#region ZONE ASSIGNMENT
+
+/// @description Returns an idle enemy to its assigned zone when configured to do so.
+function sc_enemy_assignment_zone_update(_enemy)
+{
+    var _data = _enemy.enemy;
+    var _assignment = _data.assignment;
+    var _territory = _data.territory;
+
+    if (!_assignment.return_after_combat
+    || _data.state != EnemyState.IDLE)
+        return false;
+
+    var _dx = _assignment.centre_x - _enemy.x;
+    var _dy = _assignment.centre_y - _enemy.y;
+    var _distance_sq = _dx * _dx + _dy * _dy;
+    var _outer_radius = _assignment.radius;
+    var _inner_radius = max(0, _outer_radius - 300);
+
+    if (!_territory.returning && _distance_sq > sqr(_outer_radius))
+    {
+        _territory.returning = true;
+        _data.movement.wander.active = false;
+    }
+
+    if (!_territory.returning)
+        return false;
+
+    if (_distance_sq <= sqr(_inner_radius))
+    {
+        _territory.returning = false;
+        _data.movement.wander.active = false;
+        return false;
+    }
+
+    var _command = _data.movement.command;
+    _command.active = true;
+    _command.apply_friction = false;
+    _command.direction = point_direction(0, 0, _dx, _dy);
+    _command.face_direction = _command.direction;
+    _command.speed_scale = 1;
+
+    if (_data.movement_controller.facing.default_mode != EnemyFacingMode.SPIN)
+        _command.facing_mode = EnemyFacingMode.MOVEMENT;
+
+    return true;
+}
+
+#endregion
+
+// Keep your existing #region TERRITORY and all sc_enemy_territory_* functions below.
+
+
 /*
 ENEMY TERRITORY
 
@@ -22,6 +148,8 @@ Future generation order:
 The current F1 debug spawner bypasses those rules. Therefore debug-spawned
 Wisps locate and bind their own nearest dense region.
 */
+
+#region TERRITORY
 
 /// @description Initializes optional territory data for one specialized enemy.
 function sc_enemy_territory_init(_enemy, _definition)
@@ -616,3 +744,5 @@ function sc_enemy_territory_update(_enemy)
 
     return false;
 }
+
+#endregion
