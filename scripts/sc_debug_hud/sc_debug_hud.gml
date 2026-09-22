@@ -1,18 +1,18 @@
-function sc_debug_huds_init(hud){
+function sc_debug_huds_init(_hud){
 	sc_debug_enemy_spawn_init(_hud);
     sc_debug_weapon_test_init(_hud);
     sc_debug_enemy_visual_init(_hud);
 	sc_debug_sector_jump_init(_hud);
 }
 	
-function sc_debug_huds_draw(hud){
+function sc_debug_huds_draw(_hud){
 	sc_debug_enemy_spawn_draw(_hud);
     sc_debug_weapon_test_draw(_hud);
     sc_debug_enemy_visual_draw(_hud);
 	sc_debug_sector_jump_draw(_hud);
 }
 
-function sc_debug_huds_cleanup(hud){
+function sc_debug_huds_cleanup(_hud){
 	sc_debug_enemy_visual_cleanup(_hud);
 	}
 
