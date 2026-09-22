@@ -131,10 +131,14 @@ function sc_weapon_register_simulant_orb()
         },
 
         audio: {
-            sound: noone,
-            volume: 0.5,
-            pitch_range: 0.06
-        }
+		    mode: WeaponAudioMode.ONESHOT,
+		    sound: snd_sim_orb,
+		    volume: 0.4,
+		    pitch_range: 0.06,
+		    priority: 50,
+		    instance_maximum: 32,
+		    cooldown: 0
+		}
     });
 }
 
