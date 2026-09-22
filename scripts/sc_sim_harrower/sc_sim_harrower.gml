@@ -210,232 +210,239 @@ function sc_enemy_register_sim_harrower()
             { key: "thruster_lower_outer", forward: -0.48, side: -1.48, angle: 180, scale: 0.68 }
         ],
 
-        attack_controller: {
-    selection: AttackSelection.WEIGHTED,
-    max_active_channels: 2,
+        attack_controller: sc_enemy_sim_harrower_attack_controller_data()
+    });
+}
 
-    channels: [
-        {
-            key: "shards",
-            selection: AttackSelection.WEIGHTED
-        },
-        {
-            key: "beam",
-            selection: AttackSelection.WEIGHTED
-        },
-        {
-            key: "core",
-            selection: AttackSelection.WEIGHTED
-        }
-    ],
+/// @description Returns the Simulant Harrower's attack-controller definition.
+function sc_enemy_sim_harrower_attack_controller_data()
+{
+    return {
+        selection: AttackSelection.WEIGHTED,
+        max_active_channels: 2,
 
-    attacks: [
-        {
-            key: "shard_minigun_stream",
-            channel: "shards",
-            weight: 100,
-            hardpoint_group: "shard_miniguns",
-            weapon_key: "weapon_simulant_shard",
-
-            conditions: {
-                line_of_sight: true,
-                range_min: 100,
-                range_max: 1080
+        channels: [
+            {
+                key: "shards",
+                selection: AttackSelection.WEIGHTED
             },
-
-            aim: {
-                mode: AimMode.TARGET_LEAD,
-                prediction_strength: 0.65,
-                angle_offset: 0,
-                inaccuracy: 2.5,
-                fire_tolerance: 10
+            {
+                key: "beam",
+                selection: AttackSelection.WEIGHTED,
+                allow_during_sequence: true
             },
-
-            shot: {
-                pattern: ShotPattern.SINGLE,
-                amount: 1
-            },
-
-            firing: {
-                order: HardpointFireOrder.RANDOM,
-                interval: 2,
-                volley_max: 30,
-                cooldown: 95
+            {
+                key: "core",
+                selection: AttackSelection.WEIGHTED
             }
-        },
-        {
-            key: "centre_beam",
-            channel: "beam",
-            weight: 100,
-            hardpoint_group: "beam",
-            weapon_key: "weapon_simulant_thin_beam",
+        ],
 
-            conditions: {
-                line_of_sight: true,
-                range_min: 260,
-                range_max: 1140
+        attacks: [
+            {
+                key: "shard_minigun_stream",
+                channel: "shards",
+                weight: 100,
+                hardpoint_group: "shard_miniguns",
+                weapon_key: "weapon_simulant_shard",
+
+                conditions: {
+                    line_of_sight: true,
+                    range_min: 100,
+                    range_max: 1080
+                },
+
+                aim: {
+                    mode: AimMode.TARGET_LEAD,
+                    prediction_strength: 0.65,
+                    angle_offset: 0,
+                    inaccuracy: 2.5,
+                    fire_tolerance: 10
+                },
+
+                shot: {
+                    pattern: ShotPattern.SINGLE,
+                    amount: 1
+                },
+
+                firing: {
+                    order: HardpointFireOrder.RANDOM,
+                    interval: 2,
+                    volley_max: 30,
+                    cooldown: 95
+                }
             },
+            {
+                key: "centre_beam",
+                channel: "beam",
+                weight: 100,
+                hardpoint_group: "beam",
+                weapon_key: "weapon_simulant_thin_beam",
 
-            aim: {
-                mode: AimMode.MOUNT,
-                angle_offset: 0,
-                inaccuracy: 0,
-                fire_tolerance: 18
+                conditions: {
+                    line_of_sight: true,
+                    range_min: 160,
+                    range_max: 1080
+                },
+
+                aim: {
+                    mode: AimMode.MOUNT,
+                    angle_offset: 0,
+                    inaccuracy: 0,
+                    fire_tolerance: 18
+                },
+
+                shot: {
+                    pattern: ShotPattern.SINGLE,
+                    amount: 1
+                },
+
+                telegraph: {
+                    duration: 38,
+                    aim_lock_remaining: 10,
+                    track_during_active: true,
+                    scale: 0.2,
+                    particle_interval: 1,
+                    draw_script: sc_attack_telegraph_energy_draw,
+                    particle_script: sc_particles_attack_telegraph_emit
+                },
+
+                firing: {
+                    order: HardpointFireOrder.ALL,
+                    duration: 72,
+                    cooldown: 210
+                }
             },
+            {
+                key: "core_radial_orbs",
+                channel: "core",
+                weight: 65,
+                hardpoint_group: "core_orbs",
+                weapon_key: "weapon_simulant_orb",
 
-            shot: {
-                pattern: ShotPattern.SINGLE,
-                amount: 1
+                conditions: {
+                    line_of_sight: false,
+                    range_min: 0,
+                    range_max: 1080
+                },
+
+                aim: {
+                    mode: AimMode.MOUNT,
+                    angle_offset: 0,
+                    inaccuracy: 0,
+                    fire_tolerance: 360
+                },
+
+                shot: {
+                    pattern: ShotPattern.SINGLE,
+                    amount: 1
+                },
+
+                telegraph: {
+                    duration: 34,
+                    aim_lock_remaining: 0,
+                    track_during_active: true,
+                    scale: 0.28,
+                    particle_interval: 1,
+                    draw_script: sc_attack_telegraph_energy_draw,
+                    particle_script: sc_particles_attack_telegraph_emit
+                },
+
+                firing: {
+                    order: HardpointFireOrder.ALL,
+                    interval: 4,
+                    volley_max: 12,
+                    cooldown: 220,
+
+                    direction_pattern: {
+                        type: VolleyDirectionPattern.RADIAL,
+                        angle_total: 360,
+                        start_offset: 0,
+                        rotation_offset_per_attack: 15
+                    }
+                }
             },
+            {
+                key: "core_seeker_launch",
+                channel: "core",
+                weight: 35,
+                hardpoint_group: "core_orbs",
+                weapon_key: "weapon_simulant_seeker_core",
 
-            telegraph: {
-                duration: 38,
-                aim_lock_remaining: 10,
-                track_during_active: true,
-                scale: 0.2,
-                particle_interval: 1,
-                draw_script: sc_attack_telegraph_energy_draw,
-                particle_script: sc_particles_attack_telegraph_emit
-            },
+                conditions: {
+                    line_of_sight: true,
+                    range_min: 220,
+                    range_max: 1140
+                },
 
-            firing: {
-                order: HardpointFireOrder.ALL,
-                duration: 72,
-                cooldown: 210
-            }
-        },
-        {
-            key: "core_radial_orbs",
-            channel: "core",
-            weight: 65,
-            hardpoint_group: "core_orbs",
-            weapon_key: "weapon_simulant_orb",
+                aim: {
+                    mode: AimMode.TARGET,
+                    angle_offset: 0,
+                    inaccuracy: 0,
+                    fire_tolerance: 360
+                },
 
-            conditions: {
-                line_of_sight: false,
-                range_min: 0,
-                range_max: 1080
-            },
+                shot: {
+                    pattern: ShotPattern.SINGLE,
+                    amount: 1
+                },
 
-            aim: {
-                mode: AimMode.MOUNT,
-                angle_offset: 0,
-                inaccuracy: 0,
-                fire_tolerance: 360
-            },
+                telegraph: {
+                    duration: 52,
+                    aim_lock_remaining: 0,
+                    track_during_active: true,
+                    scale: 0.34,
+                    particle_interval: 1,
+                    draw_script: sc_enemy_sim_dreadwing_seeker_telegraph_draw,
+                    particle_script: sc_particles_attack_telegraph_emit
+                },
 
-            shot: {
-                pattern: ShotPattern.SINGLE,
-                amount: 1
-            },
-
-            telegraph: {
-                duration: 34,
-                aim_lock_remaining: 0,
-                track_during_active: true,
-                scale: 0.28,
-                particle_interval: 1,
-                draw_script: sc_attack_telegraph_energy_draw,
-                particle_script: sc_particles_attack_telegraph_emit
-            },
-
-            firing: {
-                order: HardpointFireOrder.ALL,
-                interval: 4,
-                volley_max: 12,
-                cooldown: 220,
-
-                direction_pattern: {
-                    type: VolleyDirectionPattern.RADIAL,
-                    angle_total: 360,
-                    start_offset: 0,
-                    rotation_offset_per_attack: 15
+                firing: {
+                    order: HardpointFireOrder.ALL,
+                    interval: 0,
+                    volley_max: 1,
+                    cooldown: 290
                 }
             }
-        },
-        {
-            key: "core_seeker_launch",
-            channel: "core",
-            weight: 35,
-            hardpoint_group: "core_orbs",
-            weapon_key: "weapon_simulant_seeker_core",
+        ],
 
-            conditions: {
-                line_of_sight: true,
-                range_min: 220,
-                range_max: 1140
-            },
+        sequences: {
+            enabled: true,
+            selection: AttackSelection.WEIGHTED,
 
-            aim: {
-                mode: AimMode.TARGET,
-                angle_offset: 0,
-                inaccuracy: 0,
-                fire_tolerance: 360
-            },
+            entries: [
+                {
+                    key: "shard_barrage_into_orbs_and_seeker",
+                    weight: 100,
 
-            shot: {
-                pattern: ShotPattern.SINGLE,
-                amount: 1
-            },
+                    conditions: {
+                        line_of_sight: true,
+                        range_min: 100,
+                        range_max: 1600
+                    },
 
-            telegraph: {
-                duration: 52,
-                aim_lock_remaining: 0,
-                track_during_active: true,
-                scale: 0.34,
-                particle_interval: 1,
-                draw_script: sc_enemy_sim_dreadwing_seeker_telegraph_draw,
-                particle_script: sc_particles_attack_telegraph_emit
-            },
+                    steps: [
+                        {
+                            attack_key: "shard_minigun_stream",
+                            repeat_amount: 1,
+                            gap_after: 15
+                        },
+                        {
+                            attack_key: "core_radial_orbs",
+                            repeat_amount: 1,
+                            gap_after: 0
+                        },
+                        {
+                            attack_key: "core_seeker_launch",
+                            repeat_amount: 1,
+                            gap_after: 0
+                        }
+                    ],
 
-            firing: {
-                order: HardpointFireOrder.ALL,
-                interval: 0,
-                volley_max: 1,
-                cooldown: 290
-            }
+                    cooldown: 260
+                }
+            ]
         }
-    ],
-
-    sequences: {
-	    enabled: true,
-	    selection: AttackSelection.WEIGHTED,
-
-	    entries: [
-	        {
-	            key: "shard_barrage_into_orbs_and_seeker",
-	            weight: 100,
-
-	            conditions: {
-	                line_of_sight: true,
-	                range_min: 100,
-	                range_max: 1080
-	            },
-
-	            steps: [
-	                {
-	                    attack_key: "shard_minigun_stream",
-	                    repeat_amount: 1,
-	                    gap_after: 15
-	                },
-	                {
-	                    attack_key: "core_radial_orbs",
-	                    repeat_amount: 1,
-	                    gap_after: 0
-	                },
-	                {
-	                    attack_key: "core_seeker_launch",
-	                    repeat_amount: 1,
-	                    gap_after: 0
-	                }
-	            ],
-
-	            cooldown: 260
-	        }
-	    ]
-	}
-}
-    });
+    };
 }
 
 /// @description Returns the Harrower's extra-wide visual definition.

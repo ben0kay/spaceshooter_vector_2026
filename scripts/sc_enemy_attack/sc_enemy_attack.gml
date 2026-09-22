@@ -489,12 +489,25 @@ function sc_enemy_attack_sequences_init(_enemy)
                 _controller.attack_lookup,
                 _step.attack_key
             );
+
+            for (var _c = 0; _c < array_length(_controller.channels); ++_c)
+            {
+                var _attack_channel = _controller.channels[_c];
+
+                if (_attack_channel.key == _step.attack.channel)
+                {
+                    _attack_channel.sequence_controlled = true;
+                    break;
+                }
+            }
         }
     }
 
     var _channel = {
         key: "sequence",
         selection: AttackSelection.SEQUENTIAL,
+        allow_during_sequence: false,
+        sequence_controlled: true,
         attacks: [],
         runtime: sc_enemy_attack_runtime_create()
     };
@@ -553,6 +566,8 @@ function sc_enemy_attack_controller_init(_enemy)
         _controller.channels = [{
             key: "main",
             selection: _controller.selection,
+            allow_during_sequence: false,
+            sequence_controlled: false,
             attacks: _source_attacks,
             runtime: sc_enemy_attack_runtime_create()
         }];
@@ -572,6 +587,10 @@ function sc_enemy_attack_controller_init(_enemy)
             if (!variable_struct_exists(_channel,"selection"))
                 _channel.selection = _controller.selection;
 
+            if (!variable_struct_exists(_channel,"allow_during_sequence"))
+                _channel.allow_during_sequence = false;
+
+            _channel.sequence_controlled = false;
             _channel.attacks = [];
             _channel.runtime = sc_enemy_attack_runtime_create();
         }
@@ -1274,7 +1293,6 @@ function sc_enemy_hardpoint_attack_transform(_enemy, _attack, _hardpoint_index, 
     return _transform;
 }
 
-
 #region volley direction patterns to implement later
 /*
 VOLLEY DIRECTION PATTERNS
@@ -1421,7 +1439,8 @@ function sc_enemy_attack_fire_rate_get(_enemy)
     var _fire_rate = _enemy.enemy.stats.final.fire_rate_multiplier;
 
     if (variable_struct_exists(_controller,"sequence_runtime")
-    && _controller.sequence_runtime.current_sequence >= 0)
+    && _controller.sequence_runtime.current_sequence >= 0
+    && _controller.runtime == _controller.sequence_runtime.channel.runtime)
     {
         _fire_rate *=
             _controller.sequence_runtime.modifiers.fire_rate_multiplier;
@@ -1473,7 +1492,8 @@ function sc_enemy_attack_fire_hardpoint(_enemy,_attack,_hardpoint_index)
     var _projectile_speed_multiplier = 1;
 
     if (variable_struct_exists(_controller,"sequence_runtime")
-    && _controller.sequence_runtime.current_sequence >= 0)
+    && _controller.sequence_runtime.current_sequence >= 0
+    && _controller.runtime == _controller.sequence_runtime.channel.runtime)
     {
         var _modifiers =
             _controller.sequence_runtime.modifiers;
@@ -2061,19 +2081,16 @@ function sc_enemy_attack_sequence_update(_enemy)
 
 #endregion
 
-/// @description Updates enabled sequences or every independent attack channel.
+/// @description Updates sequences and explicitly permitted independent channels.
 function sc_enemy_attack_update(_enemy)
 {
     var _controller = _enemy.enemy.attack_controller;
-
-    if (variable_struct_exists(_controller,"sequence_runtime"))
-    {
-        sc_enemy_attack_sequence_update(_enemy);
-        sc_enemy_attack_channel_bind(_controller,_controller.channels[0]);
-        return;
-    }
-
     var _channels = _controller.channels;
+    var _has_sequence = variable_struct_exists(_controller,"sequence_runtime");
+
+    if (_has_sequence)
+        sc_enemy_attack_sequence_update(_enemy);
+
     var _active_count = 0;
 
     for (var _c = 0; _c < array_length(_channels); ++_c)
@@ -2085,6 +2102,12 @@ function sc_enemy_attack_update(_enemy)
     for (var _c = 0; _c < array_length(_channels); ++_c)
     {
         var _channel = _channels[_c];
+
+        if (_has_sequence
+        && (_channel.sequence_controlled
+        || !_channel.allow_during_sequence))
+            continue;
+
         var _runtime = _channel.runtime;
         var _was_active = sc_enemy_attack_channel_active(_channel);
 
