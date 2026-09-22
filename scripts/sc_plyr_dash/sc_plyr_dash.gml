@@ -30,7 +30,18 @@ function sc_player_dash_begin(_player)
     sc_player_combat_permission_update(_player);
     sc_player_thrust_ignition_emit(_player, 1.5);
 
-    // Insert player dash audio and camera impulse here.
+    sc_audio_play(
+        snd_plyr_ship_dash,
+        AudioCategory.PLAYER,
+        GCFG.audio.engine.dash_volume,
+        0,
+        95,
+        1,
+        0,
+        "player_ship_dash"
+    );
+
+    // Insert player dash camera impulse here.
     return true;
 }
 

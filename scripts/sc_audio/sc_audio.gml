@@ -37,6 +37,16 @@ function sc_audio_config_create()
             falloff_factor: 1
         },
 
+        engine: {
+            idle_volume: 0.22,
+            moving_volume: 0.34,
+            boost_volume: 0.42,
+            boost_start_volume: 0.5,
+            dash_volume: 0.7,
+            fade_speed: 0.12,
+            priority: 70
+        },
+
         destruction: {
             player: {
                 volume: 0.9,
@@ -91,7 +101,17 @@ function sc_audio_init()
         paused: false,
         cleanup_tick: 0,
         listener_x: 0,
-        listener_y: 0
+        listener_y: 0,
+
+        engine: {
+            owner: noone,
+            boost_previous: false,
+            layers: [
+                { sound: snd_plyr_ship_idle_loop, handle: -1, gain: 0, key: "player_engine_idle" },
+                { sound: snd_plyr_ship_moving_loop, handle: -1, gain: 0, key: "player_engine_moving" },
+                { sound: snd_plyr_ship_boost_loop, handle: -1, gain: 0, key: "player_engine_boost" }
+            ]
+        }
     };
 
     audio_listener_position(0, 0, 0);
@@ -651,7 +671,6 @@ function sc_audio_projectile_detonation_play(_projectile)
 
 #endregion
 
-
 /// @description Plays one configured positional destruction sound.
 function sc_audio_destruction_play(_sound, _x, _y, _audio, _category, _key)
 {
@@ -671,6 +690,118 @@ function sc_audio_destruction_play(_sound, _x, _y, _audio, _category, _key)
         _key
     );
 }
+
+#region PLAYER ENGINE
+
+/// @description Stops the three managed player engine layers.
+function sc_audio_player_engine_stop()
+{
+    var _engine = global.audio.engine;
+
+    for (var _i = 0; _i < array_length(_engine.layers); ++_i)
+    {
+        var _layer = _engine.layers[_i];
+
+        if (_layer.handle >= 0)
+        {
+            audio_stop_sound(_layer.handle);
+            sc_audio_active_handle_remove(_layer.handle);
+        }
+
+        _layer.handle = -1;
+        _layer.gain = 0;
+    }
+
+    _engine.owner = noone;
+    _engine.boost_previous = false;
+}
+
+/// @description Crossfades idle, movement and boost engine layers.
+function sc_audio_player_engine_update()
+{
+    var _engine = global.audio.engine;
+
+    if (!instance_exists(global.player_id))
+    {
+        if (_engine.owner != noone)
+            sc_audio_player_engine_stop();
+
+        return;
+    }
+
+    var _player = global.player_id;
+    var _config = GCFG.audio.engine;
+
+    if (_engine.owner != _player)
+    {
+        sc_audio_player_engine_stop();
+        _engine.owner = _player;
+    }
+
+    var _dashing = global.PlayerState == PlayerState.DASHING;
+    var _boosting = !_dashing && _player.movement.boost.active;
+    var _moving = _player.movement.moving ? 1 : 0;
+
+    if (_boosting && !_engine.boost_previous)
+    {
+        sc_audio_play(
+            snd_plyr_ship_boost_start,
+            AudioCategory.PLAYER,
+            _config.boost_start_volume,
+            0,
+            _config.priority + 5,
+            1,
+            0,
+            "player_engine_boost_start"
+        );
+    }
+
+    _engine.boost_previous = _boosting;
+
+    var _targets = [
+        _dashing || _boosting ? 0 : (1 - _moving) * _config.idle_volume,
+        _dashing || _boosting ? 0 : _moving * _config.moving_volume,
+        _boosting ? _config.boost_volume : 0
+    ];
+
+    for (var _i = 0; _i < array_length(_engine.layers); ++_i)
+    {
+        var _layer = _engine.layers[_i];
+
+        if (_layer.handle < 0 || !audio_is_playing(_layer.handle))
+        {
+            if (_layer.handle >= 0)
+                sc_audio_active_handle_remove(_layer.handle);
+
+            _layer.handle = -1;
+            _layer.gain = 0;
+
+            if (!sc_audio_request_allowed(_layer.sound, _layer.key, _config.priority, 1, 0))
+                continue;
+
+            _layer.handle = audio_play_sound(_layer.sound, _config.priority, true);
+
+            if (_layer.handle < 0)
+                continue;
+
+            audio_sound_gain(_layer.handle, 0, 0);
+            sc_audio_active_register(_layer.handle, _layer.key, AudioCategory.PLAYER, _config.priority);
+        }
+
+        _layer.gain = lerp(_layer.gain, _targets[_i], _config.fade_speed);
+
+        if (abs(_layer.gain - _targets[_i]) < 0.001)
+            _layer.gain = _targets[_i];
+
+        audio_sound_gain(
+            _layer.handle,
+            sc_audio_gain_get(AudioCategory.PLAYER, _layer.gain),
+            0
+        );
+    }
+}
+
+#endregion
 
 #region PAUSE
 
@@ -721,6 +852,7 @@ function sc_audio_update()
     if (global.audio.paused)
         return;
 
+    sc_audio_player_engine_update();
     sc_audio_weapon_loops_update();
 
     if (GAME_TICK < global.audio.cleanup_tick)
