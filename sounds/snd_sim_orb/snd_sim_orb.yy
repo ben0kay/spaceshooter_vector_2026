@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"snd_sim_orb",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":0,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":0.68,
+  "exportDir":"",
+  "name":"snd_sim_orb",
+  "parent":{
+    "name":"Audio",
+    "path":"folders/SCRIPTS---/ENEMY/factions/SIMULANT/Audio.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"snd_sim_orb.wav",
+  "volume":1.0,
+}
