@@ -191,6 +191,7 @@
     {"id":{"name":"sc_debug_F1_enemy_spawn","path":"scripts/sc_debug_F1_enemy_spawn/sc_debug_F1_enemy_spawn.yy",},},
     {"id":{"name":"sc_debug_F2_weapon_test","path":"scripts/sc_debug_F2_weapon_test/sc_debug_F2_weapon_test.yy",},},
     {"id":{"name":"sc_debug_F3_enemy_gallery","path":"scripts/sc_debug_F3_enemy_gallery/sc_debug_F3_enemy_gallery.yy",},},
+    {"id":{"name":"sc_debug_F4_sector_jump","path":"scripts/sc_debug_F4_sector_jump/sc_debug_F4_sector_jump.yy",},},
     {"id":{"name":"sc_debug_hud","path":"scripts/sc_debug_hud/sc_debug_hud.yy",},},
     {"id":{"name":"sc_debug_main_map","path":"scripts/sc_debug_main_map/sc_debug_main_map.yy",},},
     {"id":{"name":"sc_debug_visuals","path":"scripts/sc_debug_visuals/sc_debug_visuals.yy",},},

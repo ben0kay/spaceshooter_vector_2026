@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sc_debug_F4_sector_jump",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sc_debug_F4_sector_jump",
+  "parent":{
+    "name":"debug",
+    "path":"folders/SCRIPTS---/debug.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

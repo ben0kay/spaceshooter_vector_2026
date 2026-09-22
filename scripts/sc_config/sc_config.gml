@@ -613,6 +613,7 @@ function sc_input_init()
             debug_enemy_spawn: vk_f1,
             debug_weapon_test: vk_f2,
             debug_enemy_visual: vk_f3,
+			debug_sector_jump: vk_f4,
             fullscreen: vk_f11
         },
 
@@ -647,6 +648,7 @@ function sc_input_init()
             debug_enemy_spawn_pressed: false,
             debug_weapon_test_pressed: false,
             debug_enemy_visual_pressed: false,
+			debug_sector_jump_pressed: false,
             map_pressed: false
         }
     };
@@ -699,4 +701,6 @@ function sc_input_update()
     _action.debug_enemy_spawn_pressed = keyboard_check_pressed(_binding.debug_enemy_spawn);
     _action.debug_weapon_test_pressed = keyboard_check_pressed(_binding.debug_weapon_test);
     _action.debug_enemy_visual_pressed = keyboard_check_pressed(_binding.debug_enemy_visual);
+	_action.debug_sector_jump_pressed = keyboard_check_pressed(_binding.debug_sector_jump);
+
 }
