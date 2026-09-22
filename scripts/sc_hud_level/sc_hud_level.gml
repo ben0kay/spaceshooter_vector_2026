@@ -18,9 +18,7 @@ function sc_hud_level_create_event()
     }
 
     sc_hud_top_banner_init(hud);
-    sc_debug_enemy_spawn_init(hud);
-    sc_debug_weapon_test_init(hud);
-    sc_debug_enemy_visual_init(hud);
+	sc_debug_huds_init(hud);
     sc_derelict_hud_init(hud);
 
     hud.pause_menu = sc_pause_menu_create();
@@ -52,53 +50,86 @@ function sc_hud_level_step_event()
     if (sc_debug_room_restart_update())
         return;
 
+    //==================================================
+    // F1 - ENEMY SPAWNER
+    //==================================================
     if (global.input.action.debug_enemy_spawn_pressed)
     {
-        if (hud.debug_weapon_test.open)
-            hud.debug_weapon_test.open = false;
-
-        if (hud.debug_enemy_visual.open)
-            hud.debug_enemy_visual.open = false;
+        hud.debug_weapon_test.open = false;
+        hud.debug_enemy_visual.open = false;
+        hud.debug_sector_jump.open = false;
 
         global.LevelState = LevelState.PLAYING;
+
         sc_debug_enemy_spawn_toggle(hud);
         return;
     }
 
+
+    //==================================================
+    // F2 - WEAPON TEST
+    //==================================================
     if (global.input.action.debug_weapon_test_pressed)
     {
-        if (hud.debug_enemy_spawn.open)
-            hud.debug_enemy_spawn.open = false;
-
-        if (hud.debug_enemy_visual.open)
-            hud.debug_enemy_visual.open = false;
+        hud.debug_enemy_spawn.open = false;
+        hud.debug_enemy_visual.open = false;
+        hud.debug_sector_jump.open = false;
 
         global.LevelState = LevelState.PLAYING;
+
         sc_debug_weapon_test_toggle(hud);
         return;
     }
 
+
+    //==================================================
+    // F3 - ENEMY VISUAL GALLERY
+    //==================================================
     if (global.input.action.debug_enemy_visual_pressed)
     {
-        if (hud.debug_enemy_spawn.open)
-            hud.debug_enemy_spawn.open = false;
-
-        if (hud.debug_weapon_test.open)
-            hud.debug_weapon_test.open = false;
+        hud.debug_enemy_spawn.open = false;
+        hud.debug_weapon_test.open = false;
+        hud.debug_sector_jump.open = false;
 
         global.LevelState = LevelState.PLAYING;
+
         sc_debug_enemy_visual_toggle(hud);
         return;
     }
 
+
+    //==================================================
+    // F4 - SECTOR JUMP
+    //==================================================
+    if (global.input.action.debug_sector_jump_pressed)
+    {
+        hud.debug_enemy_spawn.open = false;
+        hud.debug_weapon_test.open = false;
+        hud.debug_enemy_visual.open = false;
+
+        global.LevelState = LevelState.PLAYING;
+
+        sc_debug_sector_jump_toggle(hud);
+        return;
+    }
+
+
+    //==================================================
+    // ACTIVE DEBUG WINDOW
+    //==================================================
     if (global.LevelState == LevelState.DEBUG)
     {
         if (hud.debug_enemy_spawn.open)
             sc_debug_enemy_spawn_update(hud);
+
         else if (hud.debug_weapon_test.open)
             sc_debug_weapon_test_update(hud);
+
         else if (hud.debug_enemy_visual.open)
             sc_debug_enemy_visual_update(hud);
+
+        else if (hud.debug_sector_jump.open)
+            sc_debug_sector_jump_update(hud);
 
         return;
     }
@@ -140,9 +171,7 @@ function sc_hud_level_drawgui_event()
     sc_facility_interface_draw(hud);
     sc_derelict_prompt_draw(hud);
     sc_derelict_interface_draw(hud);
-    sc_debug_enemy_spawn_draw(hud);
-    sc_debug_weapon_test_draw(hud);
-    sc_debug_enemy_visual_draw(hud);
+	sc_debug_huds_draw(hud);
     sc_hud_sector_map_draw(hud);
     sc_debug_fps_draw();
     sc_pause_menu_draw(hud);
@@ -151,12 +180,13 @@ function sc_hud_level_drawgui_event()
 function sc_hud_level_cleanup_event()
 {
     sc_pause_particles_set(true);
-    sc_debug_enemy_visual_cleanup(hud);
+    sc_debug_huds_cleanup(hud);
     sc_hud_level_cleanup(hud);
 
     if (is_struct(global.level) && global.level.hud == id)
         global.level.hud = noone;
 }
+
 
 /// @description Returns the complete shared level-HUD visual and layout definition.
 function sc_hud_level_data()
