@@ -341,7 +341,6 @@
     {"id":{"name":"sc_weapon","path":"scripts/sc_weapon/sc_weapon.yy",},},
     {"id":{"name":"sc_world_feedback","path":"scripts/sc_world_feedback/sc_world_feedback.yy",},},
     {"id":{"name":"sc_world_structure","path":"scripts/sc_world_structure/sc_world_structure.yy",},},
-    {"id":{"name":"Script157","path":"scripts/Script157/Script157.yy",},},
     {"id":{"name":"sim_visuals_shared","path":"scripts/sim_visuals_shared/sim_visuals_shared.yy",},},
     {"id":{"name":"snd_asteroid_death_explosion","path":"sounds/snd_asteroid_death_explosion/snd_asteroid_death_explosion.yy",},},
     {"id":{"name":"snd_enemy_ship_death_explosion","path":"sounds/snd_enemy_ship_death_explosion/snd_enemy_ship_death_explosion.yy",},},
