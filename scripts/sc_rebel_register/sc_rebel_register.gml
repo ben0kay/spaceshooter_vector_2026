@@ -30,7 +30,7 @@ function sc_enemy_faction_rebel_weapons_register()
     if (!sc_weapon_register_rebel_salvohawk_rocket()) return false;
     if (!sc_weapon_register_rebel_shrapnel()) return false;
     if (!sc_weapon_register_rebel_shotgun_burst()) return false;
-	if (!sc_weapon_register_rebel_incendiary_cannon()) return false;
+	if (!sc_weapon_register_rebel_incendiary_cannon_bruiser()) return false;
     return true;
 }
 

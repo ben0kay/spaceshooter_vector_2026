@@ -1,3 +1,50 @@
+/// @description Registers the Rebel Incendiary Cannon.
+function sc_weapon_register_rebel_incendiary_cannon_bruiser()
+{
+    return sc_weapon_register({
+        identity: {
+            key: "weapon_rebel_incendiary_cannon_bruiser",
+            name: "Rebel Incendiary Cannon"
+        },
+
+        delivery: {
+            type: AttackDelivery.PROJECTILE,
+            projectile_key: "projectile_rebel_incendiary_canister",
+
+            projectile: {
+                scale: 1.5,
+                speed: 16,
+                life: 55
+            },
+
+            damage: {
+                amount: 2,
+                type: DamageType.KINETIC,
+                effect: DamageEffect.NONE
+            },
+
+            guidance: 0,
+
+            detonation: {
+                scale: 1.5,
+
+                damage: {
+                    amount: 3,
+                    type: DamageType.THERMAL,
+                    effect: DamageEffect.BURN,
+                    effect_chance: 0.2
+                }
+            }
+        },
+
+        audio: {
+            sound: noone,
+            volume: 0.48,
+            pitch_range: 0.1
+        }
+    });
+}
+
 /// @description Registers the slow Veteran Superheavy Rebel Bruiser.
 function sc_enemy_register_rebel_bruiser()
 {
@@ -108,13 +155,8 @@ function sc_enemy_register_rebel_bruiser()
                 group: "upper_miniguns",
                 forward: -0.05,
                 side: -0.94,
-                angle: 90,
+                angle: -90,
                 muzzle_forward: 0.24,
-
-                authored: {
-                    sprite: s_rebel_minigun_v2,
-                    scale: 0.24
-                },
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
@@ -130,13 +172,8 @@ function sc_enemy_register_rebel_bruiser()
                 group: "upper_miniguns",
                 forward: 0.65,
                 side: -0.88,
-                angle: 90,
+                angle: -90,
                 muzzle_forward: 0.24,
-
-                authored: {
-                    sprite: s_rebel_minigun_v2,
-                    scale: 0.24
-                },
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
@@ -152,13 +189,8 @@ function sc_enemy_register_rebel_bruiser()
                 group: "lower_miniguns",
                 forward: -0.05,
                 side: 0.94,
-                angle: -90,
+                angle: 90,
                 muzzle_forward: 0.24,
-
-                authored: {
-                    sprite: s_rebel_minigun_v2,
-                    scale: 0.24
-                },
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
@@ -174,13 +206,8 @@ function sc_enemy_register_rebel_bruiser()
                 group: "lower_miniguns",
                 forward: 0.65,
                 side: 0.88,
-                angle: -90,
+                angle: 90,
                 muzzle_forward: 0.24,
-
-                authored: {
-                    sprite: s_rebel_minigun_v2,
-                    scale: 0.24
-                },
 
                 rotation: {
                     mode: HardpointRotation.TARGET,
@@ -192,8 +219,8 @@ function sc_enemy_register_rebel_bruiser()
                 draw_script: sc_enemy_rebel_bruiser_minigun_draw
             },
             {
-                key: "nose_incendiary_cannon",
-                group: "incendiary_cannon",
+                key: "nose_incendiary_cannon_bruiser",
+                group: "incendiary_cannon_bruiser",
                 forward: 0.91,
                 side: 0,
                 angle: 0,
@@ -218,7 +245,7 @@ function sc_enemy_register_rebel_bruiser()
         thrusters: [
             {
                 key: "main_thruster",
-                forward: -1.03,
+                forward: -0.89,
                 side: 0,
                 angle: 180,
                 scale: 1.5
@@ -304,8 +331,8 @@ function sc_enemy_register_rebel_bruiser()
                     key: "nose_incendiary_burst",
                     channel: "nose_cannon",
                     weight: 100,
-                    hardpoint_group: "incendiary_cannon",
-                    weapon_key: "weapon_rebel_incendiary_cannon",
+                    hardpoint_group: "incendiary_cannon_bruiser",
+                    weapon_key: "weapon_rebel_incendiary_cannon_bruiser",
 
                     conditions: {
                         line_of_sight: true,
@@ -377,7 +404,7 @@ function sc_enemy_rebel_bruiser_visual_data()
         },
 
         thrust: {
-            draw_script: sc_enemy_rebel_thrust_draw,
+            draw_script: sc_enemy_rebel_bruiser_thrust_draw,
             ignition_script: sc_particles_enemy_thrust_ignition,
             particle_script: sc_particles_enemy_thrust_emit
         },
@@ -446,22 +473,40 @@ function sc_enemy_rebel_bruiser_body_draw(_x, _y, _radius, _angle, _visual)
     sc_visual_line(_x, _y, _radius, _angle, -0.35, 0.2, 0.3, 0.2, 3, _p.metal);
 }
 
-/// @description Draws a primitive side gun if its imported sprite is unavailable.
+/// @description Draws a broad outward-facing Bruiser side minigun.
 function sc_enemy_rebel_bruiser_minigun_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     var _p = _visual.palette;
+    var _r = 42;
 
     draw_set_alpha(_alpha);
-    sc_visual_circle(_x, _y, 34, _angle, 0, 0, 0.52, _p.hull_dark, false);
+
+    sc_visual_circle(_x, _y, _r, _angle, -0.2, 0, 0.39, _p.void, false);
+    sc_visual_circle(_x, _y, _r, _angle, -0.2, 0, 0.31, _p.metal, false);
+
     sc_visual_quad(
-        _x, _y, 34, _angle,
-        -0.35, -0.19,
-        0.85, -0.19,
-        0.85, 0.19,
-        -0.35, 0.19,
-        _p.metal
+        _x, _y, _r, _angle,
+        -0.31, -0.32,
+        0.38, -0.27,
+        0.38, 0.27,
+        -0.31, 0.32,
+        _p.hull_dark
     );
-    sc_visual_line(_x, _y, 34, _angle, 0.05, 0, 1.08, 0, 4, _p.void);
+
+    sc_visual_quad(
+        _x, _y, _r, _angle,
+        -0.16, -0.24,
+        0.46, -0.19,
+        0.46, 0.19,
+        -0.16, 0.24,
+        _p.hull_light
+    );
+
+    sc_visual_line(_x, _y, _r, _angle, 0.29, -0.13, 0.96, -0.13, 7, _p.metal);
+    sc_visual_line(_x, _y, _r, _angle, 0.29, 0.13, 0.96, 0.13, 7, _p.metal);
+    sc_visual_line(_x, _y, _r, _angle, 0.43, -0.13, 0.98, -0.13, 2, _p.void);
+    sc_visual_line(_x, _y, _r, _angle, 0.43, 0.13, 0.98, 0.13, 2, _p.void);
+
     draw_set_alpha(1);
     draw_set_colour(c_white);
 }
@@ -490,6 +535,24 @@ function sc_enemy_rebel_bruiser_cannon_draw(_x, _y, _radius, _angle, _visual, _a
 function sc_enemy_rebel_bruiser_core_draw(_x, _y, _radius, _angle, _visual, _alpha)
 {
     return;
+}
+
+/// @description Draws a narrow Bruiser exhaust flame.
+function sc_enemy_rebel_bruiser_thrust_draw(_x, _y, _radius, _angle, _visual, _alpha)
+{
+    var _p = _visual.palette;
+
+    draw_set_alpha(_alpha * 0.25);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0, -0.11, 0.68, 0, 0, 0.11, _p.glow, false);
+
+    draw_set_alpha(_alpha * 0.7);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0, -0.075, 0.51, 0, 0, 0.075, _p.energy, false);
+
+    draw_set_alpha(_alpha);
+    sc_visual_triangle(_x, _y, _radius, _angle, 0, -0.035, 0.32, 0, 0, 0.035, _p.core, false);
+
+    draw_set_alpha(1);
+    draw_set_colour(c_white);
 }
 
 /// @description Breaks the Bruiser into four primitive hull sections and five turrets.

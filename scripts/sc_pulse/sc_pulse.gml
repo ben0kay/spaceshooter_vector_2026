@@ -44,9 +44,13 @@ function sc_weapon_register_shard_pulse()
 },
 
         audio: {
-            sound: noone,
-            volume: 0.3,
-            pitch_range: 0.06
+            mode: WeaponAudioMode.ONESHOT,
+            sound: snd_plyr_ship_pulse,
+            volume: 0.35,
+            pitch_range: 0.03,
+            priority: 85,
+            instance_maximum: 8,
+            cooldown: 0
         }
     });
 }
